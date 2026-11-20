@@ -18,6 +18,11 @@ export const SOUNDS = {
   superpwm: L("sintetizador de onda cuadrada variable (bajos redondos)", "variable square-wave synth (round basses)"), supersquare: L("sintetizador de onda cuadrada", "square-wave synth"),
   superhammond: L("órgano Hammond", "Hammond organ"), superchip: L("sonido de videoconsola de 8 bits", "8-bit video game sound"), supergong: L("gong / campana", "gong / bell"),
   superfm: L("sintetizador FM", "FM synth"), superhoover: L("sintetizador 'hoover' rave", "rave 'hoover' synth"), supermandolin: L("mandolina", "mandolin"),
+  supertrumpet: L("trompeta (sintetizador de Tidal Studio)", "trumpet (Tidal Studio synth)"),
+  sawtooth: L("onda de diente de sierra (brillante, zumbona)", "sawtooth wave (bright, buzzy)"), saw: L("onda de diente de sierra", "sawtooth wave"),
+  square: L("onda cuadrada (hueca, de videojuego)", "square wave (hollow, video-game)"), triangle: L("onda triangular (suave)", "triangle wave (soft)"),
+  tri: L("onda triangular (suave)", "triangle wave (soft)"), pulse: L("onda de pulso (voice cambia la anchura)", "pulse wave (voice sets the width)"),
+  sinewave: L("onda senoidal pura (la más suave)", "pure sine wave (the softest)"),
 };
 
 export const FUNCS = [

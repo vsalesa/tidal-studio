@@ -10,6 +10,7 @@ import collections
 import glob
 import os
 import platform
+import re
 import shutil
 import subprocess
 import threading
@@ -47,6 +48,9 @@ def find_ghci():
         "/usr/local/bin/ghci",
     ])
 
+
+# SuperDirt: "no synth or module named 'superpiano' found" (con o sin comillas)
+MISSING_RE = re.compile(r"no synth or module named ['\"]?([\w.-]+)")
 
 def find_sclang():
     env = os.environ.get("TIDAL_SCLANG")
@@ -104,6 +108,7 @@ class Engine:
         self.ghci = None
         self.sclang = None
         self.superdirt_ready = False
+        self.sounds, self.missing, self.sounds_rev = set(), set(), 0
         self.simulation = False
         self.starting = False
 
@@ -126,6 +131,18 @@ class Engine:
             line = raw.decode("utf-8", errors="replace")
             if source == "sc" and ("SuperDirt: listening" in line or "SuperDirt listo" in line):
                 self.superdirt_ready = True
+            if source == "sc" and line.startswith("TIDAL_STUDIO_SOUNDS:"):
+                with self.lock:
+                    self.sounds = set(line.split(":", 1)[1].split())
+                    self.missing -= self.sounds
+                    self.sounds_rev += 1
+                self._add(source, f"Tidal Studio: {len(self.sounds)} sonidos y sintes disponibles")
+                continue
+            m = MISSING_RE.search(line) if source == "sc" else None
+            if m:
+                with self.lock:
+                    if m.group(1) not in self.missing:
+                        self.missing.add(m.group(1)); self.sounds_rev += 1
             self._add(source, line)
         self._add("studio", f"{source} se ha cerrado (código {proc.poll()})")
 
@@ -139,7 +156,13 @@ class Engine:
             "tidal_running": bool(self.ghci and self.ghci.poll() is None),
             "sc_running": bool(self.sclang and self.sclang.poll() is None),
             "superdirt_ready": self.superdirt_ready,
+            "sounds_rev": self.sounds_rev,
         }
+
+    def sound_list(self):
+        """Sonidos que SuperDirt tiene cargados y los que ha dicho que no encuentra."""
+        with self.lock:
+            return {"sounds": sorted(self.sounds), "missing": sorted(self.missing), "rev": self.sounds_rev}
 
     def _popen(self, cmd, cwd):
         kwargs = dict(stdin=subprocess.PIPE, stdout=subprocess.PIPE,
@@ -172,6 +195,9 @@ class Engine:
                     cmd = ["pw-jack"] + cmd
                 self._add("studio", "Arrancando SuperCollider + SuperDirt…")
                 self.superdirt_ready = False
+                with self.lock:
+                    self.sounds, self.missing = set(), set()
+                    self.sounds_rev += 1
                 self.sclang = self._popen(cmd, os.path.dirname(sclang))
                 threading.Thread(target=self._pump, args=(self.sclang, "sc"), daemon=True).start()
 
@@ -204,7 +230,7 @@ class Engine:
     def reload_sample(self, folder, name):
         """Vuelve a cargar un sonido de la biblioteca sin reiniciar SuperDirt."""
         path = folder.replace("\\", "/").replace('"', "")
-        ok = self.sc_eval(f'~dirt.freeSoundFiles([\\{name}]); ~dirt.loadSoundFiles("{path}"); "Sample recargado: {name}".postln;')
+        ok = self.sc_eval(f'~dirt.freeSoundFiles([\\{name}]); ~dirt.loadSoundFiles("{path}"); "Sample recargado: {name}".postln; ~studioListSounds.value;')
         if ok:
             self._add("studio", f"Sample «{name}» cargado en SuperDirt")
         return ok

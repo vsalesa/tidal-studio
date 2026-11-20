@@ -2,8 +2,9 @@ import { L, LANG, setLang } from "./i18n.js";
 import { STYLES, CATEGORIES, COMPONENTS, byId } from "./catalog.js";
 import { compIcon } from "./comp-icons.js";
 import { startTour, stopTour, tourFlag, tourSeen } from "./tour.js";
-import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep } from "./instruments.js";
+import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep, stopBeeps } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
+import { attachHighlight, refreshHighlights, syncSounds } from "./code-hl.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
@@ -143,6 +144,16 @@ const playTrack = (t) => evalCode(trackLine(t), t);
 const silenceId = (id) => evalCode(`${id} silence`);
 const playAll = () => evalCode([cps(state.bpm), ...state.tracks.map(trackLine)].join("\n\n"));
 const live = () => $("#autoplay").checked;
+// Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
+// seguían sonando, y una pre-escucha en marcha volvía a poner la música al acabar su tiempo.
+// "panic" (BootTidal) además corta todo lo que suena en SuperDirt; y paramos el audio del navegador.
+function hushAll() {
+  if (preview) { clearTimeout(preview.timer); const { onEnd } = preview; preview = null; if (onEnd) onEnd(); }
+  clearTimeout(ctlTimer);
+  seqTimers.forEach(clearTimeout); seqTimers = [];
+  smStop(); stopBeeps();
+  return evalCode("panic");
+}
 
 // ------------------------------------------------------------------ pistas
 function freeId() {
@@ -316,6 +327,7 @@ function renderTracks() {
     });
     ta.addEventListener("change", () => { commit(); if (live()) playTrack(t); });
     box.appendChild(el);
+    attachHighlight(el.querySelector("textarea"));
   }
 }
 
@@ -685,7 +697,6 @@ async function openInstrument(id) {
 }
 function instSound(ins) {
   if (inst.sound[ins.id] !== undefined) return inst.sound[ins.id];
-  if (ins.freesound) { const m = (inst.lib || []).find((x) => x.name.includes(ins.freesound)); return m ? m.name : ""; }
   return ins.sound;
 }
 const instReady = (ins, sound) => !!sound && (!ins.pack || (inst.lib || []).some((x) => x.name === sound));
@@ -710,7 +721,7 @@ function renderInstrument() {
     let src = "";
     if (ins.freesound) {
       const mine = (inst.lib || []).filter((x) => x.type !== "percusion");
-      src = `<div class="inst-src"><label>${L("Sonido", "Sound")} <select data-a="sound"><option value="">${L("— elige uno de tus samples —", "— pick one of your samples —")}</option>${mine.map((x) => `<option ${x.name === sound ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>
+      src = `<div class="inst-src"><label>${L("Sonido", "Sound")} <select data-a="sound"><option value="${ins.sound}">${ins.sound} (${L("sintetizador de Tidal Studio", "Tidal Studio synth")})</option>${mine.map((x) => `<option ${x.name === sound ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>
         <button data-a="freesound">${icon("search", 14)} ${L(`Buscar «${ins.freesound}» en Freesound`, `Search «${ins.freesound}» on Freesound`)}</button></div>`;
     } else if (ins.pack) {
       src = ready ? `<div class="inst-src ok">${icon("check", 14)} ${L(`«${sound}» instalado en tu biblioteca`, `«${sound}» installed in your library`)}</div>`
@@ -738,15 +749,16 @@ function instHear(ins, what) {
   if (isSim() || !instReady(ins, sound)) return beep(what, ins.voice);
   evalCode(`once $ ${melodyCode(ins, [what], sound)}`);
 }
+let seqTimers = [];
 function instPlaySeq(ins) {
   const sound = instSound(ins);
   if (!isSim() && (ins.id === "drums" || instReady(ins, sound))) return evalCode(`once $ ${instCode(ins)}`);
   const step = 60 / (state.bpm || 120) / 2 * 1000;
   if (ins.id === "drums") {
-    (inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps).forEach((v, i) => v && setTimeout(() => hearDirt(inst.piece, 0), i * step));
+    (inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps).forEach((v, i) => v && seqTimers.push(setTimeout(() => hearDirt(inst.piece, 0), i * step)));
     return;
   }
-  inst.seq.forEach((m, i) => m != null && setTimeout(() => beep(m, ins.voice), i * step));
+  inst.seq.forEach((m, i) => m != null && seqTimers.push(setTimeout(() => beep(m, ins.voice), i * step)));
 }
 function wireInstrument() {
   $("#inst-body").addEventListener("click", async (e) => {
@@ -791,7 +803,7 @@ function wireInstrument() {
     }
   });
   $("#inst-body").addEventListener("change", (e) => {
-    if (e.target.dataset.a === "sound") { inst.sound[inst.id] = e.target.value; renderInstrument(); }
+    if (e.target.dataset.a === "sound") { inst.sound[inst.id] = e.target.value; renderInstrument(); instHear(instById[inst.id], 72); }
   });
 }
 
@@ -1917,6 +1929,8 @@ async function refreshStatus() {
   try {
     const s = await api("/api/status");
     server.llm = s.llm_configured; server.engine = s.engine; server.github = s.github_configured;
+    syncSounds(s.engine && s.engine.sounds_rev, api);
+    refreshHighlights();
     const e = s.engine, pe = $("#st-engine");
     if (e.tidal_running && e.superdirt_ready) setPill(pe, "ok", "speaker", L("Sonido listo", "Sound ready"));
     else if (e.tidal_running || e.sc_running) setPill(pe, "warn", "speaker", L("Arrancando sonido…", "Starting sound…"));
@@ -2044,7 +2058,7 @@ function init() {
   hydrateIcons();
   $("#bpm").value = state.bpm;
   $("#proj-name").value = state.name || "";
-  renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode();
+  renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode(); attachHighlight($("#code"));
   if (!state.chat.length) greet(); else renderChat();
   // Primera visita: el tutorial arranca solo (se puede cerrar en el primer paso)
   if (!tourSeen() && !state.tracks.length && !location.hash) setTimeout(runTour, 900);
@@ -2054,7 +2068,7 @@ function init() {
     changed(); evalCode(cps(state.bpm));
   });
   $("#btn-play").onclick = playAll;
-  $("#btn-hush").onclick = () => evalCode("hush");
+  $("#btn-hush").onclick = hushAll;
   $("#style-filter").onchange = (e) => { state.style = e.target.value; save(); renderCatalog(); renderIdeas(); };
   $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
   $("#btn-more-ideas").onclick = () => {
@@ -2077,7 +2091,7 @@ function init() {
   document.querySelectorAll(".tab").forEach((b) => b.onclick = () => {
     document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === b));
     document.querySelectorAll(".tabpane").forEach((p) => p.classList.toggle("active", p.id === "tab-" + b.dataset.tab));
-    if (b.dataset.tab === "code") $("#code").value = buildCode();
+    if (b.dataset.tab === "code") { $("#code").value = buildCode(); refreshHighlights(); }
     if (b.dataset.tab === "log") refreshLog();
     if (b.dataset.tab === "blocks") renderBlocks();
     if (b.dataset.tab === "arrange") renderArrange();

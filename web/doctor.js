@@ -14,7 +14,7 @@ const BANKS = ("808 808bd 808cy 808hc 808ht 808lc 808lt 808mc 808mt 808oh 808sd 
   "newnotes noise noise2 notes numbers oc odx off oh outdoor pad padlong pebbles perc peri pluck popkick print proc procshort psr rave rave2 " +
   "ravemono realclaps reverbkick rm rs sax sd seawolf sequential sf sheffield short sid sine sitar sn space speakspell speech speechless " +
   "speedupdown stab stomp subroc3d sugar sundance tabla tabla2 tablex tacscan tech techno tink tok toys trump ul ulgab uxay v voodoo wind " +
-  "wobble world xmas yeah superpiano supersaw superpwm supersquare superhammond superchip supergong superfm superhoover supermandolin " +
+  "wobble world xmas yeah superpiano supersaw superpwm supersquare superhammond superchip supergong superfm superhoover supermandolin supertrumpet sawtooth saw square triangle tri pulse sinewave " +
   "superzow supersiren superstatic supercomparator superkick super808 superhat supersnare superclap soskick sosbass").split(" ");
 const SOUND_SET = new Set([...BANKS, ...Object.keys(SOUNDS)]);
 const PARAM_SET = new Set([...Object.keys(PARAMS), "s", "n", "note", "sound", "orbit", "cut", "begin", "end", "loop", "squiz", "lpq",
