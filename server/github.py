@@ -16,6 +16,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import net
+
 
 EN = {
     "el token no es válido o ha caducado": "the token is invalid or expired",
@@ -77,7 +79,7 @@ def _req(g, method, path, body=None, ok404=False):
         **({"Content-Type": "application/json"} if data else {}),
     })
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with net.urlopen(req, timeout=30) as r:
             raw = r.read().decode("utf-8")
             return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as e:

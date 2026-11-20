@@ -25,6 +25,7 @@ from llm import chat_completion, LLMError, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 import github  # noqa: E402
+import net  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -202,7 +203,7 @@ class Handler(SimpleHTTPRequestHandler):
                 try:
                     check_remote(url)
                     import urllib.request as _u
-                    with _u.urlopen(_u.Request(url, headers={"User-Agent": "tidal-studio"}), timeout=20) as r:
+                    with net.urlopen(_u.Request(url, headers={"User-Agent": "tidal-studio"}), timeout=20) as r:
                         body = r.read(25 * 1024 * 1024)
                 except Exception as e:
                     return self._json({"error": str(e)}, 502)
@@ -431,10 +432,14 @@ def main():
     ap = argparse.ArgumentParser(description="Tidal Studio")
     ap.add_argument("--port", type=int, default=int(os.environ.get("TIDAL_STUDIO_PORT", 8765)))
     ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--insecure-ssl", action="store_true",
+                    help="No comprobar certificados SSL en las descargas (último recurso; ver server/net.py)")
     ap.add_argument("--no-engine", action="store_true", help="No arrancar SuperCollider/Tidal automáticamente")
     ap.add_argument("--allow-remote", action="store_true", help="Permitir acceso desde otros equipos (no recomendado)")
     ap.add_argument("--check", action="store_true", help="Comprobar la instalación y salir")
     ARGS = ap.parse_args()
+    if ARGS.insecure_ssl:
+        net.FORCE_INSECURE = True
 
     if ARGS.check:
         check()
