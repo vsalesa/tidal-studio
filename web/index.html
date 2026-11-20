@@ -20,6 +20,7 @@
     </div>
     <button id="btn-new" class="wizard-btn" title="Empezar un proyecto nuevo" data-tt="Start a new project"><i data-icon="plus" data-size="16"></i> <span data-t="New project">Nuevo proyecto</span></button>
     <button id="btn-projects" class="icon-btn" title="Mis proyectos" data-tt="My projects"><i data-icon="folder" data-size="20"></i></button>
+    <button id="btn-gh" class="icon-btn" title="Guardar una versión en GitHub" data-tt="Save a version to GitHub"><i data-icon="cloud" data-size="20"></i></button>
     <div class="transport">
       <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto" data-tt="Song tempo in beats per minute">
         <span>BPM</span> <input id="bpm" type="number" min="40" max="220" value="120">
@@ -188,6 +189,21 @@
         <label><span data-t="Anthropic API key">Clave API de Anthropic</span> <input id="an-key" type="password" placeholder="sk-ant-…"></label>
         <label><span data-t="Model">Modelo</span> <input id="an-model" placeholder="claude-opus-5-5"></label>
       </fieldset>
+      <details id="gh-section">
+        <summary><i data-icon="cloud" data-size="16"></i> <span data-t="GitHub: save your songs with version history">GitHub: guarda tus canciones con historial de versiones</span></summary>
+        <p class="hint"><span data-th="Each save is a commit in a repository of yours. Create a <b>fine-grained token</b> on GitHub (Settings → Developer settings) with access to that repository and the permission <b>Contents: Read and write</b>. It is stored only in <code>config.json</code>.">Cada guardado es un commit en un repositorio tuyo. Crea un <b>token fine-grained</b> en GitHub (Settings → Developer settings) con acceso a ese repositorio y el permiso <b>Contents: Read and write</b>. Se guarda solo en <code>config.json</code>.</span></p>
+        <label><span data-t="Token">Token</span> <input id="gh-token" type="password" placeholder="github_pat_…" autocomplete="off"></label>
+        <label><span data-t="Repository (user/name)">Repositorio (usuario/nombre)</span> <input id="gh-repo" placeholder="victor/mis-canciones" data-tp="me/my-songs"></label>
+        <div class="two">
+          <label><span data-t="Branch">Rama</span> <input id="gh-branch" placeholder="main"></label>
+          <label><span data-t="Folder">Carpeta</span> <input id="gh-folder" placeholder="songs"></label>
+        </div>
+        <div class="row">
+          <button type="button" id="btn-gh-test"><span data-t="Test GitHub">Probar GitHub</span></button>
+          <button type="button" id="btn-gh-create" hidden><span data-t="Create private repository">Crear repositorio privado</span></button>
+          <span id="gh-msg" class="hint"></span>
+        </div>
+      </details>
       <div class="row">
         <button type="button" id="btn-test"><span data-t="Test connection">Probar conexión</span></button>
         <span id="test-msg" class="hint"></span>

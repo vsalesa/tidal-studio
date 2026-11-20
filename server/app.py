@@ -24,6 +24,7 @@ from engine import Engine, find_ghci, find_sclang  # noqa: E402
 from llm import chat_completion, LLMError  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
+import github  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
@@ -40,6 +41,13 @@ DEFAULT_CONFIG = {
         "api_key": "",
         "model": "claude-opus-5-5",
         "effort": "low",
+    },
+    "github": {
+        "token": "",
+        "repo": "",                # "usuario/repositorio"
+        "branch": "main",
+        "folder": "songs",
+        "api_url": "https://api.github.com",
     },
     "temperature": 0.7,
     "language": "es",
@@ -86,6 +94,8 @@ def public_config(cfg):
     for p in ("openai", "anthropic"):
         out[p]["api_key_set"] = bool(cfg[p]["api_key"])
         out[p]["api_key"] = mask(cfg[p]["api_key"])
+    out["github"]["token_set"] = bool(cfg["github"]["token"])
+    out["github"]["token"] = mask(cfg["github"]["token"])
     return out
 
 
@@ -148,6 +158,7 @@ class Handler(SimpleHTTPRequestHandler):
                     "engine": ENGINE.status(),
                     "llm_configured": llm_configured(cfg),
                     "provider": cfg["provider"],
+                    "github_configured": github.configured(cfg),
                 })
             if path == "/api/config":
                 return self._json(public_config(load_config()))
@@ -172,6 +183,11 @@ class Handler(SimpleHTTPRequestHandler):
                             continue  # no sobrescribir con la versión enmascarada
                         if k in cfg[p]:
                             cfg[p][k] = v.strip() if isinstance(v, str) else v
+                for k, v in (data.get("github") or {}).items():
+                    if k == "token" and (v is None or "…" in v or v == "••••"):
+                        continue
+                    if k in cfg["github"] and isinstance(v, str):
+                        cfg["github"][k] = v.strip()
                 if "temperature" in data:
                     cfg["temperature"] = float(data["temperature"])
                 save_config(cfg)
@@ -215,6 +231,25 @@ class Handler(SimpleHTTPRequestHandler):
                 raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=600 if nxt else 2500)
                 return self._json(parse_brainstorm(raw, final=not nxt))
 
+            if path.startswith("/api/github/"):
+                cfg = load_config()
+                act = path[len("/api/github/"):]
+                if act == "test":
+                    return self._json(github.test(cfg))
+                if not github.configured(cfg):
+                    return self._json({"error": "GitHub isn't set up. Open Settings." if data.get("lang") == "en" else "GitHub no está configurado. Abre Ajustes."}, 400)
+                if act == "create-repo":
+                    return self._json(github.create_repo(cfg))
+                if act == "save":
+                    return self._json(github.save_song(cfg, data.get("project") or {}, data.get("message", ""), data.get("slug")))
+                if act == "list":
+                    return self._json({"songs": github.list_songs(cfg)})
+                if act == "load":
+                    return self._json(github.load_song(cfg, github.slugify(data.get("slug")), data.get("ref")))
+                if act == "history":
+                    return self._json({"commits": github.history(cfg, github.slugify(data.get("slug")))})
+                return self._json({"error": "Ruta no encontrada"}, 404)
+
             if path == "/api/engine/start":
                 return self._json(ENGINE.start())
             if path == "/api/engine/stop":
@@ -227,6 +262,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json({"error": "Ruta no encontrada"}, 404)
         except LLMError as e:
             return self._json({"error": str(e)}, 502)
+        except github.GitHubError as e:
+            return self._json({"error": github.translate(str(e), data.get("lang")), "status": e.status}, 502)
         except Exception as e:
             return self._json({"error": f"{type(e).__name__}: {e}"}, 500)
 

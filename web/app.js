@@ -630,6 +630,8 @@ function renderChat() {
     if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
     if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
+    if (m.links && m.links.length) el.insertAdjacentHTML("beforeend", `<div class="links">${m.links.map((a) =>
+      `<a href="${esc(a.href)}" target="_blank" rel="noopener">${icon("link", 14)} ${esc(a.label)}</a>`).join("")}</div>`);
     box.appendChild(el);
   }
   if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}</div>`);
@@ -1000,22 +1002,41 @@ function startBlank() {
     [L("Empieza tú con un ritmo", "You start with a beat"), L("Lluvia de ideas: diseñar mi canción", "Brainstorm: design my song"), ...Object.values(STYLES).slice(0, 4).map((x) => x.nombre)]);
   state.step = "estilo";
 }
-function openProjects() {
-  $("#np-kicker").innerHTML = icon("folder", 16) + " Mis proyectos";
+function openProjects(tab = "local") {
+  $("#np-kicker").innerHTML = icon("folder", 16) + " " + L("Mis proyectos", "My projects");
   const list = listProjects();
   const body = $("#np-body");
   body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">${L("Mis proyectos", "My projects")}</h2>
+    <div class="np-tabs"><button data-a="tab-local" class="${tab === "local" ? "active" : ""}">${icon("folder", 14)} ${L("En este navegador", "In this browser")}</button>
+      <button data-a="tab-github" class="${tab === "github" ? "active" : ""}">${icon("cloud", 14)} GitHub</button></div>
+    <div id="np-local" ${tab === "local" ? "" : "hidden"}>
     <p class="wz-help">${L("Se guardan en este navegador. Tu progreso de aprendizaje es común a todos.", "Saved in this browser. Your learning progress is shared by all of them.")}</p>
     <div class="np-list">${list.length ? list.map((p) => `<div class="np-item ${p.id === state.projectId ? "current" : ""}" data-id="${esc(p.id)}">
       <span class="n">${esc(p.name)}<span class="d">${p.data.tracks.length} ${L("pistas", "tracks")} · ${p.data.bpm} BPM · ${new Date(p.updated).toLocaleString(L("es-ES", "en-GB"))}</span></span>
       ${p.id === state.projectId ? `<span class="hint">${L("abierto", "open")}</span>` : `<button data-a="open">${L("Abrir", "Open")}</button>`}
-      <button data-a="del" class="icon-btn" title="${L("Borrar", "Delete")}">${icon("trash", 16)}</button></div>`).join("") : `<p class="hint">${L("Todavía no hay proyectos guardados.", "No saved projects yet.")}</p>`}</div>
+      <button data-a="del" class="icon-btn" title="${L("Borrar", "Delete")}">${icon("trash", 16)}</button></div>`).join("") : `<p class="hint">${L("Todavía no hay proyectos guardados.", "No saved projects yet.")}</p>`}</div></div>
+    <div id="np-github" ${tab === "github" ? "" : "hidden"}>
+      <p class="wz-help">${L("Canciones guardadas en tu repositorio. Cada una tiene su historial de versiones (commits).", "Songs saved in your repository. Each one has its version history (commits).")}</p>
+      <div class="np-list" id="gh-list"></div></div>
     <div class="wz-nav"><span></span><div class="right"><button class="primary" data-a="new">${icon("plus", 14)} ${L("Nuevo proyecto", "New project")}</button></div></div>`;
-  body.onclick = (e) => {
+  if (tab === "github") renderGitHubList($("#gh-list"));
+  body.onclick = async (e) => {
     const btn = e.target.closest("button"); if (!btn) return;
+    const a = btn.dataset.a;
     const id = btn.closest(".np-item")?.dataset.id;
-    if (btn.dataset.a === "new") { $("#newproj").close(); return openNewProject(); }
-    if (btn.dataset.a === "open") {
+    const item = btn.closest(".np-item");
+    if (a === "tab-local" || a === "tab-github") return openProjects(a.slice(4));
+    if (a === "gh-setup") { $("#newproj").close(); return needGitHub(); }
+    if (a === "gh-back") return renderGitHubList($("#gh-list"));
+    if (a === "versions") return renderVersions($("#gh-list"), item.dataset.slug);
+    if (a === "gh-open") {
+      btn.disabled = true;
+      try { await openGitHubSong(item.dataset.slug, item.dataset.ref || null); }
+      catch (err) { btn.disabled = false; toast("GitHub: " + err.message); }
+      return;
+    }
+    if (a === "new") { $("#newproj").close(); return openNewProject(); }
+    if (a === "open") {
       save();
       const p = listProjects().find((x) => x.id === id);
       evalCode("hush");
@@ -1023,9 +1044,97 @@ function openProjects() {
       $("#newproj").close(); renderAll(); if (live()) playAll();
       sysMsg(L(`Proyecto «${state.name}» abierto.`, `Project «${state.name}» opened.`));
     }
-    if (btn.dataset.a === "del" && confirmDelete(id)) openProjects();
+    if (a === "del" && confirmDelete(id)) openProjects();
   };
-  $("#newproj").showModal();
+  if (!$("#newproj").open) $("#newproj").showModal();
+}
+// ------------------------------------------------------------------ GitHub
+function projectPayload() {
+  return { name: state.name || L("Canción sin título", "Untitled song"), bpm: state.bpm, style: state.style,
+    projectId: state.projectId, tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted })) };
+}
+function needGitHub() {
+  if (server.github) return false;
+  openSettings().then(() => { $("#gh-section").open = true; $("#gh-msg").textContent = L("Configura GitHub para guardar versiones.", "Set up GitHub to save versions."); });
+  return true;
+}
+function openGitHubSave() {
+  if (needGitHub()) return;
+  if (!state.tracks.length) return toast(L("Aún no hay nada que guardar: añade alguna pista primero.", "Nothing to save yet: add a track first."));
+  const p = projectPayload();
+  const first = !state.github?.slug;
+  const def = first ? L(`Primera versión de «${p.name}»`, `First version of «${p.name}»`)
+    : L(`«${p.name}»: ${p.tracks.length} pistas, ${p.bpm} BPM`, `«${p.name}»: ${p.tracks.length} tracks, ${p.bpm} BPM`);
+  $("#np-kicker").innerHTML = icon("cloud", 16) + " GitHub";
+  const body = $("#np-body");
+  body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">${L("Guardar una versión", "Save a version")}</h2>
+    <p class="wz-help">${L("Cada guardado es un <b>commit</b>: una foto de tu canción que queda en el historial. Escribe qué has cambiado, así luego sabrás a qué versión volver.", "Each save is a <b>commit</b>: a snapshot of your song kept in the history. Write what you changed, so later you'll know which version to go back to.")}</p>
+    <label>${L("¿Qué has cambiado?", "What did you change?")}<input id="gh-commit" class="gh-msg-input" value="${esc(def)}"></label>
+    <div class="gh-files">${esc(`${state.github?.slug || slugify(p.name)}/`)}<br>&nbsp;&nbsp;song.tidal &nbsp;${L("código para cualquier editor de Tidal", "code for any Tidal editor")}<br>&nbsp;&nbsp;song.json &nbsp;&nbsp;${L("el proyecto para abrirlo aquí", "the project, to open it here")}<br>&nbsp;&nbsp;README.md &nbsp;&nbsp;${L("ficha de la canción", "song sheet")}</div>
+    <p id="gh-save-msg" class="hint"></p>
+    <div class="wz-nav"><button data-a="hist">${icon("history", 14)} ${L("Ver versiones", "See versions")}</button>
+      <div class="right"><button class="primary" data-a="save">${icon("cloud", 14)} ${L("Guardar en GitHub", "Save to GitHub")}</button></div></div>`;
+  body.onclick = async (e) => {
+    const btn = e.target.closest("button"); if (!btn) return;
+    if (btn.dataset.a === "hist") return openProjects("github");
+    if (btn.dataset.a !== "save") return;
+    btn.disabled = true; $("#gh-save-msg").textContent = L("Guardando…", "Saving…");
+    try {
+      const r = await api("/api/github/save", { project: projectPayload(), message: $("#gh-commit").value, slug: state.github?.slug });
+      state.github = { slug: r.slug, ref: null }; save();
+      $("#newproj").close();
+      if (r.unchanged) return say(L("No había cambios desde la última versión, así que no he creado un commit nuevo.", "Nothing changed since the last version, so I didn't create a new commit."), state.options, { links: [{ href: r.html_url, label: L("Ver en GitHub", "View on GitHub") }] });
+      say(first
+        ? L("Guardada la primera versión en GitHub. A partir de ahora cada guardado es un commit nuevo: puedes compararlos en GitHub o volver a cualquiera desde Mis proyectos → GitHub. Truco de productor: guarda antes de un cambio grande, así experimentas sin miedo.", "First version saved to GitHub. From now on every save is a new commit: you can compare them on GitHub or go back to any of them from My projects → GitHub. Producer tip: save before a big change, so you can experiment without fear.")
+        : L("Nueva versión guardada en GitHub.", "New version saved to GitHub."),
+        state.options, { links: [{ href: r.html_url, label: L("Carpeta de la canción", "Song folder") }, { href: r.commit_url, label: L("Este commit", "This commit") }] });
+    } catch (err) { btn.disabled = false; $("#gh-save-msg").textContent = "Error: " + err.message; }
+  };
+  if (!$("#newproj").open) $("#newproj").showModal();
+  setTimeout(() => $("#gh-commit")?.select(), 30);
+}
+function slugify(n) {
+  return (n || "").normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase().slice(0, 60) || "cancion";
+}
+async function renderGitHubList(box) {
+  if (!server.github) {
+    box.innerHTML = `<p class="hint">${L("GitHub no está configurado.", "GitHub isn't set up.")}</p><button data-a="gh-setup">${icon("settings", 14)} ${L("Configurar GitHub", "Set up GitHub")}</button>`;
+    return;
+  }
+  box.innerHTML = `<p class="hint">${L("Cargando canciones de GitHub…", "Loading songs from GitHub…")}</p>`;
+  try {
+    const r = await api("/api/github/list", {});
+    box.innerHTML = r.songs.length ? r.songs.map((s) => `<div class="np-item ${s.slug === state.github?.slug ? "current" : ""}" data-slug="${esc(s.slug)}">
+      <span class="n">${esc(s.slug)}</span>
+      <button data-a="versions">${icon("history", 14)} ${L("Versiones", "Versions")}</button>
+      <button data-a="gh-open">${L("Abrir", "Open")}</button></div>`).join("")
+      : `<p class="hint">${L("Todavía no hay canciones en el repositorio. Guarda una con el botón de la nube.", "No songs in the repository yet. Save one with the cloud button.")}</p>`;
+  } catch (e) { box.innerHTML = `<p class="hint">Error: ${esc(e.message)}</p>`; }
+}
+async function renderVersions(box, slug) {
+  box.innerHTML = `<p class="hint">${L("Cargando versiones…", "Loading versions…")}</p>`;
+  try {
+    const r = await api("/api/github/history", { slug });
+    box.innerHTML = `<button data-a="gh-back">${icon("back", 14)} ${L("Todas las canciones", "All songs")}</button>
+      <p class="wz-help" style="margin:8px 0">${L(`Versiones de «${esc(slug)}», de la más nueva a la más antigua:`, `Versions of «${esc(slug)}», newest first:`)}</p>` +
+      r.commits.map((c, i) => `<div class="np-item" data-slug="${esc(slug)}" data-ref="${esc(c.sha)}">
+        <span class="n">${esc(c.message.split("\n")[0])}<span class="d"><span class="sha">${esc(c.sha.slice(0, 7))}</span> · ${c.date ? new Date(c.date).toLocaleString(L("es-ES", "en-GB")) : ""}${i === 0 ? " · " + L("la última", "latest") : ""}</span></span>
+        <a href="${esc(c.html_url)}" target="_blank" rel="noopener" class="icon-btn" title="GitHub">${icon("link", 16)}</a>
+        <button data-a="gh-open">${L("Abrir esta versión", "Open this version")}</button></div>`).join("");
+  } catch (e) { box.innerHTML = `<p class="hint">Error: ${esc(e.message)}</p>`; }
+}
+async function openGitHubSong(slug, ref) {
+  const data = await api("/api/github/load", { slug, ref });
+  save(); evalCode("hush");
+  const local = listProjects().find((x) => x.id === data.projectId);
+  state = { ...FRESH(), ...(local ? local.data : {}), name: data.name || slug, bpm: data.bpm || 120, style: data.style || "",
+    tracks: (data.tracks || []).map((t) => ({ ...t })), projectId: data.projectId || "p" + Date.now(),
+    github: { slug, ref: ref || null }, trying: null };
+  // Una versión antigua se abre como copia para no pisar la actual
+  if (ref) { state.projectId = "p" + Date.now(); state.name = `${state.name} (${ref.slice(0, 7)})`; }
+  $("#newproj").close(); renderAll(); if (live()) playAll();
+  sysMsg(ref ? L(`Abierta la versión ${ref.slice(0, 7)} de «${slug}». Si la guardas en GitHub, pasará a ser la versión más nueva.`, `Opened version ${ref.slice(0, 7)} of «${slug}». If you save it to GitHub, it becomes the newest version.`)
+    : L(`Abierta «${slug}» desde GitHub.`, `Opened «${slug}» from GitHub.`));
 }
 function confirmDelete(id) {
   const list = listProjects();
@@ -1141,7 +1250,7 @@ function setPill(el, cls, iconName, text) { el.className = "pill " + cls; el.inn
 async function refreshStatus() {
   try {
     const s = await api("/api/status");
-    server.llm = s.llm_configured; server.engine = s.engine;
+    server.llm = s.llm_configured; server.engine = s.engine; server.github = s.github_configured;
     const e = s.engine, pe = $("#st-engine");
     if (e.tidal_running && e.superdirt_ready) setPill(pe, "ok", "speaker", L("Sonido listo", "Sound ready"));
     else if (e.tidal_running || e.sc_running) setPill(pe, "warn", "speaker", L("Arrancando sonido…", "Starting sound…"));
@@ -1171,6 +1280,10 @@ async function openSettings() {
   $("#oa-key").value = c.openai.api_key; $("#an-key").value = c.anthropic.api_key; $("#an-model").value = c.anthropic.model;
   const preset = [...$("#oa-preset").options].find((o) => o.value.split("|")[0] === c.openai.base_url);
   $("#oa-preset").value = preset ? preset.value : "custom";
+  const g = c.github || {};
+  $("#gh-token").value = g.token || ""; $("#gh-repo").value = g.repo || "";
+  $("#gh-branch").value = g.branch || "main"; $("#gh-folder").value = g.folder || "songs";
+  $("#gh-msg").textContent = ""; $("#btn-gh-create").hidden = true;
   toggleProvider(); $("#test-msg").textContent = "";
   $("#settings").showModal();
 }
@@ -1183,6 +1296,8 @@ async function saveSettings() {
     provider: document.querySelector("input[name=provider]:checked").value,
     openai: { base_url: $("#oa-url").value, api_key: $("#oa-key").value, model: $("#oa-model").value },
     anthropic: { api_key: $("#an-key").value, model: $("#an-model").value },
+    github: { token: $("#gh-token").value, repo: $("#gh-repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""),
+      branch: $("#gh-branch").value, folder: $("#gh-folder").value },
   });
   state.offline = false; save();
   await refreshStatus();
@@ -1271,7 +1386,7 @@ function init() {
 
   $("#btn-settings").onclick = openSettings;
   $("#btn-new").onclick = openNewProject;
-  $("#btn-projects").onclick = openProjects;
+  $("#btn-projects").onclick = () => openProjects();
   document.querySelectorAll("[data-close]").forEach((b) => b.onclick = () => b.closest("dialog").close());
   $("#bd-close").onclick = () => $("#builder").close();
   $("#builder").addEventListener("close", () => {
@@ -1286,6 +1401,23 @@ function init() {
     const [url, model] = e.target.value.split("|"); $("#oa-url").value = url; $("#oa-model").value = model;
   };
   $("#btn-save").onclick = async () => { await saveSettings(); $("#settings").close(); };
+  $("#btn-gh").onclick = openGitHubSave;
+  $("#btn-gh-test").onclick = async () => {
+    const m = $("#gh-msg"); m.textContent = L("Probando…", "Testing…"); $("#btn-gh-create").hidden = true;
+    try {
+      await saveSettings();
+      const r = await api("/api/github/test", {});
+      if (!r.repo) m.textContent = L(`Conectado como ${r.login}. Ahora escribe el repositorio.`, `Connected as ${r.login}. Now type the repository.`);
+      else if (!r.repo_exists) { m.textContent = L(`Conectado como ${r.login}, pero ${r.repo} no existe.`, `Connected as ${r.login}, but ${r.repo} doesn't exist.`); $("#btn-gh-create").hidden = false; }
+      else m.textContent = L(`Listo: ${r.login} → ${r.repo}${r.private ? " (privado)" : " (público)"}`, `Ready: ${r.login} → ${r.repo}${r.private ? " (private)" : " (public)"}`)
+        + (r.can_push ? "" : L(". Ojo: sin permiso de escritura.", ". Careful: no write permission."));
+    } catch (e) { m.textContent = "Error: " + e.message; }
+  };
+  $("#btn-gh-create").onclick = async () => {
+    const m = $("#gh-msg"); m.textContent = L("Creando…", "Creating…");
+    try { const r = await api("/api/github/create-repo", {}); m.textContent = L(`Creado: ${r.full_name} (privado)`, `Created: ${r.full_name} (private)`); $("#btn-gh-create").hidden = true; }
+    catch (e) { m.textContent = "Error: " + e.message; }
+  };
   $("#btn-test").onclick = async () => {
     $("#test-msg").textContent = L("Probando…", "Testing…");
     try { await saveSettings(); const r = await api("/api/llm/test", {}); $("#test-msg").textContent = L("Conectado: ", "Connected: ") + r.reply; }

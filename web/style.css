@@ -332,3 +332,16 @@ fieldset { border: 1px solid var(--rule); border-radius: var(--r-sm); margin: 10
 .pal-block .pb-top { display: flex; justify-content: space-between; align-items: center; gap: 6px; font-size: 13.5px; }
 .pal-block code { font: 12px var(--mono); color: var(--accent); background: var(--accent-soft); border-radius: 5px; padding: 1px 6px; justify-self: start; }
 .pal-block .pb-desc { font-size: 12px; color: var(--ink-2); }
+
+/* GitHub */
+#gh-section { border: 1px solid var(--rule); border-radius: var(--r-sm); padding: 8px 12px; margin: 10px 0; }
+#gh-section summary { cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+#gh-section .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.np-tabs { display: flex; gap: 6px; margin: 6px 0 4px; }
+.np-tabs button.active { background: var(--ink); color: var(--paper, #fff); border-color: var(--ink); }
+.gh-msg-input { width: 100%; box-sizing: border-box; }
+.gh-files { font-family: var(--mono, monospace); font-size: 12.5px; color: var(--ink-2); background: var(--sunk); border-radius: var(--r-sm); padding: 8px 12px; margin: 8px 0 0; }
+.msg .links { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.msg .links a { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
+.np-item .sha { font-family: var(--mono, monospace); font-size: 12px; color: var(--ink-3); }
+[hidden] { display: none !important; }
