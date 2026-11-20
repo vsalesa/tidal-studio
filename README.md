@@ -234,8 +234,8 @@ Keys are stored only in `config.json`, on your computer (it is not committed to 
 
 ### Skills
 
-Maestro can load **skills** (folders with a `SKILL.md`, the same format as Claude's Agent Skills). Two open-license
-music skills come included; open the skills button in the top bar to turn them on or off, mark one «Always load», read it,
+Maestro can load **skills** (folders with a `SKILL.md`, the same format as Claude's Agent Skills). Three open-license
+music skills come included (Tidal live coding, Strudel recipes and general music composition); open the skills button in the top bar to turn them on or off, mark one «Always load», read it,
 or install another one by pasting its GitHub link. Under each of Maestro's answers you see which skills were loaded for
 that message and which it actually used. Details and sources: [skills/README.md](skills/README.md).
 

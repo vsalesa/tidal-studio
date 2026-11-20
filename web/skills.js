@@ -48,7 +48,7 @@ export function skillsDialogHTML(list, opts = {}) {
       <p>${esc(s.description)}</p>
       <div class="sk-meta">
         <span>${(s.chars / 1000).toFixed(1)}k ${L("caracteres", "chars")}</span>
-        ${s.refs.length ? `<span>${s.refs.length} ${L("referencias", "references")}: ${s.refs.map((r) => esc(r.split("/").pop())).join(", ")}</span>` : ""}
+        ${s.refs.length ? `<span title="${esc(s.refs.join("\n"))}">${s.refs.length} ${L("referencias", "references")}: ${s.refs.slice(0, 4).map((r) => esc(r.split("/").pop())).join(", ")}${s.refs.length > 4 ? "…" : ""}</span>` : ""}
         ${src}
       </div>
       <div class="sk-use"><span class="sk-count">${L("Cargada", "Loaded")} <b>${c.loaded}</b></span><span class="sk-count used">${L("Usada", "Used")} <b>${c.used}</b></span></div>

@@ -26,4 +26,11 @@ skill that is not about music or Tidal.
 | `livecoding/` | [broomva/skills · audio/livecoding](https://github.com/broomva/skills/tree/7fcf46bfc5767ca2aeacb077d52f203bf7f4fc49/skills/audio/livecoding) (SKILL.md, `References/tidal-cheatsheet.md`, `Workflows/StarterPattern.md`; Hydra files left out) | MIT | The only maintained, openly licensed skill written for TidalCycles itself: vibe-to-pattern map for industrial, ambient, DnB, footwork, techno, glitch and dub. Known slips: it names `breaks`, `sub`, `vox` and `oh`, which are not in Dirt-Samples, and says `delaytime` is in cycles (it is seconds). |
 | `strudel/` | [ahgraber/skills · strudel](https://github.com/ahgraber/skills/tree/b347e346d8523310d46415885cd0b6eac11ff3c6/skills/strudel) (SKILL.md, `references/recipes.md`, `references/tonal.md`) | CC0 1.0 | Clear, well-organized production recipes (house, techno, DnB, trap, lo-fi, acid bass, chord stabs, arrangement) and harmony. Written for Strudel, so Maestro uses the musical ideas, not the JavaScript. |
 
-Files are copied unchanged from the commits linked above; each folder keeps its `LICENSE`.
+| `music-composition/` | [SJY051/music-composition](https://github.com/SJY051/music-composition/tree/07cecf9c8fd15249ea3da311dc9a7c7893ff801f) v1.0 (SKILL.md, `references/`, `assets/`, `LICENSE.md`) | CC BY 4.0 (text), MIT (scripts, not included) | General music composition: harmony, melody, rhythm and groove, form, orchestration, arrangement for the mix and 24+ genres, in about 100 reference files. Tool-agnostic (no Tidal code), so Maestro turns its advice into Tidal. Recommended by Victor. |
+
+Files are copied unchanged from the commits linked above; each folder keeps its license file. Changes, as CC BY 4.0
+asks: from `music-composition` we left out the repository's release, benchmark and validation documents
+(`references/validation/`, `benchmarks/`, release notes) and `scripts/`; the skill files themselves are not edited.
+
+Large skills work too: Maestro picks the single reference file that best fits each message (by file name and content),
+so a skill with a hundred references costs about the same as a small one.
