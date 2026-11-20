@@ -12,6 +12,7 @@ import os
 import platform
 import re
 import shutil
+import socket
 import subprocess
 import threading
 import time
@@ -51,6 +52,16 @@ def find_ghci():
 
 # SuperDirt: "no synth or module named 'superpiano' found" (con o sin comillas)
 MISSING_RE = re.compile(r"no synth or module named ['\"]?([\w.-]+)")
+
+
+def _osc_str(x):
+    b = str(x).encode("utf-8") + b"\0"
+    return b + b"\0" * (-len(b) % 4)
+
+
+def osc_message(address, *args):
+    """Mensaje OSC mínimo con argumentos de texto (no hace falta ninguna librería)."""
+    return _osc_str(address) + _osc_str("," + "s" * len(args)) + b"".join(_osc_str(a) for a in args)
 
 def find_sclang():
     env = os.environ.get("TIDAL_SCLANG")
@@ -216,31 +227,35 @@ class Engine:
         finally:
             self.starting = False
 
-    def sc_eval(self, code):
-        """Envía código a SuperCollider (sclang lee la entrada hasta el carácter \\x0c)."""
+    def sc_cmd(self, *args):
+        """Manda una orden a sclang por OSC (/tidalstudio, ver start_superdirt.scd).
+        sclang no lee órdenes por stdin cuando lo lanzamos así, por eso usamos OSC."""
         if not (self.sclang and self.sclang.poll() is None and self.superdirt_ready):
             return False
         try:
-            self.sclang.stdin.write(code.replace("\x0c", "").encode("utf-8") + b"\n\x0c")
-            self.sclang.stdin.flush()
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.sendto(osc_message("/tidalstudio", *args), ("127.0.0.1", 57120))
             return True
-        except Exception:
+        except Exception as e:
+            self._add("studio", f"No pude hablar con SuperCollider: {e}")
             return False
 
     def reload_sample(self, folder, name):
         """Vuelve a cargar un sonido de la biblioteca sin reiniciar SuperDirt."""
-        path = folder.replace("\\", "/").replace('"', "")
-        ok = self.sc_eval(f'~dirt.freeSoundFiles([\\{name}]); ~dirt.loadSoundFiles("{path}"); "Sample recargado: {name}".postln; ~studioListSounds.value;')
+        ok = self.sc_cmd("reload", name, folder.replace("\\", "/"))
         if ok:
-            self._add("studio", f"Sample «{name}» cargado en SuperDirt")
+            self._add("studio", f"Cargando «{name}» en SuperDirt…")
         return ok
+
+    def free_sample(self, name):
+        return self.sc_cmd("free", name)
 
     def record_start(self, path):
         p = path.replace("\\", "/").replace('"', "")
-        return self.sc_eval(f's.record("{p}"); "Grabando en {p}".postln;')
+        return self.sc_cmd("record", p)
 
     def record_stop(self):
-        return self.sc_eval('s.stopRecording; "Grabación terminada".postln;')
+        return self.sc_cmd("stoprecord")
 
     def stop(self):
         for name in ("ghci", "sclang"):

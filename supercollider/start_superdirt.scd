@@ -16,6 +16,8 @@ if(\SuperDirt.asClass.isNil) {
         s.waitForBoot {
             ~dirt.free;
             ~dirt = SuperDirt(2, s);
+            // SuperDirt solo lee wav/aif por defecto; Freesound baja .ogg y muchos packs traen .mp3/.flac
+            ~dirt.fileExtensions = (~dirt.fileExtensions ++ #["ogg", "oga", "flac", "mp3"]).asSet.asArray;
             ~dirt.loadSoundFiles;
             // Tu biblioteca de Tidal Studio: cada carpeta de samples/ es un sonido
             ~studioSamples = ~studioDir +/+ ".." +/+ "samples";
@@ -35,6 +37,28 @@ if(\SuperDirt.asClass.isNil) {
                 ("TIDAL_STUDIO_SOUNDS: " ++ names.asArray.collect(_.asString).sort.join(" ")).postln;
             };
             ~studioListSounds.value;
+            // Órdenes del servidor de Tidal Studio por OSC (solo desde este ordenador):
+            // recargar un sonido recién instalado, quitarlo, grabar y volver a listar los sonidos.
+            OSCdef(\tidalStudio, { |msg, time, addr|
+                var cmd = msg[1].asString;
+                if(addr.ip == "127.0.0.1") {
+                    fork {
+                        switch(cmd,
+                            "reload", {
+                                ~dirt.freeSoundFiles([msg[2].asSymbol]);
+                                ~dirt.loadSoundFiles(msg[3].asString);
+                                s.sync;
+                                ("Sample recargado: " ++ msg[2]).postln;
+                                ~studioListSounds.value;
+                            },
+                            "free", { ~dirt.freeSoundFiles([msg[2].asSymbol]); ~studioListSounds.value },
+                            "record", { s.record(msg[2].asString); ("Grabando en " ++ msg[2]).postln },
+                            "stoprecord", { s.stopRecording; "Grabación terminada".postln },
+                            "list", { ~studioListSounds.value }
+                        );
+                    };
+                };
+            }, '/tidalstudio');
             "SuperDirt listo para Tidal Studio".postln;
         };
         s.latency = 0.3;
