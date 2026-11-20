@@ -25,6 +25,8 @@ from llm import chat_completion, LLMError, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 import github  # noqa: E402
+import skills as skillset  # noqa: E402
+from assistant import _extract_json  # noqa: E402
 import net  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
@@ -59,6 +61,11 @@ DEFAULT_CONFIG = {
     "samples": {
         "freesound_key": "",       # clave API gratuita de freesound.org/apiv2/apply
         "freesound_api": "https://freesound.org/apiv2",
+    },
+    # Skills de Maestro (carpetas con SKILL.md en skills/ y my-skills/)
+    "skills": {
+        "disabled": [],
+        "pinned": [],
     },
     "temperature": 0.7,
     "language": "es",
@@ -120,6 +127,28 @@ def llm_configured(cfg):
     # Un endpoint local (Ollama, LM Studio…) no necesita clave
     base = cfg["openai"]["base_url"]
     return bool(cfg["openai"]["api_key"]) or "localhost" in base or "127.0.0.1" in base
+
+
+def with_skills(cfg, system, query, session):
+    """Añade al prompt la lista de skills y el contenido de las que encajan con el mensaje."""
+    extra = " ".join(str(x) for x in (session.get("step"), session.get("style")) if x)
+    extra += " " + " ".join(f"{t.get('kind', '')} {t.get('name', '')}" for t in session.get("tracks") or [] if isinstance(t, dict))
+    try:
+        active, loaded, text = skillset.select(cfg, query or "", extra)
+    except Exception as e:  # una skill rota no debe romper el chat
+        print(f"[skills] {e}")
+        return system, None
+    if not active:
+        return system, None
+    return system + text, (active, loaded)
+
+
+def skills_report(sk, raw):
+    if not sk:
+        return {"loaded": [], "used": [], "active": 0}
+    active, loaded = sk
+    data = _extract_json(raw) or {}
+    return {"loaded": loaded, "used": skillset.used_from(data.get("skills"), active), "active": len(active)}
 
 
 ENGINE = Engine(ROOT)
@@ -244,6 +273,15 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(ENGINE.sound_list())
             if path == "/api/log":
                 return self._json({"log": ENGINE.log_tail(200)})
+            if path == "/api/skills":
+                cfg = load_config()
+                return self._json({"skills": skillset.public(skillset.scan(cfg)), "folder": skillset.USER_DIR})
+            if path == "/api/skills/body":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    return self._json(skillset.body_of(load_config(), q.get("name", [""])[0]))
+                except skillset.SkillError as e:
+                    return self._json({"error": str(e)}, 404)
             return self._json({"error": "Ruta no encontrada"}, 404)
         return super().do_GET()
 
@@ -301,8 +339,10 @@ class Handler(SimpleHTTPRequestHandler):
                 if not llm_configured(cfg):
                     return self._json({"error": "La IA no está configurada. Abre ⚙️ Ajustes."}, 400)
                 system, messages = build_messages(data.get("messages") or [], data.get("session") or {})
+                last = next((m.get("content", "") for m in reversed(data.get("messages") or []) if m.get("role") == "user"), "")
+                system, sk = with_skills(cfg, system, last, data.get("session") or {})
                 raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1800)
-                return self._json(parse_reply(raw))
+                return self._json({**parse_reply(raw), "skills": skills_report(sk, raw)})
 
             if path == "/api/explain":
                 cfg = load_config()
@@ -316,8 +356,9 @@ class Handler(SimpleHTTPRequestHandler):
                 if not llm_configured(cfg):
                     return self._json({"error": "La IA no está configurada"}, 400)
                 system, messages = build_fix(data)
+                system, sk = with_skills(cfg, system, f"{data.get('wish') or ''} {data.get('code') or ''}", {})
                 raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1500)
-                return self._json(parse_fix(raw))
+                return self._json({**parse_fix(raw), "skills": skills_report(sk, raw)})
 
             if path == "/api/brainstorm":
                 cfg = load_config()
@@ -325,8 +366,15 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"error": "La IA no está configurada"}, 400)
                 nxt = data.get("next")
                 system, messages = build_brainstorm(data.get("answers"), nxt, data.get("session"))
+                sk = None
+                if not nxt:
+                    answers = " ".join(str(a.get("respuesta", "")) for a in data.get("answers") or [] if isinstance(a, dict))
+                    system, sk = with_skills(cfg, system, answers, data.get("session") or {})
                 raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=600 if nxt else 2500)
-                return self._json(parse_brainstorm(raw, final=not nxt))
+                out = parse_brainstorm(raw, final=not nxt)
+                if sk:
+                    out["skills"] = skills_report(sk, raw)
+                return self._json(out)
 
             if path.startswith("/api/samples/"):
                 cfg = load_config()
@@ -381,6 +429,33 @@ class Handler(SimpleHTTPRequestHandler):
                 if act == "history":
                     return self._json({"commits": github.history(cfg, github.slugify(data.get("slug")))})
                 return self._json({"error": "Ruta no encontrada"}, 404)
+
+            if path.startswith("/api/skills/"):
+                act = path[len("/api/skills/"):]
+                cfg = load_config()
+                sk = cfg.setdefault("skills", {})
+                name = str(data.get("name") or "")
+                try:
+                    if act in ("enable", "pin"):
+                        key = "disabled" if act == "enable" else "pinned"
+                        cur = set(sk.get(key) or [])
+                        on = bool(data.get("on"))
+                        if (act == "enable") == on:
+                            cur.discard(name)
+                        else:
+                            cur.add(name)
+                        sk[key] = sorted(cur)
+                        save_config(cfg)
+                    elif act == "install":
+                        r = skillset.install(data.get("url"), cfg["github"].get("token", ""))
+                        return self._json({**r, "skills": skillset.public(skillset.scan(cfg))})
+                    elif act == "remove":
+                        skillset.remove(cfg, name)
+                    else:
+                        return self._json({"error": "Ruta no encontrada"}, 404)
+                except skillset.SkillError as e:
+                    return self._json({"error": str(e)}, 400)
+                return self._json({"skills": skillset.public(skillset.scan(cfg))})
 
             if path == "/api/record/start":
                 d = os.path.join(ROOT, "recordings")
