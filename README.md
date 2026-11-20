@@ -37,7 +37,19 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
   Maestro shows and explains the change, and you can undo it.
 - **Blocks view**: your song as nested visual blocks. Each track shows what transforms it (before the `$`), what it plays
   (every step of the cycle as a box, with groups `[ ]`, alternations `< >`, rests `~` and repeats `*`) and its settings
-  (`#`). Click any block and Maestro tells you what it does.
+  (`#`). Click any block and a **tooltip** tells you what it does and lets you **edit it right there**: change a step
+  (rest, ×2, split, sometimes, add, delete), the mini-notation, a setting's value with a slider, the numbers of a
+  transformation (`every 4 (fast 2)`), add settings or transformations, or change the tempo. It plays as you edit.
+- **Configurator card**: ask Maestro for «a card for the bass» (or press the card button on a track, a block or a mixer
+  strip) and you get a card in the chat with **every value** of that element: what plays, transformations and their
+  numbers, each `#` setting, plus the track's volume and EQ. The «song card» has tempo, master and every track's volume.
+  Cards always act on the **current** version of the song and refresh themselves when you change things elsewhere.
+- **Mix tab**: a mixing desk with a volume fader (dB) and a 3-band **equalizer** (lows 200 Hz, mids 1 kHz, highs 4 kHz)
+  for every track, mute and solo, and a **Master** strip for the whole song. It doesn't touch your track code: when
+  playing it adds `# amp` and `# eqlow / eqmid / eqhigh` (shown as a `-- mix` line in the Code tab).
+- **Undo, redo and history (rollback)**: every change to the song is saved. Undo/redo buttons (Ctrl/Cmd+Z,
+  Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version. The broom button clears Maestro's chat
+  (your song stays; you can bring the chat back).
 - **Sample library**: sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths).
   Listen to them, use one on a new track, or put it on the selected track keeping the same rhythm. Upload your own files
   (WAV, AIFF, FLAC, OGG) or **search Freesound** (free API key) filtering by license; downloads are ready for Tidal and
@@ -91,6 +103,16 @@ Click options and hear the result live. The ones recommended for your style are 
 | Help: Maestro finds the problem and proposes the fix | Code palette by goal and level |
 |---|---|
 | ![Code help](docs/screenshots/code-help.png) | ![Code palette](docs/screenshots/code-palette.png) |
+
+### Edit from the blocks, configurator card, mixer and history
+
+| Click a block: tooltip to edit it | Configurator card in Maestro's chat |
+|---|---|
+| ![Editing a block](docs/screenshots/blocks-edit.png) | ![Configurator card](docs/screenshots/configurator-card.png) |
+
+| Mix tab: volume and EQ per track and master | Song history (rollback) |
+|---|---|
+| ![Mixer](docs/screenshots/mixer.png) | ![History](docs/screenshots/history.png) |
 
 ### Blocks view and sample library
 
@@ -208,7 +230,7 @@ repositories). Then use the cloud button in the top bar to save a version with a
 - `web/explain.js`: offline code explainer. `web/suggest.js`: offline producer ideas and progress concepts.
 - `web/flavors.js`: style recipes (jazz, Latin, techno, lo-fi, ambient).
 - `web/doctor.js`: offline code checks and fixes for the Help panel (`/api/fix` with AI). `web/palette.js`: code palette blocks.
-- `web/controls.js`: controls in the chat (agentic UI). `web/blocks.js`: blocks view. `web/samples.js` + `server/samples.py`: sample library and Freesound. `server/github.py`: GitHub versions.
+- `web/controls.js`: controls in the chat (agentic UI). `web/blocks.js` + `web/edit.js`: blocks view and its editing. `web/card.js`: configurator card. `web/mixer.js`: mix tab. `web/history.js`: undo and history. `web/samples.js` + `server/samples.py`: sample library and Freesound. `server/github.py`: GitHub versions.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).

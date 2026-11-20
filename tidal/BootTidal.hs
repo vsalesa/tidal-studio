@@ -41,6 +41,10 @@ let only = (hush >>)
     d10 = p 10 . (|< orbit 9)
     d11 = p 11 . (|< orbit 10)
     d12 = p 12 . (|< orbit 11)
+    -- Ecualizador de 3 bandas de la mesa de mezcla (en dB; módulo studio_eq de studio-synths.scd)
+    eqlow = pF "eqlow"
+    eqmid = pF "eqmid"
+    eqhigh = pF "eqhigh"
 :}
 
 putStrLn "TIDAL_STUDIO_READY"
