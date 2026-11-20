@@ -163,6 +163,10 @@ class Engine:
             elif not (self.sclang and self.sclang.poll() is None):
                 script = os.path.join(self.root, "supercollider", "start_superdirt.scd")
                 cmd = [sclang, script]
+                # Instalador offline: SuperDirt viene en una carpeta propia, indicada con un sclang_conf.yaml
+                conf = os.environ.get("TIDAL_SCLANG_CONF")
+                if conf and os.path.isfile(conf):
+                    cmd = [sclang, "-l", conf, script]
                 # En Linux con PipeWire, SuperCollider necesita el puente JACK
                 if SYSTEM == "Linux" and shutil.which("pw-jack") and not shutil.which("jackd"):
                     cmd = ["pw-jack"] + cmd
