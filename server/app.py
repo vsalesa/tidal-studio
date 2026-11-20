@@ -424,6 +424,16 @@ def check():
                        "Meanwhile the studio runs in simulation mode (no sound)."))
 
 
+def _studio_running(port):
+    """True si en ese puerto responde un Tidal Studio (p. ej. abierto en otra ventana)."""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/status", timeout=2) as r:
+            return r.status == 200 and b"{" in r.read(200)
+    except Exception:
+        return False
+
+
 def main():
     global ARGS
     ap = argparse.ArgumentParser(description="Tidal Studio")
@@ -439,8 +449,25 @@ def main():
         return
 
     host = "0.0.0.0" if ARGS.allow_remote else "127.0.0.1"
-    server = ThreadingHTTPServer((host, ARGS.port), Handler)
-    url = f"http://localhost:{ARGS.port}"
+    port = ARGS.port
+    server = None
+    for port in range(ARGS.port, ARGS.port + 10):
+        try:
+            server = ThreadingHTTPServer((host, port), Handler)
+            break
+        except OSError:
+            # ¿Ya hay un Tidal Studio abierto en este puerto? Entonces solo abrimos el navegador.
+            if _studio_running(port):
+                url = f"http://localhost:{port}"
+                print(f"\n🎛  Tidal Studio ya estaba abierto / is already running: {url}\n")
+                if not ARGS.no_browser:
+                    webbrowser.open(url)
+                return
+            print(f"[server] Puerto {port} ocupado por otro programa, pruebo el siguiente / port busy, trying the next one")
+    if server is None:
+        print(f"No hay puertos libres entre {ARGS.port} y {ARGS.port + 9} / no free port. Usa --port.")
+        sys.exit(1)
+    url = f"http://localhost:{port}"
     print(f"\n🎛  Tidal Studio listo en {url}\n   (Ctrl+C para salir)\n")
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
