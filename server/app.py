@@ -232,6 +232,8 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
                 return
+            if path == "/api/sounds":
+                return self._json(ENGINE.sound_list())
             if path == "/api/log":
                 return self._json({"log": ENGINE.log_tail(200)})
             return self._json({"error": "Ruta no encontrada"}, 404)

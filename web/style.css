@@ -621,3 +621,14 @@ dialog label input, dialog label select { box-sizing: border-box; }
 @keyframes tour-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
 .tour-btns { display: flex; justify-content: flex-end; gap: 8px; }
 .tour-btns button { display: inline-flex; align-items: center; gap: 5px; }
+
+/* ----- sonidos que no existen: marcados en rojo dentro del código (web/code-hl.js) ----- */
+.hlwrap { position: relative; width: 100%; display: flex; flex-direction: column; }
+.hlwrap > textarea { position: relative; z-index: 1; background: transparent !important; width: 100%; }
+.hlwrap-code { flex: 1; min-height: 300px; }
+.hlwrap-code > #code { flex: 1; }
+.hlwrap > pre.hl { position: absolute; inset: 0; margin: 0; overflow: hidden; color: transparent; pointer-events: none; z-index: 0; border-style: solid; border-color: transparent; }
+.hlwrap mark.miss { color: transparent; background: rgba(198, 40, 40, 0.18); border-bottom: 2px solid #c62828; border-radius: 2px; }
+.miss-note { color: #b71c1c; font-size: 12px; margin-top: 4px; }
+.hlwrap > textarea { margin: 0; }
+.track .hlwrap { margin-top: 8px; }

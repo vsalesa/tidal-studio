@@ -30,22 +30,13 @@ var loadBlocks = { |path|
                 name = code.findRegexp("SynthDef\\(\\\\([A-Za-z0-9_]+)");
                 name = if(name.notEmpty) { name[1][1] } { "?" };
                 if(miss.isEmpty) {
-                    if(code.interpret.notNil) { loaded = loaded + 1 } { skipped.add(name) };
+                    if(try { code.interpret } { |err| nil }.notNil) { loaded = loaded + 1 } { skipped.add(name) };
                 } { skipped.add(name ++ " (" ++ miss.asArray.join(", ") ++ ")") };
                 block = nil;
             };
         };
     };
     [loaded, skipped]
-};
-
-if(\MembraneHexagon.asClass.isNil) {
-    var extra = SuperDirt.filenameSymbol.asString.dirname.dirname +/+ "library" +/+ "default-synths-extra.scd";
-    "Tidal Studio: faltan los sc3-plugins; cargo los sintetizadores de SuperDirt que no los necesitan.".postln;
-    if(File.exists(extra)) {
-        var res = loadBlocks.(extra);
-        ("Tidal Studio: % sintetizadores extra cargados. Sin plugins no hay: %".format(res[0], res[1].join(", "))).postln;
-    } { ("Tidal Studio: no encuentro " ++ extra).postln };
 };
 
 // Piano sin plugins: cuerdas (parciales algo inarmónicas, dos cuerdas desafinadas) + golpe del martillo.
@@ -105,4 +96,15 @@ SynthDef(\supertrumpet, { |out, sustain=1, pan, freq=440, accelerate=0, speed=1,
     Out.ar(out, DirtPan.ar(sound, ~dirt.numChannels, pan, env));
 }).add;
 "Tidal Studio: supertrumpet listo.".postln;
+// Al final y protegido: si algo de SuperDirt falla aquí, el piano y la trompeta ya están definidos
+try {
+    if(\MembraneHexagon.asClass.isNil) {
+        var extra = SuperDirt.filenameSymbol.asString.dirname.dirname +/+ "library" +/+ "default-synths-extra.scd";
+        "Tidal Studio: faltan los sc3-plugins; cargo los sintetizadores de SuperDirt que no los necesitan.".postln;
+        if(File.exists(extra)) {
+            var res = loadBlocks.(extra);
+            ("Tidal Studio: % sintetizadores extra cargados. Sin plugins no hay: %".format(res[0], res[1].join(", "))).postln;
+        } { ("Tidal Studio: no encuentro " ++ extra).postln };
+    };
+} { |err| ("Tidal Studio ERROR cargando sintes extra: " ++ err.errorString).postln };
 )
