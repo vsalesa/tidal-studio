@@ -50,7 +50,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
   4 kHz) en cada pista, silencio y solo, y un canal **Master** para toda la canción. No toca el código de tus pistas: al
   sonar añade `# amp` y `# eqlow / eqmid / eqhigh` (lo verás como una línea `-- mezcla` en la pestaña Código).
 - **Deshacer, rehacer e historial (rollback)**: cada cambio de la canción queda guardado. Botones deshacer/rehacer
-  (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior. La escoba limpia el chat de
+  (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior. El botón «Limpiar chat» limpia el chat de
   Maestro (la canción no cambia; puedes recuperar el chat).
 - **Biblioteca de samples**: sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX,
   sintes). Escúchalos, úsalos en una pista nueva o ponlos en la pista seleccionada manteniendo el ritmo. Sube tus archivos
