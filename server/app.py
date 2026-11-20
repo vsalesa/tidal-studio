@@ -240,6 +240,13 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
                 return
+            if path == "/api/events":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    since = int(q.get("since", ["0"])[0])
+                except ValueError:
+                    since = 0
+                return self._json(ENGINE.events_since(since))
             if path == "/api/sounds":
                 return self._json(ENGINE.sound_list())
             if path == "/api/log":
@@ -488,6 +495,7 @@ def main():
     if not ARGS.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
+        ENGINE.start_event_listener()
         server.serve_forever()
     except KeyboardInterrupt:
         pass

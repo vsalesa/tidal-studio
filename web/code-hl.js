@@ -41,14 +41,20 @@ export function soundRefs(code) {
 export const missingIn = (code) => [...new Set(soundRefs(code).filter((r) => isMissing(r.name)).map((r) => r.name))];
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-function markup(code) {
-  let html = "", pos = 0;
-  for (const r of soundRefs(code)) {
-    if (!isMissing(r.name)) continue;
-    html += esc(code.slice(pos, r.start)) + `<mark class="miss">${esc(code.slice(r.start, r.end))}</mark>`;
-    pos = r.end;
+function markup(code, play = []) {
+  // Rangos a marcar: sonidos que faltan (rojo) y lo que está sonando ahora (play)
+  const ranges = [];
+  for (const r of soundRefs(code)) if (isMissing(r.name)) ranges.push({ start: r.start, end: r.end, cls: "miss" });
+  for (const [a, b] of play) if (a >= 0 && b <= code.length && b > a) ranges.push({ start: a, end: b, cls: "play" });
+  const cuts = [...new Set([0, code.length, ...ranges.flatMap((r) => [r.start, r.end])])].sort((x, y) => x - y);
+  let html = "";
+  for (let i = 0; i < cuts.length - 1; i++) {
+    const a = cuts[i], b = cuts[i + 1];
+    const cls = [...new Set(ranges.filter((r) => r.start <= a && r.end >= b).map((r) => r.cls))];
+    const txt = esc(code.slice(a, b));
+    html += cls.length ? `<mark class="${cls.join(" ")}">${txt}</mark>` : txt;
   }
-  return html + esc(code.slice(pos)) + "\n";
+  return html + "\n";
 }
 
 const COPY = ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "tabSize", "whiteSpace", "overflowWrap", "wordBreak",
@@ -59,7 +65,8 @@ function update(ta) {
   if (!w || !ta.isConnected) { attached.delete(ta); return; }
   const cs = getComputedStyle(ta);
   for (const k of COPY) w.pre.style[k] = cs[k];
-  w.pre.innerHTML = markup(ta.value);
+  w.pre.innerHTML = markup(ta.value, ta._play || []);
+  w.sig = JSON.stringify(ta._play || []);
   w.pre.scrollTop = ta.scrollTop; w.pre.scrollLeft = ta.scrollLeft;
   const miss = missingIn(ta.value);
   w.note.hidden = !miss.length;
@@ -85,3 +92,13 @@ export function attachHighlight(ta) {
   update(ta);
 }
 export function refreshHighlights() { [...attached].forEach(update); }
+
+// Lo que está sonando: [[inicio, fin], …] en el texto del textarea. Solo repinta la capa si cambia.
+export function setPlayRanges(ta, ranges) {
+  if (!ta || !ta._hl) return;
+  const sig = JSON.stringify(ranges);
+  if (sig === ta._hl.sig) return;
+  ta._play = ranges; ta._hl.sig = sig;
+  ta._hl.pre.innerHTML = markup(ta.value, ranges);
+  ta._hl.pre.scrollTop = ta.scrollTop;
+}

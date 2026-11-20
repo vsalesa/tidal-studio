@@ -13,6 +13,7 @@ import platform
 import re
 import shutil
 import socket
+import struct
 import subprocess
 import threading
 import time
@@ -62,6 +63,40 @@ def _osc_str(x):
 def osc_message(address, *args):
     """Mensaje OSC mínimo con argumentos de texto (no hace falta ninguna librería)."""
     return _osc_str(address) + _osc_str("," + "s" * len(args)) + b"".join(_osc_str(a) for a in args)
+
+def _osc_read_str(data, i):
+    end = data.index(b"\0", i)
+    return data[i:end].decode("utf-8", "replace"), (end + 4) & ~3
+
+
+def osc_parse(data):
+    """Lee un mensaje OSC sencillo (i, f, d, s). Devuelve (dirección, [args]) o None."""
+    try:
+        if data.startswith(b"#bundle"):
+            return None
+        addr, i = _osc_read_str(data, 0)
+        tags, i = _osc_read_str(data, i)
+        args = []
+        for t in tags[1:]:
+            if t == "i":
+                args.append(struct.unpack(">i", data[i:i + 4])[0]); i += 4
+            elif t == "f":
+                args.append(struct.unpack(">f", data[i:i + 4])[0]); i += 4
+            elif t == "d":
+                args.append(struct.unpack(">d", data[i:i + 8])[0]); i += 8
+            elif t == "h":
+                args.append(struct.unpack(">q", data[i:i + 8])[0]); i += 8
+            elif t == "s":
+                v, i = _osc_read_str(data, i); args.append(v)
+            else:
+                return None
+        return addr, args
+    except (ValueError, struct.error, IndexError):
+        return None
+
+
+EVENTS_PORT = 57140
+
 
 def find_sclang():
     env = os.environ.get("TIDAL_SCLANG")
@@ -122,6 +157,42 @@ class Engine:
         self.sounds, self.missing, self.sounds_rev = set(), set(), 0
         self.simulation = False
         self.starting = False
+        # Notas que están sonando (las manda SuperDirt, ver start_superdirt.scd): para iluminar el código
+        self.events = collections.deque(maxlen=600)
+        self.event_seq = 0
+        self._events_thread = None
+
+    # ---------- notas que suenan ----------
+    def start_event_listener(self):
+        if self._events_thread:
+            return
+        def run():
+            try:
+                sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                sock.bind(("127.0.0.1", EVENTS_PORT))
+            except OSError as e:
+                self._add("studio", f"No puedo escuchar las notas de SuperDirt en el puerto {EVENTS_PORT}: {e}")
+                return
+            while True:
+                try:
+                    data, _ = sock.recvfrom(4096)
+                except OSError:
+                    continue
+                msg = osc_parse(data)
+                if not msg or msg[0] != "/ts/ev" or len(msg[1]) < 7:
+                    continue
+                orbit, cycle, delta, latency, snd, n, cps = msg[1][:7]
+                with self.lock:
+                    self.event_seq += 1
+                    self.events.append({"seq": self.event_seq, "at": time.time() + float(latency), "orbit": int(orbit),
+                                        "cycle": float(cycle), "delta": float(delta), "s": str(snd), "n": float(n), "cps": float(cps)})
+        self._events_thread = threading.Thread(target=run, daemon=True)
+        self._events_thread.start()
+
+    def events_since(self, seq):
+        with self.lock:
+            evs = [e for e in self.events if e["seq"] > seq]
+            return {"now": time.time(), "seq": self.event_seq, "events": evs[-200:]}
 
     # ---------- registro ----------
     def _add(self, source, line):

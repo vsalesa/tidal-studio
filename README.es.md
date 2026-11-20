@@ -57,6 +57,8 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Deshacer, rehacer e historial (rollback)**: cada cambio de la canción queda guardado. Botones deshacer/rehacer
   (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior. El botón «Limpiar chat» limpia el chat de
   Maestro (la canción no cambia; puedes recuperar el chat).
+- **Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
+  sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.
 - **Biblioteca de samples**: sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX,
   sintes). Escúchalos, úsalos en una pista nueva o ponlos en la pista seleccionada manteniendo el ritmo. Sube tus archivos
   (WAV, AIFF, FLAC, OGG) o **busca en Freesound** (clave API gratuita) filtrando por licencia; lo descargado queda listo para

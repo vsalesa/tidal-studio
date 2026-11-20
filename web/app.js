@@ -4,7 +4,8 @@ import { compIcon } from "./comp-icons.js";
 import { startTour, stopTour, tourFlag, tourSeen } from "./tour.js";
 import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep, stopBeeps } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
-import { attachHighlight, refreshHighlights, syncSounds } from "./code-hl.js";
+import { attachHighlight, refreshHighlights, syncSounds, setPlayRanges } from "./code-hl.js";
+import { startPlayhead, noteEval, setTempo, rangesAt, blockKeysAt } from "./playhead.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
@@ -77,6 +78,7 @@ function listProjects() {
 
 // ------------------------------------------------------------------ API
 async function api(path, body) {
+  if (path === "/api/eval" && body && body.code) noteEval(body.code); // para saber qué pistas suenan (y iluminarlas)
   const opts = body === undefined ? {} : {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: LANG, ...body }),
   };
@@ -281,6 +283,52 @@ function renderBlocks() {
   $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n), uiIcon: icon,
     kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)", kindName: (k) => CATEGORIES.find((c) => c.id === k)?.nombre || k });
   if (bkSel) { const el = bkFind(bkSel); if (el) { el.classList.add("on"); if (!bkSel.keep) bkOpen(el); else bkPlace(el); } else bkClose(); }
+}
+
+// ------------------------------------------------------------------ lo que suena, iluminado
+// Cada fotograma: dónde está el ciclo de cada pista que suena y qué trozo de su código toca ahora.
+function paintPlaying(t, cycle) {
+  const on = cycle !== null && audible(t, state);
+  const ta = document.querySelector(`#tracks .track[data-id="${t.id}"] textarea`);
+  if (ta) setPlayRanges(ta, on && document.activeElement !== ta ? rangesAt(t.code, cycle) : []); // mientras escribes, sin luces
+  const code = $("#code");
+  if ($("#tab-code").classList.contains("active")) {
+    if (!code._playOf) code._playOf = {};
+    code._playOf[t.id] = on ? rangesAt(t.code, cycle) : [];
+  }
+  const bt = $("#tab-blocks").classList.contains("active") && document.querySelector(`#blocks .bk-track[data-id="${t.id}"]`);
+  if (bt) {
+    const keys = on ? blockKeysAt(t.code, cycle) : [], sig = keys.join(" ");
+    if (bt._play !== sig) {
+      bt._play = sig;
+      bt.querySelectorAll(".bk-step.playing").forEach((x) => x.classList.remove("playing"));
+      for (const k of keys) bt.querySelector(`[data-key="${CSS.escape(k)}"]`)?.classList.add("playing");
+    }
+  }
+}
+// En la pestaña Código: cada pista está en una línea "d1 $ …"; pasamos sus rangos a posiciones del texto completo
+function paintCodeTab() {
+  const code = $("#code");
+  if (!$("#tab-code").classList.contains("active") || !code._playOf) return;
+  if (document.activeElement === code) return setPlayRanges(code, []);
+  const txt = code.value, all = [];
+  for (const t of state.tracks) {
+    const rs = code._playOf[t.id];
+    if (!rs || !rs.length) continue;
+    const m = new RegExp(`^${t.id} \\$ `, "m").exec(txt);
+    if (!m) continue;
+    const off = m.index + m[0].length;
+    if (txt.slice(off, off + t.code.length) !== t.code) continue; // lo has cambiado a mano: no sabemos dónde está
+    for (const [a, b] of rs) all.push([a + off, b + off]);
+  }
+  setPlayRanges(code, all);
+}
+function startPlaying() {
+  startPlayhead({
+    api, isReal: () => !!(server.engine && server.engine.superdirt_ready && !server.engine.simulation),
+    tracks: () => { setTempo(state.bpm); paintCodeTab(); return state.tracks; },
+    paint: paintPlaying,
+  });
 }
 
 // ------------------------------------------------------------------ bloques: tooltip para ver y editar cada bloque
@@ -538,7 +586,7 @@ function renderTracks() {
   for (const t of state.tracks) {
     const el = document.createElement("div");
     el.className = "track" + (t.id === state.selected ? " selected" : "") + (t.muted ? " muted" : "");
-    el.dataset.kind = t.kind;
+    el.dataset.kind = t.kind; el.dataset.id = t.id;
     el.innerHTML = `
       <div class="head">
         <span class="kico">${icon(CATEGORIES.find((c) => c.id === t.kind) ? t.kind : "fx", 20)}</span>
@@ -2612,7 +2660,7 @@ function init() {
   hydrateIcons();
   $("#bpm").value = state.bpm;
   $("#proj-name").value = state.name || "";
-  renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode(); attachHighlight($("#code"));
+  renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode(); attachHighlight($("#code")); startPlaying();
   if (!state.chat.length) greet(); else renderChat();
   renderCourse();
   // Primera visita: el tutorial arranca solo (se puede cerrar en el primer paso)

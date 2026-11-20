@@ -59,6 +59,16 @@ if(\SuperDirt.asClass.isNil) {
                     };
                 };
             }, '/tidalstudio');
+            // Cada nota que suena se avisa a la web (pista, momento del ciclo, sonido) para iluminar
+            // en el código el trozo que está sonando. Va al servidor de Tidal Studio por OSC (puerto 57140).
+            ~dirt.receiveAction = { |to|
+                { |e|
+                    try {
+                        to.sendMsg("/ts/ev", (e[\orbit] ? 0).asInteger, (e[\cycle] ? -1).asFloat, (e[\delta] ? 0).asFloat,
+                            (e[\latency] ? 0).asFloat, (e[\s] ? "").asString, (e[\n] ? e[\note] ? 0).asFloat, (e[\cps] ? 0).asFloat);
+                    };
+                }
+            }.value(NetAddr("127.0.0.1", 57140));
             "SuperDirt listo para Tidal Studio".postln;
         };
         s.latency = 0.3;
