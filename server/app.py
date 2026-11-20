@@ -342,7 +342,7 @@ class Handler(SimpleHTTPRequestHandler):
                         if data.get("index") is not None:
                             ENGINE.reload_sample(os.path.join(LIBRARY.dir, name), name)
                         else:
-                            ENGINE.sc_eval(f"~dirt.freeSoundFiles([\\{safe_name(name)}]);")
+                            ENGINE.free_sample(safe_name(name))
                         return self._json(LIBRARY.list())
                     if act == "pack":
                         return self._json(pack_index(data.get("url", "")))
