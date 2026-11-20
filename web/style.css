@@ -707,7 +707,7 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .hist-btns { display: inline-flex; gap: 2px; }
 .hist-btns .icon-btn:disabled { opacity: .35; cursor: default; }
 .assistant h2 { display: flex; align-items: center; gap: 6px; }
-.assistant h2 .clear-chat { margin-left: auto; color: var(--ink-3); }
+.assistant h2 .clear-chat { margin-left: auto; font: 600 12.5px var(--sans); letter-spacing: 0; padding: 4px 10px; color: var(--ink-2); }
 .assistant h2 .clear-chat:hover { color: var(--accent); }
 .history-dlg { width: min(520px, 92vw); border: 1px solid var(--rule-strong); border-radius: var(--r); padding: 14px 18px; background: var(--card); }
 .hist-head { display: flex; align-items: center; justify-content: space-between; }

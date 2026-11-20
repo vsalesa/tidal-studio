@@ -48,7 +48,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
   for every track, mute and solo, and a **Master** strip for the whole song. It doesn't touch your track code: when
   playing it adds `# amp` and `# eqlow / eqmid / eqhigh` (shown as a `-- mix` line in the Code tab).
 - **Undo, redo and history (rollback)**: every change to the song is saved. Undo/redo buttons (Ctrl/Cmd+Z,
-  Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version. The broom button clears Maestro's chat
+  Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version. The «Clear chat» button clears Maestro's chat
   (your song stays; you can bring the chat back).
 - **Sample library**: sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths).
   Listen to them, use one on a new track, or put it on the selected track keeping the same rhythm. Upload your own files

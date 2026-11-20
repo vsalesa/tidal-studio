@@ -130,6 +130,13 @@ class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=WEB_DIR, **kwargs)
 
+    def end_headers(self):
+        # La web (html, js, css) no se guarda en la caché del navegador: tras actualizar Tidal Studio
+        # basta con recargar la página para ver lo nuevo (Safari guardaba los módulos .js viejos).
+        if not self.path.startswith("/api/") and not self.path.startswith("/img/"):
+            self.send_header("Cache-Control", "no-cache, must-revalidate")
+        super().end_headers()
+
     def log_message(self, fmt, *args):  # menos ruido en la consola
         if "/api/status" not in (args[0] if args else ""):
             sys.stderr.write("[web] " + (fmt % args) + "\n")
