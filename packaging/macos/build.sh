@@ -31,13 +31,12 @@ log() { echo -e "\n\033[1;32m==> $*\033[0m"; }
 # ------------------------------------------------------------------ Python (standalone build)
 if [ ! -x "$RT/python/bin/python3" ]; then
   log "Python $PY_SERIES (python-build-standalone)"
-  PBS_ID="$(gh api repos/astral-sh/python-build-standalone/releases/latest --jq .id)"
-  URL="$(gh api --paginate "repos/astral-sh/python-build-standalone/releases/$PBS_ID/assets?per_page=100" --jq '.[].browser_download_url' \
-        | grep -m1 -E "cpython-${PY_SERIES}\.[0-9]+\+[0-9]+-${ARCH}-apple-darwin-install_only\.tar\.gz$" || true)"
-  [ -n "$URL" ] || { echo "No python-build-standalone asset found for $PY_SERIES/$ARCH"; exit 1; }
-  echo "$URL"
-  curl -fL --retry 3 -o "$WORK/python.tar.gz" "$URL"
-  rm -rf "$RT/python" && tar -xzf "$WORK/python.tar.gz" -C "$RT"     # extracts to $RT/python
+  # uv downloads the relocatable python-build-standalone builds
+  command -v uv >/dev/null || brew install uv
+  rm -rf "$WORK/uv-python"
+  uv python install "$PY_SERIES" --install-dir "$WORK/uv-python"
+  PYDIR="$(dirname "$(dirname "$(ls -d "$WORK"/uv-python/cpython-*/bin/python3 | head -1)")")"
+  rm -rf "$RT/python" && ditto "$PYDIR" "$RT/python"
 fi
 "$RT/python/bin/python3" --version
 
