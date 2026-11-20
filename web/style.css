@@ -799,6 +799,11 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .cs-sources ul { margin: 6px 0 0; padding-left: 18px; }
 @media (max-width: 1100px) { .layout.course-mode { grid-template-columns: 1fr; } }
 
+/* Lo que está sonando ahora, iluminado en el código y en los bloques */
+.hlwrap mark.play { color: transparent; background: rgba(255, 196, 0, 0.42); border-radius: 3px; box-shadow: 0 0 0 1.5px rgba(230, 150, 0, 0.75); }
+.hlwrap mark.play.miss { background: rgba(255, 140, 0, 0.4); }
+.bk-step.playing { outline: 2.5px solid #ffb300; outline-offset: -1px; box-shadow: 0 0 10px rgba(255, 179, 0, .85); filter: brightness(1.18); z-index: 1; }
+.bk-step.rest.playing { outline: none; box-shadow: none; filter: none; }
 /* ---------- Skills de Maestro ---------- */
 .sk-hdr { position: relative; }
 .sk-badge { position: absolute; top: 0; right: -2px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 99px; background: var(--teal); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }

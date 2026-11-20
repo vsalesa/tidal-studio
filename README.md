@@ -55,6 +55,8 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **Undo, redo and history (rollback)**: every change to the song is saved. Undo/redo buttons (Ctrl/Cmd+Z,
   Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version. The «Clear chat» button clears Maestro's chat
   (your song stays; you can bring the chat back).
+- **See what is sounding**: while the music plays, the part of each track's code that is sounding right now lights up,
+  step by step, in the Tracks, Blocks and Code views (like Strudel). SuperDirt tells the app every note it plays.
 - **Sample library**: sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths).
   Listen to them, use one on a new track, or put it on the selected track keeping the same rhythm. Upload your own files
   (WAV, AIFF, FLAC, OGG) or **search Freesound** (free API key) filtering by license; downloads are ready for Tidal and
