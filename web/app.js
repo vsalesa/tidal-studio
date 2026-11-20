@@ -2388,7 +2388,14 @@ async function toggleRecord() {
 }
 
 // ------------------------------------------------------------------ tutorial
+// Ideas de Maestro: se pueden ocultar para dar más sitio al chat (se recuerda en el navegador)
+const IDEAS_KEY = "tidal-studio-ideas-hidden";
+function setIdeasHidden(h) {
+  $("#ideas").classList.toggle("collapsed", h);
+  try { localStorage.setItem(IDEAS_KEY, h ? "1" : "0"); } catch { /* sin almacenamiento */ }
+}
 function runTour() {
+  setIdeasHidden(false);
   startTour({
     state: () => state,
     closeDialogs: () => document.querySelectorAll("dialog[open]").forEach((d) => d.close()),
@@ -2519,6 +2526,8 @@ function init() {
   $("#btn-history").onclick = openHistory;
   $("#hist-list").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (!b) return; $("#history").close(); restoreSong(histGo(+b.dataset.i), L("Has vuelto a esa versión. Puedes rehacer para volver.", "You went back to that version. Redo takes you forward again.")); };
   $("#btn-clear-chat").onclick = clearChat;
+  try { if (localStorage.getItem(IDEAS_KEY) === "1") setIdeasHidden(true); } catch { /* nada */ }
+  $("#btn-hide-ideas").onclick = () => setIdeasHidden(!$("#ideas").classList.contains("collapsed"));
   document.addEventListener("keydown", (e) => {
     if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z") return;
     if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return; // ahí manda el deshacer del navegador
