@@ -5,6 +5,8 @@
 A platform to **learn music and [TidalCycles](https://tidalcycles.org) at the same time**, building your own song live
 with an AI teacher ("Maestro") who supports you at every step, even if you know nothing about music or programming.
 
+**Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
+
 ![Tidal Studio](docs/screenshots/studio.png)
 
 - **Interactive tutorial**: the first time you open the studio, Maestro walks you through everything in 21 short steps

@@ -5,6 +5,8 @@
 Plataforma para **aprender música y [TidalCycles](https://tidalcycles.org) a la vez**, creando tu propia canción
 en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque no sepas nada de música ni de programación.
 
+**Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
+
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
 - **Tutorial interactivo**: la primera vez que abres el estudio, Maestro te enseña todo en 21 pasos cortos (tocar la
