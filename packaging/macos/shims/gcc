@@ -1,0 +1,16 @@
+#!/bin/bash
+# GHCi asks the C compiler where some system libraries are (gcc --print-file-name libiconv.dylib).
+# Macs without the Xcode Command Line Tools have no working compiler, so answer the way gcc does
+# when it doesn't find a file (it echoes the name back); macOS then finds the library by itself.
+# With the Command Line Tools installed this just runs the real compiler.
+if /usr/bin/xcrun --find clang >/dev/null 2>&1; then exec /usr/bin/xcrun clang "$@"; fi
+prev=""
+for a in "$@"; do
+  case "$a" in
+    --print-file-name=*|-print-file-name=*) echo "${a#*=}"; exit 0 ;;
+  esac
+  if [ "$prev" = "--print-file-name" ] || [ "$prev" = "-print-file-name" ]; then echo "$a"; exit 0; fi
+  prev="$a"
+done
+echo "Tidal Studio: compiling C code needs the Xcode Command Line Tools (run: xcode-select --install)" >&2
+exit 1

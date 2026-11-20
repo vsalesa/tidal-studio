@@ -99,6 +99,8 @@ cp "$REPO/config.example.json" "$REPO/README.md" "$REPO/README.es.md" "$REPO/CRE
 find "$RT/app" -name '__pycache__' -prune -exec rm -rf {} +
 echo "$VERSION" > "$RT/VERSION"
 install -m 755 "$REPO/packaging/macos/TidalStudio.command" "$RT/Tidal Studio.command"
+mkdir -p "$RT/shims"
+for n in gcc cc clang; do install -m 755 "$REPO/packaging/macos/shims/gcc" "$RT/shims/$n"; done
 
 # ------------------------------------------------------------------ slim down (docs, profiling libs)
 log "Removing docs and profiling libraries"

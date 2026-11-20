@@ -13,7 +13,8 @@ export TIDAL_GHCI="$RT/ghc/bin/ghci"
 export GHC_ENVIRONMENT="$RT/tidal.env"
 export TIDAL_SCLANG="$RT/SuperCollider.app/Contents/MacOS/sclang"
 export TIDAL_SCLANG_CONF="$RT/sclang_conf.yaml"
-export PATH="$RT/python/bin:$RT/ghc/bin:$PATH"
+# shims/: lets GHCi run on Macs without the Xcode Command Line Tools
+export PATH="$RT/shims:$RT/python/bin:$RT/ghc/bin:$PATH"
 
 clear
 echo "Tidal Studio $(cat "$RT/VERSION" 2>/dev/null)"
