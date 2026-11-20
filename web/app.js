@@ -6,6 +6,7 @@ import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./sugg
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
+import { songBlocksHTML, blockInfo } from "./blocks.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -188,6 +189,7 @@ function changed() {
   renderProgress();
   if (!state.trying) renderIdeas();
   renderPalette();
+  renderBlocks();
   if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
 }
 
@@ -200,6 +202,11 @@ function explainHTML(ex, onClose) {
     ${ex.idea ? `<div class="idea-note"><b>${L("Idea de Maestro.", "Maestro's idea.")}</b> ${esc(ex.idea)}</div>` : ""}`;
 }
 
+function renderBlocks() {
+  if (!$("#tab-blocks").classList.contains("active")) return;
+  $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n),
+    kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)", kindName: (k) => CATEGORIES.find((c) => c.id === k)?.nombre || k });
+}
 function renderTracks() {
   const box = $("#tracks");
   box.innerHTML = "";
@@ -1356,7 +1363,25 @@ function init() {
     document.querySelectorAll(".tabpane").forEach((p) => p.classList.toggle("active", p.id === "tab-" + b.dataset.tab));
     if (b.dataset.tab === "code") $("#code").value = buildCode();
     if (b.dataset.tab === "log") refreshLog();
+    if (b.dataset.tab === "blocks") renderBlocks();
   });
+  $("#blocks").onclick = (e) => {
+    const tr = e.target.closest(".bk-track");
+    if (e.target.closest("[data-a=edit]")) {
+      state.selected = tr.dataset.id; save(); renderTracks(); renderPalette();
+      document.querySelector(".tab[data-tab=tracks]").click();
+      document.querySelector(`.track.selected`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
+    const el = e.target.closest(".bk-step, .bk-param, .bk-src, .bk-wrap, .bk-tag");
+    if (!el) return;
+    document.querySelectorAll("#blocks .on").forEach((x) => x.classList.remove("on"));
+    el.classList.add("on");
+    const info = blockInfo(el);
+    const box = $("#bk-info");
+    box.hidden = false;
+    box.innerHTML = `<code>${esc(info.code)}</code><span>${esc(info.text || L("Pulsa «Explícame» en la pista para una explicación completa.", "Press «Explain» on the track for a full explanation."))}</span>${tr ? `<span class="hint">${esc(tr.dataset.id)}</span>` : ""}`;
+  };
   $("#btn-apply-code").onclick = async () => {
     const parsed = parseCode($("#code").value);
     const keep = new Set(parsed.tracks.map((t) => t.id));

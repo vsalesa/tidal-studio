@@ -345,3 +345,49 @@ fieldset { border: 1px solid var(--rule); border-radius: var(--r-sm); margin: 10
 .msg .links a { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; }
 .np-item .sha { font-family: var(--mono, monospace); font-size: 12px; color: var(--ink-3); }
 [hidden] { display: none !important; }
+
+/* Vista de bloques */
+.bk-info { position: sticky; top: 0; z-index: 2; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; background: var(--ink); color: var(--paper); border-radius: var(--r-sm); padding: 10px 14px; margin-bottom: 12px; font-size: 14px; }
+.bk-info code { font-family: var(--mono); background: rgba(255,255,255,.12); padding: 2px 6px; border-radius: 4px; }
+.bk-info .hint { color: var(--ink-3); margin-left: auto; }
+.bk-song { border: 1.5px solid var(--ink); border-radius: 12px; padding: 12px; background: var(--card); }
+.bk-song-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 2px 4px 12px; }
+.bk-song-head strong { font-family: var(--serif); font-size: 20px; }
+.bk-kind { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.bk-tag { font-size: 13px; background: var(--sunk); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.bk-tag code { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.bk-mix { margin-left: auto; display: flex; gap: 6px; }
+.bk-mix span { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; color: var(--k); }
+.bk-tracks { display: flex; flex-direction: column; gap: 10px; }
+.bk-track { border-left: 5px solid var(--k); background: var(--paper); border-radius: 8px; padding: 8px 10px 10px; }
+.bk-track.selected { box-shadow: 0 0 0 2px var(--k); }
+.bk-track.muted { opacity: .5; }
+.bk-track header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.bk-track header .kico { color: var(--k); display: inline-flex; }
+.bk-track header .id { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.bk-track header strong { font-family: var(--serif); }
+.bk-track header .icon-btn { margin-left: auto; }
+.bk-wrap { border: 1.5px dashed color-mix(in srgb, var(--k) 60%, transparent); border-radius: 8px; padding: 6px 8px 8px; background: color-mix(in srgb, var(--k) 6%, var(--card)); cursor: pointer; }
+.bk-wrap.stack { border-style: solid; }
+.bk-wrap > .bk-label { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.bk-inner { display: flex; flex-direction: column; gap: 8px; padding-left: 10px; border-left: 2px solid color-mix(in srgb, var(--k) 35%, transparent); }
+.bk-label code { font-family: var(--mono); font-size: 12.5px; overflow-wrap: anywhere; }
+.bk-dollar { font-family: var(--mono); font-weight: 700; color: var(--k); margin-left: auto; }
+.bk-sound { display: flex; flex-direction: column; gap: 6px; }
+.bk-src { background: var(--card); border: 1.5px solid var(--k); border-radius: 8px; padding: 6px 8px; cursor: pointer; }
+.bk-src .bk-label { display: flex; gap: 8px; align-items: baseline; margin-bottom: 6px; }
+.bk-steps { display: flex; gap: 3px; min-height: 34px; }
+.bk-step { flex: 1 1 0; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 2px; position: relative; background: var(--k); color: #fff; border-radius: 5px; font-family: var(--mono); font-size: 12px; padding: 4px 2px; cursor: pointer; overflow: hidden; }
+.bk-step .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bk-step.rest { background: var(--sunk); color: var(--ink-3); }
+.bk-step.group { background: transparent; border: 1.5px solid var(--k); padding: 2px; gap: 2px; align-items: stretch; }
+.bk-step.group .bk-step { font-size: 10.5px; }
+.bk-step.alt { flex-direction: column; background: color-mix(in srgb, var(--k) 75%, #fff); gap: 1px; padding: 2px; }
+.bk-step.alt .alt-i { font-size: 10.5px; line-height: 1.2; opacity: .9; }
+.bk-step.alt .alt-i:first-child { font-weight: 700; opacity: 1; }
+.bk-badge { font-size: 10px; background: rgba(0,0,0,.25); border-radius: 3px; padding: 0 3px; font-weight: 700; }
+.bk-params { display: flex; flex-wrap: wrap; gap: 5px; padding-left: 10px; }
+.bk-param { font-family: var(--mono); font-size: 12px; background: var(--card); border: 1px solid var(--rule-strong); border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+.bk-param .op { color: var(--k); font-weight: 700; }
+.bk-param b { color: var(--ink); }
+#blocks .on { outline: 2.5px solid var(--accent); outline-offset: 1px; }

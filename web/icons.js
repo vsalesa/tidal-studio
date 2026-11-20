@@ -38,6 +38,7 @@ const P = {
   blank: `<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>`,
   steps: `<rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/>`,
   // GitHub (icono genérico: nube con versiones, sin logotipos de marca)
+  blocks: `<rect x="3" y="3" width="18" height="5" rx="1.2"/><rect x="6" y="10" width="15" height="4.5" rx="1.2"/><rect x="9" y="16.5" width="12" height="4.5" rx="1.2"/><path d="M4.5 8v10.5H9M4.5 12.2H6"/>`,
   cloud: `<path d="M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.4-1.2A4.6 4.6 0 0 1 17.5 18z"/><path d="M12 15.5v-5M9.8 12.6L12 10.4l2.2 2.2"/>`,
   history: `<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 3-3.5 3.5-10 6.5"/>`,
   link: `<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>`,

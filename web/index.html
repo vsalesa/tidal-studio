@@ -74,6 +74,7 @@
       <input id="proj-name" class="proj-name" title="Nombre del proyecto" data-tt="Project name" placeholder="Proyecto sin título" data-tp="Untitled project">
       <div class="tabs">
         <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> <span data-t="Tracks">Pistas</span></button>
+        <button class="tab" data-tab="blocks"><i data-icon="blocks" data-size="16"></i> <span data-t="Blocks">Bloques</span></button>
         <button class="tab" data-tab="code"><i data-icon="code" data-size="16"></i> <span data-t="Code">Código</span></button>
         <button class="tab" data-tab="log"><i data-icon="log" data-size="16"></i> <span data-t="Log">Registro</span></button>
       </div>
@@ -87,6 +88,11 @@
         </div>
       </div>
 
+      <div id="tab-blocks" class="tabpane">
+        <p class="hint"><span data-th="Your song as nested blocks: each track, what transforms it (before the <code>$</code>), what it plays (each box is one step of the cycle) and its settings (<code>#</code>). Click any block to see what it does.">Tu canción en bloques anidados: cada pista, lo que la transforma (antes del <code>$</code>), lo que suena (cada casilla es un paso del ciclo) y sus ajustes (<code>#</code>). Pulsa cualquier bloque para ver qué hace.</span></p>
+        <div id="bk-info" class="bk-info" hidden></div>
+        <div id="blocks"></div>
+      </div>
       <div id="tab-code" class="tabpane">
         <p class="hint"><span data-th="This is your song's TidalCycles code. Edit it and press <b>Apply</b> (or Ctrl+Enter). Lines starting with <code>--</code> are comments.">Este es el código TidalCycles de tu canción. Edítalo y pulsa <b>Aplicar</b> (o Ctrl+Enter). Las líneas que empiezan por <code>--</code> son comentarios.</span></p>
         <textarea id="code" spellcheck="false"></textarea>
