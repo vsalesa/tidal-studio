@@ -186,6 +186,25 @@ class Engine:
         finally:
             self.starting = False
 
+    def sc_eval(self, code):
+        """Envía código a SuperCollider (sclang lee la entrada hasta el carácter \\x0c)."""
+        if not (self.sclang and self.sclang.poll() is None and self.superdirt_ready):
+            return False
+        try:
+            self.sclang.stdin.write(code.replace("\x0c", "").encode("utf-8") + b"\n\x0c")
+            self.sclang.stdin.flush()
+            return True
+        except Exception:
+            return False
+
+    def reload_sample(self, folder, name):
+        """Vuelve a cargar un sonido de la biblioteca sin reiniciar SuperDirt."""
+        path = folder.replace("\\", "/").replace('"', "")
+        ok = self.sc_eval(f'~dirt.freeSoundFiles([\\{name}]); ~dirt.loadSoundFiles("{path}"); "Sample recargado: {name}".postln;')
+        if ok:
+            self._add("studio", f"Sample «{name}» cargado en SuperDirt")
+        return ok
+
     def stop(self):
         for name in ("ghci", "sclang"):
             proc = getattr(self, name)

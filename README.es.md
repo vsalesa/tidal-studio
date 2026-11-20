@@ -28,6 +28,16 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Paleta de código**: 39 bloques de Tidal organizados por lo que quieres conseguir (ritmo, sonido, notas y armonía,
   efectos, tiempo y estructura, azar) y por nivel (primeros pasos, intermedio, avanzado). Pulsas uno y se aplica a la pista
   seleccionada; Maestro te enseña y explica el cambio, y puedes deshacerlo.
+- **Vista de bloques**: tu canción en bloques visuales anidados. Cada pista muestra lo que la transforma (antes del `$`),
+  lo que suena (cada paso del ciclo es una casilla, con grupos `[ ]`, alternancias `< >`, silencios `~` y repeticiones `*`)
+  y sus ajustes (`#`). Pulsas cualquier bloque y Maestro te dice qué hace.
+- **Biblioteca de samples**: sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX,
+  sintes). Escúchalos, úsalos en una pista nueva o ponlos en la pista seleccionada manteniendo el ritmo. Sube tus archivos
+  (WAV, AIFF, FLAC, OGG) o **busca en Freesound** (clave API gratuita) filtrando por licencia; lo descargado queda listo para
+  Tidal y los créditos de los sonidos CC BY se apuntan en `samples/CREDITS.md`. La pestaña Packs reúne otras colecciones
+  libres (tidal-drum-machines, VCSL, packs de Strudel…).
+- **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
+  `README.md`), mira el historial y abre cualquier versión antigua desde Mis proyectos → GitHub.
 - **Tu progreso**: conceptos de código y de música que ya has usado.
 - **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
 - **Componentes para añadir** y **código siempre visible y editable**.
@@ -61,6 +71,16 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 | Ayuda: Maestro encuentra el problema y propone el arreglo | Paleta de código por objetivo y nivel |
 |---|---|
 | ![Ayuda con el código](docs/screenshots/es/ayuda-codigo.png) | ![Paleta de código](docs/screenshots/es/paleta-codigo.png) |
+
+### Vista de bloques y biblioteca de samples
+
+| Tu canción en bloques anidados | Biblioteca de samples por tipo |
+|---|---|
+| ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Biblioteca de samples](docs/screenshots/es/biblioteca-samples.png) |
+
+| Buscar en Freesound por licencia | GitHub: cada guardado es una versión |
+|---|---|
+| ![Buscar online](docs/screenshots/es/samples-online.png) | ![Versiones en GitHub](docs/screenshots/es/github-versiones.png) |
 
 ### Lluvia de ideas
 
@@ -109,6 +129,24 @@ Se abre el navegador en <http://localhost:8765>. Después:
 
 Las claves se guardan solo en `config.json`, en tu ordenador (no se sube a git). También puedes usar las variables
 de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
+
+### Samples
+
+Tus sonidos viven en `samples/<nombre>/` (cada carpeta es un sonido de Tidal: `s "nombre"`, `s "nombre:1"` para el segundo
+archivo). SuperDirt los carga al arrancar y los recarga cuando añades o borras algo. Para Freesound, pide una clave API
+gratuita en [freesound.org/apiv2/apply](https://freesound.org/apiv2/apply) y pégala en la biblioteca (pestaña Buscar
+online). Tidal Studio descarga la vista previa OGG de alta calidad de Freesound, que SuperCollider lee directamente.
+
+Cajas de ritmos opcionales: `git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines`
+(se cargan solas en el siguiente arranque).
+
+### GitHub
+
+Abre ⚙ Ajustes → GitHub. Crea un **token fine-grained** en GitHub (Settings → Developer settings → Personal access tokens)
+con acceso al repositorio de tus canciones y el permiso **Contents: Read and write**. Escribe el repositorio como
+`usuario/nombre`; si aún no existe, «Crear repositorio privado» lo crea (para eso el token necesita permiso para crear
+repositorios). Después usa el botón de la nube de la barra superior para guardar una versión con un mensaje. El token se
+guarda solo en `config.json`.
 
 ## Cómo funciona
 

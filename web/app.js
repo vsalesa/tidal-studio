@@ -7,6 +7,7 @@ import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
 import { songBlocksHTML, blockInfo } from "./blocks.js";
+import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -1055,6 +1056,200 @@ function openProjects(tab = "local") {
   };
   if (!$("#newproj").open) $("#newproj").showModal();
 }
+// ------------------------------------------------------------------ biblioteca de samples
+const sm = { tab: "builtin", type: "", mine: null, results: null, q: "", license: "libre", oneshot: true, page: 1, keySet: false, variant: {} };
+let smAudio = null;
+function smStop() { if (smAudio) { smAudio.pause(); smAudio = null; } }
+async function openSamples(tab) {
+  if (tab) sm.tab = tab;
+  try { sm.keySet = !!(await api("/api/config")).samples?.freesound_key_set; } catch { /* sin servidor */ }
+  await renderSamples();
+  if (!$("#samples").open) $("#samples").showModal();
+}
+function smTypeChips(counts) {
+  const types = SAMPLE_TYPES.filter((t) => !counts || counts[t.id]);
+  return `<div class="sm-types"><button data-type="" class="${sm.type ? "" : "active"}">${L("Todos", "All")}</button>${types.map((t) =>
+    `<button data-type="${t.id}" class="${sm.type === t.id ? "active" : ""}" style="--k:${KIND_COLOR[t.kind]}">${esc(L(t.es, t.en))}${counts ? ` <span>${counts[t.id]}</span>` : ""}</button>`).join("")}</div>`;
+}
+function useButtons(name, type) {
+  const t = selectedTrack();
+  const canSwap = t && /\b(s|sound)\s+"/.test(t.code) && type !== "synth";
+  return `<div class="sm-use">
+    <button class="primary" data-a="use-new" data-name="${esc(name)}" data-type="${esc(type)}">${icon("plus", 13)} ${L("Nueva pista", "New track")}</button>
+    ${canSwap ? `<button data-a="use-swap" data-name="${esc(name)}" data-type="${esc(type)}" title="${esc(L("Mismo ritmo, otro sonido", "Same rhythm, another sound"))}">${L(`Poner en ${t.id}`, `Use on ${t.id}`)}</button>` : ""}</div>`;
+}
+async function renderSamples() {
+  const body = $("#sm-body");
+  const tabs = [["builtin", "wave", L("Incluidos", "Built-in")], ["mine", "folder", L("Mis samples", "My samples")],
+    ["online", "search", L("Buscar online", "Search online")], ["packs", "library", L("Packs", "Packs")]];
+  let html = `<div class="np-tabs">${tabs.map(([id, ic, n]) => `<button data-tab="${id}" class="${sm.tab === id ? "active" : ""}">${icon(ic, 14)} ${n}</button>`).join("")}</div>`;
+  if (sm.tab === "builtin") {
+    const counts = {}; BUILTIN.forEach((b) => { counts[b.type] = (counts[b.type] || 0) + 1; });
+    const list = BUILTIN.filter((b) => !sm.type || b.type === sm.type);
+    html += `<p class="wz-help">${L("Vienen instalados con SuperDirt. Cada nombre es una carpeta con variantes: <code>bd:0</code>, <code>bd:1</code>… Escúchalos y úsalos en una pista nueva o en la seleccionada (mismo ritmo, otro sonido).", "They come installed with SuperDirt. Each name is a folder with variants: <code>bd:0</code>, <code>bd:1</code>… Listen and use them on a new track or on the selected one (same rhythm, another sound).")}</p>
+      ${smTypeChips(counts)}
+      <div class="sm-list">${list.map((b) => { const v = sm.variant[b.name] || 0; return `<div class="sm-item" style="--k:${KIND_COLOR[typeKind(b.type)]}">
+        <button class="icon-btn sm-play" data-a="hear-engine" data-name="${esc(b.name)}" data-type="${b.type}" title="${esc(L("Escuchar (suena por el motor)", "Listen (plays through the engine)"))}">${icon("play", 14)}</button>
+        <span class="n"><code>${esc(b.name)}${b.type === "synth" ? "" : `:${v}`}</code><span class="d">${esc(b.desc)} · ${esc(typeName(b.type))}</span></span>
+        ${b.type === "synth" ? "" : `<span class="sm-var"><button data-a="var" data-d="-1" data-name="${esc(b.name)}">−</button><button data-a="var" data-d="1" data-name="${esc(b.name)}">+</button></span>`}
+        ${useButtons(b.type === "synth" || !v ? b.name : `${b.name}:${v}`, b.type)}</div>`; }).join("")}</div>`;
+  }
+  if (sm.tab === "mine") {
+    if (!sm.mine) { try { sm.mine = await api("/api/samples"); } catch (e) { sm.mine = { sounds: [], error: e.message }; } }
+    const counts = {}; sm.mine.sounds.forEach((x) => { counts[x.type] = (counts[x.type] || 0) + 1; });
+    const list = sm.mine.sounds.filter((x) => !sm.type || x.type === sm.type);
+    html += `<p class="wz-help">${L("Tus propios sonidos. Cada sonido es una carpeta dentro de <code>samples/</code>; en Tidal lo usas por su nombre: <code>s \"mi_bombo\"</code>.", "Your own sounds. Each sound is a folder inside <code>samples/</code>; in Tidal you use it by its name: <code>s \"my_kick\"</code>.")}</p>
+      <form class="sm-upload" id="sm-upload">
+        <label>${L("Nombre del sonido", "Sound name")}<input name="name" placeholder="${L("mi_bombo", "my_kick")}" required></label>
+        <label>${L("Tipo", "Type")}<select name="type">${SAMPLE_TYPES.filter((t) => t.id !== "synth").map((t) => `<option value="${t.id}">${esc(L(t.es, t.en))}</option>`).join("")}</select></label>
+        <label class="file">${icon("upload", 16)} <span>${L("Elegir archivos (WAV, AIFF, FLAC, OGG)", "Choose files (WAV, AIFF, FLAC, OGG)")}</span><input type="file" name="files" accept=".wav,.aif,.aiff,.flac,.ogg" multiple></label>
+        <button class="primary" type="submit">${L("Añadir", "Add")}</button>
+      </form>
+      ${sm.mine.error ? `<p class="hint">Error: ${esc(sm.mine.error)}</p>` : ""}
+      ${smTypeChips(counts)}
+      <div class="sm-list">${list.length ? list.map((x) => `<div class="sm-item mine" style="--k:${KIND_COLOR[typeKind(x.type)]}">
+        <span class="n"><code>${esc(x.name)}</code><span class="d">${x.files.length} ${x.files.length === 1 ? L("archivo", "file") : L("archivos", "files")} · ${x.source === "freesound" ? "Freesound" : L("subido por ti", "uploaded by you")}</span>
+          <span class="sm-files">${x.files.map((f) => `<span class="sm-file"><button class="icon-btn" data-a="hear-file" data-name="${esc(x.name)}" data-i="${f.index}" title="${esc(f.file)}">${icon("play", 12)}</button><code>${esc(x.name)}:${f.index}</code>${f.license_name ? `<span class="lic" title="${esc((f.title || "") + " · " + (f.author || ""))}">${esc(f.license_name)}</span>` : ""}<button class="icon-btn" data-a="del-file" data-name="${esc(x.name)}" data-i="${f.index}" title="${esc(L("Borrar este archivo", "Delete this file"))}">${icon("close", 12)}</button></span>`).join("")}</span></span>
+        <select data-a="set-type" data-name="${esc(x.name)}">${SAMPLE_TYPES.filter((t) => t.id !== "synth").map((t) => `<option value="${t.id}" ${t.id === x.type ? "selected" : ""}>${esc(L(t.es, t.en))}</option>`).join("")}</select>
+        ${useButtons(x.name, x.type)}
+        <button class="icon-btn" data-a="del-sound" data-name="${esc(x.name)}" title="${esc(L("Borrar el sonido", "Delete the sound"))}">${icon("trash", 15)}</button></div>`).join("")
+        : `<p class="hint">${L("Aún no tienes samples propios. Sube archivos arriba o búscalos en «Buscar online».", "You don't have your own samples yet. Upload files above or find some in «Search online».")}</p>`}</div>`;
+  }
+  if (sm.tab === "online") {
+    html += `<p class="wz-help">${L("Busca en <b>Freesound</b>, la mayor biblioteca libre de sonidos (más de 600.000, con licencias Creative Commons). Lo que añadas se descarga a tu biblioteca y queda listo para Tidal.", "Search <b>Freesound</b>, the largest free sound library (over 600,000, under Creative Commons licenses). Whatever you add is downloaded to your library, ready for Tidal.")}</p>`;
+    if (!sm.keySet) {
+      html += `<div class="sm-key"><p>${L("Necesitas una <b>clave API gratuita</b>: crea una cuenta en Freesound y pide la clave en", "You need a <b>free API key</b>: create a Freesound account and request the key at")} <a href="https://freesound.org/apiv2/apply" target="_blank" rel="noopener">freesound.org/apiv2/apply</a>. ${L("Se guarda solo en tu <code>config.json</code>.", "It's stored only in your <code>config.json</code>.")}</p>
+        <form id="sm-key" class="row"><input name="key" type="password" placeholder="${L("Pega aquí tu clave", "Paste your key here")}" required style="flex:1"><button class="primary" type="submit">${L("Guardar clave", "Save key")}</button></form></div>`;
+    } else {
+      html += `<form id="sm-search" class="sm-search">
+        <input name="q" value="${esc(sm.q)}" placeholder="${L("p. ej. kick 909, vinyl crackle, rhodes chord…", "e.g. kick 909, vinyl crackle, rhodes chord…")}" required>
+        <select name="license"><option value="cc0" ${sm.license === "cc0" ? "selected" : ""}>${L("Solo CC0 (sin condiciones)", "CC0 only (no conditions)")}</option>
+          <option value="libre" ${sm.license === "libre" ? "selected" : ""}>${L("CC0 y atribución", "CC0 and attribution")}</option>
+          <option value="todas" ${sm.license === "todas" ? "selected" : ""}>${L("Todas (ojo: algunas no comerciales)", "All (careful: some non-commercial)")}</option></select>
+        <label class="toggle"><input type="checkbox" name="oneshot" ${sm.oneshot ? "checked" : ""}> ${L("Golpes cortos", "Short hits")}</label>
+        <button class="primary" type="submit">${icon("search", 14)} ${L("Buscar", "Search")}</button></form>
+        <div class="sm-quick">${["kick", "snare", "clap", "hihat", "808 bass", "vinyl", "rhodes", "vocal chop", "field recording"].map((q) => `<button data-a="quick" data-q="${q}">${q}</button>`).join("")}</div>`;
+      if (sm.results) {
+        html += sm.results.error ? `<p class="hint">Error: ${esc(sm.results.error)}</p>` : `<p class="hint">${sm.results.count} ${L("resultados", "results")}</p>
+          <div class="sm-list">${sm.results.results.map((r, i) => `<div class="sm-item">
+            <button class="icon-btn sm-play" data-a="hear-url" data-i="${i}">${icon("play", 14)}</button>
+            <span class="n">${esc(r.name)}<span class="d">${esc(r.author)} · ${r.duration}s · <span class="lic">${esc(r.license_name)}</span> · <a href="${esc(r.url)}" target="_blank" rel="noopener">freesound</a></span></span>
+            <input class="sm-name" data-i="${i}" value="${esc(suggestName(r))}" title="${esc(L("Nombre en Tidal", "Name in Tidal"))}">
+            <button data-a="fs-add" data-i="${i}">${icon("plus", 13)} ${L("A mi biblioteca", "To my library")}</button></div>`).join("")}</div>
+          <div class="row">${sm.page > 1 ? `<button data-a="page" data-d="-1">${icon("back", 13)} ${L("Anteriores", "Previous")}</button>` : ""}${sm.results.next ? `<button data-a="page" data-d="1">${L("Más resultados", "More results")} ${icon("arrow", 13)}</button>` : ""}</div>`;
+      }
+      html += `<p class="hint">${L("Las licencias CC BY piden citar al autor: Tidal Studio lo apunta solo en <code>samples/CREDITS.md</code>.", "CC BY licenses ask you to credit the author: Tidal Studio records it for you in <code>samples/CREDITS.md</code>.")}</p>`;
+    }
+  }
+  if (sm.tab === "packs") {
+    const P = (name, url, es, en, how) => `<div class="sm-pack"><b><a href="${url}" target="_blank" rel="noopener">${name}</a></b><p>${L(es, en)}</p>${how ? `<code>${esc(how)}</code>` : ""}</div>`;
+    html += `<p class="wz-help">${L("Colecciones que puedes usar como base de tus canciones. Las que están en GitHub se instalan copiando la carpeta en <code>samples/</code> (cada subcarpeta es un sonido).", "Collections you can use as a base for your songs. The ones on GitHub install by copying the folder into <code>samples/</code> (each subfolder is a sound).")}</p>
+      <div class="sm-packs">
+      ${P("Dirt-Samples", "https://github.com/tidalcycles/Dirt-Samples", "Ya instalado con SuperDirt: unas 200 carpetas (bd, sn, hh, arpy, amencutup…). Es la pestaña «Incluidos».", "Already installed with SuperDirt: about 200 folders (bd, sn, hh, arpy, amencutup…). It's the «Built-in» tab.")}
+      ${P("tidal-drum-machines", "https://github.com/geikha/tidal-drum-machines", "Más de 70 cajas de ritmos clásicas (808, 909, LinnDrum, DMX…) listas para SuperDirt. Tidal Studio las carga solas si las clonas aquí:", "Over 70 classic drum machines (808, 909, LinnDrum, DMX…) ready for SuperDirt. Tidal Studio loads them automatically if you clone them here:", "git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines")}
+      ${P("Freesound", "https://freesound.org", "La mayor biblioteca libre (Creative Commons). Integrada en «Buscar online».", "The largest free library (Creative Commons). Built into «Search online».")}
+      ${P("VCSL (Versilian Community Sample Library)", "https://github.com/sgossner/VCSL", "Instrumentos acústicos y orquestales con licencia CC0.", "Acoustic and orchestral instruments, CC0 licensed.")}
+      ${P("Sample packs de Strudel", "https://strudel.cc/learn/samples/", "Strudel (Tidal en el navegador) usa packs en GitHub con un índice strudel.json; muchos sirven también aquí copiando las carpetas.", "Strudel (Tidal in the browser) uses packs on GitHub with a strudel.json index; many also work here by copying the folders.")}
+      ${P("99Sounds", "https://99sounds.org", "Packs gratuitos de calidad (descarga manual, licencia libre de derechos).", "Quality free packs (manual download, royalty-free license).")}
+      </div>`;
+  }
+  body.innerHTML = html;
+}
+function suggestName(r) {
+  const base = (r.name || "").replace(/\.[a-z0-9]+$/i, "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+  const n = base.split("_").filter((w) => w.length > 1 && !/^\d+$/.test(w)).slice(0, 3).join("_").slice(0, 30) || "fs";
+  return /^\d/.test(n) ? "s" + n : n;
+}
+function useSample(name, type, mode) {
+  if (mode === "swap") {
+    const t = selectedTrack();
+    const [nm, v] = name.split(":");
+    const code = t && swapSound(t.code, nm, v ? +v : null);
+    if (!code) return toast(L("La pista seleccionada no tiene un s \"…\" que cambiar.", "The selected track has no s \"…\" to change."));
+    t.code = code; t.explain = null; changed(); if (live()) playTrack(t);
+    $("#samples").close();
+    return say(L(`He cambiado el sonido de ${t.id} a «${name}» sin tocar el ritmo. Fíjate: solo cambian las palabras dentro de s "…"; los ~, * y [ ] siguen igual. Así pruebas sonidos sin reescribir nada.`, `I changed ${t.id}'s sound to «${name}» without touching the rhythm. Notice: only the words inside s "…" change; the ~, * and [ ] stay the same. That way you try sounds without rewriting anything.`), state.options);
+  }
+  const t = addTrack(name, typeKind(type), starterCode(name, type));
+  if (!t) return;
+  $("#samples").close();
+  say(L(`Nueva pista ${t.id} con «${name}». En Tidal un sample se elige por su nombre de carpeta, y «:n» elige la variante (${name.split(":")[0]}:0, ${name.split(":")[0]}:1…).`, `New track ${t.id} with «${name}». In Tidal a sample is picked by its folder name, and «:n» picks the variant (${name.split(":")[0]}:0, ${name.split(":")[0]}:1…).`), state.options, { explicacion: explainLocal(t.code).partes });
+}
+function wireSamples() {
+  const body = $("#sm-body");
+  $("#samples").addEventListener("close", smStop);
+  body.addEventListener("click", async (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.tab) { smStop(); sm.tab = b.dataset.tab; sm.type = ""; return renderSamples(); }
+    if (b.dataset.type !== undefined && b.closest(".sm-types")) { sm.type = b.dataset.type; return renderSamples(); }
+    const a = b.dataset.a;
+    if (a === "var") { const n = b.dataset.name; sm.variant[n] = Math.max(0, (sm.variant[n] || 0) + +b.dataset.d); renderSamples(); return evalCode(`once $ s "${n}:${sm.variant[n]}"`); }
+    if (a === "hear-engine") {
+      const n = b.dataset.name;
+      if (server.engine && server.engine.simulation) toast(L("Estás en modo simulación: instala el motor para oír los sonidos incluidos.", "You're in simulation mode: install the engine to hear the built-in sounds."));
+      return evalCode(b.dataset.type === "synth" ? `once $ n "0 4 7" # s "${n}"` : `once $ s "${n}:${sm.variant[n] || 0}"`);
+    }
+    if (a === "hear-file") { smStop(); smAudio = new Audio(`/api/samples/file?name=${encodeURIComponent(b.dataset.name)}&i=${b.dataset.i}`); return smAudio.play().catch(() => {}); }
+    if (a === "hear-url") { smStop(); const r = sm.results.results[+b.dataset.i]; smAudio = new Audio(r.preview || r.preview_ogg); return smAudio.play().catch(() => {}); }
+    if (a === "use-new" || a === "use-swap") return useSample(b.dataset.name, b.dataset.type, a === "use-new" ? "new" : "swap");
+    if (a === "del-sound" || a === "del-file") {
+      if (a === "del-sound" && !window.confirm(L(`¿Borrar el sonido «${b.dataset.name}» y todos sus archivos?`, `Delete the sound «${b.dataset.name}» and all its files?`))) return;
+      try { sm.mine = await api("/api/samples/delete", { name: b.dataset.name, index: a === "del-file" ? +b.dataset.i : null }); } catch (err) { toast(err.message); }
+      return renderSamples();
+    }
+    if (a === "quick") { sm.q = b.dataset.q; sm.page = 1; return smSearch(); }
+    if (a === "page") { sm.page += +b.dataset.d; return smSearch(); }
+    if (a === "fs-add") {
+      const i = +b.dataset.i, r = sm.results.results[i];
+      const name = body.querySelector(`.sm-name[data-i="${i}"]`).value;
+      b.disabled = true; b.textContent = L("Descargando…", "Downloading…");
+      try {
+        const res = await api("/api/samples/add", { item: r, name, type: guessTypeFrom(sm.q + " " + r.name) });
+        sm.mine = null;
+        b.textContent = L(`Añadido: ${res.name}`, `Added: ${res.name}`);
+        say(L(`«${r.name}» de ${r.author} ya está en tu biblioteca como «${res.name}» (${r.license_name}). Úsalo con s "${res.name}".${res.loaded ? "" : " Se cargará la próxima vez que arranque el sonido."}`, `«${r.name}» by ${r.author} is now in your library as «${res.name}» (${r.license_name}). Use it with s "${res.name}".${res.loaded ? "" : " It will load the next time the sound engine starts."}`), state.options);
+      } catch (err) { b.disabled = false; b.textContent = "Error"; toast(err.message); }
+    }
+  });
+  body.addEventListener("change", async (e) => {
+    const sel = e.target.closest("select[data-a=set-type]");
+    if (sel) { sm.mine = await api("/api/samples/type", { name: sel.dataset.name, type: sel.value }); renderSamples(); }
+  });
+  body.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = e.target;
+    if (f.id === "sm-key") {
+      await api("/api/config", { samples: { freesound_key: f.key.value } }); sm.keySet = true; return renderSamples();
+    }
+    if (f.id === "sm-search") { sm.q = f.q.value; sm.license = f.license.value; sm.oneshot = f.oneshot.checked; sm.page = 1; return smSearch(); }
+    if (f.id === "sm-upload") {
+      const files = [...f.files.files];
+      if (!files.length) return toast(L("Elige al menos un archivo de audio.", "Choose at least one audio file."));
+      let last;
+      for (const file of files) {
+        const r = await fetch(`/api/samples/upload?name=${encodeURIComponent(f.name.value)}&type=${f.type.value}&filename=${encodeURIComponent(file.name)}`, { method: "POST", body: file });
+        last = await r.json().catch(() => ({}));
+        if (!r.ok) return toast(last.error || "Error");
+      }
+      sm.mine = null; await renderSamples();
+      say(L(`Subido: «${last.name}» con ${files.length} archivo(s). Pruébalo con s "${last.name}" o s "${last.name}:1" para la segunda variante.`, `Uploaded: «${last.name}» with ${files.length} file(s). Try it with s "${last.name}" or s "${last.name}:1" for the second variant.`), state.options);
+    }
+  });
+}
+function guessTypeFrom(t) {
+  t = t.toLowerCase();
+  const rules = [["bombo", /kick|bd\b|bassdrum/], ["caja", /snare|clap|rim/], ["platos", /hat|cymbal|crash|ride/], ["bajo", /bass|808/], ["voz", /vocal|voice|vox/],
+    ["pad", /pad|drone|ambien|field/], ["loop", /loop|break/], ["percusion", /perc|tom|conga|bongo|shaker/], ["melodico", /piano|rhodes|chord|synth|guitar|pluck|key/], ["fx", /fx|noise|vinyl|glitch|riser/]];
+  return (rules.find(([, re]) => re.test(t)) || ["otro"])[0];
+}
+async function smSearch() {
+  sm.results = { count: 0, results: [] };
+  $("#sm-body").querySelector(".sm-list")?.replaceChildren();
+  try { sm.results = await api("/api/samples/search", { query: sm.q, license: sm.license, oneshot: sm.oneshot, page: sm.page }); }
+  catch (e) { sm.results = { error: e.message }; }
+  renderSamples();
+}
+
 // ------------------------------------------------------------------ GitHub
 function projectPayload() {
   return { name: state.name || L("Canción sin título", "Untitled song"), bpm: state.bpm, style: state.style,
@@ -1427,6 +1622,8 @@ function init() {
   };
   $("#btn-save").onclick = async () => { await saveSettings(); $("#settings").close(); };
   $("#btn-gh").onclick = openGitHubSave;
+  $("#btn-samples").onclick = () => openSamples();
+  wireSamples();
   $("#btn-gh-test").onclick = async () => {
     const m = $("#gh-msg"); m.textContent = L("Probando…", "Testing…"); $("#btn-gh-create").hidden = true;
     try {

@@ -27,6 +27,16 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **Code palette**: 39 Tidal blocks organized by what you want to do (rhythm, sound, notes and harmony, effects, time and
   structure, chance) and by level (first steps, intermediate, advanced). Click one to apply it to the selected track;
   Maestro shows and explains the change, and you can undo it.
+- **Blocks view**: your song as nested visual blocks. Each track shows what transforms it (before the `$`), what it plays
+  (every step of the cycle as a box, with groups `[ ]`, alternations `< >`, rests `~` and repeats `*`) and its settings
+  (`#`). Click any block and Maestro tells you what it does.
+- **Sample library**: sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths).
+  Listen to them, use one on a new track, or put it on the selected track keeping the same rhythm. Upload your own files
+  (WAV, AIFF, FLAC, OGG) or **search Freesound** (free API key) filtering by license; downloads are ready for Tidal and
+  credits for CC BY sounds are written to `samples/CREDITS.md`. A Packs tab lists other free collections
+  (tidal-drum-machines, VCSL, Strudel packs…).
+- **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`, `README.md`),
+  browse the history and open any old version from My projects → GitHub.
 - **Your progress**: the code and music concepts you have already used.
 - **My projects**: your songs are saved automatically; open or delete them from the folder button.
 - **Components to add** and **code always visible and editable**.
@@ -60,6 +70,16 @@ Click options and hear the result live. The ones recommended for your style are 
 | Help: Maestro finds the problem and proposes the fix | Code palette by goal and level |
 |---|---|
 | ![Code help](docs/screenshots/code-help.png) | ![Code palette](docs/screenshots/code-palette.png) |
+
+### Blocks view and sample library
+
+| Your song as nested blocks | Sample library by type |
+|---|---|
+| ![Blocks view](docs/screenshots/blocks.png) | ![Sample library](docs/screenshots/sample-library.png) |
+
+| Search Freesound by license | GitHub: every save is a version |
+|---|---|
+| ![Search online](docs/screenshots/samples-online.png) | ![GitHub versions](docs/screenshots/github-versions.png) |
 
 ### Brainstorm
 
@@ -109,6 +129,24 @@ Your browser opens at <http://localhost:8765>. Then:
 Keys are stored only in `config.json`, on your computer (it is not committed to git). You can also use the
 `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variables.
 
+### Samples
+
+Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`, `s "name:1"` for the second file).
+SuperDirt loads them on start and reloads them when you add or delete something. For Freesound, get a free API key at
+[freesound.org/apiv2/apply](https://freesound.org/apiv2/apply) and paste it in the library (Search online tab). Tidal
+Studio downloads Freesound's high-quality OGG preview, which SuperCollider reads directly.
+
+Optional drum machines: `git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines`
+(loaded automatically on the next start).
+
+### GitHub
+
+Open ⚙ Settings → GitHub. Create a **fine-grained token** on GitHub (Settings → Developer settings → Personal access
+tokens) with access to your songs repository and the permission **Contents: Read and write**. Type the repository as
+`user/name`; if it doesn't exist yet, «Create private repository» makes it (that needs a token with permission to create
+repositories). Then use the cloud button in the top bar to save a version with a message. The token is stored only in
+`config.json`.
+
 ## How it works
 
 ```
@@ -126,6 +164,7 @@ Keys are stored only in `config.json`, on your computer (it is not committed to 
 - `web/explain.js`: offline code explainer. `web/suggest.js`: offline producer ideas and progress concepts.
 - `web/flavors.js`: style recipes (jazz, Latin, techno, lo-fi, ambient).
 - `web/doctor.js`: offline code checks and fixes for the Help panel (`/api/fix` with AI). `web/palette.js`: code palette blocks.
+- `web/blocks.js`: blocks view. `web/samples.js` + `server/samples.py`: sample library and Freesound. `server/github.py`: GitHub versions.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).

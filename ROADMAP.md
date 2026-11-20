@@ -31,6 +31,8 @@ How it would work:
 - Song sections timeline: arrange `mask` patterns visually across bars.
 - Export: record the song to audio (SuperCollider recording) and export the `.tidal` file.
 - Shareable song links (code + BPM encoded in the URL).
+- Samples: waveform view and trimming; drag a sample from the library onto a block in the Blocks view.
+- Blocks view: edit by dragging (reorder steps, drop a setting onto a sound).
 
 ## Done
 
@@ -38,3 +40,6 @@ How it would work:
 - English/Spanish interface; Maestro replies in the chosen language.
 - Code help: per-track «Help» with offline checks and AI fixes, before/after and revert to the last version that worked.
 - Code palette: blocks organized by goal (rhythm, sound, notes, effects, time, chance) and level, with undo.
+- Blocks view: the song as nested blocks (tracks, transforms, steps of the cycle, settings), click to explain.
+- Sample library: built-in sounds by type, your own uploads, Freesound search with license filter and automatic credits, packs.
+- GitHub: save each version as a commit, browse history, open old versions.

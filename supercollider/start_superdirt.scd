@@ -15,6 +15,13 @@ if(\SuperDirt.asClass.isNil) {
             ~dirt.free;
             ~dirt = SuperDirt(2, s);
             ~dirt.loadSoundFiles;
+            // Tu biblioteca de Tidal Studio: cada carpeta de samples/ es un sonido
+            ~studioSamples = PathName(thisProcess.nowExecutingPath).pathOnly +/+ ".." +/+ "samples";
+            if(File.exists(~studioSamples)) { ~dirt.loadSoundFiles(~studioSamples +/+ "*") };
+            // Pack opcional de cajas de ritmos (git clone en samples/packs/tidal-drum-machines)
+            if(File.exists(~studioSamples +/+ "packs/tidal-drum-machines/machines")) {
+                ~dirt.loadSoundFiles(~studioSamples +/+ "packs/tidal-drum-machines/machines/*/*")
+            };
             s.sync;
             ~dirt.start(57120, 0 ! 12);   // 12 "orbits": una por pista d1..d12
             "SuperDirt listo para Tidal Studio".postln;

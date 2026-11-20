@@ -16,7 +16,7 @@ import sys
 import threading
 import webbrowser
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -25,6 +25,7 @@ from llm import chat_completion, LLMError  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 import github  # noqa: E402
+from samples import Library, SampleError, safe_name, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
@@ -48,6 +49,10 @@ DEFAULT_CONFIG = {
         "branch": "main",
         "folder": "songs",
         "api_url": "https://api.github.com",
+    },
+    "samples": {
+        "freesound_key": "",       # clave API gratuita de freesound.org/apiv2/apply
+        "freesound_api": "https://freesound.org/apiv2",
     },
     "temperature": 0.7,
     "language": "es",
@@ -96,6 +101,8 @@ def public_config(cfg):
         out[p]["api_key"] = mask(cfg[p]["api_key"])
     out["github"]["token_set"] = bool(cfg["github"]["token"])
     out["github"]["token"] = mask(cfg["github"]["token"])
+    out["samples"]["freesound_key_set"] = bool(cfg["samples"]["freesound_key"])
+    out["samples"]["freesound_key"] = mask(cfg["samples"]["freesound_key"])
     return out
 
 
@@ -108,6 +115,7 @@ def llm_configured(cfg):
 
 
 ENGINE = Engine(ROOT)
+LIBRARY = Library(ROOT)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -162,6 +170,24 @@ class Handler(SimpleHTTPRequestHandler):
                 })
             if path == "/api/config":
                 return self._json(public_config(load_config()))
+            if path == "/api/samples":
+                return self._json(LIBRARY.list())
+            if path == "/api/samples/file":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    fp = LIBRARY.file_path(q.get("name", [""])[0], int(q.get("i", ["0"])[0]))
+                except (SampleError, ValueError) as e:
+                    return self._json({"error": str(e)}, 404)
+                ext = os.path.splitext(fp)[1].lower()
+                ctype = {".wav": "audio/wav", ".ogg": "audio/ogg", ".flac": "audio/flac"}.get(ext, "audio/aiff")
+                with open(fp, "rb") as f:
+                    body = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", ctype)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path == "/api/log":
                 return self._json({"log": ENGINE.log_tail(200)})
             return self._json({"error": "Ruta no encontrada"}, 404)
@@ -171,6 +197,18 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if not self._local_only():
             return
+        if path == "/api/samples/upload":
+            q = parse_qs(urlparse(self.path).query)
+            length = int(self.headers.get("Content-Length") or 0)
+            if length > 30 * 1024 * 1024:
+                return self._json({"error": "El archivo es demasiado grande (máx. 30 MB)"}, 413)
+            try:
+                r = LIBRARY.add_file(q.get("name", [""])[0], q.get("filename", ["sample.wav"])[0], self.rfile.read(length),
+                                     q.get("type", [None])[0] if q.get("type", [""])[0] in SAMPLE_TYPES else None)
+            except SampleError as e:
+                return self._json({"error": str(e)}, 400)
+            r["loaded"] = ENGINE.reload_sample(os.path.join(LIBRARY.dir, r["name"]), r["name"])
+            return self._json(r)
         data = self._body()
         try:
             if path == "/api/config":
@@ -183,6 +221,11 @@ class Handler(SimpleHTTPRequestHandler):
                             continue  # no sobrescribir con la versión enmascarada
                         if k in cfg[p]:
                             cfg[p][k] = v.strip() if isinstance(v, str) else v
+                for k, v in (data.get("samples") or {}).items():
+                    if k == "freesound_key" and (v is None or "…" in v or v == "••••"):
+                        continue
+                    if k in cfg["samples"] and isinstance(v, str):
+                        cfg["samples"][k] = v.strip()
                 for k, v in (data.get("github") or {}).items():
                     if k == "token" and (v is None or "…" in v or v == "••••"):
                         continue
@@ -230,6 +273,34 @@ class Handler(SimpleHTTPRequestHandler):
                 system, messages = build_brainstorm(data.get("answers"), nxt, data.get("session"))
                 raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=600 if nxt else 2500)
                 return self._json(parse_brainstorm(raw, final=not nxt))
+
+            if path.startswith("/api/samples/"):
+                cfg = load_config()
+                act = path[len("/api/samples/"):]
+                sc = cfg["samples"]
+                try:
+                    if act == "type":
+                        LIBRARY.set_type(data.get("name"), data.get("type"))
+                        return self._json(LIBRARY.list())
+                    if act == "delete":
+                        LIBRARY.delete(data.get("name"), data.get("index"))
+                        name = data.get("name", "")
+                        if data.get("index") is not None:
+                            ENGINE.reload_sample(os.path.join(LIBRARY.dir, name), name)
+                        else:
+                            ENGINE.sc_eval(f"~dirt.freeSoundFiles([\\{safe_name(name)}]);")
+                        return self._json(LIBRARY.list())
+                    if act == "search":
+                        return self._json(LIBRARY.freesound_search(sc["freesound_key"], data.get("query", ""), data.get("license", "libre"),
+                                                                   data.get("oneshot", True), int(data.get("page") or 1), sc["freesound_api"]))
+                    if act == "add":
+                        r = LIBRARY.freesound_add(sc["freesound_key"], data.get("item") or {}, data.get("name"),
+                                                  data.get("type") if data.get("type") in SAMPLE_TYPES else None, sc["freesound_api"])
+                        r["loaded"] = ENGINE.reload_sample(os.path.join(LIBRARY.dir, r["name"]), r["name"])
+                        return self._json(r)
+                except SampleError as e:
+                    return self._json({"error": str(e)}, 400)
+                return self._json({"error": "Ruta no encontrada"}, 404)
 
             if path.startswith("/api/github/"):
                 cfg = load_config()
