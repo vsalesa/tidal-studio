@@ -80,6 +80,29 @@ if(\FM7.asClass.isNil) {
     }).add;
 };
 
+// Lo básico: ondas sencillas con nombre fácil (n = nota, como cualquier sinte).
+//   s "sawtooth" / "saw"   diente de sierra      s "square"            cuadrada
+//   s "triangle" / "tri"   triangular            s "pulse"             pulso estrecho (voice = anchura)
+//   s "sinewave"           seno puro ("sine" ya es un sample de Dirt-Samples)
+// Parámetros extra: voice, attack, release; y los de siempre (lpf, room, gain…).
+[
+    [\sawtooth, { |f, v| Saw.ar(f * [1, 1.004]).sum * 0.5 }],
+    [\saw,      { |f, v| Saw.ar(f * [1, 1.004]).sum * 0.5 }],
+    [\square,   { |f, v| Pulse.ar(f, 0.5) * 0.6 }],
+    [\triangle, { |f, v| LFTri.ar(f) * 0.8 }],
+    [\tri,      { |f, v| LFTri.ar(f) * 0.8 }],
+    [\pulse,    { |f, v| Pulse.ar(f, v.clip(0.05, 0.95)) * 0.6 }],
+    [\sinewave, { |f, v| SinOsc.ar(f) * 0.8 }]
+].do { |def|
+    SynthDef(def[0], { |out, sustain=1, pan, freq=440, accelerate=0, speed=1, voice=0.25, attack=0.005, release=0.05|
+        var f = freq * DirtFreqScale.kr(speed, accelerate, sustain);
+        var env = EnvGen.ar(Env([0, 1, 1, 0], [attack, (sustain - attack).max(0.001), release], -2), doneAction: 2);
+        var sound = LeakDC.ar(def[1].value(f, voice)) * 0.35;
+        Out.ar(out, DirtPan.ar(sound, ~dirt.numChannels, pan, env));
+    }).add;
+};
+"Tidal Studio: sintes básicos listos (sawtooth, saw, square, triangle, tri, pulse, sinewave).".postln;
+
 // Trompeta: dientes de sierra con filtro que se abre al soplar, subida de afinación al atacar y vibrato tardío.
 // Úsala como cualquier sinte:  n "c5 e5 g5" # s "supertrumpet"   (extra: velocity, vibrato, muffle)
 SynthDef(\supertrumpet, { |out, sustain=1, pan, freq=440, accelerate=0, speed=1, velocity=1, vibrato=0.5, vrate=5.5, muffle=1|
