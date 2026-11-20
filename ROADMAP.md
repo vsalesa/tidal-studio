@@ -27,6 +27,7 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
   (sound, recording, sample reloading in SuperDirt).
 - Test Freesound search with a real API key.
 - Blocks view: edit by dragging (reorder steps, drop a setting onto a sound, drag a sample from the library onto a block).
+- Mixer: level meters per track (needs an RMS reply from SuperDirt).
 
 ## Done
 
@@ -35,6 +36,10 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 - Code help: per-track «Help» with offline checks and AI fixes, before/after and revert to the last version that worked.
 - Code palette: blocks organized by goal (rhythm, sound, notes, effects, time, chance) and level, with undo.
 - Blocks view: the song as nested blocks (tracks, transforms, steps of the cycle, settings), click to explain.
+- Blocks view editing: tooltip on the selected block to change steps, mini-notation, settings, transformation numbers, tempo.
+- Configurator card in Maestro's chat (any track or the whole song), always on the current version.
+- Mix tab: volume in dB and 3-band EQ per track and master (`# amp`, `# eqlow/eqmid/eqhigh`, studio_eq SuperDirt module), mute, solo.
+- Undo/redo and song history (rollback); clear Maestro's chat.
 - Sample library: built-in sounds by type, your own uploads, Freesound search with license filter and automatic credits, packs.
 - GitHub: save each version as a commit, browse history, open old versions.
 - Online packs: browse, listen to and install sounds from community packs with a strudel.json index (Tidal Drum Machines, Uzu, VCSL, Salamander piano, SP-12, mridangam, or any github:user/repo).

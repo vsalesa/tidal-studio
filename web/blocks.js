@@ -2,7 +2,7 @@ import { L } from "./i18n.js";
 import { FUNCS, PARAMS, SOUNDS } from "./explain.js";
 // Vista de bloques: la canción como un árbol visual.
 //   Canción → pistas → transformaciones (lo que va antes de $, anidado) → sonido (con sus pasos) + ajustes (#)
-// Solo lee el código; no lo cambia.
+// Cada bloque lleva data-key (ver edit.js): al pulsarlo se abre un tooltip para editarlo.
 
 const OPEN = "([{<", CLOSE = ")]}>";
 
@@ -75,8 +75,13 @@ export function parsePattern(code) {
 function parseSource(text) {
   const m = text.match(/^(s|sound|n|note|up)\s+"([^"]*)"\s*$/);
   if (m) return { fn: m[1], pattern: m[2], raw: text };
-  const q = text.match(/^([a-zA-Z]+)\b.*?"([^"]*)"/);
-  return { fn: q ? q[1] : "", pattern: q ? q[2] : null, raw: text, complex: true };
+  // Patrón complejo: usamos la primera cadena entre comillas que no sea el nombre de una escala o arpegio
+  const fn = (text.match(/^\(?([a-zA-Z]+)\b/) || [])[1] || "";
+  for (const q of text.matchAll(/"([^"]*)"/g)) {
+    if (/\b(scale|toScale|arp|arpeggiate|vowel)\s*$/.test(text.slice(0, q.index))) continue;
+    return { fn, pattern: q[1], raw: text, complex: true, patStart: q.index, patEnd: q.index + q[0].length };
+  }
+  return { fn, pattern: null, raw: text, complex: true };
 }
 function parseParam({ op, text }) {
   const m = text.match(/^([a-zA-Z]\w*)\s*(.*)$/);
@@ -108,42 +113,44 @@ export function explainWord(w) {
 }
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
-function stepHTML(tok, depth = 0) {
-  if (tok === "~") return `<span class="bk-step rest" data-x="~">·</span>`;
+function stepHTML(tok, P, sp) {
+  const k = `data-key="${esc(P)}|st${sp}"`;
+  if (tok === "~") return `<span class="bk-step rest" data-x="~" ${k}>·</span>`;
   const sub = tok.match(/^\[(.*)\](.*)$/);
-  if (sub) return `<span class="bk-step group" data-x="${esc(tok)}">${miniSteps(sub[1]).map((t) => stepHTML(t, depth + 1)).join("")}${sub[2] ? `<b class="bk-badge">${esc(sub[2])}</b>` : ""}</span>`;
+  if (sub) return `<span class="bk-step group" data-x="${esc(tok)}" ${k}>${miniSteps(sub[1]).map((t, i) => stepHTML(t, P, `${sp}.${i}`)).join("")}${sub[2] ? `<b class="bk-badge">${esc(sub[2])}</b>` : ""}</span>`;
   const alt = tok.match(/^<(.*)>(.*)$/);
-  if (alt) return `<span class="bk-step alt" data-x="${esc(tok)}">${miniSteps(alt[1]).map((t) => `<span class="alt-i">${esc(t)}</span>`).join("")}${alt[2] ? `<b class="bk-badge">${esc(alt[2])}</b>` : ""}</span>`;
+  if (alt) return `<span class="bk-step alt" data-x="${esc(tok)}" ${k}>${miniSteps(alt[1]).map((t) => `<span class="alt-i">${esc(t)}</span>`).join("")}${alt[2] ? `<b class="bk-badge">${esc(alt[2])}</b>` : ""}</span>`;
   const m = tok.match(/^([^*/!?(@]+)(.*)$/);
   const name = m ? m[1] : tok, mod = m ? m[2] : "";
-  return `<span class="bk-step" data-x="${esc(tok)}"><span class="nm">${esc(name)}</span>${mod ? `<b class="bk-badge">${esc(mod.replace(/^\*/, "×"))}</b>` : ""}</span>`;
+  return `<span class="bk-step" data-x="${esc(tok)}" ${k}><span class="nm">${esc(name)}</span>${mod ? `<b class="bk-badge">${esc(mod.replace(/^\*/, "×"))}</b>` : ""}</span>`;
 }
 
 const SRC_LABEL = () => ({ s: L("sonido", "sound"), sound: L("sonido", "sound"), n: L("notas", "notes"), note: L("notas", "notes"), up: L("notas", "notes") });
 
-function nodeHTML(node) {
+function nodeHTML(node, path = []) {
+  const P = path.join(".");
   if (node.type === "wrap") {
-    return `<div class="bk-wrap" data-x="${esc(node.code)}" data-w="${esc(node.fn)}">
+    return `<div class="bk-wrap" data-x="${esc(node.code)}" data-w="${esc(node.fn)}" data-key="${esc(P)}|w">
       <div class="bk-label"><span class="bk-kind">${L("transforma", "transforms")}</span><code>${esc(node.code)}</code><span class="bk-dollar">$</span></div>
-      <div class="bk-inner">${nodeHTML(node.child)}</div></div>`;
+      <div class="bk-inner">${nodeHTML(node.child, [...path, "c"])}</div></div>`;
   }
   if (node.type === "stack") {
     return `<div class="bk-wrap stack" data-x="stack" data-w="stack"><div class="bk-label"><span class="bk-kind">${L("a la vez", "at once")}</span><code>stack [ … ]</code></div>
-      <div class="bk-inner">${node.children.map(nodeHTML).join("")}</div></div>`;
+      <div class="bk-inner">${node.children.map((c, i) => nodeHTML(c, [...path, String(i)])).join("")}</div></div>`;
   }
   const lbl = SRC_LABEL()[node.fn] || node.fn || L("patrón", "pattern");
   const steps = node.pattern != null ? miniSteps(node.pattern) : [];
   return `<div class="bk-sound">
-    <div class="bk-src" data-x="${esc(node.raw)}" data-w="${esc(node.fn)}">
+    <div class="bk-src" data-x="${esc(node.raw)}" data-w="${esc(node.fn)}" data-key="${esc(P)}|src">
       <div class="bk-label"><span class="bk-kind">${esc(lbl)}</span><code>${esc(node.complex ? node.raw : `${node.fn} "${node.pattern}"`)}</code></div>
-      ${steps.length ? `<div class="bk-steps" title="${esc(L("Cada casilla ocupa la misma parte del ciclo", "Each box takes the same share of the cycle"))}">${steps.map((t) => stepHTML(t)).join("")}</div>` : ""}
+      ${steps.length ? `<div class="bk-steps" title="${esc(L("Cada casilla ocupa la misma parte del ciclo", "Each box takes the same share of the cycle"))}">${steps.map((t, i) => stepHTML(t, P, String(i))).join("")}</div>` : ""}
     </div>
-    ${node.params.length ? `<div class="bk-params">${node.params.map((p) =>
-      `<span class="bk-param" data-x="${esc(p.raw)}" data-w="${esc(p.name)}"><span class="op">${esc(p.op)}</span> ${esc(p.name)} <b>${esc(p.value)}</b></span>`).join("")}</div>` : ""}
+    ${node.params.length ? `<div class="bk-params">${node.params.map((p, i) =>
+      `<span class="bk-param" data-x="${esc(p.raw)}" data-w="${esc(p.name)}" data-key="${esc(P)}|p${i}"><span class="op">${esc(p.op)}</span> ${esc(p.name)} <b>${esc(p.value)}</b></span>`).join("")}</div>` : ""}
   </div>`;
 }
 
-export function songBlocksHTML(state, { icon, kindColor, kindName }) {
+export function songBlocksHTML(state, { icon, uiIcon = icon, kindColor, kindName }) {
   const tracks = state.tracks || [];
   if (!tracks.length) return `<p class="hint">${L("Cuando añadas pistas, aquí verás tu canción montada en bloques.", "Once you add tracks, you'll see your song built out of blocks here.")}</p>`;
   const kinds = {};
@@ -160,7 +167,10 @@ export function songBlocksHTML(state, { icon, kindColor, kindName }) {
       return `<section class="bk-track ${t.muted ? "muted" : ""} ${t.id === state.selected ? "selected" : ""}" data-id="${esc(t.id)}" style="--k:${kindColor(t.kind)}">
         <header><span class="kico">${icon(t.kind, 16)}</span><code class="id">${esc(t.id)}</code><strong>${esc(t.name)}</strong>
           <span class="hint">${esc(kindName(t.kind))}${t.muted ? " · " + L("silenciada", "muted") : ""}</span>
-          <button class="icon-btn" data-a="edit" title="${esc(L("Editar esta pista", "Edit this track"))}">${icon("code", 15)}</button></header>
+          <span class="bk-acts">
+            <button class="icon-btn" data-a="root" data-key="|root" title="${esc(L("Añadir una transformación o configurar la pista", "Add a transformation or configure the track"))}">${uiIcon("plus", 15)}</button>
+            <button class="icon-btn" data-a="card" title="${esc(L("Abrir su tarjeta configuradora en Maestro", "Open its configurator card in Maestro"))}">${uiIcon("sliders", 15)}</button>
+            <button class="icon-btn" data-a="edit" title="${esc(L("Editar esta pista como código", "Edit this track as code"))}">${uiIcon("code", 15)}</button></span></header>
         ${nodeHTML(tree)}
       </section>`;
     }).join("")}</div>

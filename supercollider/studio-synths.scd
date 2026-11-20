@@ -141,4 +141,19 @@ try {
         } { ("Tidal Studio: no encuentro " ++ extra).postln };
     };
 } { |err| ("Tidal Studio ERROR cargando sintes extra: " ++ err.errorString).postln };
+
+// 4) Ecualizador de 3 bandas para la mesa de mezcla (pestaña «Mezcla» de Tidal Studio).
+//    En Tidal:  # eqlow 3 # eqmid -2 # eqhigh 1   (dB; BootTidal.hs define eqlow, eqmid, eqhigh)
+//    Graves: estante a 200 Hz · Medios: campana a 1 kHz · Agudos: estante a 4 kHz. Solo filtros de serie (sin plugins).
+//    Va como módulo de SuperDirt: se aplica a cada nota de la pista, antes del volumen final.
+try {
+~dirt.addFilterModule(\studio_eq, { |out, eqlow = 0, eqmid = 0, eqhigh = 0|
+    var sig = In.ar(out, ~dirt.numChannels);
+    sig = BLowShelf.ar(sig, 200, 1, eqlow.clip(-24, 24));
+    sig = BPeakEQ.ar(sig, 1000, 1, eqmid.clip(-24, 24));
+    sig = BHiShelf.ar(sig, 4000, 1, eqhigh.clip(-24, 24));
+    ReplaceOut.ar(out, sig);
+}, { ~eqlow.notNil or: { ~eqmid.notNil } or: { ~eqhigh.notNil } });
+"Tidal Studio: ecualizador studio_eq listo.".postln;
+} { |err| ("Tidal Studio ERROR cargando el ecualizador: " ++ err.errorString).postln };
 )

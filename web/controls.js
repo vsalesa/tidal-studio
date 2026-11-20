@@ -1,5 +1,6 @@
 import { L } from "./i18n.js";
 import { BUILTIN, swapSound, guessType } from "./samples.js";
+import { cardHTML, isSongCard } from "./card.js";
 // Controles visuales dentro del chat de Maestro ("agentic UI"):
 // deslizadores, BPM, selectores y un secuenciador por pasos que ESCRIBEN el código Tidal mientras los mueves,
 // para que veas qué palabra cambia y aprendas qué hace.
@@ -121,6 +122,7 @@ export function normalizeControls(list, tracks) {
   for (const c of list || []) {
     if (!c || typeof c !== "object") continue;
     if (c.tipo === "mezcla") { out.push({ tipo: "mezcla" }); continue; }
+    if (c.tipo === "tarjeta") { if (isSongCard(c) || ids.has(c.pista)) out.push({ tipo: "tarjeta", pista: isSongCard(c) ? "cancion" : c.pista, foco: typeof c.foco === "string" ? c.foco.slice(0, 30) : "" }); continue; }
     if (c.tipo === "bpm") { out.push({ tipo: "bpm", min: clamp(c.min ?? 60, 40, 200), max: clamp(c.max ?? 180, 60, 220), etiqueta: c.etiqueta || "" }); continue; }
     if (!ids.has(c.pista)) continue;
     if (c.tipo === "deslizador" && PARAMS[c.param]) {
@@ -179,7 +181,9 @@ export const fromPos = (c, p) => (PARAMS[c.param]?.log ? c.min * Math.pow(c.max 
 export function controlsHTML(ctrls, state, mi) {
   const tr = (id) => state.tracks.find((t) => t.id === id);
   const rows = ctrls.map((c, ci) => {
+    if (c.tipo === "tarjeta" && isSongCard(c)) return cardHTML(c, null, state, ci);
     const t = c.pista ? tr(c.pista) : null;
+    if (c.tipo === "tarjeta" && t) return cardHTML(c, t, state, ci);
     if (c.pista && !t) return `<div class="ctl off">${L(`La pista ${esc(c.pista)} ya no existe.`, `Track ${esc(c.pista)} no longer exists.`)}</div>`;
     const tag = t ? `<span class="ctl-trk">${esc(t.id)}</span>` : "";
     if (c.tipo === "bpm") {

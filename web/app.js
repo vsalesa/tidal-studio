@@ -11,6 +11,10 @@ import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
 import { songBlocksHTML, blockInfo } from "./blocks.js";
+import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange } from "./edit.js";
+import { mixerHTML, mixCodeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
+import { cardCode, cardFromPos } from "./card.js";
+import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory } from "./history.js";
 import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
@@ -62,6 +66,8 @@ function save() {
       localStorage.setItem(PROJ_KEY, JSON.stringify(list.slice(0, 30)));
     }
   } catch { /* sin almacenamiento */ }
+  record(state, renderHistoryButtons);
+  renderHistoryButtons();
 }
 const PROJ_KEY = "tidal-studio-projects-v1";
 function listProjects() {
@@ -85,8 +91,11 @@ const cps = (bpm) => `setcps (${bpm}/60/4)`;
 function buildCode() {
   const lines = [`-- Tidal Studio · ${state.bpm} BPM${state.style ? " · " + STYLES[state.style].nombre : ""}`,
                  cps(state.bpm), ""];
+  const M = state.master || {};
+  if (M.vol || M.low || M.mid || M.high) lines.push(L(`-- Master: ${dbText(M.vol || 0)} · EQ graves ${M.low || 0} / medios ${M.mid || 0} / agudos ${M.high || 0} dB (ya sumado en cada pista)`, `-- Master: ${dbText(M.vol || 0)} · EQ lows ${M.low || 0} / mids ${M.mid || 0} / highs ${M.high || 0} dB (already added to each track)`), "");
   for (const t of state.tracks) {
-    const body = `${t.id} $ ${t.code}`;
+    const ml = mixLine(t, state);
+    const body = `${t.id} $ ${t.code}${ml ? "\n" + ml : ""}`;
     if (t.muted) {
       lines.push(`-- [silenciada] ${t.name} · ${t.kind}`);
       lines.push(body.split("\n").map((l) => "-- " + l).join("\n"));
@@ -113,8 +122,13 @@ function parseCode(text) {
       if (muted && l.startsWith("-- ")) codeLines.push(l.slice(3));
       else if (!l.trim().startsWith("--")) codeLines.push(l);
     }
-    const tm = codeLines.join("\n").match(/^\s*(d\d+)\s*\$\s*([\s\S]+)$/);
-    if (tm) out.tracks.push({ id: tm[1], name: name || tm[1], kind, code: tm[2].trim(), muted });
+    let mix = null;
+    const plain = codeLines.filter((l) => { const m = parseMixLine(l, state); if (m) mix = m; return !m; });
+    const tm = plain.join("\n").match(/^\s*(d\d+)\s*\$\s*([\s\S]+)$/);
+    if (tm) {
+      const old = state.tracks.find((x) => x.id === tm[1]);
+      out.tracks.push({ id: tm[1], name: name || tm[1], kind, code: tm[2].trim(), muted, mix, ...(old && old.solo ? { solo: true } : {}) });
+    }
   }
   return out;
 }
@@ -139,7 +153,8 @@ async function evalCode(code, track) {
     renderTracks();
   }
 }
-const trackLine = (t) => (t.muted ? `${t.id} silence` : `${t.id} $ ${t.code}`);
+// La mezcla (volumen y ecualizador) se añade al final al hacer sonar la pista; silenciada o fuera del solo = silence
+const trackLine = (t) => { if (!audible(t, state)) return `${t.id} silence`; const mx = mixSuffix(t, state); return `${t.id} $ ${t.code}${mx ? " " + mx : ""}`; };
 const playTrack = (t) => evalCode(trackLine(t), t);
 const silenceId = (id) => evalCode(`${id} silence`);
 const playAll = () => evalCode([cps(state.bpm), ...state.tracks.map(trackLine)].join("\n\n"));
@@ -208,6 +223,8 @@ function changed() {
   renderPalette();
   renderBlocks();
   renderArrange();
+  renderMixer();
+  refreshCards();
   if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
 }
 
@@ -258,8 +275,258 @@ function wireArrange() {
 }
 function renderBlocks() {
   if (!$("#tab-blocks").classList.contains("active")) return;
-  $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n),
+  $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n), uiIcon: icon,
     kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)", kindName: (k) => CATEGORIES.find((c) => c.id === k)?.nombre || k });
+  if (bkSel) { const el = bkFind(bkSel); if (el) { el.classList.add("on"); if (!bkSel.keep) bkOpen(el); else bkPlace(el); } else bkClose(); }
+}
+
+// ------------------------------------------------------------------ bloques: tooltip para ver y editar cada bloque
+let bkSel = null;     // { id, key } del bloque seleccionado
+let bkTimer = null;
+const bkFind = (sel) => sel.key === "bpm" ? $("#blocks .bk-tag") : document.querySelector(`#blocks .bk-track[data-id="${sel.id}"] [data-key="${CSS.escape(sel.key)}"]`);
+function bkClose() { bkSel = null; $("#bk-pop").hidden = true; document.querySelectorAll("#blocks .on").forEach((x) => x.classList.remove("on")); }
+function bkPlace(el) {
+  const pop = $("#bk-pop"), pane = $("#tab-blocks");
+  const r = el.getBoundingClientRect(), pr = pane.getBoundingClientRect();
+  const w = Math.min(360, pr.width - 16);
+  pop.style.width = w + "px";
+  pop.style.left = Math.max(8, Math.min(r.left - pr.left, pr.width - w - 8)) + "px";
+  pop.style.top = (r.bottom - pr.top + 8) + "px";
+  pop.style.setProperty("--arrow", Math.max(14, Math.min(w - 20, r.left - pr.left + Math.min(r.width, 60) / 2 - parseFloat(pop.style.left))) + "px");
+}
+const stepBtn = (a, label, title) => `<button data-bk="${a}" title="${esc(title)}">${label}</button>`;
+function bkEditorHTML(t, part) {
+  if (!part) return "";
+  if (part.kind === "step") return `<div class="bk-ed"><label>${L("Paso", "Step")}<input type="text" data-bk-in="set" value="${esc(part.text)}" spellcheck="false"></label>
+    <div class="bk-btns">${stepBtn("rest", "~", L("Convertir en silencio", "Turn into a rest"))}${stepBtn("x2", "×2", L("Que suene el doble de veces en su hueco", "Play twice as many times in its slot"))}${stepBtn("split", "[ ]", L("Partir en dos golpes", "Split into two hits"))}${stepBtn("maybe", "?", L("Que a veces no suene", "Sometimes skip it"))}${stepBtn("after", "+", L("Añadir un paso detrás (copia)", "Add a step after it (copy)"))}${stepBtn("del", icon("trash", 14), L("Borrar este paso", "Delete this step"))}</div></div>`;
+  if (part.kind === "src" || part.kind === "raw") return `<div class="bk-ed"><label>${part.kind === "src" ? L("Mini-notación (entre comillas)", "Mini-notation (inside the quotes)") : L("Patrón", "Pattern")}<input type="text" data-bk-in="set" value="${esc(part.text)}" spellcheck="false"></label>
+    <div class="bk-btns">${part.kind === "src" ? stepBtn("addstep", L("+ paso", "+ step"), L("Añadir un silencio al final", "Add a rest at the end")) : ""}
+    <select data-bk-sel="addparam"><option value="">${L("+ ajuste #…", "+ setting #…")}</option>${ADD_PARAMS.filter((p) => !(part.params || []).includes(p)).map((p) => `<option value="${p}">${p} · ${esc(L(CTL_PARAMS[p].es, CTL_PARAMS[p].en))}</option>`).join("")}</select></div></div>`;
+  if (part.kind === "param") {
+    const r = part.range;
+    const sl = r ? `<div class="ctl-row"><input type="range" data-bk-range="set" min="${r.log ? 0 : r.min}" max="${r.log ? 1000 : r.max}" step="${r.log ? 1 : r.step}" value="${r.log ? Math.round(1000 * Math.log(Math.max(part.value, r.min || 1) / (r.min || 1)) / Math.log(r.max / (r.min || 1))) : part.value}" ${r.log ? `data-log="${r.min}|${r.max}"` : ""}><output>${esc(part.text)}</output></div>` : "";
+    return `<div class="bk-ed">${sl}<label>${L("Valor", "Value")}<input type="text" data-bk-in="set" value="${esc(part.text)}" spellcheck="false"></label>
+      <div class="bk-btns">${stepBtn("del", icon("trash", 14) + " " + L("Quitar ajuste", "Remove setting"), L("Quitar este ajuste", "Remove this setting"))}</div></div>`;
+  }
+  if (part.kind === "wrap") return `<div class="bk-ed"><label>${L("Transformación", "Transformation")}<input type="text" data-bk-in="set" value="${esc(part.text)}" spellcheck="false"></label>
+    ${part.nums.map((n) => `<div class="card-num"><span>${esc(n.fn)}</span><div class="ctl-row"><input type="range" data-bk-range="${esc(n.key)}" min="${n.min}" max="${n.max}" step="${n.step}" value="${n.value}"><output>${fmt(n.value)}</output></div></div>`).join("")}
+    <div class="bk-btns">${stepBtn("del", icon("trash", 14) + " " + L("Quitar transformación", "Remove transformation"), L("Quitar esta transformación", "Remove this transformation"))}</div></div>`;
+  if (part.kind === "root") return `<div class="bk-ed"><p class="hint">${L("Añade una transformación delante de todo (antes del $):", "Add a transformation in front of everything (before the $):")}</p>
+    <div class="bk-wraps">${WRAPS.map(([w, lab]) => `<button data-bk-wrap="${esc(w)}" title="${esc(w)}"><code>${esc(w)}</code><span>${esc(lab())}</span></button>`).join("")}</div></div>`;
+  return "";
+}
+function bkOpen(el) {
+  const tr = el.closest(".bk-track");
+  const pop = $("#bk-pop");
+  if (bkSel && bkSel.key === "bpm") {
+    pop.innerHTML = `<div class="bk-pop-head"><code>setcps (${state.bpm}/60/4)</code><button class="close" data-bk="close">${icon("close", 14)}</button></div>
+      <p>${esc(blockInfo(el).text)}</p><div class="bk-ed"><label>BPM<input type="number" data-bk-in="bpm" min="40" max="220" value="${state.bpm}"></label></div>
+      <div class="bk-pop-foot"><button data-bk="songcard">${icon("sliders", 14)} ${L("Tarjeta de la canción en Maestro", "Song card in Maestro")}</button></div>`;
+    pop.hidden = false; return bkPlace(el);
+  }
+  const t = tr && state.tracks.find((x) => x.id === tr.dataset.id);
+  if (!t) return;
+  let part = null; try { part = partOf(t.code, bkSel.key); } catch { /* código raro */ }
+  const info = el.dataset.key === "|root" ? { code: `${t.id} $ …`, text: L("La pista entera.", "The whole track.") } : blockInfo(el);
+  const shown = part && part.kind === "step" ? part.text : info.code;
+  pop.innerHTML = `<div class="bk-pop-head"><span class="ctl-trk">${esc(t.id)}</span><code>${esc(shown)}</code><button class="close" data-bk="close" title="${esc(L("Cerrar", "Close"))}">${icon("close", 14)}</button></div>
+    <p>${esc(info.text || L("Pulsa «Explícame» en la pista para una explicación completa.", "Press «Explain» on the track for a full explanation."))}</p>
+    ${bkEditorHTML(t, part)}
+    <div class="bk-pop-foot"><button data-bk="card">${icon("sliders", 14)} ${L("Configurar en Maestro", "Configure in Maestro")}</button><span class="hint">${L("Los cambios suenan al momento", "Changes play right away")}</span></div>`;
+  pop.hidden = false;
+  bkPlace(el);
+}
+// Aplica un cambio desde el tooltip. rerender=false mientras se arrastra un deslizador
+function bkApply(mutate, rerender = true) {
+  const t = state.tracks.find((x) => x.id === bkSel.id); if (!t) return;
+  let code;
+  try { code = mutate(t.code); } catch { return; }
+  if (!code || code === t.code) return;
+  if (!t.error && !t.lastGood) t.lastGood = t.code;
+  t.code = code; t.explain = null; t.edited = true;
+  if (rerender) { bkSel.keep = false; changed(); }
+  else { save(); const chip = $("#bk-pop .bk-pop-head code"); const part = partOf(t.code, bkSel.key); if (chip && part && part.kind === "step") chip.textContent = part.text; }
+  clearTimeout(bkTimer);
+  bkTimer = setTimeout(() => { if (live()) playTrack(t); if (!rerender) changedQuiet(); }, rerender ? 0 : 200);
+}
+// Repinta todo menos el tooltip (tras arrastrar un deslizador)
+function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); refreshCards(); if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode(); }
+function wireBlocks() {
+  $("#blocks").addEventListener("click", (e) => {
+    const tr = e.target.closest(".bk-track");
+    const a = e.target.closest("[data-a]")?.dataset.a;
+    if (a === "edit") {
+      state.selected = tr.dataset.id; save(); renderTracks(); renderPalette();
+      document.querySelector(".tab[data-tab=tracks]").click();
+      document.querySelector(`.track.selected`)?.scrollIntoView({ block: "center", behavior: "smooth" });
+      return;
+    }
+    if (a === "card") return openCard(tr.dataset.id);
+    const el = e.target.closest(".bk-step, .bk-param, .bk-src, .bk-wrap[data-key], .bk-tag, [data-key='|root']");
+    if (!el) return bkClose();
+    e.stopPropagation();
+    document.querySelectorAll("#blocks .on").forEach((x) => x.classList.remove("on"));
+    el.classList.add("on");
+    if (tr && state.selected !== tr.dataset.id) { state.selected = tr.dataset.id; save(); renderTracks(); renderPalette(); }
+    bkSel = el.classList.contains("bk-tag") ? { id: null, key: "bpm" } : { id: tr.dataset.id, key: el.dataset.key };
+    tourFlag("block-pick");
+    bkOpen(el);
+  });
+  const pop = $("#bk-pop");
+  pop.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const b = e.target.closest("button"); if (!b || !bkSel) return;
+    const k = b.dataset.bk, key = bkSel.key;
+    if (k === "close") return bkClose();
+    if (k === "card") return openCard(bkSel.id, key);
+    if (k === "songcard") return openCard("cancion");
+    if (b.dataset.bkWrap) return bkApply((c) => applyEdit(c, "|root", "addWrap", b.dataset.bkWrap));
+    const tok = (partOf(state.tracks.find((x) => x.id === bkSel.id)?.code || "", key) || {}).text || "";
+    if (k === "rest") return bkApply((c) => applyEdit(c, key, "set", "~"));
+    if (k === "x2") return bkApply((c) => applyEdit(c, key, "set", /\*(\d+)$/.test(tok) ? tok.replace(/\*(\d+)$/, (_, n) => `*${n * 2}`) : `${tok}*2`));
+    if (k === "split") return bkApply((c) => applyEdit(c, key, "set", `[${tok} ${tok}]`));
+    if (k === "maybe") return bkApply((c) => applyEdit(c, key, "set", tok.endsWith("?") ? tok.slice(0, -1) : `${tok}?`));
+    if (k === "after") return bkApply((c) => applyEdit(c, key, "after", tok === "~" ? "~" : tok.replace(/\?$/, "")));
+    if (k === "addstep") return bkApply((c) => applyEdit(c, key, "addStep", "~"));
+    if (k === "del") { const r = bkApply((c) => applyEdit(c, key, "del")); bkClose(); return r; }
+  });
+  pop.addEventListener("change", (e) => {
+    if (!bkSel) return;
+    const x = e.target;
+    if (x.dataset.bkIn === "bpm") { state.bpm = Math.max(40, Math.min(220, parseInt(x.value) || 120)); $("#bpm").value = state.bpm; changed(); evalCode(cps(state.bpm)); return; }
+    if (x.dataset.bkIn === "set") return bkApply((c) => applyEdit(c, bkSel.key, "set", x.value));
+    if (x.dataset.bkSel === "addparam" && x.value) { const P = CTL_PARAMS[x.value]; const v = P.def ?? 0.5; return bkApply((c) => applyEdit(c, bkSel.key, "addParam", x.value, fmt(x.value === "lpf" ? 2000 : x.value === "room" ? 0.3 : x.value === "delay" ? 0.3 : v))); }
+    if (x.dataset.bkRange) changedQuiet();
+  });
+  pop.addEventListener("input", (e) => {
+    const x = e.target; if (!x.dataset.bkRange || !bkSel) return;
+    let v = +x.value;
+    if (x.dataset.log) { const [mn, mx] = x.dataset.log.split("|").map(Number); v = cardFromPos({ log: true, min: mn, max: mx }, v); }
+    x.nextElementSibling.textContent = fmt(v);
+    const txt = pop.querySelector("[data-bk-in=set]");
+    if (x.dataset.bkRange === "set") { if (txt) txt.value = fmt(v); bkApply((c) => applyEdit(c, bkSel.key, "set", v), false); }
+    else { bkApply((c) => applyEdit(c, x.dataset.bkRange, "num", v), false); const t = state.tracks.find((y) => y.id === bkSel.id); const p = t && partOf(t.code, bkSel.key); if (txt && p) txt.value = p.text; }
+  });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && bkSel) bkClose(); });
+  $("#tab-blocks").addEventListener("click", (e) => { if (!e.target.closest("#bk-pop, #blocks [data-key], #blocks .bk-tag")) bkClose(); });
+}
+
+// ------------------------------------------------------------------ mesa de mezcla (pestaña Mezcla)
+function renderMixer(force) {
+  if (!$("#tab-mixer").classList.contains("active")) return;
+  if (!force && document.activeElement && document.activeElement.closest && document.activeElement.closest("#mixer")) { $("#mx-code").innerHTML = mixCodeHTML(state); return; }
+  $("#mixer").innerHTML = mixerHTML(state, { kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)" });
+}
+let mxTimer = null;
+function replayMix(t) {
+  clearTimeout(mxTimer);
+  mxTimer = setTimeout(() => { if (!live()) return; if (t) playTrack(t); else playAll(); }, 150);
+}
+function wireMixer() {
+  const box = $("#mixer");
+  box.addEventListener("input", (e) => {
+    const x = e.target; if (!x.dataset.mx) return;
+    const id = x.closest("[data-id]").dataset.id;
+    const t = setMix(state, id, x.dataset.mx, +x.value);
+    const out = x.dataset.mx === "vol" ? x.closest(".mx-strip").querySelector(".mx-db") : x.nextElementSibling;
+    out.textContent = x.dataset.mx === "vol" ? dbText(+x.value) : `${+x.value > 0 ? "+" : ""}${+x.value}`;
+    $("#mx-code").innerHTML = mixCodeHTML(state);
+    save(); replayMix(t); refreshCards();
+  });
+  box.addEventListener("change", (e) => { if (e.target.dataset.mx) changedQuiet(); });
+  box.addEventListener("dblclick", (e) => {
+    const x = e.target; if (!x.dataset || !x.dataset.mx) return;
+    const t = setMix(state, x.closest("[data-id]").dataset.id, x.dataset.mx, 0);
+    changed(); replayMix(t);
+  });
+  box.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-mxa]"); if (!b) return;
+    const id = b.closest("[data-id]").dataset.id;
+    const t = state.tracks.find((x) => x.id === id);
+    if (b.dataset.mxa === "flat") { state.master = null; state.tracks.forEach((x) => { x.mix = null; }); changed(); return replayMix(null); }
+    if (!t) return;
+    if (b.dataset.mxa === "mute") { t.muted = !t.muted; changed(); return live() || t.muted ? playTrack(t) : null; }
+    if (b.dataset.mxa === "solo") { t.solo = !t.solo; changed(); return replayMix(null); }
+    if (b.dataset.mxa === "card") return openCard(id);
+  });
+}
+
+// ------------------------------------------------------------------ deshacer / historial (rollback)
+function renderHistoryButtons() {
+  const u = $("#btn-undo"), r = $("#btn-redo");
+  if (u) u.disabled = !canUndo();
+  if (r) r.disabled = !canRedo();
+}
+async function restoreSong(snap, how) {
+  if (!snap) return;
+  const before = new Set(state.tracks.map((t) => t.id));
+  state.bpm = snap.bpm; $("#bpm").value = state.bpm;
+  state.master = snap.master; state.name = snap.name || state.name; $("#proj-name").value = state.name || "";
+  const old = Object.fromEntries(state.tracks.map((t) => [t.id, t]));
+  state.tracks = snap.tracks.map((t) => ({ ...(old[t.id] || {}), ...t, explain: null, help: null, error: "" }));
+  if (state.selected && !state.tracks.find((t) => t.id === state.selected)) state.selected = null;
+  bkClose();
+  changed(); renderHistoryButtons();
+  if (live()) {
+    for (const id of before) if (!state.tracks.find((t) => t.id === id)) await silenceId(id);
+    playAll();
+  }
+  if (how) toastSoft(how);
+}
+function toastSoft(text) {
+  const el = $("#toast"); if (!el) return;
+  el.textContent = text; el.hidden = false;
+  clearTimeout(toastSoft.t); toastSoft.t = setTimeout(() => { el.hidden = true; }, 2200);
+}
+const doUndo = () => restoreSong(histUndo(state), L("Deshecho", "Undone"));
+const doRedo = () => restoreSong(histRedo(state), L("Rehecho", "Redone"));
+function openHistory() {
+  const dlg = $("#history");
+  const time = (ms) => new Date(ms).toLocaleTimeString(LANG === "en" ? "en-GB" : "es-ES", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  flushPending(state); renderHistoryButtons();
+  const list = histEntries().reverse();
+  $("#hist-list").innerHTML = list.map((e) => `<li class="${e.current ? "current" : ""}"><button data-i="${e.i}" ${e.current ? "disabled" : ""}>
+    <span class="hist-time">${time(e.at)}</span><span class="hist-label">${esc(e.label)}</span>${e.current ? `<em>${L("ahora", "now")}</em>` : `<b>${L("Volver aquí", "Go back here")}</b>`}</button></li>`).join("");
+  if (!dlg.open) dlg.showModal();
+}
+
+// ------------------------------------------------------------------ tarjeta configuradora en el chat
+const CARD_RE = /tarjeta|configurador|configura|configurator|configure|\bcard\b/i;
+const CARD_CHIP = () => L("Tarjeta configuradora", "Configurator card");
+const FOCUS_WORDS = { reverb: "room", sala: "room", eco: "delay", echo: "delay", brillo: "lpf", brightness: "lpf", filtro: "lpf", filter: "lpf", volumen: "gain", volume: "gain", panorama: "pan", velocidad: "speed" };
+function cardTarget(text) {
+  const low = text.toLowerCase();
+  if (/canci[oó]n|\bsong\b|master|general|mezcla|\bmix/.test(low)) return { id: "cancion" };
+  const byId = low.match(/\bd(\d{1,2})\b/);
+  let t = byId && state.tracks.find((x) => x.id === "d" + byId[1]);
+  if (!t) t = state.tracks.find((x) => x.name && low.includes(x.name.toLowerCase()));
+  if (!t) t = state.tracks.find((x) => CATEGORIES.find((c) => c.id === x.kind && low.includes(c.nombre.toLowerCase().split(" ")[0])));
+  if (!t) t = selectedTrack();
+  const words = low.split(/[^a-záéíóúñ]+/);
+  const foco = words.map((w) => FOCUS_WORDS[w] || (CTL_PARAMS[w] ? w : "")).find(Boolean) || "";
+  return t ? { id: t.id, foco } : null;
+}
+function openCard(id, key) {
+  if (id === "cancion") {
+    return say(L("Aquí tienes la tarjeta de la canción: tempo, volumen general (master) con su ecualizador y el volumen de cada pista. Pulsa ⋯ en una pista para abrir su tarjeta.", "Here's the song card: tempo, overall volume (master) with its EQ and each track's volume. Press ⋯ on a track to open its card."),
+      state.options, { controles: [{ tipo: "tarjeta", pista: "cancion" }] });
+  }
+  const t = state.tracks.find((x) => x.id === id); if (!t) return;
+  let foco = "";
+  if (key) { const p = partOf(t.code, key); if (p) foco = p.name || p.fn || ""; }
+  say(L(`Tarjeta configuradora de ${t.id} (${t.name}). Aquí están todos sus valores: lo que suena, las transformaciones, los ajustes # y su mezcla. La línea gris es el código que suena.`,
+    `Configurator card for ${t.id} (${t.name}). All its values are here: what plays, the transformations, the # settings and its mix. The grey line is the code that plays.`),
+    state.options, { controles: [{ tipo: "tarjeta", pista: t.id, foco }] });
+}
+
+// ------------------------------------------------------------------ limpiar el chat
+let clearedChat = null;
+function clearChat() {
+  if (!state.chat.length) return;
+  clearedChat = { chat: state.chat, options: state.options };
+  state.chat = [];
+  say(L("Chat limpio. Tu canción sigue igual; solo he borrado la conversación.", "Chat cleared. Your song is unchanged; I only removed the conversation."),
+    [L("Recuperar el chat", "Bring the chat back"), CARD_CHIP(), L("Dame una idea", "Give me an idea")]);
 }
 function renderTracks() {
   const box = $("#tracks");
@@ -278,6 +545,7 @@ function renderTracks() {
           <button data-a="explain" class="explain" title="${L("¿Qué hace este código?", "What does this code do?")}">${icon("explain", 15)} ${L("Explícame", "Explain")}</button>
           <button data-a="help" class="helpbtn" title="${L("¿No suena como quieres o da error? Maestro te ayuda", "Not sounding right or erroring? Maestro helps you")}">${icon("wand", 15)} ${L("Ayuda", "Help")}</button>
           <button data-a="controls" class="ctlbtn" title="${L("Ajustar esta pista con controles en el chat", "Tweak this track with controls in the chat")}">${icon("sliders", 15)}</button>
+          <button data-a="card" class="ctlbtn" title="${L("Tarjeta configuradora: todos sus valores en el chat", "Configurator card: all its values in the chat")}">${icon("blocks", 15)}</button>
           <button data-a="play" title="${L("Hacer sonar esta pista", "Play this track")}">${icon("play", 14)}</button>
           <button data-a="mute" title="${t.muted ? L("Activar", "Unmute") : L("Silenciar", "Mute")}">${icon(t.muted ? "unmute" : "mute", 16)}</button>
           <button data-a="del" title="${L("Borrar pista", "Delete track")}">${icon("trash", 16)}</button>
@@ -307,6 +575,7 @@ function renderTracks() {
         save(); renderTracks(); return;
       }
       if (a === "controls") return showControls(t);
+      if (a === "card") return openCard(t.id);
       if (a === "help") { t.help = t.help && t.help.open ? null : { open: true }; save(); renderTracks(); }
       if (a === "wish") runHelp(t, btn.dataset.w);
       if (a === "ask") runHelp(t, el.querySelector(".help-free").value.trim());
@@ -868,12 +1137,17 @@ async function send(text) {
   if (!text || busy) return;
   if (text.startsWith(L("Lluvia de ideas", "Brainstorm"))) return openWizard();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
+  if (text === L("Recuperar el chat", "Bring the chat back") && clearedChat) { state.chat = clearedChat.chat; state.options = clearedChat.options; clearedChat = null; save(); return renderChat(); }
   if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
   state.chat.push({ role: "user", content: text });
   state.options = [];
   save(); renderChat();
+  if ((text === CARD_CHIP() || CARD_RE.test(text)) && state.tracks.length) {
+    const tg = cardTarget(text);
+    if (tg) { if (tg.id === "cancion") return openCard("cancion"); const t = state.tracks.find((x) => x.id === tg.id); return say(L(`Tarjeta configuradora de ${t.id} (${t.name}). Aquí están todos sus valores: lo que suena, las transformaciones, los ajustes # y su mezcla. La línea gris es el código que suena.`, `Configurator card for ${t.id} (${t.name}). All its values are here: what plays, the transformations, the # settings and its mix. The grey line is the code that plays.`), state.options, { controles: [{ tipo: "tarjeta", pista: t.id, foco: tg.foco }] }); }
+  }
   if ((!server.llm || state.offline) && MIX_RE.test(text) && state.tracks.length) {
-    return say(L("Aquí tienes la mesa de mezcla: un volumen por pista. Empieza bajando todo y sube primero el bombo y el bajo.", "Here's the mixing desk: one volume per track. Start low and bring up the kick and bass first."), state.options, { controles: [{ tipo: "mezcla" }] });
+    return say(L("Aquí tienes la mezcla de la canción: el volumen general (master) con su ecualizador y el volumen de cada pista, en dB. Empieza bajando todo y sube primero el bombo y el bajo. La pestaña Mezcla tiene la mesa completa.", "Here's the song mix: overall volume (master) with its EQ and each track's volume, in dB. Start low and bring up the kick and bass first. The Mix tab has the full desk."), state.options, { controles: [{ tipo: "tarjeta", pista: "cancion" }] });
   }
   if (text === CTL_CHIP() || ((!server.llm || state.offline) && CTL_RE.test(text))) {
     const t = selectedTrack();
@@ -891,7 +1165,8 @@ async function askLLM() {
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
       bpm: state.bpm, step: state.step, lastError: state.lastError, samples: server.samples,
-      tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted,
+      master: state.master || undefined,
+      tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
     state.tracks.forEach((t) => delete t.edited);
@@ -1272,19 +1547,43 @@ function showControls(t, opts = {}) {
   const controles = controlsFor(t, { bpm: opts.bpm, samples: server.samples || [] });
   say(L(`Aquí tienes controles para ${t.id} (${t.name}). Muévelos y escucha: cada control escribe el código por ti, fíjate en la línea gris que cambia. Si no te convence, pulsa Restaurar.`,
     `Here are controls for ${t.id} (${t.name}). Move them and listen: each control writes the code for you, watch the grey line change. If you don't like it, press Restore.`),
-    [L("Mesa de mezcla", "Mixing desk"), ...(state.options || []).filter((o) => !/mezcla|mixing/i.test(o))].slice(0, 6), { controles });
+    [CARD_CHIP(), L("Mesa de mezcla", "Mixing desk"), ...(state.options || []).filter((o) => !/mezcla|mixing|tarjeta|card/i.test(o))].slice(0, 6), { controles });
 }
 let ctlTimer = null;
+const snapNow = () => ({ bpm: state.bpm, tracks: Object.fromEntries(state.tracks.map((t) => [t.id, t.code])), muted: Object.fromEntries(state.tracks.map((t) => [t.id, !!t.muted])),
+  mix: Object.fromEntries(state.tracks.map((t) => [t.id, t.mix || null])), master: state.master || null });
+// Los controles y tarjetas trabajan SIEMPRE sobre la versión actual de la canción.
+// Restaurar solo deshace lo que cambió ese mensaje (lo demás se queda como esté ahora).
+function noteSnap(m, pre) {
+  const s = m.snap || (m.snap = { tracks: {}, muted: {}, mix: {} });
+  if (pre.bpm !== state.bpm && s.bpm === undefined) s.bpm = pre.bpm;
+  if (JSON.stringify(pre.master) !== JSON.stringify(state.master || null) && !("master" in s)) s.master = pre.master;
+  for (const t of state.tracks) {
+    if (pre.tracks[t.id] !== undefined && pre.tracks[t.id] !== t.code && !(t.id in s.tracks)) s.tracks[t.id] = pre.tracks[t.id];
+    if (pre.muted[t.id] !== undefined && pre.muted[t.id] !== !!t.muted && !(t.id in s.muted)) s.muted[t.id] = pre.muted[t.id];
+    if (JSON.stringify(pre.mix[t.id] ?? null) !== JSON.stringify(t.mix || null) && !(t.id in s.mix)) s.mix[t.id] = pre.mix[t.id] ?? null;
+  }
+}
+// Vuelve a pintar las tarjetas del chat con los valores actuales (menos la que estás tocando)
+function refreshCards(except) {
+  document.querySelectorAll("#chat .ctl-panel").forEach((panel) => {
+    const mi = +panel.dataset.m;
+    if (mi === except || panel.contains(document.activeElement) || !state.chat[mi] || !state.chat[mi].controles) return;
+    panel.outerHTML = controlsHTML(state.chat[mi].controles, state, mi);
+  });
+}
 function ctlApply(mi, mutate) {
   const m = state.chat[mi];
   if (!m) return;
-  if (!m.snap) m.snap = { bpm: state.bpm, tracks: Object.fromEntries(state.tracks.map((t) => [t.id, t.code])), muted: Object.fromEntries(state.tracks.map((t) => [t.id, !!t.muted])) };
+  const pre = snapNow();
   const touched = mutate();
+  noteSnap(m, pre);
+  refreshCards(mi);
   if (touched) touched.explain = null;
-  save(); renderTracks(); renderBlocks();
+  save(); renderTracks(); renderBlocks(); renderMixer();
   if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
   clearTimeout(ctlTimer);
-  ctlTimer = setTimeout(() => { if (!live()) return; if (touched) playTrack(touched); else evalCode(cps(state.bpm)); }, 180);
+  ctlTimer = setTimeout(() => { if (!live()) return; if (touched === "all") playAll(); else if (touched) playTrack(touched); else evalCode(cps(state.bpm)); }, 180);
 }
 function refreshPanel(mi) {
   const old = document.querySelector(`.ctl-panel[data-m="${mi}"]`);
@@ -1307,7 +1606,55 @@ function wireControls() {
     if (rerender) return refreshPanel(mi);
     ctl.querySelector(".ctl-code").textContent = extState(c, t).chip;
   };
+  // --- tarjeta configuradora
+  const cardOf = (el) => { const card = el.closest(".ctl.card"); if (!card) return null; const mi = +card.closest(".ctl-panel").dataset.m; return { card, mi, id: card.dataset.t }; };
+  const cardRefreshCode = (k) => { const t = state.tracks.find((x) => x.id === k.id); const code = k.card.querySelector(".card-code"); if (t && code) code.textContent = cardCode(t, state); if (k.id === "song") k.card.querySelector(".ctl-code").textContent = `setcps (${state.bpm}/60/4)`; };
   box.addEventListener("input", (e) => {
+    const k = cardOf(e.target); if (!k || e.target.type !== "range") return;
+    const x = e.target, out = x.nextElementSibling;
+    if (x.dataset.mx) {
+      const id = x.dataset.id || x.closest("[data-id]").dataset.id;
+      let touched = null;
+      ctlApply(k.mi, () => { touched = setMix(state, id, x.dataset.mx, +x.value); return touched || "all"; });
+      out.textContent = x.dataset.mx === "vol" ? dbText(+x.value) : `${+x.value > 0 ? "+" : ""}${+x.value} dB`;
+    } else if (x.dataset.song === "bpm") {
+      ctlApply(k.mi, () => { state.bpm = +x.value; $("#bpm").value = state.bpm; return null; });
+      out.textContent = `${state.bpm} BPM`;
+    } else if (x.dataset.key) {
+      const t = state.tracks.find((y) => y.id === k.id); if (!t) return;
+      let v = +x.value;
+      if (x.dataset.log) { const [mn, mxv] = x.dataset.log.split("|").map(Number); v = cardFromPos({ log: true, min: mn, max: mxv }, v); }
+      ctlApply(k.mi, () => { t.code = applyEdit(t.code, x.dataset.key, x.dataset.num ? "num" : "set", v); return t; });
+      out.textContent = fmt(v);
+      if (x.dataset.num) { const w = x.closest(".card-wrap")?.querySelector("input[type=text]"); const p = partOf(t.code, x.dataset.key.replace(/#\d+$/, "")); if (w && p) w.value = p.text; }
+    }
+    tourFlag("ctl-move");
+    cardRefreshCode(k);
+  });
+  box.addEventListener("change", (e) => {
+    const k = cardOf(e.target); if (!k) return;
+    const x = e.target, t = state.tracks.find((y) => y.id === k.id);
+    if (x.type === "range") return; // ya aplicado mientras se movía
+    if (!t) return;
+    if (x.dataset.key) ctlApply(k.mi, () => { try { t.code = applyEdit(t.code, x.dataset.key, "set", x.value); } catch { /* nada */ } return t; });
+    else if (x.dataset.addwrap && x.value) ctlApply(k.mi, () => { t.code = applyEdit(t.code, "|root", "addWrap", x.value); return t; });
+    else if (x.dataset.addparam && x.value) { const p = x.value; ctlApply(k.mi, () => { t.code = applyEdit(t.code, x.dataset.addparam, "addParam", p, fmt(p === "lpf" ? 2000 : p === "room" || p === "delay" ? 0.3 : CTL_PARAMS[p].def)); return t; }); }
+    else return;
+    refreshPanel(k.mi);
+  });
+  box.addEventListener("click", (e) => {
+    const k = cardOf(e.target); if (!k) return;
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.open) { e.stopPropagation(); return openCard(b.dataset.open); }
+    if (b.dataset.del) {
+      e.stopPropagation();
+      const t = state.tracks.find((y) => y.id === k.id); if (!t) return;
+      ctlApply(k.mi, () => { t.code = applyEdit(t.code, b.dataset.del, "del"); return t; });
+      refreshPanel(k.mi);
+    }
+  }, true);
+  box.addEventListener("input", (e) => {
+    if (e.target.closest(".ctl.card")) return;
     tourFlag("ctl-move");
     const ext = e.target.closest(".ctl.ext");
     if (ext && e.target.matches("input[type=range]")) {
@@ -1339,6 +1686,7 @@ function wireControls() {
     r.closest(".ctl").querySelector(".ctl-code").textContent = `# ${c.param} ${fmt(v)}`;
   });
   box.addEventListener("change", (e) => {
+    if (e.target.closest(".ctl.card")) return;
     const ext = e.target.closest(".ctl.ext");
     if (!ext || !e.target.matches("input[type=checkbox]")) return;
     const mi = +ext.closest(".ctl-panel").dataset.m;
@@ -1350,17 +1698,18 @@ function wireControls() {
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.a === "ctl-reset") {
       if (!m.snap) return;
-      state.bpm = m.snap.bpm; $("#bpm").value = state.bpm;
-      state.tracks.forEach((t) => { if (m.snap.tracks[t.id] !== undefined) t.code = m.snap.tracks[t.id]; if (m.snap.muted && m.snap.muted[t.id] !== undefined) t.muted = m.snap.muted[t.id]; });
+      if (m.snap.bpm !== undefined) { state.bpm = m.snap.bpm; $("#bpm").value = state.bpm; }
+      state.tracks.forEach((t) => { if (m.snap.tracks[t.id] !== undefined) t.code = m.snap.tracks[t.id]; if (m.snap.muted && m.snap.muted[t.id] !== undefined) t.muted = m.snap.muted[t.id]; if (m.snap.mix && m.snap.mix[t.id] !== undefined) t.mix = m.snap.mix[t.id]; });
+      if ("master" in m.snap) state.master = m.snap.master;
       m.snap = null; save(); changed(); if (live()) playAll(); return refreshPanel(mi);
     }
-    const ctl = b.closest(".ctl"); if (!ctl) return;
+    const ctl = b.closest(".ctl"); if (!ctl || ctl.classList.contains("card")) return;
     const c = m.controles[+ctl.dataset.c];
     if (ctl.classList.contains("ext")) {
       if (c.tipo === "mezcla" && b.dataset.k === "mute") {
         const t = state.tracks.find((x) => x.id === b.dataset.o); if (!t) return;
-        if (!m.snap) m.snap = { bpm: state.bpm, tracks: Object.fromEntries(state.tracks.map((x) => [x.id, x.code])), muted: Object.fromEntries(state.tracks.map((x) => [x.id, !!x.muted])) };
-        t.muted = !t.muted; changed(); if (live()) (t.muted ? silenceId(t.id) : playTrack(t));
+        const pre = snapNow();
+        t.muted = !t.muted; noteSnap(m, pre); changed(); if (live()) (t.muted ? silenceId(t.id) : playTrack(t));
         return refreshPanel(mi);
       }
       const grp = b.closest(".ctl-opts[data-k]");
@@ -2095,24 +2444,9 @@ function init() {
     if (b.dataset.tab === "log") refreshLog();
     if (b.dataset.tab === "blocks") renderBlocks();
     if (b.dataset.tab === "arrange") renderArrange();
+    if (b.dataset.tab === "mixer") renderMixer(true);
+    if (b.dataset.tab !== "blocks") bkClose();
   });
-  $("#blocks").onclick = (e) => {
-    const tr = e.target.closest(".bk-track");
-    if (e.target.closest("[data-a=edit]")) {
-      state.selected = tr.dataset.id; save(); renderTracks(); renderPalette();
-      document.querySelector(".tab[data-tab=tracks]").click();
-      document.querySelector(`.track.selected`)?.scrollIntoView({ block: "center", behavior: "smooth" });
-      return;
-    }
-    const el = e.target.closest(".bk-step, .bk-param, .bk-src, .bk-wrap, .bk-tag");
-    if (!el) return;
-    document.querySelectorAll("#blocks .on").forEach((x) => x.classList.remove("on"));
-    el.classList.add("on");
-    const info = blockInfo(el);
-    const box = $("#bk-info");
-    box.hidden = false;
-    box.innerHTML = `<code>${esc(info.code)}</code><span>${esc(info.text || L("Pulsa «Explícame» en la pista para una explicación completa.", "Press «Explain» on the track for a full explanation."))}</span>${tr ? `<span class="hint">${esc(tr.dataset.id)}</span>` : ""}`;
-  };
   $("#btn-apply-code").onclick = async () => {
     const parsed = parseCode($("#code").value);
     const keep = new Set(parsed.tracks.map((t) => t.id));
@@ -2177,6 +2511,21 @@ function init() {
   wireSamples();
   wireControls();
   wireArrange();
+  wireBlocks();
+  wireMixer();
+  initHistory(state); renderHistoryButtons();
+  $("#btn-undo").onclick = doUndo;
+  $("#btn-redo").onclick = doRedo;
+  $("#btn-history").onclick = openHistory;
+  $("#hist-list").onclick = (e) => { const b = e.target.closest("button[data-i]"); if (!b) return; $("#history").close(); restoreSong(histGo(+b.dataset.i), L("Has vuelto a esa versión. Puedes rehacer para volver.", "You went back to that version. Redo takes you forward again.")); };
+  $("#btn-clear-chat").onclick = clearChat;
+  document.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== "z") return;
+    if (e.target.closest && e.target.closest("input, textarea, select, [contenteditable]")) return; // ahí manda el deshacer del navegador
+    e.preventDefault();
+    if (e.shiftKey) doRedo(); else doUndo();
+  });
+  document.addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "y" && !(e.target.closest && e.target.closest("input, textarea"))) { e.preventDefault(); doRedo(); } });
   $("#btn-gh-test").onclick = async () => {
     const m = $("#gh-msg"); m.textContent = L("Probando…", "Testing…"); $("#btn-gh-create").hidden = true;
     try {

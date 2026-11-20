@@ -38,7 +38,20 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
   seleccionada; Maestro te enseña y explica el cambio, y puedes deshacerlo.
 - **Vista de bloques**: tu canción en bloques visuales anidados. Cada pista muestra lo que la transforma (antes del `$`),
   lo que suena (cada paso del ciclo es una casilla, con grupos `[ ]`, alternancias `< >`, silencios `~` y repeticiones `*`)
-  y sus ajustes (`#`). Pulsas cualquier bloque y Maestro te dice qué hace.
+  y sus ajustes (`#`). Pulsas cualquier bloque y un **tooltip** te dice qué hace y te deja **editarlo ahí mismo**: cambiar
+  un paso (silencio, ×2, partir, a veces, añadir, borrar), la mini-notación, el valor de un ajuste con un deslizador, los
+  números de una transformación (`every 4 (fast 2)`), añadir ajustes o transformaciones, o cambiar el tempo. Suena al editar.
+- **Tarjeta configuradora**: pide a Maestro «una tarjeta del bajo» (o pulsa el botón de tarjeta en una pista, un bloque o
+  un canal de la mesa) y aparece en el chat una tarjeta con **todos los valores** de ese elemento: lo que suena, las
+  transformaciones y sus números, cada ajuste `#`, y el volumen y ecualizador de la pista. La «tarjeta de la canción»
+  tiene tempo, master y el volumen de cada pista. Las tarjetas trabajan siempre sobre la versión **actual** de la canción
+  y se actualizan solas cuando cambias algo en otro sitio.
+- **Pestaña Mezcla**: mesa con fader de volumen (dB) y **ecualizador** de 3 bandas (graves 200 Hz, medios 1 kHz, agudos
+  4 kHz) en cada pista, silencio y solo, y un canal **Master** para toda la canción. No toca el código de tus pistas: al
+  sonar añade `# amp` y `# eqlow / eqmid / eqhigh` (lo verás como una línea `-- mezcla` en la pestaña Código).
+- **Deshacer, rehacer e historial (rollback)**: cada cambio de la canción queda guardado. Botones deshacer/rehacer
+  (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior. La escoba limpia el chat de
+  Maestro (la canción no cambia; puedes recuperar el chat).
 - **Biblioteca de samples**: sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX,
   sintes). Escúchalos, úsalos en una pista nueva o ponlos en la pista seleccionada manteniendo el ritmo. Sube tus archivos
   (WAV, AIFF, FLAC, OGG) o **busca en Freesound** (clave API gratuita) filtrando por licencia; lo descargado queda listo para
@@ -93,6 +106,16 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 | Ayuda: Maestro encuentra el problema y propone el arreglo | Paleta de código por objetivo y nivel |
 |---|---|
 | ![Ayuda con el código](docs/screenshots/es/ayuda-codigo.png) | ![Paleta de código](docs/screenshots/es/paleta-codigo.png) |
+
+### Editar desde los bloques, tarjeta configuradora, mezcla e historial
+
+| Pulsa un bloque: tooltip para editarlo | Tarjeta configuradora en el chat de Maestro |
+|---|---|
+| ![Editar un bloque](docs/screenshots/es/bloques-editar.png) | ![Tarjeta configuradora](docs/screenshots/es/tarjeta-configuradora.png) |
+
+| Pestaña Mezcla: volumen y ecualizador por pista y master | Historial de la canción (rollback) |
+|---|---|
+| ![Mezcla](docs/screenshots/es/mezcla.png) | ![Historial](docs/screenshots/es/historial.png) |
 
 ### Vista de bloques y biblioteca de samples
 
