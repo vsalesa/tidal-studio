@@ -18,6 +18,7 @@
         <span class="sub">Aprende música y TidalCycles con tu maestro</span>
       </div>
     </div>
+    <button id="btn-wizard" class="wizard-btn" title="Diseña tu canción con preguntas"><i data-icon="wand" data-size="16"></i> Lluvia de ideas</button>
     <div class="transport">
       <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto">
         <span>BPM</span> <input id="bpm" type="number" min="40" max="220" value="120">
@@ -103,6 +104,9 @@
           <button id="btn-more-ideas" class="link">Otra idea <i data-icon="arrow" data-size="14"></i></button>
         </div>
         <div id="idea-list"></div>
+        <div class="flavors"><span>¿Que suene a…?</span><span id="flavors">
+          <button data-f="jazz">Jazz</button><button data-f="latino">Latino</button><button data-f="techno">Techno</button><button data-f="lofi">Lo-fi</button><button data-f="ambient">Ambient</button>
+        </span></div>
       </section>
       <div id="chips"></div>
       <form id="chat-form">
@@ -111,6 +115,16 @@
       </form>
     </aside>
   </main>
+
+  <!-- Wizard de lluvia de ideas -->
+  <dialog id="wizard">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="wand" data-size="16"></i> Lluvia de ideas con Maestro</span>
+      <button class="icon-btn" id="wz-close" title="Cerrar"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="wz-dots" class="wz-dots"></div>
+    <div id="wz-body"></div>
+  </dialog>
 
   <!-- Ajustes -->
   <dialog id="settings">

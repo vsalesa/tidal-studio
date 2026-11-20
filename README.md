@@ -9,6 +9,12 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Te sugiere ideas como un productor**: «Yo le añadiría palmas en el 2 y el 4… pruébalo a ver qué te parece».
   Cada idea enseña un concepto musical (backbeat, contraste, pregunta y respuesta, mayor y menor…). Pulsas **Probar**,
   escuchas y decides: **Me lo quedo** o **Deshacer**.
+- **Lluvia de ideas**: un wizard te hace preguntas abiertas (¿qué quieres sentir?, ¿qué lugar imaginas?, ¿cómo cambia la
+  energía?…) con ejemplos para pulsar, y al final diseña contigo el **plan de tu canción**: estilo, tempo, estructura por
+  partes y cambios concretos para empezar a probar.
+- **Recetas de estilo**: «¿Quieres que suene tipo jazz?» (también latino, techno, lo-fi, ambient). Transforma tu canción y
+  te enseña **cómo lo ha hecho**: el código de antes y de después con lo nuevo resaltado y explicado, para que aprendas a
+  hacerlo tú solo.
 - **Tu progreso**: conceptos de código y de música que ya has usado.
 - **Componentes para añadir** y **código siempre visible y editable**.
 - **Cualquier IA**: endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
@@ -70,6 +76,7 @@ de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
 - `server/assistant.py`: las instrucciones de "Maestro" y la lectura de sus respuestas (JSON con mensaje, opciones y cambios de pistas).
 - `web/catalog.js`: el catálogo de componentes. Añadir uno nuevo es añadir un objeto a la lista.
 - `web/explain.js`: explicador local del código (sin IA). `web/suggest.js`: ideas de productor sin IA y conceptos del progreso.
+- `web/wizard.js`: preguntas de la lluvia de ideas y plan sin IA. `web/flavors.js`: recetas de estilo (jazz, latino, techno, lo-fi, ambient).
 - `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».
 
 Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit).

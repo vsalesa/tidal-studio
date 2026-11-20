@@ -2,6 +2,8 @@ import { STYLES, CATEGORIES, COMPONENTS, byId } from "./catalog.js";
 import { icon, hydrateIcons } from "./icons.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
+import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
+import { FLAVORS, flavorIdea } from "./flavors.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -258,8 +260,16 @@ function renderProgress() {
 }
 
 // ------------------------------------------------------------------ ideas (sugerencias)
+let flavorTurn = 0;
 function currentIdeas() {
-  return state.ideas && state.ideas.length ? state.ideas : localSuggestions(state, 2);
+  if (state.ideas && state.ideas.length) return state.ideas;
+  const ideas = localSuggestions(state, 1);
+  if (state.tracks.length >= 2) {
+    const keys = Object.keys(FLAVORS).filter((k) => k !== state.style);
+    const f = flavorIdea(keys[flavorTurn % keys.length], state.tracks);
+    if (f) ideas.push(f);
+  }
+  return ideas;
 }
 function renderIdeas() {
   const list = $("#idea-list");
@@ -289,10 +299,65 @@ function renderIdeas() {
 }
 function tryIdea(ideas, i) {
   const snapshot = JSON.stringify({ bpm: state.bpm, tracks: state.tracks });
+  const before = JSON.parse(snapshot);
   state.trying = { index: i, ideas, snapshot };
-  const note = applyChanges(ideas[i].cambios);
+  applyChanges(ideas[i].cambios);
   renderIdeas();
-  sysMsg(`Probando: «${ideas[i].titulo}». Escucha unos compases… ¿te gusta? ${note ? "(" + note.replace("Cambios: ", "") + ")" : ""}`);
+  const idea = ideas[i];
+  say(`Probando: «${idea.titulo}»\n${idea.porque}\n\nEscucha unos compases y decide abajo si te lo quedas. Así lo he hecho:`,
+    state.options, { diff: diffFor(before, idea.cambios, idea.pasos) });
+}
+
+// "Cómo lo he hecho": antes y después de cada pista, con el trozo nuevo resaltado y explicado
+function diffFor(before, cambios, pasos = {}) {
+  const out = [];
+  if (cambios.bpm && Math.round(cambios.bpm) !== before.bpm)
+    out.push({ id: "tempo", nombre: "Velocidad", antes: cps(before.bpm), despues: cps(Math.round(cambios.bpm)),
+      explicacion: `De ${before.bpm} a ${Math.round(cambios.bpm)} BPM: el tempo típico de este estilo.` });
+  for (const p of cambios.pistas || []) {
+    const old = before.tracks.find((t) => t.id === p.id);
+    const antes = old ? old.code : "";
+    const despues = p.codigo;
+    if (antes === despues) continue;
+    let pre = 0; while (pre < antes.length && antes[pre] === despues[pre]) pre++;
+    let suf = 0; while (suf < antes.length - pre && suf < despues.length - pre && antes[antes.length - 1 - suf] === despues[despues.length - 1 - suf]) suf++;
+    const nuevo = despues.slice(pre, despues.length - suf);
+    let explicacion = pasos[p.id];
+    if (!explicacion) {
+      const ex = explainLocal(antes ? nuevo : despues);
+      explicacion = ex.partes.slice(0, 3).map((x) => `«${x.fragmento}»: ${x.explicacion}`).join(" ") || "";
+    }
+    out.push({ id: p.id, nombre: p.nombre || (old && old.name) || p.id, antes, despues, pre, suf, explicacion });
+  }
+  return out;
+}
+// Diferencia palabra a palabra (LCS): resalta solo los trozos nuevos
+function markNew(antes, despues) {
+  const a = antes.split(/(\s+)/), b = despues.split(/(\s+)/);
+  const n = a.length, m = b.length;
+  if (!antes || n * m > 40000) return antes ? esc(despues) : esc(despues);
+  const L = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--)
+    L[i][j] = a[i] === b[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  let i = 0, j = 0, out = "", buf = "";
+  const flush = () => { if (buf) { out += buf.trim() ? `<mark>${esc(buf)}</mark>` : esc(buf); buf = ""; } };
+  while (j < m) {
+    if (i < n && a[i] === b[j]) { flush(); out += esc(b[j]); i++; j++; }
+    else if (i < n && L[i + 1][j] >= L[i][j + 1]) i++;
+    else { buf += b[j]; j++; }
+  }
+  flush();
+  return out;
+}
+function diffHTML(diff) {
+  return `<div class="diff">${diff.map((d) => {
+    const after = d.antes ? markNew(d.antes, d.despues) : esc(d.despues);
+    const idLabel = d.id === "tempo" ? "" : `${esc(d.id)} $ `;
+    return `<div class="diff-item"><div class="diff-h">${esc(d.id === "tempo" ? "" : d.id + " · ")}${esc(d.nombre)}${d.antes ? "" : " <span class='new'>nueva</span>"}</div>
+      ${d.antes ? `<div class="diff-row"><span>Antes</span><code class="before">${idLabel}${esc(d.antes)}</code></div>` : ""}
+      <div class="diff-row"><span>Después</span><code class="after">${idLabel}${after}</code></div>
+      ${d.explicacion ? `<p>${esc(d.explicacion)}</p>` : ""}</div>`;
+  }).join("")}</div>`;
 }
 function keepIdea() {
   const idea = state.trying.ideas[state.trying.index];
@@ -373,6 +438,7 @@ function renderChat() {
       el.insertAdjacentHTML("beforeend", `<ul class="parts">${m.explicacion.map((p) =>
         `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("")}</ul>`);
     }
+    if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
     if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>Reto.</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
     box.appendChild(el);
@@ -398,13 +464,14 @@ const toast = sysMsg;
 
 function greet() {
   state.step = "estilo";
-  say("¡Hola! Soy Maestro. Aquí vas a aprender música y a programarla con TidalCycles mientras creas tu propia canción.\n\nIremos paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa. En cada paso te explico el código y te propongo ideas, como haría un productor a tu lado. No hace falta saber nada.\n\n¿Qué estilo te apetece?",
-    [...Object.values(STYLES).map((s) => s.nombre), "Sorpréndeme"]);
+  say("¡Hola! Soy Maestro. Aquí vas a aprender música y a programarla con TidalCycles mientras creas tu propia canción.\n\nIremos paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa. En cada paso te explico el código y te propongo ideas, como haría un productor a tu lado. No hace falta saber nada.\n\n¿Qué estilo te apetece? Si no lo tienes claro, empieza por la lluvia de ideas: te hago unas preguntas y diseñamos juntos tu canción.",
+    ["Lluvia de ideas: diseñar mi canción", ...Object.values(STYLES).map((s) => s.nombre), "Sorpréndeme"]);
 }
 
 async function send(text) {
   text = text.trim();
   if (!text || busy) return;
+  if (text.startsWith("Lluvia de ideas")) return openWizard();
   state.chat.push({ role: "user", content: text });
   state.options = [];
   save(); renderChat();
@@ -425,9 +492,11 @@ async function askLLM() {
     const r = await api("/api/chat", { messages: history, session });
     busy = false;
     if (r.paso) state.step = r.paso;
+    const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
     const summary = applyChanges(r.cambios || {});
+    const diff = diffFor(before, r.cambios || {});
     if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias;
-    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary });
+    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff });
     renderIdeas();
   } catch (e) {
     busy = false;
@@ -505,6 +574,11 @@ async function offlineGuide(text) {
     const ex = explainLocal(state.tracks.map((t) => t.code).join("\n"));
     return say("Así funciona tu canción, trozo a trozo:", state.options, { explicacion: ex.partes.slice(0, 10) });
   }
+  if (low.includes("otra idea")) { state.ideas = []; localSuggestions(state, 2, true); renderIdeas();
+    return say("Te he dejado ideas nuevas abajo, en «Ideas de Maestro». Pruébalas y quédate con lo que te guste.", state.options); }
+  if (low.includes("qué hago") || low.includes("que hago") || low.includes("estructura")) {
+    return say("Un buen ejercicio: escucha la canción y silencia pistas (botón del altavoz) para construir cada parte de la estructura. Así aprendes cómo cada capa cambia la energía. Después prueba las Ideas de Maestro o pulsa «Explícame» en una pista para entender su código.",
+      ["Dame otra idea", "Explícame la canción"]); }
   if (text === NEXT || low.includes("siguiente") || low.includes("perfecto")) return nextStep();
 
   if (state.step === "estilo") {
@@ -541,6 +615,153 @@ async function offlineGuide(text) {
     return say("¿Añadimos algo más aquí o pasamos al siguiente paso? Mira también las Ideas de Maestro, abajo.", opts);
   }
   say("Sin una IA conectada solo entiendo los botones. Conecta una en Ajustes para hablar con libertad.", state.options.length ? state.options : [NEXT]);
+}
+
+
+// ------------------------------------------------------------------ wizard de lluvia de ideas
+const wz = { i: 0, answers: {}, sel: {}, comment: "", examples: {}, plan: null, loading: false };
+const useLLM = () => server.llm && !state.offline;
+
+function openWizard() {
+  Object.assign(wz, { i: 0, answers: {}, sel: {}, comment: "", examples: {}, plan: null, loading: false });
+  renderWizard();
+  $("#wizard").showModal();
+}
+function wzAnswerList() {
+  return QUESTIONS.filter((q) => wz.answers[q.id]).map((q) => ({ pregunta: q.pregunta, respuesta: wz.answers[q.id] }));
+}
+function renderWizard() {
+  $("#wz-dots").innerHTML = QUESTIONS.map((q, i) =>
+    `<span class="${wz.plan || i < wz.i ? "done" : i === wz.i ? "now" : ""}"></span>`).join("") + `<span class="${wz.plan ? "now" : ""}"></span>`;
+  const body = $("#wz-body");
+  if (wz.plan || wz.loading === "plan") return renderPlan(body);
+  const q = QUESTIONS[wz.i];
+  const examples = wz.examples[q.id] || q.ejemplos;
+  const sel = wz.sel[q.id] || new Set();
+  body.innerHTML = `
+    ${wz.comment ? `<div class="wz-comment">${icon("maestro", 18)}<span></span></div>` : ""}
+    <h2 class="q"></h2>
+    <p class="wz-help"></p>
+    <div class="wz-examples ${wz.loading ? "loading" : ""}"></div>
+    <input class="wz-free" placeholder="O escribe tu propia respuesta…">
+    <div class="wz-nav">
+      <button data-a="back" ${wz.i === 0 ? "disabled" : ""}>${icon("back", 16)} Atrás</button>
+      <div class="right">
+        <button data-a="skip">Saltar</button>
+        <button data-a="next" class="primary">${wz.i === QUESTIONS.length - 1 ? "Ver mi plan" : "Siguiente"} ${icon("arrow", 16)}</button>
+      </div>
+    </div>`;
+  if (wz.comment) body.querySelector(".wz-comment span").textContent = wz.comment;
+  body.querySelector(".q").textContent = q.pregunta;
+  body.querySelector(".wz-help").textContent = q.ayuda + (wz.loading ? " (Maestro está pensando ejemplos para ti…)" : "");
+  const ex = body.querySelector(".wz-examples");
+  for (const e of examples) {
+    const b = document.createElement("button");
+    b.textContent = e; b.className = sel.has(e) ? "on" : "";
+    b.onclick = () => {
+      if (!q.multi) sel.clear();
+      sel.has(e) ? sel.delete(e) : sel.add(e);
+      wz.sel[q.id] = sel; renderWizard();
+    };
+    ex.appendChild(b);
+  }
+  const free = body.querySelector(".wz-free");
+  free.value = wz.free?.[q.id] || "";
+  free.oninput = () => { wz.free = { ...(wz.free || {}), [q.id]: free.value }; };
+  free.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); wzNext(false); } };
+  body.querySelector(".wz-nav").onclick = (e) => {
+    const a = e.target.closest("button")?.dataset.a;
+    if (a === "back") { wz.i--; wz.comment = ""; renderWizard(); }
+    if (a === "skip") wzNext(true);
+    if (a === "next") wzNext(false);
+  };
+}
+async function wzNext(skip) {
+  if (wz.loading) return;
+  const q = QUESTIONS[wz.i];
+  const parts = [...(wz.sel[q.id] || [])];
+  const free = (wz.free?.[q.id] || "").trim();
+  if (free) parts.push(free);
+  if (skip || !parts.length) delete wz.answers[q.id];
+  else wz.answers[q.id] = parts.join(" · ");
+  const last = wz.i === QUESTIONS.length - 1;
+  if (last) return buildPlan();
+  wz.i++;
+  const nq = QUESTIONS[wz.i];
+  wz.comment = wz.answers[q.id] ? reactLocal(q, wz.answers[q.id]) : "";
+  if (useLLM() && wz.answers[q.id]) {
+    wz.loading = true; renderWizard();
+    try {
+      const r = await api("/api/brainstorm", { answers: wzAnswerList(), next: nq.pregunta });
+      if (r.comentario) wz.comment = r.comentario;
+      if (r.ejemplos && r.ejemplos.length) wz.examples[nq.id] = [...new Set([...r.ejemplos, ...nq.ejemplos.slice(0, 2)])];
+    } catch { /* seguimos con los ejemplos fijos */ }
+    wz.loading = false;
+  }
+  renderWizard();
+}
+async function buildPlan() {
+  wz.loading = "plan"; renderWizard();
+  let plan = null;
+  if (useLLM()) {
+    try {
+      const session = { bpm: state.bpm, tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code })) };
+      plan = await api("/api/brainstorm", { answers: wzAnswerList(), next: null, session });
+      if (!plan.sugerencias || !plan.sugerencias.length) plan = null;
+    } catch { plan = null; }
+  }
+  if (!plan) plan = buildLocalPlan(wz.answers, state.tracks);
+  if (!STYLES[plan.estilo]) plan.estilo = "";
+  wz.plan = plan; wz.loading = false;
+  renderWizard();
+}
+function renderPlan(body) {
+  if (!wz.plan) { body.innerHTML = `<p class="typing">Maestro está diseñando el plan de tu canción…</p>`; return; }
+  const p = wz.plan;
+  const total = p.partes.reduce((n, x) => n + (Number(x.compases) || 8), 0) || 1;
+  body.innerHTML = `<div class="plan">
+    <span class="wz-kicker">Tu plan</span>
+    <h2></h2><p class="resumen"></p>
+    <div class="meta">${p.estilo ? `<span>${esc(STYLES[p.estilo].nombre)}</span>` : ""}${p.bpm ? `<span>${p.bpm} BPM</span>` : ""}<span>${total} compases</span></div>
+    <h3>Estructura</h3>
+    <div class="timeline">${p.partes.map((x) => `<div style="flex:${Math.max(3, Number(x.compases) || 8)}" title="${esc(x.que)}"><b>${esc(x.nombre)}</b><span>${esc(x.compases)} compases</span></div>`).join("")}</div>
+    <p class="hint">${p.partes.map((x) => `<b>${esc(x.nombre)}:</b> ${esc(x.que)}`).join(" · ")}</p>
+    <h3>Cambios para empezar a probar</h3>
+    ${p.sugerencias.map((x) => `<div class="sug"><div class="t">${esc(x.titulo)}${x.concepto ? `<span class="tag">${esc(x.concepto)}</span>` : ""}</div><div class="p">${esc(x.porque)}</div>${x.cambios.pistas.map((t) => `<code>${esc(t.id)} $ ${esc(t.codigo)}</code>`).join("")}</div>`).join("")}
+    <div class="wz-nav">
+      <button data-a="restart">${icon("back", 16)} Volver a empezar</button>
+      <div class="right">
+        <button data-a="ideas">Llevar las ideas a Maestro</button>
+        <button data-a="all" class="primary">${icon("play", 14)} Empezar con todo</button>
+      </div>
+    </div></div>`;
+  body.querySelector("h2").textContent = p.titulo;
+  body.querySelector(".resumen").textContent = p.resumen;
+  body.querySelector(".wz-nav").onclick = (e) => {
+    const a = e.target.closest("button")?.dataset.a;
+    if (a === "restart") openWizard();
+    if (a === "ideas" || a === "all") adoptPlan(p, a === "all");
+  };
+}
+function adoptPlan(p, applyAll) {
+  $("#wizard").close();
+  if (p.estilo) { state.style = p.estilo; renderCatalog(); }
+  if (p.bpm) { state.bpm = p.bpm; $("#bpm").value = p.bpm; if (live()) evalCode(cps(p.bpm)); }
+  const estructura = p.partes.map((x) => `• ${x.nombre} (${x.compases} compases): ${x.que}`).join("\n");
+  state.step = "libre";
+  if (applyAll) {
+    const pistas = p.sugerencias.flatMap((x) => x.cambios.pistas);
+    const note = applyChanges({ pistas });
+    p.sugerencias.forEach((x) => x.concepto && !state.learnedMusic.includes(x.concepto) && state.learnedMusic.push(x.concepto));
+    state.ideas = [];
+    say(`Plan «${p.titulo}» en marcha. ${p.resumen}\n\nLa estructura que diseñamos:\n${estructura}\n\nYa suena todo. Pulsa «Explícame» en cualquier pista para entender su código, o silencia pistas para escuchar cada parte.`,
+      ["¿Qué hago ahora?", "Explícame la canción"], { changes: note });
+  } else {
+    state.ideas = p.sugerencias;
+    say(`Plan «${p.titulo}». ${p.resumen}\n\nLa estructura que diseñamos:\n${estructura}\n\nTe he dejado ${p.sugerencias.length} ideas abajo: pruébalas una a una y quédate con las que te gusten.`,
+      ["Explícame la estructura", "Dame otra idea"]);
+  }
+  changed(); renderIdeas();
 }
 
 // ------------------------------------------------------------------ estado del servidor
@@ -614,7 +835,14 @@ function init() {
   $("#btn-more-ideas").onclick = () => {
     if (state.trying) return;
     if (server.llm && !state.offline) return send("Dame otra idea para mejorar la canción, y explícame qué concepto musical enseña.");
-    state.ideas = []; localSuggestions(state, 2, true); renderIdeas();
+    state.ideas = []; localSuggestions(state, 2, true); flavorTurn++; renderIdeas();
+  };
+  $("#flavors").onclick = (e) => {
+    const k = e.target.closest("button")?.dataset.f;
+    if (!k || state.trying) return;
+    if (!state.tracks.length) return toast("Primero crea algo de música (aunque sea un bombo) para poder transformarla.");
+    const idea = flavorIdea(k, state.tracks);
+    if (idea) tryIdea([idea], 0);
   };
 
   document.querySelectorAll(".tab").forEach((b) => b.onclick = () => {
@@ -651,6 +879,8 @@ function init() {
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };
 
   $("#btn-settings").onclick = openSettings;
+  $("#btn-wizard").onclick = openWizard;
+  $("#wz-close").onclick = () => $("#wizard").close();
   document.querySelectorAll("input[name=provider]").forEach((r) => r.onchange = toggleProvider);
   $("#oa-preset").onchange = (e) => {
     if (e.target.value === "custom") return;

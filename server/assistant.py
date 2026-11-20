@@ -36,7 +36,7 @@ SALIDA OBLIGATORIA: responde SOLO con un objeto JSON válido (sin texto fuera, s
 - "reto": opcional, un mini ejercicio de una frase para que edite el código a mano.
 - "opciones": 2 a 5 respuestas rápidas que el alumno puede pulsar (textos cortos).
 - "cambios": omítelo si no cambias la música. "pistas" solo incluye pistas nuevas o modificadas.
-- "sugerencias": 1 a 3 ideas tuyas que NO aplicas todavía, en primera persona y en tono cercano. "titulo": la propuesta corta («Yo le quitaría el bombo 4 compases»). "porque": el motivo musical en una frase («al volver, el bombo pegará el doble: es un contraste»). "concepto": el concepto musical que enseña (2-3 palabras). "cambios": lo que haría. Que sean variadas (ritmo, armonía, sonido, estructura).
+- "sugerencias": 1 a 3 ideas tuyas que NO aplicas todavía, en primera persona y en tono cercano. "titulo": la propuesta corta («Yo le quitaría el bombo 4 compases»). "porque": el motivo musical en una frase («al volver, el bombo pegará el doble: es un contraste»). "concepto": el concepto musical que enseña (2-3 palabras). "cambios": lo que haría. Que sean variadas (ritmo, armonía, sonido, estructura). De vez en cuando, una de ellas puede proponer llevar la canción a otro género para aprender cómo se construye («¿Quieres que suene tipo jazz?»: swing con swingBy (1/3) 4, acordes 'min9/'maj9, bajo caminante; latino: clave 3-2 con rm; techno; lo-fi; ambient…).
 - "tipo" es uno de: percusion, bajo, armonia, melodia, textura, voz, fx.
 - Si el alumno pregunta qué hace algo, responde con "explicacion" y sin cambios.
 
@@ -47,7 +47,7 @@ REGLAS DEL CÓDIGO TIDAL (muy importante, si fallan no suena nada):
 - Sintetizadores de SuperDirt (usar con "n" y notas): superpiano, supersaw, superpwm, supersquare, superhammond, superchip, supergong, superfm, superhoover, supermandolin.
 - Notas: n "c a f e" o n "0 .. 7" o n (scale "minor" "0 2 4 7"), acordes: n "c'maj e'min7". Sube una octava añadiendo "|+ n 12" al final.
 - Efectos válidos: # gain, # room, # size (o # sz), # delay, # delaytime, # delayfeedback, # lpf (cutoff), # hpf, # resonance, # crush, # coarse, # shape, # pan, # speed, # legato, # vowel "a".
-- Transformaciones: fast, slow, every N (...), sometimes (...), rarely, often, degradeBy 0.3, jux rev, rev, chop, striate, whenmod 8 6 (...), off 0.25 (...), echo 3 0.2 0.5, sometimesBy 0.3 (...), "<a b>" alterna por ciclo.
+- Transformaciones: fast, slow, every N (...), sometimes (...), rarely, often, degradeBy 0.3, jux rev, rev, chop, striate, whenmod 8 6 (...), mask "<f!12 t!4>" (suena solo en los compases marcados con t), off 0.25 (...), echo 3 0.2 0.5, sometimesBy 0.3 (...), "<a b>" alterna por ciclo.
 - Usa ~ para silencios, [ ] para subdividir, * para repetir, ? para aleatorio. Ejemplos válidos:
   s "bd*4" # gain 1.1
   s "~ cp ~ cp" # room 0.3
@@ -198,3 +198,51 @@ def parse_explain(raw):
         "reto": str(data.get("reto") or ""),
         "idea": str(data.get("idea") or ""),
     }
+
+
+BRAINSTORM_STEP_PROMPT = """Eres "Maestro", profesor de música y productor. Estás haciendo una lluvia de ideas con un alumno principiante para diseñar su canción. Recibes sus respuestas hasta ahora y la SIGUIENTE pregunta.
+Responde SOLO con JSON válido:
+{"comentario": "una o dos frases cálidas reaccionando a su última respuesta y enseñando algo de música relacionado", "ejemplos": ["4 a 6 respuestas de ejemplo, cortas, concretas e inspiradoras para la SIGUIENTE pregunta, adaptadas a lo que ha dicho"]}"""
+
+BRAINSTORM_PLAN_PROMPT = """Eres "Maestro", profesor de música y productor de TidalCycles. Con las respuestas de la lluvia de ideas del alumno, diseña el plan de su canción y propón cambios concretos para empezar a probarla.
+Responde SOLO con JSON válido:
+{"titulo": "nombre evocador para la canción", "resumen": "2 frases: qué se va a oír y por qué encaja con lo que quiere",
+ "estilo": "house|techno|hiphop|lofi|ambient|reggaeton|dnb", "bpm": 120,
+ "partes": [{"nombre": "Intro", "compases": 8, "que": "qué suena y qué cambia"}],
+ "sugerencias": [{"titulo": "Yo empezaría con…", "porque": "motivo musical en una frase", "concepto": "concepto musical", "cambios": {"pistas": [{"id": "d1", "nombre": "...", "tipo": "percusion", "codigo": "..."}]}}]}
+- 3 a 5 "partes" (estructura con compases múltiplos de 4 u 8).
+- 3 a 6 "sugerencias", cada una con UNA pista nueva y distinta (ritmo, bajo, armonía, melodía, textura), usando ids libres (no uses los ids ocupados que te indico). Incluye la "sorpresa" que pidió, con every, whenmod o mask.
+"""
+
+
+def build_brainstorm(answers, next_question, session):
+    qa = "\n".join(f"- {a.get('pregunta', '')}\n  Respuesta: {a.get('respuesta', '')}" for a in answers or [])
+    if next_question:
+        content = f"Respuestas hasta ahora:\n{qa}\n\nSIGUIENTE pregunta: {next_question}"
+        return BRAINSTORM_STEP_PROMPT, [{"role": "user", "content": content}]
+    rules = SYSTEM_PROMPT[SYSTEM_PROMPT.index("REGLAS DEL CÓDIGO TIDAL"):]
+    content = f"Respuestas del alumno:\n{qa}\n\nESTADO ACTUAL:\n{session_summary(session or {})}"
+    return BRAINSTORM_PLAN_PROMPT + "\n" + rules, [{"role": "user", "content": content}]
+
+
+def parse_brainstorm(raw, final):
+    data = _extract_json(raw) or {}
+    if not final:
+        return {"comentario": str(data.get("comentario") or ""),
+                "ejemplos": [str(e) for e in (data.get("ejemplos") or [])][:6]}
+    sugerencias = []
+    for sug in (data.get("sugerencias") or [])[:6]:
+        if not isinstance(sug, dict):
+            continue
+        c = _parse_changes(sug.get("cambios") or {})
+        if c["pistas"]:
+            sugerencias.append({"titulo": str(sug.get("titulo") or "Idea"), "porque": str(sug.get("porque") or ""),
+                                "concepto": str(sug.get("concepto") or ""), "cambios": c})
+    partes = [{"nombre": str(p.get("nombre", "")), "compases": p.get("compases", 8), "que": str(p.get("que", ""))}
+              for p in (data.get("partes") or []) if isinstance(p, dict)][:6]
+    try:
+        bpm = max(40, min(220, int(float(data.get("bpm")))))
+    except (TypeError, ValueError):
+        bpm = None
+    return {"titulo": str(data.get("titulo") or "Tu canción"), "resumen": str(data.get("resumen") or ""),
+            "estilo": str(data.get("estilo") or ""), "bpm": bpm, "partes": partes, "sugerencias": sugerencias}

@@ -32,6 +32,8 @@ const P = {
   brain: `<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/>`,
   speaker: `<rect x="5" y="2.5" width="14" height="19" rx="2.5"/><circle cx="12" cy="14.5" r="3.5"/><circle cx="12" cy="7" r="1.3"/>`,
   dice: `<rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>`,
+  wand: `<path d="M4 20L15 9"/><path d="M15 9l2-2" stroke-width="3"/><path d="M17 2.5v2M20.5 6h-2M19.5 3.5l-1.4 1.4M10 4v1.5M9.25 4.75h1.5M20 13v1.5M19.25 13.75h1.5"/>`,
+  back: `<path d="M19 12H5M11 6l-6 6 6 6"/>`,
   arrow: `<path d="M5 12h14M13 6l6 6-6 6"/>`,
 };
 
