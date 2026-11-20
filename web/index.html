@@ -4,34 +4,52 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Tidal Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">🎛 <strong>Tidal Studio</strong> <span class="sub">tu compositor en casa</span></div>
+    <div class="brand">
+      <i data-icon="logo" data-size="30" class="logo"></i>
+      <div>
+        <strong>Tidal Studio</strong>
+        <span class="sub">Aprende música y TidalCycles con tu maestro</span>
+      </div>
+    </div>
     <div class="transport">
       <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto">
-        BPM <input id="bpm" type="number" min="40" max="220" value="120">
+        <span>BPM</span> <input id="bpm" type="number" min="40" max="220" value="120">
       </label>
-      <button id="btn-play" class="primary" title="Hacer sonar todo">▶ Tocar todo</button>
-      <button id="btn-hush" class="danger" title="Silenciar todo ya">■ Silencio</button>
+      <button id="btn-play" class="primary" title="Hacer sonar todo"><i data-icon="play" data-size="14"></i> Tocar todo</button>
+      <button id="btn-hush" class="outline-danger" title="Silenciar todo ya"><i data-icon="stop" data-size="14"></i> Silencio</button>
       <label class="toggle" title="Cuando cambias algo, suena al momento">
         <input id="autoplay" type="checkbox" checked> En vivo
       </label>
     </div>
     <div class="status">
-      <span id="st-engine" class="pill">Motor…</span>
-      <span id="st-llm" class="pill">IA…</span>
-      <button id="btn-settings" class="icon" title="Ajustes">⚙️</button>
+      <span id="st-engine" class="pill"><i data-icon="speaker" data-size="14"></i><span>Motor…</span></span>
+      <span id="st-llm" class="pill"><i data-icon="brain" data-size="14"></i><span>IA…</span></span>
+      <button id="btn-settings" class="icon-btn" title="Ajustes"><i data-icon="settings" data-size="20"></i></button>
     </div>
   </header>
 
   <main class="layout">
-    <!-- Columna 1: catálogo -->
+    <!-- Columna 1: progreso + catálogo -->
     <aside class="panel catalog">
+      <section class="progress">
+        <h2>Tu progreso</h2>
+        <div class="bar-row"><span>Código</span><div class="bar"><div id="bar-code"></div></div><b id="num-code">0/0</b></div>
+        <div class="bar-row"><span>Música</span><div class="bar"><div id="bar-music"></div></div><b id="num-music">0/0</b></div>
+        <details>
+          <summary>Ver conceptos</summary>
+          <div id="concepts"></div>
+        </details>
+      </section>
       <h2>Componentes</h2>
-      <p class="hint">Pulsa <b>+</b> para añadir. Los efectos y "¿cuándo pasa?" se aplican a la pista seleccionada.</p>
-      <select id="style-filter" title="Filtra sugerencias por estilo">
+      <p class="hint">Pulsa <b>+</b> para añadir. Los efectos y «¿Cuándo pasa?» se aplican a la pista seleccionada.</p>
+      <select id="style-filter" title="Destaca lo que encaja con un estilo">
         <option value="">Todos los estilos</option>
       </select>
       <div id="catalog"></div>
@@ -40,25 +58,27 @@
     <!-- Columna 2: pistas + código -->
     <section class="panel center">
       <div class="tabs">
-        <button class="tab active" data-tab="tracks">🎚 Pistas</button>
-        <button class="tab" data-tab="code">⌨️ Código</button>
-        <button class="tab" data-tab="log">📜 Registro</button>
+        <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> Pistas</button>
+        <button class="tab" data-tab="code"><i data-icon="code" data-size="16"></i> Código</button>
+        <button class="tab" data-tab="log"><i data-icon="log" data-size="16"></i> Registro</button>
       </div>
 
       <div id="tab-tracks" class="tabpane active">
         <div id="tracks"></div>
         <div id="empty" class="empty">
-          <p>Todavía no hay música.</p>
-          <p>Habla con el asistente de la derecha 👉 o añade un componente de la izquierda 👈</p>
+          <i data-icon="logo" data-size="56"></i>
+          <p><b>Todavía no hay música.</b></p>
+          <p>Habla con Maestro a la derecha o añade un componente de la izquierda.</p>
         </div>
       </div>
 
       <div id="tab-code" class="tabpane">
-        <p class="hint">Este es el código TidalCycles de tu canción. Puedes editarlo a mano y pulsar <b>Aplicar</b>. Las líneas que empiezan por <code>--</code> son comentarios.</p>
+        <p class="hint">Este es el código TidalCycles de tu canción. Edítalo y pulsa <b>Aplicar</b> (o Ctrl+Enter). Las líneas que empiezan por <code>--</code> son comentarios.</p>
         <textarea id="code" spellcheck="false"></textarea>
         <div class="row">
-          <button id="btn-apply-code" class="primary">▶ Aplicar código</button>
-          <button id="btn-copy-code">Copiar</button>
+          <button id="btn-apply-code" class="primary"><i data-icon="play" data-size="14"></i> Aplicar código</button>
+          <button id="btn-explain-all"><i data-icon="explain" data-size="16"></i> Explícame todo el código</button>
+          <button id="btn-copy-code"><i data-icon="copy" data-size="16"></i> Copiar</button>
           <span id="code-msg" class="hint"></span>
         </div>
       </div>
@@ -67,20 +87,27 @@
         <p class="hint">Mensajes de SuperCollider y Tidal. Útil si algo no suena.</p>
         <pre id="log"></pre>
         <div class="row">
-          <button id="btn-engine-start">Arrancar motor de sonido</button>
+          <button id="btn-engine-start"><i data-icon="power" data-size="16"></i> Arrancar motor de sonido</button>
           <button id="btn-engine-stop">Parar motor</button>
         </div>
       </div>
     </section>
 
-    <!-- Columna 3: asistente -->
+    <!-- Columna 3: Maestro -->
     <aside class="panel assistant">
-      <h2>🧑‍🏫 Maestro <span class="hint" id="assistant-mode"></span></h2>
+      <h2><i data-icon="maestro" data-size="22"></i> Maestro <span class="hint" id="assistant-mode"></span></h2>
       <div id="chat"></div>
+      <section id="ideas">
+        <div class="ideas-head">
+          <h3><i data-icon="explain" data-size="16"></i> Ideas de Maestro</h3>
+          <button id="btn-more-ideas" class="link">Otra idea <i data-icon="arrow" data-size="14"></i></button>
+        </div>
+        <div id="idea-list"></div>
+      </section>
       <div id="chips"></div>
       <form id="chat-form">
-        <input id="chat-input" placeholder="Pide lo que quieras: «más oscuro», «quita el bombo»…" autocomplete="off">
-        <button class="primary" type="submit">Enviar</button>
+        <input id="chat-input" placeholder="Pregunta o pide algo: «¿qué hace el #?», «más oscuro»…" autocomplete="off">
+        <button class="primary icon-only" type="submit" title="Enviar"><i data-icon="send" data-size="18"></i></button>
       </form>
     </aside>
   </main>
@@ -88,8 +115,8 @@
   <!-- Ajustes -->
   <dialog id="settings">
     <form method="dialog" id="settings-form">
-      <h2>⚙️ Conectar la IA</h2>
-      <p class="hint">Elige con qué inteligencia artificial habla el asistente. Las claves se guardan solo en tu ordenador (<code>config.json</code>).</p>
+      <h2>Conectar la IA</h2>
+      <p class="hint">Elige con qué inteligencia artificial habla Maestro. Las claves se guardan solo en tu ordenador (<code>config.json</code>).</p>
       <div class="radio">
         <label><input type="radio" name="provider" value="openai" checked> Compatible con OpenAI <span class="hint">(OpenAI, OpenRouter, Groq, Ollama, LM Studio…)</span></label>
         <label><input type="radio" name="provider" value="anthropic"> Claude <span class="hint">(Anthropic)</span></label>

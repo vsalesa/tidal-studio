@@ -1,15 +1,19 @@
-# 🎛 Tidal Studio · tu compositor en casa
+# Tidal Studio · aprende música con tu maestro
 
-Estudio de música en vivo con [TidalCycles](https://tidalcycles.org) y SuperCollider, con un asistente de IA
-("Maestro") que te guía paso a paso aunque no sepas nada de música ni de programación.
+Plataforma para **aprender música y [TidalCycles](https://tidalcycles.org) a la vez**, creando tu propia canción
+en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque no sepas nada de música ni de programación.
 
-- **Componentes para añadir**: percusión, bajo, acordes, melodía, texturas, efectos y "¿cuándo pasa?" (estructura).
-- **Código siempre visible**: cada cambio se refleja en código Tidal que puedes leer y editar a mano.
-- **Asistente guiado**: te pregunta estilo → ritmo → velocidad → bajo → acordes → melodía → efectos → estructura,
-  y propone cambios que suenan al momento.
-- **Cualquier IA**: cualquier endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral,
-  Ollama, LM Studio…) o Claude (Anthropic). Sin IA también funciona, con una guía de botones.
-- **Funciona en macOS, Windows y Linux**. El instalador detecta tu sistema.
+- **Maestro te guía** paso a paso: estilo → ritmo → velocidad → bajo → acordes → melodía → efectos → cuándo cambia cada cosa.
+- **Te explica el código**: botón «Explícame» en cada pista y «Explícame todo el código»; cada cambio llega con su
+  explicación trozo a trozo y, a veces, un pequeño **reto** para que edites tú.
+- **Te sugiere ideas como un productor**: «Yo le añadiría palmas en el 2 y el 4… pruébalo a ver qué te parece».
+  Cada idea enseña un concepto musical (backbeat, contraste, pregunta y respuesta, mayor y menor…). Pulsas **Probar**,
+  escuchas y decides: **Me lo quedo** o **Deshacer**.
+- **Tu progreso**: conceptos de código y de música que ya has usado.
+- **Componentes para añadir** y **código siempre visible y editable**.
+- **Cualquier IA**: endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
+  o Claude (Anthropic). Sin IA también funciona: guía con botones, explicaciones e ideas locales.
+- **macOS, Windows y Linux**: el instalador detecta tu sistema.
 
 ## Instalación (una sola vez)
 
@@ -65,6 +69,8 @@ de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
   Si falta algo, trabaja en **modo simulación**: la interfaz funciona pero no suena.
 - `server/assistant.py`: las instrucciones de "Maestro" y la lectura de sus respuestas (JSON con mensaje, opciones y cambios de pistas).
 - `web/catalog.js`: el catálogo de componentes. Añadir uno nuevo es añadir un objeto a la lista.
+- `web/explain.js`: explicador local del código (sin IA). `web/suggest.js`: ideas de productor sin IA y conceptos del progreso.
+- `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».
 
 Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit).
 
