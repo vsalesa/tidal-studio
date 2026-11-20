@@ -5,6 +5,8 @@ import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
+import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
+import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -114,7 +116,12 @@ async function evalCode(code, track) {
   try {
     const r = await api("/api/eval", { code });
     const errs = r.errors && r.errors.length ? r.errors : [];
-    if (track) track.error = errs.join("\n");
+    if (track) {
+      track.error = errs.join("\n");
+      if (!errs.length && r.ok && !track.muted) track.lastGood = track.code;
+      // Si una pista editada da error, Maestro se ofrece a ayudar sin que lo pidas
+      if (errs.length && !track.help) track.help = { open: true, auto: true };
+    }
     state.lastError = errs.slice(0, 6).join(" ");
     if (!r.ok && !track) toast(L("Tidal dio un error. Mira la pestaña Registro o pregunta a Maestro.", "Tidal returned an error. Check the Log tab or ask Maestro."));
     return r;
@@ -180,6 +187,7 @@ function changed() {
   renderTracks();
   renderProgress();
   if (!state.trying) renderIdeas();
+  renderPalette();
   if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
 }
 
@@ -206,26 +214,43 @@ function renderTracks() {
         <span class="id">${t.id}</span>
         <input class="tname">
         <span class="actions">
-          <button data-a="explain" class="explain" title=L("¿Qué hace este código?", "What does this code do?")>${icon("explain", 15)} ${L("Explícame", "Explain")}</button>
-          <button data-a="play" title=L("Hacer sonar esta pista", "Play this track")>${icon("play", 14)}</button>
+          <button data-a="explain" class="explain" title="${L("¿Qué hace este código?", "What does this code do?")}">${icon("explain", 15)} ${L("Explícame", "Explain")}</button>
+          <button data-a="help" class="helpbtn" title="${L("¿No suena como quieres o da error? Maestro te ayuda", "Not sounding right or erroring? Maestro helps you")}">${icon("wand", 15)} ${L("Ayuda", "Help")}</button>
+          <button data-a="play" title="${L("Hacer sonar esta pista", "Play this track")}">${icon("play", 14)}</button>
           <button data-a="mute" title="${t.muted ? L("Activar", "Unmute") : L("Silenciar", "Mute")}">${icon(t.muted ? "unmute" : "mute", 16)}</button>
-          <button data-a="del" title=L("Borrar pista", "Delete track")>${icon("trash", 16)}</button>
+          <button data-a="del" title="${L("Borrar pista", "Delete track")}">${icon("trash", 16)}</button>
         </span>
       </div>
-      <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title=L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")></textarea>
+      <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="${L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")}"></textarea>
       ${t.error ? `<div class="err"></div>` : ""}
+      ${t.help && t.help.open ? `<div class="explain-box help-box">${helpHTML(t)}</div>` : ""}
       ${t.explain ? `<div class="explain-box">${t.explain.loading ? L('<span class="typing">Maestro está leyendo el código…</span>', '<span class="typing">Maestro is reading the code…</span>') : explainHTML(t.explain, true)}</div>` : ""}`;
     el.querySelector(".tname").value = t.name;
     el.querySelector("textarea").value = t.code;
     if (t.error) el.querySelector(".err").textContent = t.error;
+    const hp = el.querySelector(".help-box .prehear");
+    if (hp && t.help.result && t.help.result.codigo) wirePreHear(hp, { pistas: [{ id: t.id, codigo: t.help.result.codigo }] });
+    const hf = el.querySelector(".help-free");
+    if (hf) hf.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); runHelp(t, hf.value.trim()); } });
     el.addEventListener("click", (e) => {
       if (state.selected !== t.id) {
         state.selected = t.id; save();
         document.querySelectorAll(".track").forEach((x) => x.classList.toggle("selected", x === el));
+        renderPalette();
       }
       const btn = e.target.closest("button");
       const a = btn && btn.dataset.a;
-      if (btn && btn.classList.contains("close")) { t.explain = null; save(); renderTracks(); }
+      if (btn && btn.classList.contains("close")) {
+        if (btn.closest(".help-box")) t.help = null; else t.explain = null;
+        save(); renderTracks(); return;
+      }
+      if (a === "help") { t.help = t.help && t.help.open ? null : { open: true }; save(); renderTracks(); }
+      if (a === "wish") runHelp(t, btn.dataset.w);
+      if (a === "ask") runHelp(t, el.querySelector(".help-free").value.trim());
+      if (a === "fix-apply") applyFix(t);
+      if (a === "help-again") { t.help = { open: true }; save(); renderTracks(); }
+      if (a === "fix-revert") { t.code = t.lastGood; t.help = null; t.error = ""; changed(); playTrack(t);
+        sysMsg(L(`${t.id} vuelve a la última versión que funcionaba.`, `${t.id} is back to the last version that worked.`)); }
       if (a === "explain") explainTrack(t);
       if (a === "play") playTrack(t);
       if (a === "mute") { t.muted = !t.muted; changed(); playTrack(t); }
@@ -233,7 +258,7 @@ function renderTracks() {
     });
     el.querySelector(".tname").addEventListener("change", (e) => { t.name = e.target.value; changed(); });
     const ta = el.querySelector("textarea");
-    const commit = () => { if (ta.value !== t.code) { t.code = ta.value; t.explain = null; t.edited = true; changed(); } };
+    const commit = () => { if (ta.value !== t.code) { if (!t.error && (!t.lastGood || !t.edited)) t.lastGood = t.code; t.code = ta.value; t.explain = null; t.edited = true; changed(); } };
     ta.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(); playTrack(t); }
     });
@@ -254,6 +279,115 @@ async function explainTrack(t) {
   t.explain = { loading: true }; renderTracks();
   t.explain = await explain(t.code, t.name);
   save(); renderTracks();
+}
+
+// ------------------------------------------------------------------ ayuda con el código editado
+function helpHTML(t) {
+  const h = t.help;
+  const canRevert = t.lastGood && t.lastGood !== t.code;
+  const revertBtn = canRevert ? `<button data-a="fix-revert">${icon("back", 14)} ${L("Volver a la versión que funcionaba", "Back to the version that worked")}</button>` : "";
+  const close = `<button class="close" title="${L("Cerrar", "Close")}">${icon("close", 16)}</button>`;
+  if (h.loading) return `${close}<span class="typing">${L("Maestro está revisando tu código…", "Maestro is checking your code…")}</span>`;
+  if (h.result) {
+    const r = h.result;
+    const others = (r.problemas || []).filter((p) => !(r.diagnostico || "").includes(p.titulo));
+    const diff = r.codigo && r.codigo !== t.code ? diffHTML([{ id: t.id, nombre: t.name, antes: t.code, despues: r.codigo }]) : "";
+    const parts = (r.explicacion || []).map((p) => `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("");
+    return `${close}<p class="sum">${icon("maestro", 16)} ${esc(r.diagnostico)}</p>
+      ${others.length ? `<ul class="probs">${others.map((p) => `<li class="${p.nivel}"><b>${esc(p.titulo)}.</b> ${esc(p.explicacion)}</li>`).join("")}</ul>` : ""}
+      ${diff}${parts ? `<ul class="parts">${parts}</ul>` : ""}
+      ${r.reto ? `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(r.reto)}</div>` : ""}
+      <div class="help-actions">
+        ${diff ? `<button class="prehear">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="fix-apply" class="primary">${icon("play", 12)} ${L("Aplicar el arreglo", "Apply the fix")}</button>` : ""}
+        ${revertBtn}<button data-a="help-again" class="link">${L("Preguntar otra cosa", "Ask something else")}</button>
+      </div>`;
+  }
+  const intro = h.auto
+    ? L("Tidal no ha podido tocar esta pista. ¿La reviso contigo?", "Tidal couldn't play this track. Shall I check it with you?")
+    : L("¿No suena como querías? Dime qué querías conseguir y reviso tu código.", "Not sounding how you wanted? Tell me what you were after and I'll check your code.");
+  const wishes = h.auto ? WISHES.filter((w) => w.id === "error") : WISHES;
+  return `${close}<p class="sum">${icon("maestro", 16)} ${intro}</p>
+    <div class="wishes">${wishes.map((w) => `<button data-a="wish" data-w="${w.id}">${esc(wishLabel(w))}</button>`).join("")}</div>
+    <div class="help-ask"><input class="help-free" placeholder="${L("O cuéntamelo: «quería que el bombo sonara solo en el 1 y el 3»…", "Or tell me: «I wanted the kick only on 1 and 3»…")}"><button data-a="ask" class="primary">${L("Pedir ayuda", "Ask for help")}</button></div>
+    ${revertBtn ? `<div class="help-actions">${revertBtn}</div>` : ""}`;
+}
+async function runHelp(t, wish) {
+  const w = WISHES.find((x) => x.id === wish);
+  const wishText = w ? wishLabel(w) : wish;
+  t.help = { open: true, loading: true, wish };
+  renderTracks();
+  const local = fixLocal(t.code, wish, { error: t.error, muted: t.muted });
+  let result = local;
+  if (server.llm && !state.offline) {
+    try {
+      const r = await api("/api/fix", { code: t.code, previous: t.lastGood || "", error: t.error || "", wish: wishText,
+        name: t.name, kind: t.kind, bpm: state.bpm,
+        local: (local.problemas || []).map((p) => `${p.titulo}: ${p.explicacion}`).join(" | ") });
+      result = { ...r, problemas: local.problemas };
+    } catch { /* sin IA: nos quedamos con la revisión local */ }
+  }
+  t.help = { open: true, wish, result };
+  save(); renderTracks();
+}
+function applyFix(t) {
+  const r = t.help && t.help.result;
+  if (!r || !r.codigo) return;
+  const before = t.code;
+  t.code = r.codigo; t.error = ""; t.explain = null; t.help = null;
+  changed(); playTrack(t);
+  state.chat.push({ role: "assistant", content: L(`He arreglado ${t.id} (${t.name}). ${r.diagnostico}\n\nAsí lo he hecho:`, `I fixed ${t.id} (${t.name}). ${r.diagnostico}\n\nHere's how:`),
+    diff: [{ id: t.id, nombre: t.name, antes: before, despues: r.codigo }], explicacion: r.explicacion, reto: r.reto });
+  save(); renderChat();
+}
+
+// ------------------------------------------------------------------ paleta de código
+let palLevel = 0;      // 0 = todos los niveles
+let palUndo = null;    // { id, before, name }
+const palOpen = new Set(["ritmo", "efectos"]); // grupos abiertos (se recuerdan al volver a pintar)
+const dots = (n) => `<span class="lvl" title="${esc(LEVELS[n])}">${"<i></i>".repeat(n)}${"<i class='off'></i>".repeat(3 - n)}</span>`;
+function renderPalette() {
+  $("#lvl-filter").innerHTML = [0, 1, 2, 3].map((n) => `<button data-l="${n}" class="${palLevel === n ? "on" : ""}">${n ? dots(n) + " " + esc(LEVELS[n]) : L("Todos", "All")}</button>`).join("");
+  $("#lvl-filter").onclick = (e) => { const b = e.target.closest("button"); if (b) { palLevel = +b.dataset.l; renderPalette(); } };
+  const box = $("#palette");
+  const t = selectedTrack();
+  box.innerHTML = (palUndo ? `<div class="pal-undo">${L("Último bloque:", "Last block:")} <b>${esc(palUndo.name)}</b> ${L("en", "on")} ${esc(palUndo.id)} <button class="link" data-undo>${icon("back", 13)} ${L("Deshacer", "Undo")}</button></div>` : "") +
+    `<p class="pal-target">${t ? L(`Se aplica a <b>${esc(t.id)} · ${esc(t.name)}</b>`, `Applies to <b>${esc(t.id)} · ${esc(t.name)}</b>`) : L("Selecciona una pista en el centro para aplicar bloques.", "Select a track in the middle to apply blocks.")}</p>` +
+    GROUPS.map((g, gi) => {
+      const items = BLOCKS.filter((b) => b.g === g.id && (!palLevel || b.lvl === palLevel));
+      if (!items.length) return "";
+      return `<details class="pal-group" data-g="${g.id}" ${palOpen.has(g.id) || palLevel ? "open" : ""}><summary>${esc(groupName(g))} <span class="hint">${esc(L(...g.hint))}</span></summary>
+        ${items.map((b) => `<button class="pal-block ${t && b.only && !b.only.test(t.code) ? "dim" : ""}" data-b="${b.id}">
+          <span class="pb-top"><b>${esc(blockName(b))}</b>${dots(b.lvl)}</span><code>${esc(b.code)}</code><span class="pb-desc">${esc(blockDesc(b))}</span></button>`).join("")}</details>`;
+    }).join("");
+  box.querySelectorAll(".pal-group").forEach((d) => d.addEventListener("toggle", () => { if (d.open) palOpen.add(d.dataset.g); else palOpen.delete(d.dataset.g); }));
+  box.onclick = (e) => {
+    if (e.target.closest("[data-undo]")) return undoBlock();
+    const btn = e.target.closest(".pal-block");
+    if (btn) usePaletteBlock(BLOCKS.find((b) => b.id === btn.dataset.b));
+  };
+}
+function usePaletteBlock(b) {
+  const t = selectedTrack();
+  if (!t) return toast(L("Primero selecciona (o crea) una pista.", "Select (or create) a track first."));
+  const r = applyBlock(b, t.code);
+  if (r.error) return toast(r.error);
+  const before = t.code;
+  if (!t.error) t.lastGood = before;
+  t.code = r.code; t.explain = null; t.help = null;
+  palUndo = { id: t.id, before, name: blockName(b) };
+  changed(); if (live()) playTrack(t);
+  const ex = explainLocal(b.code.replace(/…/g, "").trim());
+  state.chat.push({ role: "assistant", content: L(`He aplicado «${blockName(b)}» a ${t.id}. ${blockDesc(b)}`, `I applied «${blockName(b)}» to ${t.id}. ${blockDesc(b)}`),
+    diff: [{ id: t.id, nombre: t.name, antes: before, despues: t.code }], explicacion: ex.partes.filter((p) => p.fragmento !== "$" && p.fragmento !== "#").slice(0, 3) });
+  save(); renderChat(); renderPalette();
+}
+function undoBlock() {
+  const t = palUndo && state.tracks.find((x) => x.id === palUndo.id);
+  if (!t) { palUndo = null; return renderPalette(); }
+  t.code = palUndo.before; palUndo = null;
+  changed(); if (live()) playTrack(t);
+  sysMsg(L(`Deshecho: ${t.id} vuelve a como estaba.`, `Undone: ${t.id} is back as it was.`));
+  renderPalette();
 }
 
 // ------------------------------------------------------------------ progreso
@@ -316,8 +450,8 @@ function wirePreHear(btn, cambios) {
   btn.onclick = (e) => {
     e.stopPropagation();
     if (btn.classList.contains("playing")) { stopPreHear(); return; }
-    document.querySelectorAll(".prehear.playing").forEach((b) => { b.classList.remove("playing"); b.innerHTML = icon("speaker", 13) + " Escuchar"; });
-    const secs = preHear(cambios, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " Escuchar"; });
+    document.querySelectorAll(".prehear.playing").forEach((b) => { b.classList.remove("playing"); b.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
+    const secs = preHear(cambios, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
     btn.classList.add("playing");
     btn.innerHTML = icon("stop", 12) + ` ${L("Escuchando…", "Listening…")} ${Math.round(secs)} s`;
   };
@@ -336,7 +470,7 @@ function renderIdeas() {
       ${idea.concepto ? `<span class="tag"></span>` : ""}
       <div class="row">${trying
         ? `<button data-a="keep" class="primary">${L("Me gusta, me lo quedo", "I like it, keep it")}</button><button data-a="undo">${L("Deshacer", "Undo")}</button>`
-        : `<button class="prehear" title=L("Escúchala unos compases sin cambiar tu proyecto", "Hear it for a few bars without changing your project") ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} ${L("Probar y ver el código", "Try it and see the code")}</button>`}</div>`;
+        : `<button class="prehear" title="${L("Escúchala unos compases sin cambiar tu proyecto", "Hear it for a few bars without changing your project")}" ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} ${L("Probar y ver el código", "Try it and see the code")}</button>`}</div>`;
     el.querySelector(".t").textContent = idea.titulo;
     el.querySelector(".p").textContent = idea.porque;
     if (idea.concepto) el.querySelector(".tag").textContent = idea.concepto;
@@ -700,7 +834,7 @@ function renderWizard() {
     <h2 class="q"></h2>
     <p class="wz-help"></p>
     <div class="wz-examples ${wz.loading ? "loading" : ""}"></div>
-    <input class="wz-free" placeholder=L("O escribe tu propia respuesta…", "Or type your own answer…")>
+    <input class="wz-free" placeholder="${L("O escribe tu propia respuesta…", "Or type your own answer…")}">
     <div class="wz-nav">
       <button data-a="back" ${wz.i === 0 ? "disabled" : ""}>${icon("back", 16)} ${L("Atrás", "Back")}</button>
       <div class="right">
@@ -1074,7 +1208,7 @@ function init() {
   hydrateIcons();
   $("#bpm").value = state.bpm;
   $("#proj-name").value = state.name || "";
-  renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode();
+  renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode();
   if (!state.chat.length) greet(); else renderChat();
 
   $("#bpm").addEventListener("change", (e) => {
@@ -1098,6 +1232,10 @@ function init() {
     if (idea) tryIdea([idea], 0);
   };
 
+  document.querySelectorAll(".ltab").forEach((b) => b.onclick = () => {
+    document.querySelectorAll(".ltab").forEach((x) => x.classList.toggle("active", x === b));
+    document.querySelectorAll(".lpane").forEach((x) => x.classList.toggle("active", x.id === "pane-" + b.dataset.pane));
+  });
   document.querySelectorAll(".tab").forEach((b) => b.onclick = () => {
     document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === b));
     document.querySelectorAll(".tabpane").forEach((p) => p.classList.toggle("active", p.id === "tab-" + b.dataset.tab));

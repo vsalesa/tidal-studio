@@ -256,3 +256,41 @@ LANG_EN = ("\n\nIMPORTANT, LANGUAGE: the student uses the interface in ENGLISH. 
 def with_lang(system, lang):
     """Añade la instrucción de idioma al prompt de sistema si la interfaz está en inglés."""
     return system + LANG_EN if lang == "en" else system
+
+
+FIX_PROMPT = """Eres "Maestro", profesor de TidalCycles y productor musical. El alumno (principiante) ha editado a mano el código de una pista y no suena como quería o da error. Tu trabajo: averiguar qué pasa, proponer el código corregido y explicarle el porqué para que aprenda a arreglarlo solo la próxima vez.
+Recibes: el código actual, la última versión que funcionaba (si la hay), el error de Tidal (si lo hay), lo que el alumno quería conseguir y una revisión automática previa.
+Responde SOLO con JSON válido:
+{"diagnostico": "1-2 frases claras: qué está mal o por qué no suena como quería",
+ "codigo": "el código corregido de la pista, SIN 'dN $' delante (o \\"\\" si el código ya está bien y no hace falta cambiarlo)",
+ "explicacion": [{"fragmento": "trozo cambiado", "explicacion": "qué hace y por qué lo has cambiado"}],
+ "reto": "un mini reto opcional para que practique esa idea (o \\"\\")"}
+- Cambia lo mínimo necesario: respeta la idea del alumno y su estilo.
+- Si el código ya era correcto, dilo en el diagnóstico y explica qué hace en realidad, o propón cómo conseguir lo que quería.
+"""
+
+
+def build_fix(data):
+    parts = [f"Pista: {data.get('name') or ''} ({data.get('kind') or ''}), canción a {data.get('bpm') or '?'} BPM",
+             f"Código actual:\n{data.get('code') or ''}"]
+    if data.get("previous") and data.get("previous") != data.get("code"):
+        parts.append(f"Última versión que funcionaba:\n{data['previous']}")
+    if data.get("error"):
+        parts.append(f"Error de Tidal:\n{str(data['error'])[:1500]}")
+    parts.append(f"Lo que quería el alumno: {data.get('wish') or '(no lo ha dicho)'}")
+    if data.get("local"):
+        parts.append(f"Revisión automática previa: {str(data['local'])[:1500]}")
+    rules = SYSTEM_PROMPT[SYSTEM_PROMPT.index("REGLAS DEL CÓDIGO TIDAL"):]
+    return FIX_PROMPT + "\n" + rules, [{"role": "user", "content": "\n\n".join(parts)[:7000]}]
+
+
+def parse_fix(raw):
+    data = _extract_json(raw)
+    if not isinstance(data, dict):
+        return {"diagnostico": raw.strip(), "codigo": "", "explicacion": [], "reto": ""}
+    return {
+        "diagnostico": str(data.get("diagnostico") or ""),
+        "codigo": _clean_code(data.get("codigo"), "d1"),
+        "explicacion": _parse_explain(data.get("explicacion")),
+        "reto": str(data.get("reto") or ""),
+    }

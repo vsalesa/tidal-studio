@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from engine import Engine, find_ghci, find_sclang  # noqa: E402
 from llm import chat_completion, LLMError  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
-                       build_brainstorm, parse_brainstorm, with_lang)  # noqa: E402
+                       build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
@@ -197,6 +197,14 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"error": "La IA no está configurada"}, 400)
                 system, messages = build_explain(data.get("code", ""), data.get("name", ""))
                 return self._json(parse_explain(chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1500)))
+
+            if path == "/api/fix":
+                cfg = load_config()
+                if not llm_configured(cfg):
+                    return self._json({"error": "La IA no está configurada"}, 400)
+                system, messages = build_fix(data)
+                raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1500)
+                return self._json(parse_fix(raw))
 
             if path == "/api/brainstorm":
                 cfg = load_config()

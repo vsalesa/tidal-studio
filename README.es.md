@@ -1,6 +1,6 @@
 # Tidal Studio · aprende música con tu maestro
 
-[English](README.md) · **Español** · [Web](https://vsalesa.github.io/tidal-studio/)
+[English](README.md) · **Español** · [Web](https://vsalesa.github.io/tidal-studio/) · [Roadmap (inglés)](ROADMAP.md)
 
 Plataforma para **aprender música y [TidalCycles](https://tidalcycles.org) a la vez**, creando tu propia canción
 en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque no sepas nada de música ni de programación.
@@ -20,6 +20,14 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
   ejemplos para pulsar, y al final el **plan de tu canción**: estilo, tempo, partes y cambios concretos para probar.
 - **Recetas de estilo**: «¿Quieres que suene tipo jazz?» (también latino, techno, lo-fi, ambient). Transforma tu canción y
   te enseña **cómo lo ha hecho**: el código de antes y de después con lo nuevo resaltado y explicado.
+- **Ayuda con tu propio código**: ¿has editado una pista y da error o no suena como querías? Pulsa **Ayuda** (se abre
+  sola si Tidal da error). Elige qué querías (no suena, más fuerte, más lento, más oscuro…) o cuéntalo, y Maestro encuentra
+  el problema (falta el `$`, comillas o paréntesis sin cerrar, sonidos o efectos mal escritos, cosas que la dejan en
+  silencio), te propone el arreglo con el antes y el después, te deja **Escuchar** antes de aplicarlo y puede **volver a la
+  versión que funcionaba**.
+- **Paleta de código**: 39 bloques de Tidal organizados por lo que quieres conseguir (ritmo, sonido, notas y armonía,
+  efectos, tiempo y estructura, azar) y por nivel (primeros pasos, intermedio, avanzado). Pulsas uno y se aplica a la pista
+  seleccionada; Maestro te enseña y explica el cambio, y puedes deshacerlo.
 - **Tu progreso**: conceptos de código y de música que ya has usado.
 - **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
 - **Componentes para añadir** y **código siempre visible y editable**.
@@ -47,6 +55,12 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 | ![Elige efectos](docs/screenshots/es/wizard-5-efectos.png) | ![Elige estructura](docs/screenshots/es/wizard-6-estructura.png) |
 | **7. Resumen con todo el código explicado** | |
 | ![Resumen](docs/screenshots/es/wizard-7-resumen.png) | |
+
+### Ayuda con tu código y paleta de código
+
+| Ayuda: Maestro encuentra el problema y propone el arreglo | Paleta de código por objetivo y nivel |
+|---|---|
+| ![Ayuda con el código](docs/screenshots/es/ayuda-codigo.png) | ![Paleta de código](docs/screenshots/es/paleta-codigo.png) |
 
 ### Lluvia de ideas
 
@@ -111,6 +125,7 @@ de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
 - `web/catalog.js`: el catálogo de componentes. Añadir uno nuevo es añadir un objeto a la lista.
 - `web/explain.js`: explicador local del código (sin IA). `web/suggest.js`: ideas de productor sin IA y conceptos del progreso.
 - `web/builder.js`: wizard de proyecto base. `web/wizard.js`: preguntas de la lluvia de ideas y plan sin IA. `web/flavors.js`: recetas de estilo (jazz, latino, techno, lo-fi, ambient).
+- `web/doctor.js`: revisión y arreglos sin IA del panel Ayuda (`/api/fix` con IA). `web/palette.js`: bloques de la paleta.
 - `web/i18n.js`: cambio de idioma. `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».
 
 Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit).

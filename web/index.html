@@ -50,12 +50,22 @@
           <div id="concepts"></div>
         </details>
       </section>
-      <h2><span data-t="Components">Componentes</span></h2>
-      <p class="hint"><span data-th="Press <b>+</b> to add. Effects and «When does it happen?» apply to the selected track.">Pulsa <b>+</b> para añadir. Los efectos y «¿Cuándo pasa?» se aplican a la pista seleccionada.</span></p>
-      <select id="style-filter" title="Destaca lo que encaja con un estilo" data-tt="Highlight what fits a style">
-        <option value=""><span data-t="All styles">Todos los estilos</span></option>
-      </select>
-      <div id="catalog"></div>
+      <div class="left-tabs" role="tablist">
+        <button class="ltab active" data-pane="comps"><i data-icon="plus" data-size="15"></i> <span data-t="Components">Componentes</span></button>
+        <button class="ltab" data-pane="palette"><i data-icon="code" data-size="15"></i> <span data-t="Code palette">Paleta de código</span></button>
+      </div>
+      <div id="pane-comps" class="lpane active">
+        <p class="hint"><span data-th="Press <b>+</b> to add. Effects and «When does it happen?» apply to the selected track.">Pulsa <b>+</b> para añadir. Los efectos y «¿Cuándo pasa?» se aplican a la pista seleccionada.</span></p>
+        <select id="style-filter" title="Destaca lo que encaja con un estilo" data-tt="Highlight what fits a style">
+          <option value=""><span data-t="All styles">Todos los estilos</span></option>
+        </select>
+        <div id="catalog"></div>
+      </div>
+      <div id="pane-palette" class="lpane">
+        <p class="hint"><span data-th="Code blocks organized by what you want to do. Click one to apply it to the <b>selected track</b>: Maestro shows you the change and explains it.">Bloques de código organizados por lo que quieres conseguir. Pulsa uno para aplicarlo a la <b>pista seleccionada</b>: Maestro te enseña el cambio y te lo explica.</span></p>
+        <div class="lvl-filter" id="lvl-filter"></div>
+        <div id="palette"></div>
+      </div>
     </aside>
 
     <!-- Columna 2: pistas + código -->

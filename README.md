@@ -1,6 +1,6 @@
 # Tidal Studio · learn music with your teacher
 
-**English** · [Español](README.es.md) · [Website](https://vsalesa.github.io/tidal-studio/)
+**English** · [Español](README.es.md) · [Website](https://vsalesa.github.io/tidal-studio/) · [Roadmap](ROADMAP.md)
 
 A platform to **learn music and [TidalCycles](https://tidalcycles.org) at the same time**, building your own song live
 with an AI teacher ("Maestro") who supports you at every step, even if you know nothing about music or programming.
@@ -20,6 +20,13 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
   with clickable examples, ending in a **plan for your song**: style, tempo, sections and concrete changes to try.
 - **Style recipes**: «Want it to sound like jazz?» (also Latin, techno, lo-fi, ambient). It transforms your song and
   shows you **how it did it**: the code before and after, with what's new highlighted and explained.
+- **Help with your own code**: edited a track and it errors or doesn't sound how you wanted? Press **Help** (it also
+  opens by itself when Tidal returns an error). Pick what you wanted (no sound, louder, slower, darker…) or describe it,
+  and Maestro finds the problem (missing `$`, unclosed quotes or brackets, misspelled sounds or effects, things that make it
+  silent), proposes the fix with before/after, lets you **Listen** before applying, and can go **back to the version that worked**.
+- **Code palette**: 39 Tidal blocks organized by what you want to do (rhythm, sound, notes and harmony, effects, time and
+  structure, chance) and by level (first steps, intermediate, advanced). Click one to apply it to the selected track;
+  Maestro shows and explains the change, and you can undo it.
 - **Your progress**: the code and music concepts you have already used.
 - **My projects**: your songs are saved automatically; open or delete them from the folder button.
 - **Components to add** and **code always visible and editable**.
@@ -47,6 +54,12 @@ Click options and hear the result live. The ones recommended for your style are 
 | ![Choose effects](docs/screenshots/wizard-5-effects.png) | ![Choose structure](docs/screenshots/wizard-6-structure.png) |
 | **7. Summary with all the code explained** | |
 | ![Summary](docs/screenshots/wizard-7-summary.png) | |
+
+### Help with your code and code palette
+
+| Help: Maestro finds the problem and proposes the fix | Code palette by goal and level |
+|---|---|
+| ![Code help](docs/screenshots/code-help.png) | ![Code palette](docs/screenshots/code-palette.png) |
 
 ### Brainstorm
 
@@ -112,6 +125,7 @@ Keys are stored only in `config.json`, on your computer (it is not committed to 
 - `web/builder.js`: the base-project wizard. `web/wizard.js`: brainstorm questions and offline plan.
 - `web/explain.js`: offline code explainer. `web/suggest.js`: offline producer ideas and progress concepts.
 - `web/flavors.js`: style recipes (jazz, Latin, techno, lo-fi, ambient).
+- `web/doctor.js`: offline code checks and fixes for the Help panel (`/api/fix` with AI). `web/palette.js`: code palette blocks.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).

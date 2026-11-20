@@ -3,7 +3,7 @@ import { L } from "./i18n.js";
 // Recorre el código, reconoce funciones, efectos y la "mini-notación" de dentro de las comillas,
 // y devuelve una lista de { fragmento, explicacion } para un principiante.
 
-const SOUNDS = {
+export const SOUNDS = {
   bd: L("bombo", "kick drum"), kick: L("bombo", "kick drum"), clubkick: L("bombo de club", "club kick"), "808bd": L("bombo de caja de ritmos 808", "808 drum machine kick"),
   sn: L("caja (el 'chas')", "snare (the 'crack')"), "808sd": L("caja de 808", "808 snare"), cp: L("palmada", "handclap"), hh: L("hi-hat cerrado (platillo corto)", "closed hi-hat (short cymbal)"),
   hh27: L("hi-hat suave", "soft hi-hat"), oh: L("hi-hat abierto (platillo largo)", "open hi-hat (long cymbal)"), ho: L("hi-hat abierto", "open hi-hat"), "808oh": L("hi-hat abierto de 808", "808 open hi-hat"),
@@ -20,7 +20,7 @@ const SOUNDS = {
   superfm: L("sintetizador FM", "FM synth"), superhoover: L("sintetizador 'hoover' rave", "rave 'hoover' synth"), supermandolin: L("mandolina", "mandolin"),
 };
 
-const FUNCS = [
+export const FUNCS = [
   [/^s$|^sound$/, L("elige QUÉ suena: el nombre del sonido o sample que va entre comillas.", "chooses WHAT plays: the name of the sound or sample in quotes.")],
   [/^n$/, L("elige la NOTA (en sintetizadores) o la variante del sample (n 0, n 1…).", "chooses the NOTE (on synths) or the sample variant (n 0, n 1…).")],
   [/^note$/, L("cambia la afinación del sonido a la nota indicada.", "tunes the sound to the given note.")],
@@ -53,7 +53,7 @@ const FUNCS = [
   [/^striate$/, L("corta y entrelaza los sonidos.", "cuts and interleaves the sounds.")],
 ];
 
-const PARAMS = {
+export const PARAMS = {
   gain: L("volumen (1 es normal; más de 1 más fuerte).", "volume (1 is normal; above 1 is louder)."), room: L("reverb: cuánto espacio/sala tiene (0 a 1).", "reverb: how much room/space it has (0 to 1)."),
   size: L("tamaño de la sala de la reverb (0 a 1).", "size of the reverb room (0 to 1)."), sz: L("tamaño de la sala de la reverb.", "size of the reverb room."),
   delay: L("cantidad de eco.", "amount of echo."), delaytime: L("tiempo entre ecos (en fracciones de compás).", "time between echoes (in fractions of a bar)."),
