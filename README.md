@@ -87,6 +87,12 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 ## Screenshots
 
+### Maestro's skills
+
+| Under every answer: which skills were loaded and which Maestro used | The Skills panel: turn on, always load, view, install from GitHub |
+|---|---|
+| ![Skills in the chat](docs/screenshots/skills-in-chat.png) | ![Skills panel](docs/screenshots/skills-panel.png) |
+
 ### Genre courses
 
 | Pick a genre | Each step: why it sounds like that, the code, and Maestro explaining |
@@ -226,6 +232,13 @@ slower than the API (about 10–20 s).
 Keys are stored only in `config.json`, on your computer (it is not committed to git). You can also use the
 `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variables.
 
+### Skills
+
+Maestro can load **skills** (folders with a `SKILL.md`, the same format as Claude's Agent Skills). Two open-license
+music skills come included; open the skills button in the top bar to turn them on or off, mark one «Always load», read it,
+or install another one by pasting its GitHub link. Under each of Maestro's answers you see which skills were loaded for
+that message and which it actually used. Details and sources: [skills/README.md](skills/README.md).
+
 ### Samples
 
 Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`, `s "name:1"` for the second file).
@@ -262,6 +275,7 @@ repositories). Then use the cloud button in the top bar to save a version with a
 - `web/flavors.js`: style recipes (jazz, Latin, techno, lo-fi, ambient).
 - `web/doctor.js`: offline code checks and fixes for the Help panel (`/api/fix` with AI). `web/palette.js`: code palette blocks.
 - `web/controls.js`: controls in the chat (agentic UI). `web/blocks.js` + `web/edit.js`: blocks view and its editing. `web/card.js`: configurator card. `web/mixer.js`: mix tab. `web/history.js`: undo and history. `web/samples.js` + `server/samples.py`: sample library and Freesound. `server/github.py`: GitHub versions.
+- `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).

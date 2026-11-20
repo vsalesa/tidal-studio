@@ -25,3 +25,9 @@ Product and brand names visible on the instruments belong to their owners and do
 - [Dirt-Samples](https://github.com/tidalcycles/Dirt-Samples), the default sample set that comes with SuperDirt.
 - [VCSL](https://github.com/sgossner/VCSL) (Versilian Community Sample Library), CC0, for marimba and kalimba.
 - Sounds you find through the in-app [Freesound](https://freesound.org/) search keep the license shown next to each one.
+
+## Maestro's skills
+
+- [`skills/livecoding`](skills/livecoding) from [broomva/skills](https://github.com/broomva/skills), MIT License, © Carlos D. Escobar-Valbuena (broomva).
+- [`skills/strudel`](skills/strudel) from [ahgraber/skills](https://github.com/ahgraber/skills), CC0 1.0 (public domain dedication).
+- Skills you install from the app keep the license of their repository (shown in the Skills panel).

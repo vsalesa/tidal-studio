@@ -21,6 +21,7 @@ import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, 
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
+import { skillsLineHTML, skillsDialogHTML, countUse } from "./skills.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -1156,6 +1157,7 @@ function renderChat() {
     if (m.links && m.links.length) el.insertAdjacentHTML("beforeend", `<div class="links">${m.links.map((a) =>
       `<a href="${esc(a.href)}" target="_blank" rel="noopener">${icon("link", 14)} ${esc(a.label)}</a>`).join("")}</div>`);
     if (m.controles && m.controles.length) el.insertAdjacentHTML("beforeend", controlsHTML(m.controles, state, mi));
+    if (m.skills) el.insertAdjacentHTML("beforeend", skillsLineHTML(m.skills));
     box.appendChild(el);
   });
   if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}</div>`);
@@ -1218,7 +1220,7 @@ async function askLLM() {
     const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      bpm: state.bpm, step: state.step, lastError: state.lastError, samples: server.samples,
+      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples,
       master: state.master || undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
@@ -1234,7 +1236,8 @@ async function askLLM() {
     let controles = normalizeControls(r.controles, state.tracks);
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
     if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
-    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}) });
+    countUse(r.skills);
+    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: r.skills } : {}) });
     renderIdeas();
   } catch (e) {
     busy = false;
@@ -2451,6 +2454,59 @@ const levelDots = (n) => `<span class="lvl" title="${esc(L(["", "Principiante", 
 const stepKind = (st) => st.arrange ? "arrange" : st.mix ? "mix" : "tracks";
 const stepIcon = (st) => st.arrange ? "estructura" : st.mix ? "mixer" : (st.tracks[0] || {}).tipo || "percusion";
 
+// ------------------------------------------------------------------ skills de Maestro
+let skillList = [];
+async function refreshSkillCount() {
+  try { const r = await api("/api/skills"); skillList = r.skills || []; } catch { skillList = []; }
+  const n = skillList.filter((s) => s.enabled).length;
+  const b = $("#sk-count"); b.textContent = n; b.hidden = !n;
+  return skillList;
+}
+async function openSkills(focus = "") {
+  let r = { skills: [], folder: "" };
+  try { r = await api("/api/skills"); } catch (e) { toast(e.message); }
+  skillList = r.skills || [];
+  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder });
+  if (!$("#skills").open) $("#skills").showModal();
+  const f = focus && $(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`);
+  if (f) f.scrollIntoView({ block: "nearest" });
+  refreshSkillCount();
+}
+function wireSkills() {
+  const body = $("#skills-body");
+  body.addEventListener("change", async (e) => {
+    const card = e.target.closest(".sk-card"); const a = e.target.dataset.a;
+    if (!card || !a) return;
+    try { await api(`/api/skills/${a}`, { name: card.dataset.name, on: e.target.checked }); } catch (err) { toast(err.message); }
+    openSkills(card.dataset.name);
+  });
+  body.addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-a]"); if (!b) return;
+    const card = b.closest(".sk-card"); const name = card.dataset.name;
+    if (b.dataset.a === "view") {
+      const pre = card.querySelector(".sk-body");
+      if (!pre.hidden) { pre.hidden = true; return; }
+      try {
+        const r = await api(`/api/skills/body?name=${encodeURIComponent(name)}`);
+        pre.textContent = r.skill + Object.entries(r.refs || {}).map(([k, v]) => `\n\n──────── ${k} ────────\n${v}`).join("");
+        pre.hidden = false;
+      } catch (err) { toast(err.message); }
+    }
+    if (b.dataset.a === "remove") {
+      try { await api("/api/skills/remove", { name }); } catch (err) { toast(err.message); }
+      openSkills();
+    }
+  });
+  body.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target; const btn = form.querySelector("button"); const url = form.url.value.trim();
+    if (!url) return;
+    btn.disabled = true; btn.textContent = L("Instalando…", "Installing…");
+    try { const r = await api("/api/skills/install", { url }); await openSkills(r.name); }
+    catch (err) { btn.disabled = false; btn.textContent = L("Instalar", "Install"); form.querySelector(".hint").textContent = err.message; }
+  });
+}
+
 function openCourses() {
   const prog = courseProgress();
   const body = $("#courses-body");
@@ -2762,6 +2818,10 @@ function init() {
   $("#btn-samples").onclick = () => openSamples();
   $("#btn-tour").onclick = runTour;
   $("#btn-courses").onclick = openCourses;
+  $("#btn-skills").onclick = () => openSkills();
+  $("#chat").addEventListener("click", (e) => { const b = e.target.closest("[data-skill]"); if (b) openSkills(b.dataset.skill); });
+  wireSkills();
+  refreshSkillCount();
   wireInstrument();
   wireSamples();
   wireControls();

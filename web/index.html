@@ -22,6 +22,7 @@
     <button id="btn-courses" class="course-btn" title="Cursos por género: construye una canción completa desde cero" data-tt="Genre courses: build a complete song from scratch"><i data-icon="course" data-size="16"></i> <span data-t="Genre courses">Cursos por género</span></button>
     <button id="btn-projects" class="icon-btn" title="Mis proyectos" data-tt="My projects"><i data-icon="folder" data-size="20"></i></button>
     <button id="btn-samples" class="icon-btn" title="Biblioteca de samples" data-tt="Sample library"><i data-icon="library" data-size="20"></i></button>
+    <button id="btn-skills" class="icon-btn sk-hdr" title="Skills de Maestro: conocimiento experto que carga para responder" data-tt="Maestro's skills: expert knowledge it loads to answer"><i data-icon="skill" data-size="20"></i><span id="sk-count" class="sk-badge" hidden></span></button>
     <button id="btn-tour" class="icon-btn" title="Tutorial interactivo" data-tt="Interactive tutorial"><i data-icon="cap" data-size="20"></i></button>
     <span class="hist-btns">
       <button id="btn-undo" class="icon-btn" title="Deshacer el último cambio (Ctrl/Cmd+Z)" data-tt="Undo the last change (Ctrl/Cmd+Z)"><i data-icon="undo" data-size="20"></i></button>
@@ -177,6 +178,14 @@
       <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
     </div>
     <div id="courses-body"></div>
+  </dialog>
+
+  <dialog id="skills" class="wide skills-dlg">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="skill" data-size="16"></i> <span>Skills</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="skills-body"></div>
   </dialog>
 
   <dialog id="newproj">

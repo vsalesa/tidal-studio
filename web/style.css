@@ -804,3 +804,43 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .hlwrap mark.play.miss { background: rgba(255, 140, 0, 0.4); }
 .bk-step.playing { outline: 2.5px solid #ffb300; outline-offset: -1px; box-shadow: 0 0 10px rgba(255, 179, 0, .85); filter: brightness(1.18); z-index: 1; }
 .bk-step.rest.playing { outline: none; box-shadow: none; filter: none; }
+/* ---------- Skills de Maestro ---------- */
+.sk-hdr { position: relative; }
+.sk-badge { position: absolute; top: 0; right: -2px; min-width: 15px; height: 15px; padding: 0 4px; border-radius: 99px; background: var(--teal); color: #fff; font-size: 10px; font-weight: 700; display: grid; place-items: center; }
+.skills-dlg { width: min(860px, 96vw); }
+.sk-intro h2 { margin: 4px 0 6px; }
+.sk-intro p { margin: 0 0 14px; color: var(--ink-2); font-size: 13.5px; }
+.sk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); gap: 12px; }
+.sk-card { border: 1px solid var(--rule); border-radius: 12px; padding: 12px 14px; background: var(--paper); display: flex; flex-direction: column; gap: 8px; }
+.sk-card.off { opacity: .6; }
+.sk-card.focus { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal-soft); }
+.sk-card header { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sk-card header b { font-family: var(--mono); font-size: 14px; margin-right: auto; }
+.sk-card p { margin: 0; font-size: 13px; color: var(--ink-2); }
+.sk-tag { font-size: 10.5px; font-weight: 600; letter-spacing: .03em; padding: 1px 8px; border-radius: 99px; background: var(--sunk); color: var(--ink-2); }
+.sk-tag.lic { background: var(--teal-soft); color: #0e5148; }
+.sk-tag.warn { background: var(--gold-soft); color: #8a5d05; }
+.sk-meta { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 11.5px; color: var(--ink-3); }
+.sk-meta a { color: var(--accent); display: inline-flex; align-items: center; gap: 3px; }
+.sk-use { display: flex; gap: 8px; }
+.sk-count { font-size: 12px; padding: 2px 9px; border-radius: 99px; border: 1px dashed var(--rule-strong); color: var(--ink-3); }
+.sk-count.used { border-style: solid; border-color: var(--teal); color: var(--teal); }
+.sk-card footer { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 12.5px; }
+.sk-btn { padding: 3px 9px; font-size: 12.5px; }
+.sk-btn.danger { color: var(--danger); }
+.sk-body { max-height: 260px; overflow: auto; margin: 0; padding: 10px; background: var(--card); border: 1px solid var(--rule); border-radius: 8px; font-size: 11.5px; white-space: pre-wrap; }
+.sk-install { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 6px; }
+.sk-install label { font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.sk-install .row { display: flex; gap: 8px; }
+.sk-install input { flex: 1; min-width: 0; padding: 7px 10px; border: 1px solid var(--rule-strong); border-radius: 8px; background: var(--card); }
+.sk-install .hint { margin: 0; }
+.skills-line { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 8px; padding-top: 7px; border-top: 1px dashed var(--rule); font-size: 11.5px; color: var(--ink-3); white-space: normal; }
+.skills-line.quiet { font-style: italic; }
+.sk-chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 99px; font-size: 11.5px; font-family: var(--mono); background: var(--card); border: 1px dashed var(--rule-strong); color: var(--ink-2); }
+.sk-chip small { font-family: var(--sans); color: var(--ink-3); }
+.sk-chip em { font-style: normal; font-family: var(--sans); font-size: 10px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); }
+.sk-chip.used { border-style: solid; border-color: var(--teal); background: var(--teal-soft); color: #0e5148; }
+.sk-chip.used em { color: var(--teal); font-weight: 700; }
+.sk-card footer .toggle { white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; }
+.sk-card p { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.sk-card.focus p, .sk-card p:hover { -webkit-line-clamp: unset; }
