@@ -1,6 +1,7 @@
 import { L, LANG, setLang } from "./i18n.js";
 import { STYLES, CATEGORIES, COMPONENTS, byId } from "./catalog.js";
 import { compIcon } from "./comp-icons.js";
+import { startTour, stopTour, tourFlag, tourSeen } from "./tour.js";
 import { INSTRUMENTS, instById, instThumb, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
 import { explainLocal } from "./explain.js";
@@ -753,11 +754,11 @@ function wireInstrument() {
     const tab = e.target.closest(".inst-tabs [data-i]");
     if (tab) { inst.id = tab.dataset.i; return renderInstrument(); }
     const piece = e.target.closest("[data-p]");
-    if (piece && ins.id === "drums") { inst.piece = piece.dataset.p; renderInstrument(); return instHear(ins, inst.piece); }
+    if (piece && ins.id === "drums") { tourFlag("drum-piece"); inst.piece = piece.dataset.p; renderInstrument(); return instHear(ins, inst.piece); }
     const st = e.target.closest("[data-st]");
     if (st) { const arr = [...(inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps)]; arr[+st.dataset.st] = arr[+st.dataset.st] ? 0 : 1; inst.steps[inst.piece] = arr; return renderInstrument(); }
     const key = e.target.closest(".key");
-    if (key) { const m = +key.dataset.m; instHear(ins, m); if (inst.seq.length < 16) inst.seq.push(m); return renderInstrument(); }
+    if (key) { tourFlag("inst-key"); const m = +key.dataset.m; instHear(ins, m); if (inst.seq.length < 16) inst.seq.push(m); return renderInstrument(); }
     const b = e.target.closest("button[data-a]");
     if (!b) return;
     const a = b.dataset.a;
@@ -1295,6 +1296,7 @@ function wireControls() {
     ctl.querySelector(".ctl-code").textContent = extState(c, t).chip;
   };
   box.addEventListener("input", (e) => {
+    tourFlag("ctl-move");
     const ext = e.target.closest(".ctl.ext");
     if (ext && e.target.matches("input[type=range]")) {
       const mi = +ext.closest(".ctl-panel").dataset.m, c = state.chat[mi].controles[+ext.dataset.c];
@@ -1921,7 +1923,7 @@ async function refreshStatus() {
     else if (!e.ghci_path || !e.sclang_path) setPill(pe, "bad", "mute", L("Simulación (falta instalar)", "Simulation (not installed)"));
     else setPill(pe, "warn", "mute", L("Motor parado", "Engine stopped"));
     setPill($("#st-llm"), s.llm_configured ? "ok" : "warn", "brain",
-      s.llm_configured ? L(`IA: ${s.provider === "anthropic" ? "Claude" : "OpenAI-compatible"}`, `AI: ${s.provider === "anthropic" ? "Claude" : "OpenAI-compatible"}`) : L("IA sin conectar", "AI not connected"));
+      s.llm_configured ? L(`IA: ${s.provider === "anthropic" ? "Claude" : s.provider === "claudecode" ? "Claude (suscripción)" : "OpenAI-compatible"}`, `AI: ${s.provider === "anthropic" ? "Claude" : s.provider === "claudecode" ? "Claude (subscription)" : "OpenAI-compatible"}`) : L("IA sin conectar", "AI not connected"));
     $("#assistant-mode").textContent = s.llm_configured && !state.offline ? "" : L("· guía sin IA", "· guide without AI");
   } catch {
     setPill($("#st-engine"), "bad", "power", "Servidor apagado");
@@ -1942,6 +1944,7 @@ async function openSettings() {
   document.querySelector(`input[name=provider][value=${c.provider}]`).checked = true;
   $("#oa-url").value = c.openai.base_url; $("#oa-model").value = c.openai.model;
   $("#oa-key").value = c.openai.api_key; $("#an-key").value = c.anthropic.api_key; $("#an-model").value = c.anthropic.model;
+  $("#cc-path").value = c.claudecode?.path || ""; $("#cc-model").value = c.claudecode?.model || "";
   const preset = [...$("#oa-preset").options].find((o) => o.value.split("|")[0] === c.openai.base_url);
   $("#oa-preset").value = preset ? preset.value : "custom";
   const g = c.github || {};
@@ -1953,13 +1956,14 @@ async function openSettings() {
 }
 function toggleProvider() {
   const p = document.querySelector("input[name=provider]:checked").value;
-  $("#fs-openai").hidden = p !== "openai"; $("#fs-anthropic").hidden = p !== "anthropic";
+  $("#fs-openai").hidden = p !== "openai"; $("#fs-anthropic").hidden = p !== "anthropic"; $("#fs-claudecode").hidden = p !== "claudecode";
 }
 async function saveSettings() {
   await api("/api/config", {
     provider: document.querySelector("input[name=provider]:checked").value,
     openai: { base_url: $("#oa-url").value, api_key: $("#oa-key").value, model: $("#oa-model").value },
     anthropic: { api_key: $("#an-key").value, model: $("#an-model").value },
+    claudecode: { path: $("#cc-path").value, model: $("#cc-model").value },
     github: { token: $("#gh-token").value, repo: $("#gh-repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""),
       branch: $("#gh-branch").value, folder: $("#gh-folder").value },
   });
@@ -2020,6 +2024,17 @@ async function toggleRecord() {
     { links: [{ href: `/api/recordings/file?name=${encodeURIComponent(name)}`, label: L("Descargar WAV", "Download WAV") }] }), 600);
 }
 
+// ------------------------------------------------------------------ tutorial
+function runTour() {
+  startTour({
+    state: () => state,
+    closeDialogs: () => document.querySelectorAll("dialog[open]").forEach((d) => d.close()),
+    openInstrument,
+    tab: (n) => document.querySelector(`.tab[data-tab="${n}"]`)?.click(),
+    pane: (n) => document.querySelector(`.ltab[data-pane="${n}"]`)?.click(),
+  });
+}
+
 function init() {
   load();
   importSharedSong();
@@ -2031,6 +2046,8 @@ function init() {
   $("#proj-name").value = state.name || "";
   renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode();
   if (!state.chat.length) greet(); else renderChat();
+  // Primera visita: el tutorial arranca solo (se puede cerrar en el primer paso)
+  if (!tourSeen() && !state.tracks.length && !location.hash) setTimeout(runTour, 900);
 
   $("#bpm").addEventListener("change", (e) => {
     state.bpm = Math.max(40, Math.min(220, parseInt(e.target.value) || 120)); e.target.value = state.bpm;
@@ -2141,6 +2158,7 @@ function init() {
   $("#btn-save").onclick = async () => { await saveSettings(); $("#settings").close(); };
   $("#btn-gh").onclick = openGitHubSave;
   $("#btn-samples").onclick = () => openSamples();
+  $("#btn-tour").onclick = runTour;
   wireInstrument();
   wireSamples();
   wireControls();

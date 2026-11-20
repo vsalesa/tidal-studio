@@ -7,6 +7,12 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
+- **Interactive tutorial**: the first time you open the studio, Maestro walks you through everything in 21 short steps
+  (play the drums, add tracks, effects, chat controls, ideas, recipes, blocks, arrangement, code, library…). Each step
+  waits for you to do it, and you can repeat it from the cap button.
+- **Illustrated instruments**: a drum kit where you press each piece (bd, sn, hh, ho, toms, crash, rimshot) to hear it
+  and learn its Tidal name, then choose its steps and add it; piano, bass, guitar, sax, trumpet, marimba and kalimba
+  with an on-screen keyboard that writes your melody as code. Every component also has its own icon.
 - **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.
 - **It explains the code**: an «Explain» button on every track and «Explain all the code». Every change comes with a
   piece-by-piece explanation and, sometimes, a small **challenge** so you edit it yourself.
@@ -94,6 +100,14 @@ Click options and hear the result live. The ones recommended for your style are 
 |---|---|
 | ![Chat controls](docs/screenshots/chat-controls.png) | ![Online packs](docs/screenshots/online-packs.png) |
 
+| Drum kit: press a piece, learn its name | Instruments with a keyboard |
+|---|---|
+| ![Drum kit](docs/screenshots/instruments-drums.png) | ![Sax](docs/screenshots/instruments-sax.png) |
+
+| Interactive tutorial | |
+|---|---|
+| ![Tutorial](docs/screenshots/tutorial.png) | |
+
 | Arrangement: paint the bars, or use a preset | Waveform and trimming |
 |---|---|
 | ![Arrangement](docs/screenshots/arrangement.png) | ![Trim](docs/screenshots/sample-trim.png) |
@@ -146,7 +160,13 @@ Your browser opens at <http://localhost:8765>. Then:
 | Groq | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
 | Ollama (local, free) | `http://localhost:11434/v1` | `llama3.1` |
 | LM Studio (local, free) | `http://localhost:1234/v1` | whichever you have loaded |
-| Claude (Anthropic) | — | `claude-opus-5-5` |
+| Claude (Anthropic API key) | — | `claude-opus-5-5` |
+| **Claude with your subscription** (Claude Code, Pro/Max) | — | your plan's default |
+
+**No API key? Use your Claude subscription:** install [Claude Code](https://claude.com/claude-code), run `claude` once in a
+terminal and sign in with your Pro or Max plan, then choose «Claude with your subscription» in Settings. Maestro talks to
+Claude through the `claude` command on your computer. It counts towards your plan's usage limits and answers a bit
+slower than the API (about 10–20 s).
 
 Keys are stored only in `config.json`, on your computer (it is not committed to git). You can also use the
 `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variables.

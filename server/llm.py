@@ -5,8 +5,14 @@ Dos tipos de proveedor:
   - "openai":    cualquier API compatible con OpenAI (/v1/chat/completions):
                  OpenAI, OpenRouter, Groq, Mistral, DeepSeek, Together, Ollama, LM Studio, vLLM…
   - "anthropic": Claude, usando la Messages API de Anthropic.
+  - "claudecode": Claude a través del comando `claude` (Claude Code) instalado en el ordenador:
+                 usa la sesión iniciada con tu suscripción Pro/Max, sin clave de API.
 """
 import json
+import os
+import shutil
+import subprocess
+import tempfile
 import ssl
 import urllib.error
 import urllib.request
@@ -91,7 +97,56 @@ def _anthropic(cfg, system, messages, max_tokens):
         raise LLMError(f"Respuesta inesperada de Claude: {str(data)[:300]}")
 
 
+def claude_cli(cfg):
+    c = cfg.get("claudecode") or {}
+    return (c.get("path") or "").strip() or shutil.which("claude") or ""
+
+
+def _claudecode(cfg, system, messages, max_tokens):
+    exe = claude_cli(cfg)
+    if not exe:
+        raise LLMError("No encuentro el comando «claude». Instala Claude Code (https://claude.com/claude-code), "
+                       "ejecuta «claude» una vez para iniciar sesión con tu suscripción y vuelve a probar.")
+    # Claude Code recibe la conversación como texto; las instrucciones de Maestro van como system prompt
+    turns = []
+    for m in messages:
+        who = "Alumno" if m["role"] == "user" else "Maestro"
+        turns.append(f"[{who}]\n{m['content']}")
+    prompt = ("Conversación hasta ahora (responde SOLO al último mensaje del alumno, como Maestro, "
+              "con el formato JSON indicado y nada más):\n\n" + "\n\n".join(turns))
+    c = cfg.get("claudecode") or {}
+    with tempfile.TemporaryDirectory(prefix="tidal-studio-") as tmp:
+        sp = os.path.join(tmp, "system.txt")
+        with open(sp, "w", encoding="utf-8") as f:
+            f.write(system)
+        cmd = [exe, "-p", "--output-format", "json", "--tools", "", "--no-session-persistence",
+               "--strict-mcp-config", "--system-prompt-file", sp]
+        if c.get("model"):
+            cmd += ["--model", c["model"]]
+        try:
+            # cwd temporal: así no lee CLAUDE.md ni ajustes de ninguna carpeta del usuario
+            r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8",
+                               timeout=int(c.get("timeout", 180)), cwd=tmp)
+        except subprocess.TimeoutExpired:
+            raise LLMError("Claude Code tardó demasiado en responder")
+        except OSError as e:
+            raise LLMError(f"No se pudo ejecutar «claude»: {e}")
+    out = (r.stdout or "").strip()
+    try:
+        data = json.loads(out.splitlines()[-1] if out else "{}")
+    except ValueError:
+        data = {}
+    if not data:
+        err = (r.stderr or out or "").strip()[:400]
+        raise LLMError("Claude Code no respondió bien. ¿Has iniciado sesión? Ejecuta «claude» en una terminal y escribe /login. " + err)
+    if data.get("is_error"):
+        raise LLMError("Claude Code: " + str(data.get("result") or data.get("subtype") or "error")[:400])
+    return data.get("result") or ""
+
+
 def chat_completion(cfg, system, messages, max_tokens=1500):
+    if cfg["provider"] == "claudecode":
+        return _claudecode(cfg, system, messages, max_tokens)
     if cfg["provider"] == "anthropic":
         return _anthropic(cfg, system, messages, max_tokens)
     return _openai(cfg, system, messages, max_tokens)

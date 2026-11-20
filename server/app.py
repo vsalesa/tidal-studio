@@ -21,7 +21,7 @@ from urllib.parse import urlparse, parse_qs
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from engine import Engine, find_ghci, find_sclang  # noqa: E402
-from llm import chat_completion, LLMError  # noqa: E402
+from llm import chat_completion, LLMError, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 import github  # noqa: E402
@@ -42,6 +42,11 @@ DEFAULT_CONFIG = {
         "api_key": "",
         "model": "claude-opus-5-5",
         "effort": "low",
+    },
+    # Claude Code (comando «claude») con la suscripción Pro/Max: sin clave de API
+    "claudecode": {
+        "path": "",                # vacío = buscar «claude» en el PATH
+        "model": "",               # vacío = el modelo por defecto de tu plan
     },
     "github": {
         "token": "",
@@ -107,6 +112,8 @@ def public_config(cfg):
 
 
 def llm_configured(cfg):
+    if cfg["provider"] == "claudecode":
+        return bool(claude_cli(cfg))
     if cfg["provider"] == "anthropic":
         return bool(cfg["anthropic"]["api_key"])
     # Un endpoint local (Ollama, LM Studio…) no necesita clave
@@ -250,9 +257,9 @@ class Handler(SimpleHTTPRequestHandler):
         try:
             if path == "/api/config":
                 cfg = load_config()
-                if data.get("provider") in ("openai", "anthropic"):
+                if data.get("provider") in ("openai", "anthropic", "claudecode"):
                     cfg["provider"] = data["provider"]
-                for p in ("openai", "anthropic"):
+                for p in ("openai", "anthropic", "claudecode"):
                     for k, v in (data.get(p) or {}).items():
                         if k == "api_key" and (v is None or "…" in v or v == "••••"):
                             continue  # no sobrescribir con la versión enmascarada

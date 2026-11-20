@@ -44,3 +44,7 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 - Export: `.tidal` download, shareable song links, recording to WAV.
 - Samples: waveform view and trimming (`# begin` / `# end`).
 - Bilingual installers (English/Spanish, by system language or `--lang`).
+- Interactive beginner tutorial (21 steps, waits for each action).
+- Illustrated instruments: clickable drum kit; piano, bass, guitar, sax, trumpet, marimba, kalimba with an on-screen keyboard.
+- An icon for every component; compact component families.
+- Claude with your Pro/Max subscription through the Claude Code CLI (no API key).

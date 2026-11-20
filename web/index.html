@@ -21,6 +21,7 @@
     <button id="btn-new" class="wizard-btn" title="Empezar un proyecto nuevo" data-tt="Start a new project"><i data-icon="plus" data-size="16"></i> <span data-t="New project">Nuevo proyecto</span></button>
     <button id="btn-projects" class="icon-btn" title="Mis proyectos" data-tt="My projects"><i data-icon="folder" data-size="20"></i></button>
     <button id="btn-samples" class="icon-btn" title="Biblioteca de samples" data-tt="Sample library"><i data-icon="library" data-size="20"></i></button>
+    <button id="btn-tour" class="icon-btn" title="Tutorial interactivo" data-tt="Interactive tutorial"><i data-icon="cap" data-size="20"></i></button>
     <button id="btn-gh" class="icon-btn" title="Guardar una versión en GitHub" data-tt="Save a version to GitHub"><i data-icon="cloud" data-size="20"></i></button>
     <div class="transport">
       <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto" data-tt="Song tempo in beats per minute">
@@ -198,7 +199,8 @@
       <p class="hint"><span data-th="Choose which AI Maestro talks to. Keys are stored only on your computer (<code>config.json</code>).">Elige con qué inteligencia artificial habla Maestro. Las claves se guardan solo en tu ordenador (<code>config.json</code>).</span></p>
       <div class="radio">
         <label><input type="radio" name="provider" value="openai" checked> <span data-t="OpenAI-compatible">Compatible con OpenAI</span> <span class="hint">(OpenAI, OpenRouter, Groq, Ollama, LM Studio…)</span></label>
-        <label><input type="radio" name="provider" value="anthropic"> Claude <span class="hint">(Anthropic)</span></label>
+        <label><input type="radio" name="provider" value="anthropic"> Claude <span class="hint">(<span data-t="Anthropic API key">clave API de Anthropic</span>)</span></label>
+        <label><input type="radio" name="provider" value="claudecode"> <span data-t="Claude with your subscription">Claude con tu suscripción</span> <span class="hint">(Claude Code, Pro/Max)</span></label>
       </div>
       <fieldset id="fs-openai">
         <label><span data-t="Service">Servicio</span>
@@ -220,6 +222,11 @@
       <fieldset id="fs-anthropic" hidden>
         <label><span data-t="Anthropic API key">Clave API de Anthropic</span> <input id="an-key" type="password" placeholder="sk-ant-…"></label>
         <label><span data-t="Model">Modelo</span> <input id="an-model" placeholder="claude-opus-5-5"></label>
+      </fieldset>
+      <fieldset id="fs-claudecode" hidden>
+        <p class="hint"><span data-th="No API key: Maestro uses the <code>claude</code> command (Claude Code) on this computer, signed in with your Pro or Max plan. Install it from <a href=&quot;https://claude.com/claude-code&quot; target=&quot;_blank&quot;>claude.com/claude-code</a>, run <code>claude</code> once in a terminal and sign in. It counts towards your plan's usage limits and answers a bit slower than the API.">Sin clave de API: Maestro usa el comando <code>claude</code> (Claude Code) de este ordenador, con la sesión iniciada en tu plan Pro o Max. Instálalo desde <a href="https://claude.com/claude-code" target="_blank">claude.com/claude-code</a>, ejecuta <code>claude</code> una vez en una terminal e inicia sesión. Cuenta en los límites de uso de tu plan y responde algo más lento que la API.</span></p>
+        <label><span data-t="Path to claude (optional)">Ruta de claude (opcional)</span> <input id="cc-path" placeholder="claude" data-tp="empty = search the PATH"></label>
+        <label><span data-t="Model (optional)">Modelo (opcional)</span> <input id="cc-model" placeholder="sonnet, opus…"></label>
       </fieldset>
       <details id="gh-section">
         <summary><i data-icon="cloud" data-size="16"></i> <span data-t="GitHub: save your songs with version history">GitHub: guarda tus canciones con historial de versiones</span></summary>

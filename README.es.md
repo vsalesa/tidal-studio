@@ -7,6 +7,12 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
+- **Tutorial interactivo**: la primera vez que abres el estudio, Maestro te enseña todo en 21 pasos cortos (tocar la
+  batería, añadir pistas, efectos, controles en el chat, ideas, recetas, bloques, arreglo, código, biblioteca…). Cada paso
+  espera a que lo hagas, y puedes repetirlo desde el botón del birrete.
+- **Instrumentos ilustrados**: una batería en la que pulsas cada pieza (bd, sn, hh, ho, toms, crash, aro) para oírla y
+  aprender su nombre en Tidal, eliges sus pasos y la añades; piano, bajo, guitarra, saxo, trompeta, marimba y kalimba con
+  un teclado en pantalla que escribe tu melodía como código. Cada componente tiene además su propio icono.
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.
 - **Te explica el código**: botón «Explícame» en cada pista y «Explícame todo el código»; cada cambio llega con su
   explicación trozo a trozo y, a veces, un pequeño **reto** para que edites tú.
@@ -96,6 +102,14 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 |---|---|
 | ![Controles en el chat](docs/screenshots/es/controles-chat.png) | ![Packs online](docs/screenshots/es/packs-online.png) |
 
+| Batería: pulsa una pieza y aprende su nombre | Instrumentos con teclado |
+|---|---|
+| ![Batería](docs/screenshots/es/instrumentos-bateria.png) | ![Saxo](docs/screenshots/es/instrumentos-saxo.png) |
+
+| Tutorial interactivo | |
+|---|---|
+| ![Tutorial](docs/screenshots/es/tutorial.png) | |
+
 | Arreglo: pinta los compases o usa un preset | Forma de onda y recorte |
 |---|---|
 | ![Arreglo](docs/screenshots/es/arreglo.png) | ![Recorte](docs/screenshots/es/recorte-samples.png) |
@@ -148,7 +162,13 @@ Se abre el navegador en <http://localhost:8765>. Después:
 | Groq | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
 | Ollama (local, gratis) | `http://localhost:11434/v1` | `llama3.1` |
 | LM Studio (local, gratis) | `http://localhost:1234/v1` | el que tengas cargado |
-| Claude (Anthropic) | — | `claude-opus-5-5` |
+| Claude (clave API de Anthropic) | — | `claude-opus-5-5` |
+| **Claude con tu suscripción** (Claude Code, Pro/Max) | — | el de tu plan |
+
+**¿Sin clave de API? Usa tu suscripción de Claude:** instala [Claude Code](https://claude.com/claude-code), ejecuta `claude`
+una vez en una terminal e inicia sesión con tu plan Pro o Max, y elige «Claude con tu suscripción» en Ajustes. Maestro habla
+con Claude a través del comando `claude` de tu ordenador. Cuenta en los límites de uso de tu plan y responde algo más
+lento que la API (unos 10–20 s).
 
 Las claves se guardan solo en `config.json`, en tu ordenador (no se sube a git). También puedes usar las variables
 de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
