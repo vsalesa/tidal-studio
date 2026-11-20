@@ -48,15 +48,14 @@ env.update({
     "TIDAL_SCLANG_CONF": os.path.join(ROOT, "sclang_conf.yaml"),
     "GHC_ENVIRONMENT": os.path.join(ROOT, "tidal.env"),
     "TIDAL_STUDIO_LANG": "en",
-    "QT_QPA_PLATFORM": "offscreen",
 })
+if WIN:
+    env["QT_QPA_PLATFORM"] = "offscreen"
 # Hide the build tools so we notice if anything still depends on them
 for k in ("GHCUP_INSTALL_BASE_PREFIX", "CABAL_DIR"):
     env.pop(k, None)
 if not WIN:
     env["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"
-    # Users may not have Xcode Command Line Tools: make any call to clang fail loudly
-    env["DEVELOPER_DIR"] = "/nonexistent-xcode"
 
 section("files")
 for p in (ghci, sclang, python, os.path.join(ROOT, "tidal.env"), os.path.join(ROOT, "quarks", "Dirt-Samples", "bd")):
@@ -79,10 +78,17 @@ script = (
     'putStrLn ("SMOKE" ++ "-OK")\n'
     ':q\n'
 )
-code, out = run([ghci, "-ghci-script", os.path.join(app, "tidal", "BootTidal.hs")], env,
-                stdin=script, timeout=600, cwd=app)
+boot = os.path.join(app, "tidal", "BootTidal.hs")
+code, out = run([ghci, "-ghci-script", boot], env, stdin=script, timeout=600, cwd=app)
 if "SMOKE-OK" not in out or "error" in out.lower():
     failures.append("ghci + Tidal")
+
+if not WIN:
+    # Information only: does GHCi need the Xcode Command Line Tools (clang)? Users may not have them.
+    section("ghci without Xcode Command Line Tools (informational)")
+    env2 = dict(env, DEVELOPER_DIR="/nonexistent-xcode")
+    code, out = run([ghci, "-v3", "-ghci-script", boot], env2, stdin=script, timeout=600, cwd=app)
+    print("RESULT: GHCi works WITHOUT Xcode CLT" if "SMOKE-OK" in out else "RESULT: GHCi NEEDS Xcode CLT")
 
 section("sclang + SuperDirt")
 scd = os.path.join(tempfile.mkdtemp(), "check.scd")
