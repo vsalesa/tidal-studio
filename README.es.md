@@ -9,9 +9,14 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
-- **Tutorial interactivo**: la primera vez que abres el estudio, Maestro te enseña todo en 21 pasos cortos (tocar la
+- **Tutorial interactivo**: la primera vez que abres el estudio, Maestro te enseña todo en 22 pasos cortos (tocar la
   batería, añadir pistas, efectos, controles en el chat, ideas, recetas, bloques, arreglo, código, biblioteca…). Cada paso
   espera a que lo hagas, y puedes repetirlo desde el botón del birrete.
+- **Cursos por género: construye una canción desde cero.** Once cursos (merengue, salsa, cumbia, reggaeton, bossa nova,
+  jazz, funk, house, techno, drum & bass, lo-fi), cada uno una clase de producción completa: el ritmo característico
+  (güira y tambora, clave y tumbao, dembow, two-step…), luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade
+  pistas que ya suenan bien, Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un reto.
+  Lista completa y fuentes en [docs/COURSES.md](docs/COURSES.md).
 - **Fotos reales de instrumentos** (con licencia libre, de Wikimedia Commons, ver [CREDITS.md](CREDITS.md)): una batería en la que pulsas cada pieza (bd, sn, hh, ho, toms, crash, aro) para oírla y
   aprender su nombre en Tidal, eliges sus pasos y la añades; piano, bajo, guitarra, saxo, trompeta, marimba y kalimba con
   un teclado en pantalla que escribe tu melodía como código. Cada componente tiene además su propio icono.
@@ -82,6 +87,16 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **macOS, Windows y Linux**: el instalador detecta tu sistema.
 
 ## Capturas
+
+### Cursos por género
+
+| Elige un género | Cada paso: por qué suena así, el código y Maestro explicándolo |
+|---|---|
+| ![Cursos por género](docs/screenshots/es/cursos.png) | ![Paso del curso](docs/screenshots/es/curso-paso.png) |
+
+| Paso de arreglo: intro, grupo, mambo | Paso de mezcla y curso completado |
+|---|---|
+| ![Arreglo del curso](docs/screenshots/es/curso-arreglo.png) | ![Curso completado](docs/screenshots/es/curso-completado.png) |
 
 | Nuevo proyecto: en blanco, con wizard o lluvia de ideas | Receta «tipo jazz»: antes y después, explicado |
 |---|---|

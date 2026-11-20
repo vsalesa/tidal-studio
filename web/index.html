@@ -19,6 +19,7 @@
       </div>
     </div>
     <button id="btn-new" class="wizard-btn" title="Empezar un proyecto nuevo" data-tt="Start a new project"><i data-icon="plus" data-size="16"></i> <span data-t="New project">Nuevo proyecto</span></button>
+    <button id="btn-courses" class="course-btn" title="Cursos por género: construye una canción completa desde cero" data-tt="Genre courses: build a complete song from scratch"><i data-icon="course" data-size="16"></i> <span data-t="Genre courses">Cursos por género</span></button>
     <button id="btn-projects" class="icon-btn" title="Mis proyectos" data-tt="My projects"><i data-icon="folder" data-size="20"></i></button>
     <button id="btn-samples" class="icon-btn" title="Biblioteca de samples" data-tt="Sample library"><i data-icon="library" data-size="20"></i></button>
     <button id="btn-tour" class="icon-btn" title="Tutorial interactivo" data-tt="Interactive tutorial"><i data-icon="cap" data-size="20"></i></button>
@@ -59,6 +60,7 @@
           <div id="concepts"></div>
         </details>
       </section>
+      <section id="course-dock" class="course-dock" hidden></section>
       <div class="left-tabs" role="tablist">
         <button class="ltab active" data-pane="comps"><i data-icon="plus" data-size="15"></i> <span data-t="Components">Componentes</span></button>
         <button class="ltab" data-pane="palette"><i data-icon="code" data-size="15"></i> <span data-t="Code palette">Paleta de código</span></button>
@@ -108,7 +110,7 @@
         <div id="mixer"></div>
       </div>
       <div id="tab-arrange" class="tabpane">
-        <p class="hint"><span data-th="When each track plays, bar by bar. Click or drag over the boxes: each row writes <code>mask &quot;&lt;t!4 f!4&gt;&quot; $</code> on its track (t = plays, f = silent; the list repeats when it ends). Tip: in electronic music things change every 4 or 8 bars.">Cuándo suena cada pista, compás a compás. Pulsa o arrastra sobre las casillas: cada fila escribe <code>mask "&lt;t!4 f!4&gt;" $</code> en su pista (t = suena, f = calla; la lista se repite al acabar). Truco: en la música electrónica las cosas cambian cada 4 u 8 compases.</span></p>
+        <p class="hint"><span data-th="When each track plays, bar by bar. Click or drag over the boxes: each row writes <code>mask &quot;&amp;lt;t!4 f!4&amp;gt;&quot; $</code> on its track (t = plays, f = silent; the list repeats when it ends). Tip: in electronic music things change every 4 or 8 bars.">Cuándo suena cada pista, compás a compás. Pulsa o arrastra sobre las casillas: cada fila escribe <code>mask "&lt;t!4 f!4&gt;" $</code> en su pista (t = suena, f = calla; la lista se repite al acabar). Truco: en la música electrónica las cosas cambian cada 4 u 8 compases.</span></p>
         <div id="arrange"></div>
       </div>
       <div id="tab-code" class="tabpane">
@@ -169,6 +171,14 @@
   <div id="toast" class="toast" hidden></div>
 
   <!-- Nuevo proyecto / Mis proyectos -->
+  <dialog id="courses" class="wide courses-dlg">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="course" data-size="16"></i> <span data-t="Genre courses">Cursos por género</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="courses-body"></div>
+  </dialog>
+
   <dialog id="newproj">
     <div class="wz-head">
       <span class="wz-kicker" id="np-kicker"><i data-icon="plus" data-size="16"></i> <span data-t="New project">Nuevo proyecto</span></span>

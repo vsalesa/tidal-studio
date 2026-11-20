@@ -9,9 +9,14 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
-- **Interactive tutorial**: the first time you open the studio, Maestro walks you through everything in 21 short steps
+- **Interactive tutorial**: the first time you open the studio, Maestro walks you through everything in 22 short steps
   (play the drums, add tracks, effects, chat controls, ideas, recipes, blocks, arrangement, code, library…). Each step
   waits for you to do it, and you can repeat it from the cap button.
+- **Genre courses: build a song from scratch.** Eleven courses (merengue, salsa, cumbia, reggaeton, bossa nova, jazz,
+  funk, house, techno, drum & bass, lo-fi), each one a full production class: the signature rhythm (güira and tambora,
+  clave and tumbao, dembow, two-step…), then bass, harmony, melody, arrangement and mix. Every step adds tracks that
+  already sound good, Maestro explains the musical *why* and the code piece by piece, and gives you a challenge.
+  See [docs/COURSES.md](docs/COURSES.md) for the full list and sources.
 - **Real instrument photos** (openly licensed, from Wikimedia Commons, see [CREDITS.md](CREDITS.md)): a drum kit where you press each piece (bd, sn, hh, ho, toms, crash, rimshot) to hear it
   and learn its Tidal name, then choose its steps and add it; piano, bass, guitar, sax, trumpet, marimba and kalimba
   with an on-screen keyboard that writes your melody as code. Every component also has its own icon.
@@ -79,6 +84,16 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **macOS, Windows and Linux**: the installer detects your system.
 
 ## Screenshots
+
+### Genre courses
+
+| Pick a genre | Each step: why it sounds like that, the code, and Maestro explaining |
+|---|---|
+| ![Genre courses](docs/screenshots/courses.png) | ![Course step](docs/screenshots/course-step.png) |
+
+| Arrangement step: intro, band, mambo | Mix step and course complete |
+|---|---|
+| ![Course arrangement](docs/screenshots/course-arrangement.png) | ![Course complete](docs/screenshots/course-complete.png) |
 
 | New project: blank, wizard or brainstorm | Style recipe «like jazz»: before and after, explained |
 |---|---|
