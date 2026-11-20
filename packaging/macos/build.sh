@@ -51,7 +51,8 @@ if [ ! -x "$RT/SuperCollider.app/Contents/MacOS/sclang" ]; then
   curl -fL --retry 3 -o "$WORK/sc.dmg" "$URL"
   MNT="$(mktemp -d)"
   hdiutil attach -nobrowse -readonly -mountpoint "$MNT" "$WORK/sc.dmg"
-  SCAPP="$(find "$MNT" -maxdepth 2 -name 'SuperCollider.app' -print -quit)"
+  SCAPP="$(find "$MNT" -maxdepth 2 -name 'SuperCollider.app' -print 2>/dev/null | head -1 || true)"
+  [ -n "$SCAPP" ] || { ls -la "$MNT"; echo 'SuperCollider.app not found in the dmg'; exit 1; }
   rm -rf "$RT/SuperCollider.app" && ditto "$SCAPP" "$RT/SuperCollider.app"
   hdiutil detach "$MNT"
 fi
