@@ -39,6 +39,15 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **Controls in the chat (agentic UI)**: Maestro puts sliders, a tempo control, a sound selector and a step sequencer
   right inside its messages. Moving them writes the Tidal code live, so you see which word changes. Use the sliders button
   on any track, the «Tweak with controls» chip, or just ask for controls.
+- **More controls in the chat**: `every` (do something every N cycles), chance (`degradeBy`, `sometimesBy`), swing,
+  Euclidean rhythms (`bd(3,8)`), a moving filter (`# lpf (range … $ slow n sine)`), scale and octave, chords, and a
+  **mix desk** with volume, pan and mute for every track at once. Each one shows the code it writes.
+- **Arrangement**: the Arrangement tab shows every track across 8, 16 or 32 bars. Paint which bars each track plays
+  (it writes `mask "<…>"`) or start from a preset: build up in layers, drop, break, call and response.
+- **Export**: download the song as a `.tidal` file, copy a **share link** (the whole song in the URL; opening it loads
+  it as a new project), or **record** what you hear to a WAV file in `recordings/` with the record button.
+- **Waveform and trimming**: in the library, see the waveform of any sound, drag to choose a piece, listen to it and
+  use it (`# begin … # end …`).
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`, `README.md`),
   browse the history and open any old version from My projects → GitHub.
 - **Your progress**: the code and music concepts you have already used.
@@ -85,6 +94,10 @@ Click options and hear the result live. The ones recommended for your style are 
 |---|---|
 | ![Chat controls](docs/screenshots/chat-controls.png) | ![Online packs](docs/screenshots/online-packs.png) |
 
+| Arrangement: paint the bars, or use a preset | Waveform and trimming |
+|---|---|
+| ![Arrangement](docs/screenshots/arrangement.png) | ![Trim](docs/screenshots/sample-trim.png) |
+
 | Search Freesound by license | GitHub: every save is a version |
 |---|---|
 | ![Search online](docs/screenshots/samples-online.png) | ![GitHub versions](docs/screenshots/github-versions.png) |
@@ -105,7 +118,8 @@ Download or clone this folder and:
 | **macOS** | Open Terminal in the folder and run `./install.sh` |
 | **Linux** (Debian/Ubuntu, Fedora, Arch, openSUSE) | `./install.sh` |
 
-The installer adds, if missing: Python 3, Git, SuperCollider, SuperDirt (sounds), Haskell (via ghcup) and TidalCycles.
+The installer speaks English or Spanish depending on your system language (force it with `./install.sh --lang en` or
+`install.ps1 -Lang es`). It adds, if missing: Python 3, Git, SuperCollider, SuperDirt (sounds), Haskell (via ghcup) and TidalCycles.
 It takes 15–40 minutes the first time (~1 GB download). You can run it again safely: it skips what's already there.
 
 ## Usage

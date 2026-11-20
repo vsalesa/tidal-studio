@@ -27,6 +27,7 @@
         <span>BPM</span> <input id="bpm" type="number" min="40" max="220" value="120">
       </label>
       <button id="btn-play" class="primary" title="Hacer sonar todo" data-tt="Play everything"><i data-icon="play" data-size="14"></i> <span data-t="Play all">Tocar todo</span></button>
+      <button id="btn-rec" class="rec-btn" title="Grabar la canción a un archivo de audio (WAV)" data-tt="Record the song to an audio file (WAV)"><i data-icon="rec" data-size="14"></i> <span id="rec-label"><span data-t="Record">Grabar</span></span></button>
       <button id="btn-hush" class="outline-danger" title="Silenciar todo ya" data-tt="Silence everything now"><i data-icon="stop" data-size="14"></i> <span data-t="Hush">Silencio</span></button>
       <label class="toggle" title="Cuando cambias algo, suena al momento" data-tt="When you change something, it plays right away">
         <input id="autoplay" type="checkbox" checked> <span data-t="Live">En vivo</span>
@@ -76,6 +77,7 @@
       <div class="tabs">
         <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> <span data-t="Tracks">Pistas</span></button>
         <button class="tab" data-tab="blocks"><i data-icon="blocks" data-size="16"></i> <span data-t="Blocks">Bloques</span></button>
+        <button class="tab" data-tab="arrange"><i data-icon="estructura" data-size="16"></i> <span data-t="Arrangement">Arreglo</span></button>
         <button class="tab" data-tab="code"><i data-icon="code" data-size="16"></i> <span data-t="Code">Código</span></button>
         <button class="tab" data-tab="log"><i data-icon="log" data-size="16"></i> <span data-t="Log">Registro</span></button>
       </div>
@@ -94,6 +96,10 @@
         <div id="bk-info" class="bk-info" hidden></div>
         <div id="blocks"></div>
       </div>
+      <div id="tab-arrange" class="tabpane">
+        <p class="hint"><span data-th="When each track plays, bar by bar. Click or drag over the boxes: each row writes <code>mask &quot;&lt;t!4 f!4&gt;&quot; $</code> on its track (t = plays, f = silent; the list repeats when it ends). Tip: in electronic music things change every 4 or 8 bars.">Cuándo suena cada pista, compás a compás. Pulsa o arrastra sobre las casillas: cada fila escribe <code>mask "&lt;t!4 f!4&gt;" $</code> en su pista (t = suena, f = calla; la lista se repite al acabar). Truco: en la música electrónica las cosas cambian cada 4 u 8 compases.</span></p>
+        <div id="arrange"></div>
+      </div>
       <div id="tab-code" class="tabpane">
         <p class="hint"><span data-th="This is your song's TidalCycles code. Edit it and press <b>Apply</b> (or Ctrl+Enter). Lines starting with <code>--</code> are comments.">Este es el código TidalCycles de tu canción. Edítalo y pulsa <b>Aplicar</b> (o Ctrl+Enter). Las líneas que empiezan por <code>--</code> son comentarios.</span></p>
         <textarea id="code" spellcheck="false"></textarea>
@@ -101,6 +107,8 @@
           <button id="btn-apply-code" class="primary"><i data-icon="play" data-size="14"></i> <span data-t="Apply code">Aplicar código</span></button>
           <button id="btn-explain-all"><i data-icon="explain" data-size="16"></i> <span data-t="Explain all the code">Explícame todo el código</span></button>
           <button id="btn-copy-code"><i data-icon="copy" data-size="16"></i> <span data-t="Copy">Copiar</span></button>
+          <button id="btn-download-code" title="Descargar la canción como archivo .tidal" data-tt="Download the song as a .tidal file"><i data-icon="download" data-size="16"></i> <span data-t=".tidal file">Archivo .tidal</span></button>
+          <button id="btn-share" title="Copiar un enlace con la canción dentro" data-tt="Copy a link with the song inside"><i data-icon="share" data-size="16"></i> <span data-t="Share link">Enlace para compartir</span></button>
           <span id="code-msg" class="hint"></span>
         </div>
       </div>

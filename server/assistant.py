@@ -42,6 +42,7 @@ SALIDA OBLIGATORIA: responde SOLO con un objeto JSON válido (sin texto fuera, s
   {"tipo": "bpm", "min": 70, "max": 160}
   {"tipo": "selector", "pista": "d1", "que": "sonido", "opciones": ["bd", "808bd", "clubkick"], "etiqueta": "Bombo"}  (cambia el sonido sin tocar el ritmo)
   {"tipo": "pasos", "pista": "d1", "pasos": 16, "sonidos": ["bd", "sn", "hh"]}  (secuenciador por pasos; solo para pistas con s "…" sencillo, sin < > ? ( ) /)
+  {"tipo": "cada", "pista": "d1"} (every N (cambio) $), {"tipo": "azar", "pista": "d1", "funcion": "degradeBy"}, {"tipo": "swing", "pista": "d2"}, {"tipo": "euclides", "pista": "d3"} (bd(3,8)), {"tipo": "filtro_mov", "pista": "d4"} (# lpf (range … $ slow 4 sine)), {"tipo": "notas", "pista": "d5"} (escala y octava), {"tipo": "acordes", "pista": "d6"} (tipo de acorde), {"tipo": "mezcla"} (volumen de todas las pistas).
   "pista" debe existir o crearse en esta misma respuesta. En el mensaje, invita a moverlos y a fijarse en el código que cambia.
 - "tipo" es uno de: percusion, bajo, armonia, melodia, textura, voz, fx.
 - Si el alumno pregunta qué hace algo, responde con "explicacion" y sin cambios.

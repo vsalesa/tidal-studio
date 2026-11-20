@@ -7,7 +7,8 @@ import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
 import { songBlocksHTML, blockInfo } from "./blocks.js";
-import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS } from "./controls.js";
+import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
+import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
@@ -192,6 +193,7 @@ function changed() {
   if (!state.trying) renderIdeas();
   renderPalette();
   renderBlocks();
+  renderArrange();
   if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
 }
 
@@ -204,6 +206,42 @@ function explainHTML(ex, onClose) {
     ${ex.idea ? `<div class="idea-note"><b>${L("Idea de Maestro.", "Maestro's idea.")}</b> ${esc(ex.idea)}</div>` : ""}`;
 }
 
+let arN = 16;
+function renderArrange() {
+  if (!$("#tab-arrange").classList.contains("active")) return;
+  $("#arrange").innerHTML = arrangeHTML(state, arN, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n), kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)" });
+}
+function wireArrange() {
+  const box = $("#arrange");
+  let paint = null;
+  const setCell = (btn) => {
+    const row = btn.closest(".ar-row"); const t = state.tracks.find((x) => x.id === row.dataset.id); if (!t) return;
+    const bars = barsOf(t.code, arN); if (!bars) return;
+    const k = +btn.dataset.k;
+    if (paint === null) paint = !bars[k];
+    if (bars[k] === paint) return;
+    bars[k] = paint; t.code = setMask(t.code, bars); t.explain = null;
+    btn.classList.toggle("on", paint);
+    const mw = t.code.match(/mask "[^"]*"/);
+    row.querySelector(".ar-code").textContent = mw ? mw[0] + " $" : L("(siempre suena)", "(always plays)");
+  };
+  const finish = () => {
+    if (paint === null) return;
+    paint = null; save(); renderTracks(); renderBlocks(); $("#code").value = buildCode();
+    if (live()) playAll();
+  };
+  box.addEventListener("pointerdown", (e) => { const b = e.target.closest(".ar-cell"); if (!b) return; e.preventDefault(); paint = null; setCell(b); });
+  box.addEventListener("pointerover", (e) => { if (paint === null) return; const b = e.target.closest(".ar-cell"); if (b) setCell(b); });
+  window.addEventListener("pointerup", finish);
+  box.addEventListener("change", (e) => { if (e.target.id === "ar-n") { arN = +e.target.value; renderArrange(); } });
+  box.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-p]"); if (!b) return;
+    const p = AR_PRESETS.find((x) => x.id === b.dataset.p);
+    state.tracks.forEach((t, i) => { if (!barsOf(t.code, arN)) return; t.code = setMask(t.code, Array.from({ length: arN }, (_, k) => !!p.f(t, k, arN, i, state.tracks.length))); });
+    changed(); if (live()) playAll();
+    say(L(`He aplicado el arreglo «${p.es}». Mira la pestaña Código: cada pista lleva ahora su mask "<…>", un interruptor por compás.`, `I applied the «${p.en}» arrangement. Look at the Code tab: each track now has its own mask "<…>", one switch per bar.`), state.options);
+  });
+}
 function renderBlocks() {
   if (!$("#tab-blocks").classList.contains("active")) return;
   $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n),
@@ -681,6 +719,9 @@ async function send(text) {
   state.chat.push({ role: "user", content: text });
   state.options = [];
   save(); renderChat();
+  if ((!server.llm || state.offline) && MIX_RE.test(text) && state.tracks.length) {
+    return say(L("Aquí tienes la mesa de mezcla: un volumen por pista. Empieza bajando todo y sube primero el bombo y el bajo.", "Here's the mixing desk: one volume per track. Start low and bring up the kick and bass first."), state.options, { controles: [{ tipo: "mezcla" }] });
+  }
   if (text === CTL_CHIP() || ((!server.llm || state.offline) && CTL_RE.test(text))) {
     const t = selectedTrack();
     if (!t) return say(L("Primero crea una pista; luego te doy controles para ajustarla.", "Create a track first; then I'll give you controls to tweak it."), state.options);
@@ -1072,18 +1113,19 @@ function openProjects(tab = "local") {
 }
 // ------------------------------------------------------------------ controles en el chat (agentic UI)
 const CTL_CHIP = () => L("Ajustar con controles", "Tweak with controls");
+const MIX_RE = /mezcl|\bmix|volúmenes|volumenes|levels|niveles/i;
 const CTL_RE = /control|slider|deslizador|ajust|perilla|knob|tweak|secuenciador|sequencer|rejilla|grid/i;
 function showControls(t, opts = {}) {
   const controles = controlsFor(t, { bpm: opts.bpm, samples: server.samples || [] });
   say(L(`Aquí tienes controles para ${t.id} (${t.name}). Muévelos y escucha: cada control escribe el código por ti, fíjate en la línea gris que cambia. Si no te convence, pulsa Restaurar.`,
     `Here are controls for ${t.id} (${t.name}). Move them and listen: each control writes the code for you, watch the grey line change. If you don't like it, press Restore.`),
-    state.options, { controles });
+    [L("Mesa de mezcla", "Mixing desk"), ...(state.options || []).filter((o) => !/mezcla|mixing/i.test(o))].slice(0, 6), { controles });
 }
 let ctlTimer = null;
 function ctlApply(mi, mutate) {
   const m = state.chat[mi];
   if (!m) return;
-  if (!m.snap) m.snap = { bpm: state.bpm, tracks: Object.fromEntries(state.tracks.map((t) => [t.id, t.code])) };
+  if (!m.snap) m.snap = { bpm: state.bpm, tracks: Object.fromEntries(state.tracks.map((t) => [t.id, t.code])), muted: Object.fromEntries(state.tracks.map((t) => [t.id, !!t.muted])) };
   const touched = mutate();
   if (touched) touched.explain = null;
   save(); renderTracks(); renderBlocks();
@@ -1097,7 +1139,34 @@ function refreshPanel(mi) {
 }
 function wireControls() {
   const box = $("#chat");
+  const extVals = (ctl) => {
+    const v = {};
+    ctl.querySelectorAll("input[type=range][data-k]").forEach((x) => { v[x.dataset.k] = +x.value; });
+    ctl.querySelectorAll("input[type=checkbox][data-k]").forEach((x) => { v[x.dataset.k] = x.checked; });
+    ctl.querySelectorAll(".ctl-opts[data-k]").forEach((x) => { const on = x.querySelector("button.on"); if (on) v[x.dataset.k] = on.dataset.o; });
+    return v;
+  };
+  const extRun = (mi, ctl, c, override, rerender) => {
+    if (c.tipo === "mezcla") return;
+    const t = state.tracks.find((x) => x.id === c.pista); if (!t) return;
+    const vals = { ...extVals(ctl), ...override };
+    ctlApply(mi, () => { t.code = extApply(c, t, vals); return t; });
+    if (rerender) return refreshPanel(mi);
+    ctl.querySelector(".ctl-code").textContent = extState(c, t).chip;
+  };
   box.addEventListener("input", (e) => {
+    const ext = e.target.closest(".ctl.ext");
+    if (ext && e.target.matches("input[type=range]")) {
+      const mi = +ext.closest(".ctl-panel").dataset.m, c = state.chat[mi].controles[+ext.dataset.c];
+      const r = e.target, out = r.nextElementSibling;
+      if (c.tipo === "mezcla") {
+        const t = state.tracks.find((x) => x.id === r.dataset.id); if (!t) return;
+        ctlApply(mi, () => { t.code = setParam(t.code, "gain", +r.value); return t; });
+        out.textContent = fmt(+r.value); return;
+      }
+      out.textContent = c.tipo === "azar" ? `${Math.round(r.value * 100)} %` : fmt(+r.value);
+      return extRun(mi, ext, c, {}, false);
+    }
     const r = e.target.closest(".ctl input[type=range]"); if (!r) return;
     const mi = +r.closest(".ctl-panel").dataset.m, ci = +r.closest(".ctl").dataset.c;
     const c = state.chat[mi].controles[ci];
@@ -1115,6 +1184,12 @@ function wireControls() {
     r.nextElementSibling.textContent = fmt(v);
     r.closest(".ctl").querySelector(".ctl-code").textContent = `# ${c.param} ${fmt(v)}`;
   });
+  box.addEventListener("change", (e) => {
+    const ext = e.target.closest(".ctl.ext");
+    if (!ext || !e.target.matches("input[type=checkbox]")) return;
+    const mi = +ext.closest(".ctl-panel").dataset.m;
+    extRun(mi, ext, state.chat[mi].controles[+ext.dataset.c], {}, true);
+  });
   box.addEventListener("click", (e) => {
     const panel = e.target.closest(".ctl-panel"); if (!panel) return;
     const mi = +panel.dataset.m, m = state.chat[mi];
@@ -1122,11 +1197,22 @@ function wireControls() {
     if (b.dataset.a === "ctl-reset") {
       if (!m.snap) return;
       state.bpm = m.snap.bpm; $("#bpm").value = state.bpm;
-      state.tracks.forEach((t) => { if (m.snap.tracks[t.id] !== undefined) t.code = m.snap.tracks[t.id]; });
+      state.tracks.forEach((t) => { if (m.snap.tracks[t.id] !== undefined) t.code = m.snap.tracks[t.id]; if (m.snap.muted && m.snap.muted[t.id] !== undefined) t.muted = m.snap.muted[t.id]; });
       m.snap = null; save(); changed(); if (live()) playAll(); return refreshPanel(mi);
     }
     const ctl = b.closest(".ctl"); if (!ctl) return;
     const c = m.controles[+ctl.dataset.c];
+    if (ctl.classList.contains("ext")) {
+      if (c.tipo === "mezcla" && b.dataset.k === "mute") {
+        const t = state.tracks.find((x) => x.id === b.dataset.o); if (!t) return;
+        if (!m.snap) m.snap = { bpm: state.bpm, tracks: Object.fromEntries(state.tracks.map((x) => [x.id, x.code])), muted: Object.fromEntries(state.tracks.map((x) => [x.id, !!x.muted])) };
+        t.muted = !t.muted; changed(); if (live()) (t.muted ? silenceId(t.id) : playTrack(t));
+        return refreshPanel(mi);
+      }
+      const grp = b.closest(".ctl-opts[data-k]");
+      if (grp) return extRun(mi, ctl, c, { [grp.dataset.k]: b.dataset.o }, true);
+      return;
+    }
     const t = state.tracks.find((x) => x.id === c.pista); if (!t) return;
     if (c.tipo === "selector" && b.dataset.o) {
       const o = b.dataset.o;
@@ -1200,10 +1286,11 @@ async function renderSamples() {
       ${smTypeChips(counts)}
       <div class="sm-list">${list.length ? list.map((x) => `<div class="sm-item mine" style="--k:${KIND_COLOR[typeKind(x.type)]}">
         <span class="n"><code>${esc(x.name)}</code><span class="d">${x.files.length} ${x.files.length === 1 ? L("archivo", "file") : L("archivos", "files")} · ${x.source === "freesound" ? "Freesound" : L("subido por ti", "uploaded by you")}</span>
-          <span class="sm-files">${x.files.map((f) => `<span class="sm-file"><button class="icon-btn" data-a="hear-file" data-name="${esc(x.name)}" data-i="${f.index}" title="${esc(f.file)}">${icon("play", 12)}</button><code>${esc(x.name)}:${f.index}</code>${f.license_name ? `<span class="lic" title="${esc((f.title || "") + " · " + (f.author || ""))}">${esc(f.license_name)}</span>` : ""}<button class="icon-btn" data-a="del-file" data-name="${esc(x.name)}" data-i="${f.index}" title="${esc(L("Borrar este archivo", "Delete this file"))}">${icon("close", 12)}</button></span>`).join("")}</span></span>
+          <span class="sm-files">${x.files.map((f) => `<span class="sm-file"><button class="icon-btn" data-a="hear-file" data-name="${esc(x.name)}" data-i="${f.index}" title="${esc(f.file)}">${icon("play", 12)}</button><code>${esc(x.name)}:${f.index}</code><button class="icon-btn" data-a="wave" data-name="${esc(x.name)}" data-i="${f.index}" title="${esc(L("Ver la onda y recortar", "See the waveform and trim"))}">${icon("wave", 12)}</button>${f.license_name ? `<span class="lic" title="${esc((f.title || "") + " · " + (f.author || ""))}">${esc(f.license_name)}</span>` : ""}<button class="icon-btn" data-a="del-file" data-name="${esc(x.name)}" data-i="${f.index}" title="${esc(L("Borrar este archivo", "Delete this file"))}">${icon("close", 12)}</button></span>`).join("")}</span></span>
         <select data-a="set-type" data-name="${esc(x.name)}">${SAMPLE_TYPES.filter((t) => t.id !== "synth").map((t) => `<option value="${t.id}" ${t.id === x.type ? "selected" : ""}>${esc(L(t.es, t.en))}</option>`).join("")}</select>
         ${useButtons(x.name, x.type)}
-        <button class="icon-btn" data-a="del-sound" data-name="${esc(x.name)}" title="${esc(L("Borrar el sonido", "Delete the sound"))}">${icon("trash", 15)}</button></div>`).join("")
+        <button class="icon-btn" data-a="del-sound" data-name="${esc(x.name)}" title="${esc(L("Borrar el sonido", "Delete the sound"))}">${icon("trash", 15)}</button>
+        ${sm.wave && sm.wave.name === x.name ? trimHTML(x) : ""}</div>`).join("")
         : `<p class="hint">${L("Aún no tienes samples propios. Sube archivos arriba o búscalos en «Buscar online».", "You don't have your own samples yet. Upload files above or find some in «Search online».")}</p>`}</div>`;
   }
   if (sm.tab === "online") {
@@ -1265,6 +1352,7 @@ async function renderSamples() {
     }
   }
   body.innerHTML = html;
+  if (sm.wave && sm.tab === "mine") paintWave();
 }
 function suggestName(r) {
   const base = (r.name || "").replace(/\.[a-z0-9]+$/i, "").toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
@@ -1301,6 +1389,9 @@ function wireSamples() {
       if (server.engine && server.engine.simulation && b.dataset.type !== "synth") return hearDirt(n, sm.variant[n] || 0);
       return evalCode(b.dataset.type === "synth" ? `once $ n "0 4 7" # s "${n}"` : `once $ s "${n}:${sm.variant[n] || 0}"`);
     }
+    if (a === "wave") { sm.wave = sm.wave && sm.wave.name === b.dataset.name && sm.wave.i === +b.dataset.i ? null : { name: b.dataset.name, i: +b.dataset.i, begin: 0, end: 1 }; await renderSamples(); return drawWave(); }
+    if (a === "trim-hear") return playTrim();
+    if (a === "trim-new" || a === "trim-apply") return useTrim(a === "trim-new");
     if (a === "hear-file") { smStop(); smAudio = new Audio(`/api/samples/file?name=${encodeURIComponent(b.dataset.name)}&i=${b.dataset.i}`); return smAudio.play().catch(() => {}); }
     if (a === "hear-url") { smStop(); const r = sm.results.results[+b.dataset.i]; smAudio = new Audio(r.preview || r.preview_ogg); return smAudio.play().catch(() => {}); }
     if (a === "use-new" || a === "use-swap") return useSample(b.dataset.name, b.dataset.type, a === "use-new" ? "new" : "swap");
@@ -1353,6 +1444,11 @@ function wireSamples() {
     }
   });
   body.addEventListener("input", (e) => {
+    if (e.target.dataset.trim) {
+      sm.wave[e.target.dataset.trim] = +e.target.value;
+      if (sm.wave.end <= sm.wave.begin + 0.01) { if (e.target.dataset.trim === "begin") sm.wave.end = Math.min(1, sm.wave.begin + 0.01); else sm.wave.begin = Math.max(0, sm.wave.end - 0.01); }
+      paintWave(); return;
+    }
     if (e.target.id === "sm-pack-q") { sm.packQ = e.target.value; clearTimeout(sm.qT); sm.qT = setTimeout(() => { renderSamples(); const i = $("#sm-pack-q"); i.focus(); i.setSelectionRange(i.value.length, i.value.length); }, 250); }
   });
   body.addEventListener("change", async (e) => {
@@ -1387,6 +1483,67 @@ function guessTypeFrom(t) {
   const rules = [["bombo", /kick|bd\b|bassdrum/], ["caja", /snare|clap|rim/], ["platos", /hat|cymbal|crash|ride/], ["bajo", /bass|808/], ["voz", /vocal|voice|vox/],
     ["pad", /pad|drone|ambien|field/], ["loop", /loop|break/], ["percusion", /perc|tom|conga|bongo|shaker/], ["melodico", /piano|rhodes|chord|synth|guitar|pluck|key/], ["fx", /fx|noise|vinyl|glitch|riser/]];
   return (rules.find(([, re]) => re.test(t)) || ["otro"])[0];
+}
+// --- forma de onda y recorte con # begin / # end (Tidal recorta al tocar; el archivo no cambia)
+function trimHTML(x) {
+  const w = sm.wave;
+  return `<div class="sm-trim"><canvas id="sm-wave" width="800" height="90"></canvas>
+    <div class="ctl-two"><span>begin</span><div class="ctl-row"><input type="range" data-trim="begin" min="0" max="1" step="0.005" value="${w.begin}"><output id="tb">${fmt(w.begin)}</output></div>
+    <span>end</span><div class="ctl-row"><input type="range" data-trim="end" min="0" max="1" step="0.005" value="${w.end}"><output id="te">${fmt(w.end)}</output></div></div>
+    <code class="ctl-code" id="trim-code"></code>
+    <div class="row"><button data-a="trim-hear">${icon("play", 13)} ${L("Escuchar el recorte", "Hear the cut")}</button>
+      <button class="primary" data-a="trim-new">${icon("plus", 13)} ${L("Nueva pista con el recorte", "New track with the cut")}</button>
+      ${selectedTrack() ? `<button data-a="trim-apply">${L(`Aplicar a ${selectedTrack().id}`, `Apply to ${selectedTrack().id}`)}</button>` : ""}</div>
+    <p class="ctl-ex">${L("begin y end eligen qué trozo del sample suena (0 = principio, 1 = final). Tidal lo recorta al tocar: el archivo no cambia.", "begin and end pick which part of the sample plays (0 = start, 1 = end). Tidal trims it while playing: the file doesn't change.")}</p></div>`;
+}
+async function drawWave() {
+  if (!sm.wave) return;
+  try {
+    const buf = await (await fetch(`/api/samples/file?name=${encodeURIComponent(sm.wave.name)}&i=${sm.wave.i}`)).arrayBuffer();
+    const ac = new (window.AudioContext || window.webkitAudioContext)();
+    sm.wave.audio = await ac.decodeAudioData(buf); sm.wave.ac = ac;
+  } catch { sm.wave.audio = null; }
+  paintWave();
+}
+function paintWave() {
+  const cv = $("#sm-wave"); if (!cv || !sm.wave) return;
+  const w = sm.wave, g = cv.getContext("2d"), W = cv.width, H = cv.height;
+  const css = getComputedStyle(document.documentElement);
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = css.getPropertyValue("--sunk"); g.fillRect(0, 0, W, H);
+  if (w.audio) {
+    const d = w.audio.getChannelData(0), step = Math.max(1, Math.floor(d.length / W));
+    for (let x = 0; x < W; x++) {
+      let mn = 1, mx = -1; for (let j = x * step; j < Math.min(d.length, (x + 1) * step); j++) { const v = d[j]; if (v < mn) mn = v; if (v > mx) mx = v; }
+      const inside = x / W >= w.begin && x / W <= w.end;
+      g.fillStyle = inside ? css.getPropertyValue("--accent") : css.getPropertyValue("--rule-strong");
+      g.fillRect(x, (1 - mx) * H / 2, 1, Math.max(1, (mx - mn) * H / 2));
+    }
+  } else { g.fillStyle = css.getPropertyValue("--ink-3"); g.font = "14px sans-serif"; g.fillText(L("No se pudo leer el audio en el navegador", "Couldn't read the audio in the browser"), 12, H / 2); }
+  g.fillStyle = "rgba(0,0,0,.08)"; g.fillRect(0, 0, w.begin * W, H); g.fillRect(w.end * W, 0, W - w.end * W, H);
+  $("#tb").textContent = fmt(w.begin); $("#te").textContent = fmt(w.end);
+  $("#trim-code").textContent = trimCode();
+}
+const trimCode = () => `s "${sm.wave.name}${sm.wave.i ? ":" + sm.wave.i : ""}"${sm.wave.begin > 0 ? ` # begin ${fmt(sm.wave.begin)}` : ""}${sm.wave.end < 1 ? ` # end ${fmt(sm.wave.end)}` : ""}`;
+function playTrim() {
+  const w = sm.wave; if (!w || !w.audio) return;
+  const src = w.ac.createBufferSource(); src.buffer = w.audio; src.connect(w.ac.destination);
+  const d = w.audio.duration; src.start(0, w.begin * d, Math.max(0.01, (w.end - w.begin) * d));
+}
+function useTrim(asNew) {
+  const w = sm.wave; if (!w) return;
+  if (asNew) {
+    const x = (sm.mine?.sounds || []).find((y) => y.name === w.name);
+    const t = addTrack(w.name, typeKind(x?.type || "otro"), trimCode()); if (!t) return;
+  } else {
+    const t = selectedTrack(); if (!t) return;
+    let code = swapSound(t.code, w.name, w.i || null) || trimCode();
+    code = w.begin > 0 ? setParam(code, "begin", w.begin) : code.replace(/\s*#\s*begin\s+[\d.]+/, "");
+    code = w.end < 1 ? setParam(code, "end", w.end) : code.replace(/\s*#\s*end\s+[\d.]+/, "");
+    t.code = code; changed(); if (live()) playTrack(t);
+  }
+  $("#samples").close();
+  say(L(`Listo: ${trimCode()}. # begin y # end son parámetros de Tidal: el mismo sample puede sonar entero o solo un trozo, en cada pista distinto.`, `Done: ${trimCode()}. # begin and # end are Tidal parameters: the same sample can play whole or just a slice, differently on each track.`), state.options);
 }
 async function openPack(p) {
   sm.pack = p; sm.packIdx = null; sm.packQ = ""; sm.packGroup = ""; renderSamples();
@@ -1682,8 +1839,50 @@ function translateStatic() {
   b.onclick = () => { save(); setLang(LANG === "en" ? "es" : "en"); };
 }
 
+// ------------------------------------------------------------------ compartir y grabar
+function b64url(str) { return btoa(String.fromCharCode(...new TextEncoder().encode(str))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+function unb64url(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); return new TextDecoder().decode(Uint8Array.from(atob(s), (c) => c.charCodeAt(0))); }
+function encodeSong() {
+  return b64url(JSON.stringify({ v: 1, name: state.name, bpm: state.bpm, style: state.style, tracks: state.tracks.map((t) => [t.id, t.name, t.kind, t.code, t.muted ? 1 : 0]) }));
+}
+function importSharedSong() {
+  const m = location.hash.match(/^#song=([\w-]+)/);
+  if (!m) return;
+  history.replaceState(null, "", location.pathname);
+  try {
+    const d = JSON.parse(unb64url(m[1]));
+    const tracks = (d.tracks || []).filter((t) => Array.isArray(t) && /^d([1-9]|1[0-2])$/.test(t[0])).map(([id, name, kind, code, muted]) => ({ id, name: String(name || id).slice(0, 60), kind: String(kind || "textura"), code: String(code || "").slice(0, 2000), muted: !!muted }));
+    if (!tracks.length) return;
+    save();
+    state = { ...FRESH(), name: String(d.name || L("Canción compartida", "Shared song")).slice(0, 80), bpm: Math.max(40, Math.min(220, +d.bpm || 120)), style: STYLES[d.style] ? d.style : "", tracks, step: "libre" };
+    state.chat = [{ role: "assistant", content: L(`Has abierto «${state.name}», una canción compartida (${tracks.length} pistas, ${state.bpm} BPM). Se ha guardado como proyecto nuevo; tu proyecto anterior sigue en Mis proyectos. Pulsa Tocar todo para escucharla, o pídeme que te explique cómo está hecha.`, `You opened «${state.name}», a shared song (${tracks.length} tracks, ${state.bpm} BPM). It's saved as a new project; your previous one is still in My projects. Press Play all to hear it, or ask me how it's made.`) }];
+    state.options = [L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()];
+    save();
+  } catch { /* enlace roto: seguimos con lo que había */ }
+}
+let recTimer = null, recStart = 0;
+async function toggleRecord() {
+  const b = $("#btn-rec");
+  if (!recTimer) {
+    try {
+      const r = await api("/api/record/start", { name: state.name || "cancion" });
+      if (live() && state.tracks.length) playAll();
+      recStart = Date.now(); b.classList.add("on"); b.dataset.file = r.name;
+      recTimer = setInterval(() => { const s = Math.floor((Date.now() - recStart) / 1000); $("#rec-label").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }, 500);
+      toast(L("Grabando… pulsa otra vez para parar.", "Recording… press again to stop."));
+    } catch (e) { toast(e.message); }
+    return;
+  }
+  clearInterval(recTimer); recTimer = null; b.classList.remove("on"); $("#rec-label").textContent = L("Grabar", "Record");
+  await api("/api/record/stop", {}).catch(() => {});
+  const name = b.dataset.file;
+  setTimeout(() => say(L(`Grabación lista: ${name} (carpeta recordings/). Es un WAV de lo que sonaba por la salida de SuperCollider.`, `Recording ready: ${name} (recordings/ folder). It's a WAV of whatever came out of SuperCollider.`), state.options,
+    { links: [{ href: `/api/recordings/file?name=${encodeURIComponent(name)}`, label: L("Descargar WAV", "Download WAV") }] }), 600);
+}
+
 function init() {
   load();
+  importSharedSong();
   // Si cambió el idioma, Maestro vuelve a saludar en el nuevo idioma (las pistas se mantienen)
   if (state.lang !== LANG) { state.chat = []; state.options = []; state.ideas = []; state.lang = LANG; }
   translateStatic();
@@ -1724,6 +1923,7 @@ function init() {
     if (b.dataset.tab === "code") $("#code").value = buildCode();
     if (b.dataset.tab === "log") refreshLog();
     if (b.dataset.tab === "blocks") renderBlocks();
+    if (b.dataset.tab === "arrange") renderArrange();
   });
   $("#blocks").onclick = (e) => {
     const tr = e.target.closest(".bk-track");
@@ -1765,6 +1965,19 @@ function init() {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("#btn-apply-code").click(); }
     if (e.key === "Tab") { e.preventDefault(); document.execCommand("insertText", false, "  "); }
   });
+  $("#btn-download-code").onclick = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([buildCode()], { type: "text/plain" }));
+    a.download = `${slugify(state.name || "cancion")}.tidal`; a.click(); URL.revokeObjectURL(a.href);
+    $("#code-msg").textContent = L("Descargado: ábrelo en cualquier editor de TidalCycles (Pulsar, VS Code, Vim…).", "Downloaded: open it in any TidalCycles editor (Pulsar, VS Code, Vim…).");
+  };
+  $("#btn-share").onclick = async () => {
+    const url = `${location.origin}${location.pathname}#song=${encodeSong()}`;
+    try { await navigator.clipboard.writeText(url); } catch { /* sin portapapeles */ }
+    $("#code-msg").textContent = L("Enlace copiado. Quien lo abra con Tidal Studio instalado verá tu canción (todo va dentro del enlace).", "Link copied. Anyone opening it with Tidal Studio installed will see your song (everything is inside the link).");
+    say(L("Te he copiado un enlace con tu canción dentro (código, BPM y nombres de pista). Pégalo a quien quieras: al abrirlo en su Tidal Studio se carga como proyecto nuevo.", "I copied a link with your song inside (code, BPM and track names). Share it: opening it in Tidal Studio loads it as a new project."), state.options, { links: [{ href: url, label: L("Enlace de la canción", "Song link") }] });
+  };
+  $("#btn-rec").onclick = toggleRecord;
   $("#btn-copy-code").onclick = () => navigator.clipboard.writeText($("#code").value).then(() => $("#code-msg").textContent = L("Copiado", "Copied"));
   $("#btn-engine-start").onclick = async () => { await api("/api/engine/start", {}); refreshStatus(); };
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };
@@ -1790,6 +2003,7 @@ function init() {
   $("#btn-samples").onclick = () => openSamples();
   wireSamples();
   wireControls();
+  wireArrange();
   $("#btn-gh-test").onclick = async () => {
     const m = $("#gh-msg"); m.textContent = L("Probando…", "Testing…"); $("#btn-gh-create").hidden = true;
     try {

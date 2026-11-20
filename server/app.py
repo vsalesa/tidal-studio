@@ -207,6 +207,24 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
                 return
+            if path == "/api/recordings":
+                d = os.path.join(ROOT, "recordings")
+                files = sorted((f for f in os.listdir(d) if f.endswith(".wav")), reverse=True) if os.path.isdir(d) else []
+                return self._json({"folder": d, "files": [{"name": f, "size": os.path.getsize(os.path.join(d, f))} for f in files[:30]]})
+            if path == "/api/recordings/file":
+                name = os.path.basename(parse_qs(urlparse(self.path).query).get("name", [""])[0])
+                fp = os.path.join(ROOT, "recordings", name)
+                if not name.endswith(".wav") or not os.path.isfile(fp):
+                    return self._json({"error": "No existe esa grabación"}, 404)
+                with open(fp, "rb") as f:
+                    body = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "audio/wav")
+                self.send_header("Content-Disposition", f'attachment; filename="{name}"')
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path == "/api/log":
                 return self._json({"log": ENGINE.log_tail(200)})
             return self._json({"error": "Ruta no encontrada"}, 404)
@@ -347,6 +365,19 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"commits": github.history(cfg, github.slugify(data.get("slug")))})
                 return self._json({"error": "Ruta no encontrada"}, 404)
 
+            if path == "/api/record/start":
+                d = os.path.join(ROOT, "recordings")
+                os.makedirs(d, exist_ok=True)
+                import time as _t
+                name = github.slugify(data.get("name") or "cancion") + _t.strftime("-%Y%m%d-%H%M%S") + ".wav"
+                if not ENGINE.record_start(os.path.join(d, name)):
+                    return self._json({"error": "Para grabar hace falta el motor de sonido (SuperCollider) en marcha."
+                                       if data.get("lang") != "en" else "Recording needs the sound engine (SuperCollider) running."}, 400)
+                return self._json({"ok": True, "name": name, "folder": d})
+            if path == "/api/record/stop":
+                ENGINE.record_stop()
+                return self._json({"ok": True})
+
             if path == "/api/engine/start":
                 return self._json(ENGINE.start())
             if path == "/api/engine/stop":
@@ -367,17 +398,23 @@ class Handler(SimpleHTTPRequestHandler):
 
 def check():
     """Diagnóstico rápido: python server/app.py --check"""
-    print(f"Sistema:      {platform.system()} {platform.release()} ({platform.machine()})")
-    print(f"Python:       {sys.version.split()[0]}")
+    lang = os.environ.get("TIDAL_STUDIO_LANG") or os.environ.get("LC_ALL") or os.environ.get("LANG") or "en"
+    es = lang.lower().startswith("es")
+    t = (lambda a, b: a if es else b)
     g = find_ghci()
     s = find_sclang()
-    print(f"GHCi (Tidal): {g or 'NO encontrado'}")
-    print(f"sclang (SC):  {s or 'NO encontrado'}")
     cfg = load_config()
-    print(f"IA:           {cfg['provider']} -> {'configurada' if llm_configured(cfg) else 'sin configurar'}")
+    print(f"{t('Sistema', 'System'):14}{platform.system()} {platform.release()} ({platform.machine()})")
+    print(f"{'Python:':14}{sys.version.split()[0]}")
+    print(f"{'GHCi (Tidal):':14}{g or t('NO encontrado', 'NOT found')}")
+    print(f"{'sclang (SC):':14}{s or t('NO encontrado', 'NOT found')}")
+    ok = llm_configured(cfg)
+    print(f"{t('IA:', 'AI:'):14}{cfg['provider']} -> {t('configurada', 'configured') if ok else t('sin configurar', 'not configured')}")
     if not g or not s:
-        print("\nFalta algo: ejecuta el instalador (install.sh / install.bat). "
-              "Mientras tanto el estudio funciona en modo simulación (sin sonido).")
+        print("\n" + t("Falta algo: ejecuta el instalador (install.sh / install.bat). "
+                       "Mientras tanto el estudio funciona en modo simulación (sin sonido).",
+                       "Something is missing: run the installer (install.sh / install.bat). "
+                       "Meanwhile the studio runs in simulation mode (no sound)."))
 
 
 def main():

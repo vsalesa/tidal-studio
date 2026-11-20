@@ -205,6 +205,13 @@ class Engine:
             self._add("studio", f"Sample «{name}» cargado en SuperDirt")
         return ok
 
+    def record_start(self, path):
+        p = path.replace("\\", "/").replace('"', "")
+        return self.sc_eval(f's.record("{p}"); "Grabando en {p}".postln;')
+
+    def record_stop(self):
+        return self.sc_eval('s.stopRecording; "Grabación terminada".postln;')
+
     def stop(self):
         for name in ("ghci", "sclang"):
             proc = getattr(self, name)

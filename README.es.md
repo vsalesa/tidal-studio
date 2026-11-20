@@ -41,6 +41,15 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Controles en el chat (agentic UI)**: Maestro pone deslizadores, control de tempo, selector de sonido y un secuenciador
   por pasos dentro de sus mensajes. Al moverlos se escribe el código Tidal en directo, así ves qué palabra cambia. Usa el
   botón de deslizadores de cada pista, el botón «Ajustar con controles» o pídeselo.
+- **Más controles en el chat**: `every` (hacer algo cada N ciclos), azar (`degradeBy`, `sometimesBy`), swing, ritmos
+  euclídeos (`bd(3,8)`), filtro en movimiento (`# lpf (range … $ slow n sine)`), escala y octava, acordes y una **mesa
+  de mezcla** con volumen, panorama y silencio de todas las pistas a la vez. Cada uno enseña el código que escribe.
+- **Arreglo**: la pestaña Arreglo muestra todas las pistas a lo largo de 8, 16 o 32 compases. Pinta en qué compases suena
+  cada pista (escribe `mask "<…>"`) o parte de un preset: entrar por capas, drop, break, pregunta y respuesta.
+- **Exportar**: descarga la canción como archivo `.tidal`, copia un **enlace para compartir** (toda la canción va en la
+  URL; al abrirlo se carga como proyecto nuevo) o **graba** lo que suena a un WAV en `recordings/` con el botón de grabar.
+- **Forma de onda y recorte**: en la biblioteca ves la onda de cualquier sonido, arrastras para elegir un trozo, lo
+  escuchas y lo usas (`# begin … # end …`).
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
   `README.md`), mira el historial y abre cualquier versión antigua desde Mis proyectos → GitHub.
 - **Tu progreso**: conceptos de código y de música que ya has usado.
@@ -87,6 +96,10 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 |---|---|
 | ![Controles en el chat](docs/screenshots/es/controles-chat.png) | ![Packs online](docs/screenshots/es/packs-online.png) |
 
+| Arreglo: pinta los compases o usa un preset | Forma de onda y recorte |
+|---|---|
+| ![Arreglo](docs/screenshots/es/arreglo.png) | ![Recorte](docs/screenshots/es/recorte-samples.png) |
+
 | Buscar en Freesound por licencia | GitHub: cada guardado es una versión |
 |---|---|
 | ![Buscar online](docs/screenshots/es/samples-online.png) | ![Versiones en GitHub](docs/screenshots/es/github-versiones.png) |
@@ -107,7 +120,8 @@ Descarga o clona esta carpeta y:
 | **macOS** | Abre Terminal en la carpeta y ejecuta `./install.sh` |
 | **Linux** (Debian/Ubuntu, Fedora, Arch, openSUSE) | `./install.sh` |
 
-El instalador pone, si faltan: Python 3, Git, SuperCollider, SuperDirt (sonidos), Haskell (vía ghcup) y TidalCycles.
+El instalador habla español o inglés según el idioma de tu sistema (puedes forzarlo con `./install.sh --lang es` o
+`install.ps1 -Lang es`). Pone, si faltan: Python 3, Git, SuperCollider, SuperDirt (sonidos), Haskell (vía ghcup) y TidalCycles.
 Tarda 15–40 minutos la primera vez (descarga ~1 GB). Puedes ejecutarlo otra vez sin miedo: se salta lo que ya está.
 
 ## Uso

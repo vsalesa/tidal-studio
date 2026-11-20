@@ -14,23 +14,19 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 - With AI: Maestro returns a `controles` field (`deslizador`, `bpm`, `selector`, `pasos`); the app validates it.
   Without AI: the «Controls» button on each track, the «Tweak with controls» chip, or asking for controls.
 
+**Done (v2):** moving filter, Euclidean rhythms, scale/octave, chords, `every`, chance (`degradeBy`, `sometimesBy`),
+`swingBy`, and a mix desk for all tracks.
+
 **Next:**
 
-- **Moving filter** toggle that writes `# lpf (range a b $ slow n sine)`; Euclidean selector `bd(3,8)`.
-- **Notes and harmony**: scale and chord selectors (`scale "minPent"`, `c'min7`), octave/transpose steppers, a small piano roll.
-- **Time and structure**: selectors for `every`, `whenmod`, `mask "<t!8 f!8>"`, `swingBy`.
-- **Chance**: probability sliders for `degradeBy`, `sometimesBy`.
-- Controls that act on wrappers (`fast`, `every`) and on several tracks at once (a mix panel).
+- A small piano roll for melodies; `whenmod` and `fast`/`slow` controls.
 
 ## Also planned
 
-- Real-machine testing of the installers on macOS and Windows, and of every catalog pattern on real TidalCycles.
-- Translate the installer messages (currently Spanish) to English.
-- Song sections timeline: arrange `mask` patterns visually across bars.
-- Export: record the song to audio (SuperCollider recording) and export the `.tidal` file.
-- Shareable song links (code + BPM encoded in the URL).
-- Samples: waveform view and trimming; drag a sample from the library onto a block in the Blocks view.
-- Blocks view: edit by dragging (reorder steps, drop a setting onto a sound).
+- Real-machine testing of the installers on macOS and Windows, and of every catalog pattern on real TidalCycles
+  (sound, recording, sample reloading in SuperDirt).
+- Test Freesound search with a real API key.
+- Blocks view: edit by dragging (reorder steps, drop a setting onto a sound, drag a sample from the library onto a block).
 
 ## Done
 
@@ -43,3 +39,8 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 - GitHub: save each version as a commit, browse history, open old versions.
 - Online packs: browse, listen to and install sounds from community packs with a strudel.json index (Tidal Drum Machines, Uzu, VCSL, Salamander piano, SP-12, mridangam, or any github:user/repo).
 - Agentic UI v1: sliders, tempo, sound selector and step sequencer inside Maestro's messages.
+- Agentic UI v2: every, chance, swing, Euclidean, moving filter, scale/octave, chords, mix desk.
+- Arrangement timeline: paint `mask` patterns across bars, with presets (layers, drop, break, call and response).
+- Export: `.tidal` download, shareable song links, recording to WAV.
+- Samples: waveform view and trimming (`# begin` / `# end`).
+- Bilingual installers (English/Spanish, by system language or `--lang`).
