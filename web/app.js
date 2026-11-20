@@ -19,6 +19,7 @@ import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.j
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
+import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -157,7 +158,9 @@ async function evalCode(code, track) {
 const trackLine = (t) => { if (!audible(t, state)) return `${t.id} silence`; const mx = mixSuffix(t, state); return `${t.id} $ ${t.code}${mx ? " " + mx : ""}`; };
 const playTrack = (t) => evalCode(trackLine(t), t);
 const silenceId = (id) => evalCode(`${id} silence`);
-const playAll = () => evalCode([cps(state.bpm), ...state.tracks.map(trackLine)].join("\n\n"));
+// fromTop: vuelve al compás 1 (resetCycles) para que el arreglo (mask "<…>") empiece desde el principio
+const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...state.tracks.map(trackLine)].join("\n\n"));
+const hasArrangement = () => state.tracks.some((t) => /\bmask\s+"</.test(t.code));
 const live = () => $("#autoplay").checked;
 // Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
 // seguían sonando, y una pre-escucha en marcha volvía a poner la música al acabar su tiempo.
@@ -1129,13 +1132,16 @@ const toast = sysMsg;
 function greet() {
   state.step = "estilo";
   say(L("¡Hola! Soy Maestro. Aquí vas a aprender música y a programarla con TidalCycles mientras creas tu propia canción.\n\nIremos paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa. En cada paso te explico el código y te propongo ideas, como haría un productor a tu lado. No hace falta saber nada.\n\nPara empezar rápido, usa el wizard: eliges opciones paso a paso y se crea tu proyecto base. Si prefieres hablarlo, la lluvia de ideas te hace preguntas abiertas. O dime directamente un estilo.", "Hi! I'm Maestro. Here you'll learn music and how to code it with TidalCycles while you create your own song.\n\nWe'll go step by step: style, beat, tempo, bass, chords, melody, effects and when each thing changes. At each step I explain the code and suggest ideas, like a producer by your side. You don't need to know anything.\n\nFor a quick start, use the wizard: pick options step by step and your base project is created. If you'd rather talk it through, the brainstorm asks you open questions. Or just tell me a style."),
-    [L("Crear proyecto con wizard", "Create project with wizard"), L("Lluvia de ideas: diseñar mi canción", "Brainstorm: design my song"), ...Object.values(STYLES).map((s) => s.nombre), L("Sorpréndeme", "Surprise me")]);
+    [COURSE_OPEN(), L("Crear proyecto con wizard", "Create project with wizard"), L("Lluvia de ideas: diseñar mi canción", "Brainstorm: design my song"), ...Object.values(STYLES).map((s) => s.nombre), L("Sorpréndeme", "Surprise me")]);
 }
 
 async function send(text) {
   text = text.trim();
   if (!text || busy) return;
   if (text.startsWith(L("Lluvia de ideas", "Brainstorm"))) return openWizard();
+  if (text === COURSE_OPEN() || /^(cursos?|courses?)\b/i.test(text)) return openCourses();
+  if (text === COURSE_NEXT() && state.course) { const c = courseById(state.course.id); if (state.course.i < c.steps.length - 1) courseGo(state.course.i + 1); state.options = []; return renderChat(); }
+  if (text === COURSE_ASK() && state.course) return courseAsk();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
   if (text === L("Recuperar el chat", "Bring the chat back") && clearedChat) { state.chat = clearedChat.chat; state.options = clearedChat.options; clearedChat = null; save(); return renderChat(); }
   if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
@@ -1457,7 +1463,7 @@ const FRESH = () => ({ lang: LANG, bpm: 120, tracks: [], selected: null, style: 
 
 function renderAll() {
   $("#bpm").value = state.bpm; $("#proj-name").value = state.name || "";
-  renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); renderChat();
+  renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); renderChat(); renderCourse();
   $("#code").value = buildCode();
 }
 function openNewProject() {
@@ -2387,6 +2393,198 @@ async function toggleRecord() {
     { links: [{ href: `/api/recordings/file?name=${encodeURIComponent(name)}`, label: L("Descargar WAV", "Download WAV") }] }), 600);
 }
 
+// ------------------------------------------------------------------ cursos por género
+// Construir una canción completa desde cero en un estilo, paso a paso (ritmo → bajo → armonía → melodía → arreglo → mezcla).
+// El curso vive en el panel izquierdo (state.course = { id, i, done }) y Maestro explica cada paso en el chat.
+const COURSE_NEXT = () => L("Siguiente paso del curso", "Next course step");
+const COURSE_ASK = () => L("Explícame más este paso", "Tell me more about this step");
+const COURSE_OPEN = () => L("Cursos por género", "Genre courses");
+const levelDots = (n) => `<span class="lvl" title="${esc(L(["", "Principiante", "Intermedio", "Avanzado"][n], ["", "Beginner", "Intermediate", "Advanced"][n]))}">${"<i></i>".repeat(n)}${"<i class='off'></i>".repeat(3 - n)}</span>`;
+const stepKind = (st) => st.arrange ? "arrange" : st.mix ? "mix" : "tracks";
+const stepIcon = (st) => st.arrange ? "estructura" : st.mix ? "mixer" : (st.tracks[0] || {}).tipo || "percusion";
+
+function openCourses() {
+  const prog = courseProgress();
+  const body = $("#courses-body");
+  body.innerHTML = `<div class="cs-intro"><h2>${L("Construye una canción desde cero", "Build a song from scratch")}</h2>
+    <p>${L("Elige un género y Maestro te guía como en una clase de producción: primero el ritmo característico, luego el bajo, la armonía, la melodía, el arreglo y la mezcla. En cada paso añades una pieza que ya suena bien y aprendes por qué suena a ese estilo.",
+      "Pick a genre and Maestro guides you like a production class: first the signature rhythm, then bass, harmony, melody, arrangement and mix. At each step you add a piece that already sounds good and learn why it sounds like that style.")}</p>
+    <p class="hint">${L("Empezar un curso crea un proyecto nuevo; el que tienes ahora se queda guardado en «Mis proyectos».", "Starting a course creates a new project; your current one stays saved in «My projects».")}</p></div>
+    <div class="cs-grid">${COURSES.map((c) => {
+      const done = (prog[c.id] || []).length, total = c.steps.length;
+      const active = state.course && state.course.id === c.id;
+      return `<article class="cs-card" style="--g:${c.color}">
+        <header><b>${esc(c.name)}</b><span>${esc(c.origin)}</span></header>
+        <div class="cs-meta"><span>${c.bpm} BPM</span>${levelDots(c.level)}<span>${esc(c.key)}</span></div>
+        <p>${esc(c.blurb)}</p>
+        <div class="cs-learn">${c.learn.map((x) => `<span>${esc(x)}</span>`).join("")}</div>
+        <div class="cs-prog"><div class="bar"><div style="width:${Math.round((done / total) * 100)}%"></div></div><small>${done}/${total} ${L("pasos", "steps")}</small></div>
+        <div class="cs-actions">
+          <button class="primary" data-start="${c.id}">${icon(active ? "arrow" : "play", 13)} ${active ? L("Continuar", "Continue") : done ? L("Empezar de nuevo", "Start again") : L("Empezar curso", "Start course")}</button>
+          <button class="prehear" data-hear="${c.id}">${icon("speaker", 13)} ${L("Escuchar el resultado", "Hear the result")}</button>
+        </div></article>`;
+    }).join("")}</div>
+    <p class="hint cs-foot">${L("Los patrones son reconstrucciones propias de ritmos tradicionales, escritas para este estudio. Cada curso enlaza sus fuentes como lectura recomendada.", "The patterns are original reconstructions of traditional rhythms, written for this studio. Each course links its sources as further reading.")}</p>`;
+  body.querySelectorAll("[data-start]").forEach((b) => b.onclick = () => {
+    const id = b.dataset.start;
+    $("#courses").close(); stopPreHear();
+    if (state.course && state.course.id === id) { renderCourse(); return; }
+    startCourse(id);
+  });
+  body.querySelectorAll("[data-hear]").forEach((b) => {
+    const c = courseById(b.dataset.hear);
+    wirePreHear(b, { bpm: c.bpm, pistas: finalTracks(c) });
+  });
+  $("#courses").showModal();
+}
+
+function startCourse(id) {
+  const c = courseById(id);
+  startFresh();
+  state.course = { id, i: 0, done: [] };
+  state.name = L(`${c.name} desde cero`, `${c.name} from scratch`);
+  state.bpm = c.bpm; $("#bpm").value = c.bpm; $("#proj-name").value = state.name;
+  if (live()) evalCode(cps(c.bpm));
+  state.step = "libre";
+  say(L(`¡Vamos a construir un ${c.name} desde cero! (${c.origin})\n\n${c.blurb}\n\nHe puesto el tempo a ${c.bpm} BPM. El curso está en el panel de la izquierda: lee cada paso, pulsa «Escuchar» para oírlo antes y «Añadir a mi canción» cuando quieras. Yo te explico el código de cada pieza aquí.`,
+    `Let's build ${/^[aeiou]/i.test(c.name) ? "an" : "a"} ${c.name} track from scratch! (${c.origin})\n\n${c.blurb}\n\nI set the tempo to ${c.bpm} BPM. The course is in the left panel: read each step, press «Listen» to hear it first and «Add to my song» when you're ready. I'll explain each piece's code here.`), []);
+  save();
+  renderCourse();
+}
+
+function leaveCourse() {
+  stopPreHear();
+  state.course = null; save(); renderCourse();
+  say(L("Has salido del curso. Tu canción sigue aquí: ahora es tuya para cambiarla como quieras. Puedes volver a los cursos cuando quieras.", "You left the course. Your song is still here: now it's yours to change as you like. You can come back to the courses any time."), [COURSE_OPEN()]);
+}
+
+function courseStepDone(i) { return !!(state.course && state.course.done.includes(i)); }
+
+function renderCourse() {
+  const dock = $("#course-dock");
+  const c = state.course && courseById(state.course.id);
+  document.querySelector(".layout").classList.toggle("course-mode", !!c);
+  dock.hidden = !c;
+  if (!c) { dock.innerHTML = ""; return; }
+  const i = Math.max(0, Math.min(c.steps.length - 1, state.course.i));
+  const st = c.steps[i], done = courseStepDone(i), kind = stepKind(st);
+  const allDone = c.steps.every((_, k) => courseStepDone(k));
+  const dots = c.steps.map((s, k) => `<button class="cs-dot ${k === i ? "on" : ""} ${courseStepDone(k) ? "done" : ""}" data-go="${k}" title="${esc(`${k + 1}. ${s.t}`)}">${courseStepDone(k) ? icon("check", 12) : k + 1}</button>`).join("");
+  let what = "";
+  if (kind === "tracks") what = st.tracks.map((t) => `<div class="cs-track" style="--k:${KIND_COLOR[t.tipo] || "var(--ink-3)"}"><div class="cs-tname">${icon(t.tipo, 14)} <code>${esc(t.id)}</code> ${esc(t.nombre)}</div><pre class="cs-code">${esc(t.codigo)}</pre></div>`).join("");
+  if (kind === "arrange") what = `<div class="cs-arr">${Object.entries(st.arrange).map(([id, m]) => {
+      const t = state.tracks.find((x) => x.id === id) || (finalTracks(c).find((x) => x.id === id) || {});
+      return `<div class="cs-arr-row"><span><code>${esc(id)}</code> ${esc(t.name || t.nombre || "")}</span><span class="cs-bars">${maskArr(m).map((on) => `<i class="${on ? "on" : ""}"></i>`).join("")}</span></div>`;
+    }).join("")}</div>`;
+  if (kind === "mix") what = `<div class="cs-mix">${Object.entries(st.mix).map(([id, m]) => {
+      const t = state.tracks.find((x) => x.id === id) || {};
+      const parts = [m.vol != null ? `${dbText(m.vol)}` : "", ...["low", "mid", "high"].filter((b) => m[b]).map((b) => `${L({ low: "graves", mid: "medios", high: "agudos" }[b], b === "low" ? "lows" : b === "mid" ? "mids" : "highs")} ${m[b] > 0 ? "+" : ""}${m[b]}`)].filter(Boolean).join(" · ");
+      return `<div class="cs-mix-row"><span>${id === "master" ? "<b>Master</b>" : `<code>${esc(id)}</code> ${esc(t.name || "")}`}</span><span>${esc(parts)}</span></div>`;
+    }).join("")}</div>`;
+  const applyLabel = kind === "arrange" ? L("Aplicar el arreglo", "Apply the arrangement") : kind === "mix" ? L("Aplicar la mezcla", "Apply the mix") : L("Añadir a mi canción", "Add to my song");
+  const missing = kind !== "tracks" && Object.keys(st.arrange || st.mix).some((id) => id !== "master" && !state.tracks.find((t) => t.id === id));
+  dock.innerHTML = `<div class="cs-head" style="--g:${c.color}">
+      <div><span class="cs-kicker">${icon("course", 14)} ${L("Curso", "Course")} · ${esc(c.name)}</span><b>${L("Paso", "Step")} ${i + 1} ${L("de", "of")} ${c.steps.length}</b></div>
+      <button class="icon-btn" data-cs="list" title="${esc(L("Todos los cursos", "All courses"))}">${icon("folder", 17)}</button>
+      <button class="icon-btn" data-cs="leave" title="${esc(L("Salir del curso (tu canción se queda)", "Leave the course (your song stays)"))}">${icon("close", 17)}</button>
+    </div>
+    <div class="cs-dots">${dots}</div>
+    <div class="cs-step">
+      <h3>${icon(stepIcon(st), 18)} ${esc(st.t)}</h3>
+      <p>${esc(st.why)}</p>
+      ${st.listen ? `<div class="cs-listen">${icon("speaker", 15)} <span><b>${L("Escucha:", "Listen for:")}</b> ${esc(st.listen)}</span></div>` : ""}
+      ${what}
+      ${missing ? `<p class="hint">${L("Faltan pistas de pasos anteriores: se aplicará a las que existan.", "Some tracks from earlier steps are missing: it will apply to the ones that exist.")}</p>` : ""}
+      <div class="cs-actions">
+        <button class="primary" data-cs="apply">${icon(done ? "redo" : kind === "tracks" ? "plus" : "check", 14)} ${done ? L("Volver a aplicar", "Apply again") : applyLabel}</button>
+        ${kind === "tracks" ? `<button class="prehear" data-cs="hear">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button>` : ""}
+        <button data-cs="ask">${icon("maestro", 15)} ${L("Pregunta a Maestro", "Ask Maestro")}</button>
+      </div>
+      ${done ? `<div class="cs-try"><b>${L("Tu turno.", "Your turn.")}</b> ${esc(st.try)}</div>` : ""}
+      <div class="cs-nav">
+        <button data-cs="prev" ${i === 0 ? "disabled" : ""}>${icon("back", 14)} ${L("Anterior", "Previous")}</button>
+        ${i < c.steps.length - 1 ? `<button class="${done ? "primary" : ""}" data-cs="next">${L("Siguiente", "Next")} ${icon("arrow", 14)}</button>` : ""}
+      </div>
+      ${allDone ? `<div class="cs-done">${icon("check", 18)} <div><b>${L("¡Curso completado!", "Course complete!")}</b><span>${L(`Has construido un ${c.name} completo. Grábalo, guárdalo en GitHub o cámbialo a tu gusto.`, `You built a complete ${c.name} track. Record it, save it to GitHub or make it your own.`)}</span>
+        <div class="cs-actions"><button data-cs="record">${icon("rec", 13)} ${L("Grabar", "Record")}</button><button data-cs="list">${L("Otro curso", "Another course")}</button></div></div></div>` : ""}
+    </div>
+    <details class="cs-sources"><summary>${L("Fuentes y lecturas recomendadas", "Sources and further reading")}</summary>
+      <ul>${c.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ul></details>`;
+  dock.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => courseGo(+b.dataset.go));
+  const hear = dock.querySelector("[data-cs=hear]");
+  if (hear) wirePreHear(hear, { pistas: st.tracks });
+  dock.querySelectorAll("[data-cs]").forEach((b) => { if (b.dataset.cs !== "hear") b.onclick = () => courseAction(b.dataset.cs); });
+}
+
+function courseGo(i) {
+  if (!state.course) return;
+  stopPreHear();
+  state.course.i = i; save(); renderCourse();
+  $("#course-dock").scrollTop = 0;
+}
+
+function courseAction(a) {
+  const c = state.course && courseById(state.course.id);
+  if (a === "list") return openCourses();
+  if (!c) return;
+  const i = state.course.i, st = c.steps[i];
+  if (a === "leave") return leaveCourse();
+  if (a === "prev") return courseGo(i - 1);
+  if (a === "next") return courseGo(i + 1);
+  if (a === "record") return toggleRecord();
+  if (a === "ask") return courseAsk();
+  if (a === "apply") return courseApply();
+}
+
+function courseApply() {
+  const c = courseById(state.course.id), i = state.course.i, st = c.steps[i];
+  stopPreHear();
+  const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
+  let changes = "", diff = [];
+  if (state.bpm !== c.bpm) { state.bpm = c.bpm; $("#bpm").value = c.bpm; if (live()) evalCode(cps(c.bpm)); }
+  if (st.tracks) {
+    // Si la pista ya tenía un arreglo (mask) lo conservamos
+    const pistas = st.tracks.map((t) => {
+      const cur = state.tracks.find((x) => x.id === t.id);
+      const bars = cur && barsOf(cur.code, 16);
+      return bars && bars.some((on) => !on) ? { ...t, codigo: setMask(t.codigo, bars) } : t;
+    });
+    changes = applyChanges({ pistas });
+    diff = diffFor(before, { pistas });
+  }
+  if (st.arrange) {
+    for (const [id, m] of Object.entries(st.arrange)) { const t = state.tracks.find((x) => x.id === id); if (t) t.code = setMask(t.code, maskArr(m)); }
+    changed(); if (live()) playAll(true);
+    document.querySelector('.tab[data-tab="arrange"]')?.click();
+  }
+  if (st.mix) {
+    for (const [id, m] of Object.entries(st.mix)) {
+      const v = { vol: 0, low: 0, mid: 0, high: 0, ...m };
+      if (id === "master") state.master = v; else { const t = state.tracks.find((x) => x.id === id); if (t) t.mix = v; }
+    }
+    changed(); if (live()) playAll();
+    document.querySelector('.tab[data-tab="mixer"]')?.click();
+  }
+  if (!state.course.done.includes(i)) state.course.done.push(i);
+  markStepDone(c.id, i);
+  const last = i === c.steps.length - 1;
+  const intro = `${L("Paso", "Step")} ${i + 1}/${c.steps.length} · ${st.t}\n\n${st.why}${st.listen ? `\n\n${L("Escucha:", "Listen for:")} ${st.listen}` : ""}`;
+  const opts = [...(last ? [] : [COURSE_NEXT()]), COURSE_ASK(), ...(last ? [COURSE_OPEN()] : [])];
+  say(intro, opts, { explicacion: st.parts, reto: st.try, changes, diff });
+  save();
+  renderCourse();
+}
+
+function courseAsk() {
+  const c = courseById(state.course.id), i = state.course.i, st = c.steps[i];
+  if (useLLM()) {
+    return send(L(`Estoy en el curso de ${c.name}, paso ${i + 1} («${st.t}»). Explícame con más detalle, como un profesor de producción, por qué esto suena a ${c.name}, qué haría un músico real aquí y propón una variación para probar en mi canción.`,
+      `I'm on the ${c.name} course, step ${i + 1} («${st.t}»). Explain in more depth, like a production teacher, why this sounds like ${c.name}, what a real musician would do here, and suggest one variation to try on my song.`));
+  }
+  say(`${st.t}\n\n${st.why}${st.listen ? `\n\n${L("Escucha:", "Listen for:")} ${st.listen}` : ""}\n\n${L("Con una IA conectada en Ajustes te lo puedo explicar con más detalle y responder tus preguntas.", "With an AI connected in Settings I can explain it in more depth and answer your questions.")}`,
+    state.options, { explicacion: st.parts, reto: st.try });
+}
+
 // ------------------------------------------------------------------ tutorial
 // Ideas de Maestro: se pueden ocultar para dar más sitio al chat (se recuerda en el navegador)
 const IDEAS_KEY = "tidal-studio-ideas-hidden";
@@ -2416,6 +2614,7 @@ function init() {
   $("#proj-name").value = state.name || "";
   renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode(); attachHighlight($("#code"));
   if (!state.chat.length) greet(); else renderChat();
+  renderCourse();
   // Primera visita: el tutorial arranca solo (se puede cerrar en el primer paso)
   if (!tourSeen() && !state.tracks.length && !location.hash) setTimeout(runTour, 900);
 
@@ -2423,7 +2622,7 @@ function init() {
     state.bpm = Math.max(40, Math.min(220, parseInt(e.target.value) || 120)); e.target.value = state.bpm;
     changed(); evalCode(cps(state.bpm));
   });
-  $("#btn-play").onclick = playAll;
+  $("#btn-play").onclick = () => playAll(hasArrangement());
   $("#btn-hush").onclick = hushAll;
   $("#style-filter").onchange = (e) => { state.style = e.target.value; save(); renderCatalog(); renderIdeas(); };
   $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
@@ -2514,6 +2713,7 @@ function init() {
   $("#btn-gh").onclick = openGitHubSave;
   $("#btn-samples").onclick = () => openSamples();
   $("#btn-tour").onclick = runTour;
+  $("#btn-courses").onclick = openCourses;
   wireInstrument();
   wireSamples();
   wireControls();

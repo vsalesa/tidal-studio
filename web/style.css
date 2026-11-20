@@ -734,3 +734,67 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .miss-note { color: #b71c1c; font-size: 12px; margin-top: 4px; }
 .hlwrap > textarea { margin: 0; }
 .track .hlwrap { margin-top: 8px; }
+
+/* ---------------------------------------------------------------- cursos por género */
+.course-btn { background: var(--card); border-color: var(--ink); color: var(--ink); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.course-btn:hover { background: var(--accent-soft); border-color: var(--accent); }
+.courses-dlg { width: min(1180px, 96vw); }
+#courses-body { max-height: min(78vh, 900px); overflow: auto; padding-right: 4px; }
+.cs-intro h2 { font-size: 28px; margin: 4px 0 6px; }
+.cs-intro p { margin: 0 0 6px; color: var(--ink-2); max-width: 760px; }
+.cs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; margin: 14px 0 8px; }
+.cs-card { border: 1px solid var(--rule); border-radius: var(--r); background: var(--card); overflow: hidden; display: flex; flex-direction: column; }
+.cs-card header { background: var(--g); color: #fff; padding: 12px 14px 10px; display: flex; flex-direction: column; }
+.cs-card header b { font-family: var(--serif); font-size: 22px; line-height: 1.1; }
+.cs-card header span { font-size: 12px; opacity: .9; }
+.cs-card > p { margin: 8px 14px 6px; font-size: 13px; color: var(--ink-2); flex: 1; }
+.cs-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; padding: 8px 14px 0; font-size: 12px; color: var(--ink-3); }
+.cs-meta span:first-child { color: var(--ink); font-weight: 600; }
+.cs-learn { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 14px; }
+.cs-learn span { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: var(--sunk); color: var(--ink-2); }
+.cs-prog { display: flex; align-items: center; gap: 8px; padding: 10px 14px 0; }
+.cs-prog .bar { flex: 1; }
+.cs-prog .bar > div { background: var(--g); }
+.cs-prog small { color: var(--ink-3); font-size: 11px; white-space: nowrap; }
+.cs-card .cs-actions { padding: 10px 14px 14px; }
+.cs-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.cs-actions button { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; }
+.cs-foot { margin-top: 4px; }
+
+.layout.course-mode { grid-template-columns: 370px minmax(0, 1fr) 400px; }
+.layout.course-mode .catalog > .progress, .layout.course-mode .left-tabs, .layout.course-mode .lpane { display: none !important; }
+.course-dock { display: flex; flex-direction: column; gap: 10px; }
+.course-dock[hidden] { display: none; }
+.cs-head { display: flex; align-items: center; gap: 4px; border-left: 4px solid var(--g); padding-left: 10px; }
+.cs-head > div { flex: 1; display: flex; flex-direction: column; }
+.cs-head b { font-family: var(--serif); font-size: 19px; }
+.cs-kicker { display: inline-flex; gap: 5px; align-items: center; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--g); }
+.cs-dots { display: flex; flex-wrap: wrap; gap: 4px; }
+.cs-dot { width: 28px; height: 28px; padding: 0; border-radius: 50%; display: inline-grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--card); color: var(--ink-2); }
+.cs-dot.done { background: var(--teal-soft); color: var(--teal); border-color: var(--teal-soft); }
+.cs-dot.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.cs-step h3 { margin: 2px 0 6px; font-size: 20px; display: flex; gap: 8px; align-items: center; }
+.cs-step > p { margin: 0 0 8px; color: var(--ink-2); }
+.cs-listen { display: flex; gap: 8px; align-items: flex-start; background: var(--teal-soft); color: var(--ink); padding: 8px 10px; border-radius: var(--r-sm); font-size: 13px; margin-bottom: 8px; }
+.cs-listen .ico { color: var(--teal); margin-top: 2px; }
+.cs-track { border-left: 3px solid var(--k); background: var(--card); border-radius: var(--r-sm); padding: 6px 8px; margin-bottom: 6px; border-top: 1px solid var(--rule); border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+.cs-tname { font-size: 12.5px; font-weight: 600; display: flex; gap: 6px; align-items: center; color: var(--ink-2); }
+.cs-tname .ico { color: var(--k); }
+.cs-code { margin: 4px 0 0; font: 12px/1.45 var(--mono); white-space: pre-wrap; word-break: break-word; color: var(--ink); }
+.cs-arr, .cs-mix { display: flex; flex-direction: column; gap: 4px; margin-bottom: 6px; }
+.cs-arr-row, .cs-mix-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12.5px; }
+.cs-bars { display: grid; grid-template-columns: repeat(16, 9px); gap: 2px; }
+.cs-bars i { height: 12px; border-radius: 2px; background: var(--sunk); border: 1px solid var(--rule); }
+.cs-bars i.on { background: var(--accent); border-color: var(--accent); }
+.cs-mix-row span:last-child { font-family: var(--mono); font-size: 12px; color: var(--ink-2); }
+.cs-try { margin-top: 10px; background: var(--gold-soft); border-radius: var(--r-sm); padding: 8px 10px; font-size: 13px; }
+.cs-nav { display: flex; justify-content: space-between; margin-top: 12px; }
+.cs-nav button { display: inline-flex; align-items: center; gap: 5px; }
+.cs-done { display: flex; gap: 10px; margin-top: 12px; padding: 10px 12px; background: var(--teal-soft); border-radius: var(--r-sm); }
+.cs-done > .ico { color: var(--teal); }
+.cs-done b { display: block; font-family: var(--serif); font-size: 17px; }
+.cs-done span { font-size: 13px; color: var(--ink-2); }
+.cs-sources { font-size: 12.5px; color: var(--ink-2); }
+.cs-sources summary { cursor: pointer; font-weight: 600; }
+.cs-sources ul { margin: 6px 0 0; padding-left: 18px; }
+@media (max-width: 1100px) { .layout.course-mode { grid-template-columns: 1fr; } }
