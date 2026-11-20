@@ -83,7 +83,7 @@ if(\FM7.asClass.isNil) {
 // Lo básico: ondas sencillas con nombre fácil (n = nota, como cualquier sinte).
 //   s "sawtooth" / "saw"   diente de sierra      s "square"            cuadrada
 //   s "triangle" / "tri"   triangular            s "pulse"             pulso estrecho (voice = anchura)
-//   s "sinewave"           seno puro ("sine" ya es un sample de Dirt-Samples)
+//   s "sine" / "sinewave"  seno puro
 // Parámetros extra: voice, attack, release; y los de siempre (lpf, room, gain…).
 [
     [\sawtooth, { |f, v| Saw.ar(f * [1, 1.004]).sum * 0.5 }],
@@ -92,7 +92,8 @@ if(\FM7.asClass.isNil) {
     [\triangle, { |f, v| LFTri.ar(f) * 0.8 }],
     [\tri,      { |f, v| LFTri.ar(f) * 0.8 }],
     [\pulse,    { |f, v| Pulse.ar(f, v.clip(0.05, 0.95)) * 0.6 }],
-    [\sinewave, { |f, v| SinOsc.ar(f) * 0.8 }]
+    [\sinewave, { |f, v| SinOsc.ar(f) * 0.8 }],
+    [\sine,     { |f, v| SinOsc.ar(f) * 0.8 }]
 ].do { |def|
     SynthDef(def[0], { |out, sustain=1, pan, freq=440, accelerate=0, speed=1, voice=0.25, attack=0.005, release=0.05|
         var f = freq * DirtFreqScale.kr(speed, accelerate, sustain);
@@ -101,7 +102,17 @@ if(\FM7.asClass.isNil) {
         Out.ar(out, DirtPan.ar(sound, ~dirt.numChannels, pan, env));
     }).add;
 };
-"Tidal Studio: sintes básicos listos (sawtooth, saw, square, triangle, tri, pulse, sinewave).".postln;
+"Tidal Studio: sintes básicos listos (sawtooth, saw, square, triangle, tri, pulse, sine, sinewave).".postln;
+
+// "oh" (hi-hat abierto) no existe en Dirt-Samples, se llama "ho". Como mucha gente (y algunas
+// canciones guardadas) escriben "oh", lo cargamos también con ese nombre.
+try {
+    var lib = ~dirt.soundLibrary, ho = lib.buffers[\ho];
+    if(lib.buffers[\oh].isNil and: { ho.notNil } and: { ho.first.path.notNil }) {
+        lib.loadSoundFileFolder(ho.first.path.dirname, \oh);
+        "Tidal Studio: «oh» suena como «ho» (hi-hat abierto).".postln;
+    };
+} { |err| ("Tidal Studio: no pude crear el alias oh: " ++ err.errorString).postln };
 
 // Trompeta: dientes de sierra con filtro que se abre al soplar, subida de afinación al atacar y vibrato tardío.
 // Úsala como cualquier sinte:  n "c5 e5 g5" # s "supertrumpet"   (extra: velocity, vibrato, muffle)

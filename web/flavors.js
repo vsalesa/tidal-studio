@@ -77,7 +77,7 @@ export const FLAVORS = {
       const kick = byKind(tracks, "percusion")[0];
       if (kick) steps.push(step(kick, 's "bd*4" # gain 1.15 # shape 0.3', L("Bombo en cada tiempo, con un poco de distorsión (# shape) para que pegue más.", "A kick on every beat, with a bit of distortion (# shape) so it hits harder.")));
       const id = free(tracks);
-      if (id) steps.push(newTrack(id, L("Hi-hat abierto", "Open hi-hat"), "percusion", 's "[~ oh]*4" # gain 0.8 # hpf 6000', L("Hi-hat entre bombos: «pum-tss-pum-tss», el motor del techno.", "Hi-hat between kicks: «boom-tss-boom-tss», the engine of techno.")));
+      if (id) steps.push(newTrack(id, L("Hi-hat abierto", "Open hi-hat"), "percusion", 's "[~ ho]*4" # gain 0.8 # hpf 6000', L("Hi-hat entre bombos: «pum-tss-pum-tss», el motor del techno.", "Hi-hat between kicks: «boom-tss-boom-tss», the engine of techno.")));
       const bass = byKind(tracks, "bajo")[0];
       if (bass) steps.push(step(bass, 'n "c2*16" # s "supersaw" # lpf (range 200 1200 $ slow 8 sine) # legato 0.3 # gain 0.75',
         L("Bajo rodante: la misma nota 16 veces, y un filtro (lpf) que se abre y se cierra cada 8 compases con «slow 8 sine». La nota no cambia; cambia el brillo.", "Rolling bass: the same note 16 times, and a filter (lpf) that opens and closes every 8 bars with «slow 8 sine». The note doesn't change; the brightness does.")));
