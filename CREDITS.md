@@ -30,4 +30,5 @@ Product and brand names visible on the instruments belong to their owners and do
 
 - [`skills/livecoding`](skills/livecoding) from [broomva/skills](https://github.com/broomva/skills), MIT License, © Carlos D. Escobar-Valbuena (broomva).
 - [`skills/strudel`](skills/strudel) from [ahgraber/skills](https://github.com/ahgraber/skills), CC0 1.0 (public domain dedication).
+- [`skills/music-composition`](skills/music-composition) from [SJY051/music-composition](https://github.com/SJY051/music-composition): based on "Music Composition Agent Skill v1.0" by the Music Composition Agent Skill contributors, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Release, benchmark and validation documents were left out; the skill files are unchanged.
 - Skills you install from the app keep the license of their repository (shown in the Skills panel).

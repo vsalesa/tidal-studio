@@ -235,8 +235,8 @@ de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
 
 ### Skills
 
-Maestro puede cargar **skills** (carpetas con un `SKILL.md`, el mismo formato que las Agent Skills de Claude). Vienen dos
-skills de música con licencia abierta; con el botón de skills de la barra superior puedes activarlas o desactivarlas,
+Maestro puede cargar **skills** (carpetas con un `SKILL.md`, el mismo formato que las Agent Skills de Claude). Vienen tres
+skills de música con licencia abierta (live coding con Tidal, recetas de Strudel y composición musical en general); con el botón de skills de la barra superior puedes activarlas o desactivarlas,
 marcar una como «Cargar siempre», leerla o instalar otra pegando su enlace de GitHub. Debajo de cada respuesta de Maestro
 ves qué skills se cargaron para ese mensaje y cuáles usó de verdad. Detalles y fuentes: [skills/README.md](skills/README.md).
 
