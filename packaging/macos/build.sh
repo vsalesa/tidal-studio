@@ -33,7 +33,8 @@ if [ ! -x "$RT/python/bin/python3" ]; then
   log "Python $PY_SERIES (python-build-standalone)"
   PBS_ID="$(gh api repos/astral-sh/python-build-standalone/releases/latest --jq .id)"
   URL="$(gh api --paginate "repos/astral-sh/python-build-standalone/releases/$PBS_ID/assets?per_page=100" --jq '.[].browser_download_url' \
-        | grep -E "cpython-${PY_SERIES}\.[0-9]+\+[0-9]+-${ARCH}-apple-darwin-install_only\.tar\.gz$" | head -1)"
+        | grep -m1 -E "cpython-${PY_SERIES}\.[0-9]+\+[0-9]+-${ARCH}-apple-darwin-install_only\.tar\.gz$" || true)"
+  [ -n "$URL" ] || { echo "No python-build-standalone asset found for $PY_SERIES/$ARCH"; exit 1; }
   echo "$URL"
   curl -fL --retry 3 -o "$WORK/python.tar.gz" "$URL"
   rm -rf "$RT/python" && tar -xzf "$WORK/python.tar.gz" -C "$RT"     # extracts to $RT/python
@@ -44,8 +45,9 @@ fi
 if [ ! -x "$RT/SuperCollider.app/Contents/MacOS/sclang" ]; then
   log "SuperCollider"
   ASSETS="$(gh api repos/supercollider/supercollider/releases/latest --jq '.assets[].browser_download_url')"
-  URL="$(echo "$ASSETS" | grep -iE 'macos.*universal.*\.dmg$' | head -1 || true)"
-  [ -n "$URL" ] || URL="$(echo "$ASSETS" | grep -iE 'macos.*\.dmg$' | grep -viE 'legacy' | head -1)"
+  URL="$(echo "$ASSETS" | grep -m1 -iE 'macos.*universal.*\.dmg$' || true)"
+  [ -n "$URL" ] || URL="$(echo "$ASSETS" | grep -iE 'macos.*\.dmg$' | grep -m1 -viE 'legacy' || true)"
+  [ -n "$URL" ] || { echo "No SuperCollider macOS dmg found in:"; echo "$ASSETS"; exit 1; }
   echo "$URL"
   curl -fL --retry 3 -o "$WORK/sc.dmg" "$URL"
   MNT="$(mktemp -d)"
