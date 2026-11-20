@@ -21,6 +21,8 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import net
+
 AUDIO_EXT = (".wav", ".aif", ".aiff", ".flac", ".ogg", ".mp3")
 TYPES = ["bombo", "caja", "platos", "percusion", "bajo", "melodico", "pad", "voz", "fx", "loop", "otro"]
 GUESS = [
@@ -197,10 +199,10 @@ class Library:
             raise SampleError("Vista previa no válida")
         req = urllib.request.Request(url, headers={"User-Agent": "tidal-studio"})
         try:
-            with urllib.request.urlopen(req, timeout=30) as r:
+            with net.urlopen(req, timeout=30) as r:
                 data = r.read(31 * 1024 * 1024)
         except urllib.error.URLError as e:
-            raise SampleError(f"No se pudo descargar de Freesound: {getattr(e, 'reason', e)}")
+            raise SampleError(f"No se pudo descargar de Freesound: {getattr(e, 'reason', e)}{net.ssl_hint(getattr(e, 'reason', e))}")
         title = item.get("name") or str(item.get("id"))
         fname = f"fs{item.get('id')}-{title}"
         fname = os.path.splitext(fname)[0] + ".ogg"
@@ -244,12 +246,12 @@ def check_remote(url):
 def _fetch(url, limit):
     req = urllib.request.Request(url, headers={"User-Agent": "tidal-studio"})
     try:
-        with urllib.request.urlopen(req, timeout=30) as r:
+        with net.urlopen(req, timeout=30) as r:
             data = r.read(limit + 1)
     except urllib.error.HTTPError as e:
         raise SampleError(f"No encuentro {url} ({e.code})" if e.code == 404 else f"Error {e.code} al descargar")
     except urllib.error.URLError as e:
-        raise SampleError(f"No se pudo descargar: {e.reason}")
+        raise SampleError(f"No se pudo descargar: {e.reason}{net.ssl_hint(e.reason)}")
     if len(data) > limit:
         raise SampleError("Demasiado grande")
     return data
@@ -317,11 +319,11 @@ def license_name(url):
 def _get_json(url, key):
     req = urllib.request.Request(url, headers={"Authorization": f"Token {key}", "User-Agent": "tidal-studio"})
     try:
-        with urllib.request.urlopen(req, timeout=20) as r:
+        with net.urlopen(req, timeout=20) as r:
             return json.loads(r.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         if e.code in (401, 403):
             raise SampleError("Freesound no acepta la clave API (¿está bien copiada?)")
         raise SampleError(f"Freesound respondió {e.code}")
     except urllib.error.URLError as e:
-        raise SampleError(f"No se pudo conectar con Freesound: {e.reason}")
+        raise SampleError(f"No se pudo conectar con Freesound: {e.reason}{net.ssl_hint(e.reason)}")

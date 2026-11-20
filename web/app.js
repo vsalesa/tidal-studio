@@ -4,6 +4,7 @@ import { compIcon } from "./comp-icons.js";
 import { startTour, stopTour, tourFlag, tourSeen } from "./tour.js";
 import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep, stopBeeps } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
+import { attachHighlight, refreshHighlights, syncSounds } from "./code-hl.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
@@ -595,6 +596,7 @@ function renderTracks() {
     });
     ta.addEventListener("change", () => { commit(); if (live()) playTrack(t); });
     box.appendChild(el);
+    attachHighlight(el.querySelector("textarea"));
   }
 }
 
@@ -2276,6 +2278,8 @@ async function refreshStatus() {
   try {
     const s = await api("/api/status");
     server.llm = s.llm_configured; server.engine = s.engine; server.github = s.github_configured;
+    syncSounds(s.engine && s.engine.sounds_rev, api);
+    refreshHighlights();
     const e = s.engine, pe = $("#st-engine");
     if (e.tidal_running && e.superdirt_ready) setPill(pe, "ok", "speaker", L("Sonido listo", "Sound ready"));
     else if (e.tidal_running || e.sc_running) setPill(pe, "warn", "speaker", L("Arrancando sonido…", "Starting sound…"));
@@ -2403,7 +2407,7 @@ function init() {
   hydrateIcons();
   $("#bpm").value = state.bpm;
   $("#proj-name").value = state.name || "";
-  renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode();
+  renderCatalog(); renderPalette(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode(); attachHighlight($("#code"));
   if (!state.chat.length) greet(); else renderChat();
   // Primera visita: el tutorial arranca solo (se puede cerrar en el primer paso)
   if (!tourSeen() && !state.tracks.length && !location.hash) setTimeout(runTour, 900);
@@ -2436,7 +2440,7 @@ function init() {
   document.querySelectorAll(".tab").forEach((b) => b.onclick = () => {
     document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === b));
     document.querySelectorAll(".tabpane").forEach((p) => p.classList.toggle("active", p.id === "tab-" + b.dataset.tab));
-    if (b.dataset.tab === "code") $("#code").value = buildCode();
+    if (b.dataset.tab === "code") { $("#code").value = buildCode(); refreshHighlights(); }
     if (b.dataset.tab === "log") refreshLog();
     if (b.dataset.tab === "blocks") renderBlocks();
     if (b.dataset.tab === "arrange") renderArrange();

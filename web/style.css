@@ -720,3 +720,13 @@ label.card-field { grid-template-columns: 70px 1fr; }
 #hist-list em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--teal); }
 #hist-list li.current button { background: var(--teal-soft); border-color: var(--teal); opacity: 1; cursor: default; }
 .toast { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 8px 16px; border-radius: 999px; font-size: 13.5px; z-index: 100; box-shadow: var(--shadow); }
+/* ----- sonidos que no existen: marcados en rojo dentro del código (web/code-hl.js) ----- */
+.hlwrap { position: relative; width: 100%; display: flex; flex-direction: column; }
+.hlwrap > textarea { position: relative; z-index: 1; background: transparent !important; width: 100%; }
+.hlwrap-code { flex: 1; min-height: 300px; }
+.hlwrap-code > #code { flex: 1; }
+.hlwrap > pre.hl { position: absolute; inset: 0; margin: 0; overflow: hidden; color: transparent; pointer-events: none; z-index: 0; border-style: solid; border-color: transparent; }
+.hlwrap mark.miss { color: transparent; background: rgba(198, 40, 40, 0.18); border-bottom: 2px solid #c62828; border-radius: 2px; }
+.miss-note { color: #b71c1c; font-size: 12px; margin-top: 4px; }
+.hlwrap > textarea { margin: 0; }
+.track .hlwrap { margin-top: 8px; }

@@ -148,6 +148,20 @@ Click options and hear the result live. The ones recommended for your style are 
 
 ## Installation (once)
 
+### Easiest: the all-in-one Mac installer
+
+Download `TidalStudio-…-macOS-AppleSilicon.pkg` from the
+[latest release](https://github.com/vsalesa/tidal-studio/releases/latest) and double-click it. It contains
+everything (TidalCycles with its own Haskell, SuperCollider, SuperDirt and its sounds, Python) and **downloads nothing**
+while installing. Then open **Tidal Studio** from Applications.
+
+It is not signed with an Apple Developer ID yet, so the first time macOS blocks it: open
+**System Settings → Privacy & Security**, press **Open Anyway** and run the `.pkg` again.
+It installs the engine in `/Users/Shared/TidalStudio` (about 3 GB) and leaves any SuperCollider, Haskell or Python you
+already have untouched. How it is built: [packaging/README.md](packaging/README.md).
+
+### From the source folder (Windows, Linux, or Mac)
+
 Download or clone this folder and:
 
 | System | What to do |

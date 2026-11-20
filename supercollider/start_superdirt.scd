@@ -29,6 +29,12 @@ if(\SuperDirt.asClass.isNil) {
             (~studioDir +/+ "studio-synths.scd").load;
             s.sync;
             ~dirt.start(57120, 0 ! 12);   // 12 "orbits": una por pista d1..d12
+            // Lista de sonidos disponibles: la web marca en rojo los que falten en tu código
+            ~studioListSounds = {
+                var names = ~dirt.soundLibrary.buffers.keys ++ ~dirt.soundLibrary.synthEvents.keys ++ SynthDescLib.global.synthDescs.keys;
+                ("TIDAL_STUDIO_SOUNDS: " ++ names.asArray.collect(_.asString).sort.join(" ")).postln;
+            };
+            ~studioListSounds.value;
             "SuperDirt listo para Tidal Studio".postln;
         };
         s.latency = 0.3;

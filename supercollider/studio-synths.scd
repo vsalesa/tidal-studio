@@ -30,22 +30,13 @@ var loadBlocks = { |path|
                 name = code.findRegexp("SynthDef\\(\\\\([A-Za-z0-9_]+)");
                 name = if(name.notEmpty) { name[1][1] } { "?" };
                 if(miss.isEmpty) {
-                    if(code.interpret.notNil) { loaded = loaded + 1 } { skipped.add(name) };
+                    if(try { code.interpret } { |err| nil }.notNil) { loaded = loaded + 1 } { skipped.add(name) };
                 } { skipped.add(name ++ " (" ++ miss.asArray.join(", ") ++ ")") };
                 block = nil;
             };
         };
     };
     [loaded, skipped]
-};
-
-if(\MembraneHexagon.asClass.isNil) {
-    var extra = SuperDirt.filenameSymbol.asString.dirname.dirname +/+ "library" +/+ "default-synths-extra.scd";
-    "Tidal Studio: faltan los sc3-plugins; cargo los sintetizadores de SuperDirt que no los necesitan.".postln;
-    if(File.exists(extra)) {
-        var res = loadBlocks.(extra);
-        ("Tidal Studio: % sintetizadores extra cargados. Sin plugins no hay: %".format(res[0], res[1].join(", "))).postln;
-    } { ("Tidal Studio: no encuentro " ++ extra).postln };
 };
 
 // Piano sin plugins: cuerdas (parciales algo inarmónicas, dos cuerdas desafinadas) + golpe del martillo.
@@ -89,6 +80,29 @@ if(\FM7.asClass.isNil) {
     }).add;
 };
 
+// Lo básico: ondas sencillas con nombre fácil (n = nota, como cualquier sinte).
+//   s "sawtooth" / "saw"   diente de sierra      s "square"            cuadrada
+//   s "triangle" / "tri"   triangular            s "pulse"             pulso estrecho (voice = anchura)
+//   s "sinewave"           seno puro ("sine" ya es un sample de Dirt-Samples)
+// Parámetros extra: voice, attack, release; y los de siempre (lpf, room, gain…).
+[
+    [\sawtooth, { |f, v| Saw.ar(f * [1, 1.004]).sum * 0.5 }],
+    [\saw,      { |f, v| Saw.ar(f * [1, 1.004]).sum * 0.5 }],
+    [\square,   { |f, v| Pulse.ar(f, 0.5) * 0.6 }],
+    [\triangle, { |f, v| LFTri.ar(f) * 0.8 }],
+    [\tri,      { |f, v| LFTri.ar(f) * 0.8 }],
+    [\pulse,    { |f, v| Pulse.ar(f, v.clip(0.05, 0.95)) * 0.6 }],
+    [\sinewave, { |f, v| SinOsc.ar(f) * 0.8 }]
+].do { |def|
+    SynthDef(def[0], { |out, sustain=1, pan, freq=440, accelerate=0, speed=1, voice=0.25, attack=0.005, release=0.05|
+        var f = freq * DirtFreqScale.kr(speed, accelerate, sustain);
+        var env = EnvGen.ar(Env([0, 1, 1, 0], [attack, (sustain - attack).max(0.001), release], -2), doneAction: 2);
+        var sound = LeakDC.ar(def[1].value(f, voice)) * 0.35;
+        Out.ar(out, DirtPan.ar(sound, ~dirt.numChannels, pan, env));
+    }).add;
+};
+"Tidal Studio: sintes básicos listos (sawtooth, saw, square, triangle, tri, pulse, sinewave).".postln;
+
 // Trompeta: dientes de sierra con filtro que se abre al soplar, subida de afinación al atacar y vibrato tardío.
 // Úsala como cualquier sinte:  n "c5 e5 g5" # s "supertrumpet"   (extra: velocity, vibrato, muffle)
 SynthDef(\supertrumpet, { |out, sustain=1, pan, freq=440, accelerate=0, speed=1, velocity=1, vibrato=0.5, vrate=5.5, muffle=1|
@@ -105,11 +119,23 @@ SynthDef(\supertrumpet, { |out, sustain=1, pan, freq=440, accelerate=0, speed=1,
     Out.ar(out, DirtPan.ar(sound, ~dirt.numChannels, pan, env));
 }).add;
 "Tidal Studio: supertrumpet listo.".postln;
+// Al final y protegido: si algo de SuperDirt falla aquí, el piano y la trompeta ya están definidos
+try {
+    if(\MembraneHexagon.asClass.isNil) {
+        var extra = SuperDirt.filenameSymbol.asString.dirname.dirname +/+ "library" +/+ "default-synths-extra.scd";
+        "Tidal Studio: faltan los sc3-plugins; cargo los sintetizadores de SuperDirt que no los necesitan.".postln;
+        if(File.exists(extra)) {
+            var res = loadBlocks.(extra);
+            ("Tidal Studio: % sintetizadores extra cargados. Sin plugins no hay: %".format(res[0], res[1].join(", "))).postln;
+        } { ("Tidal Studio: no encuentro " ++ extra).postln };
+    };
+} { |err| ("Tidal Studio ERROR cargando sintes extra: " ++ err.errorString).postln };
 
 // 4) Ecualizador de 3 bandas para la mesa de mezcla (pestaña «Mezcla» de Tidal Studio).
 //    En Tidal:  # eqlow 3 # eqmid -2 # eqhigh 1   (dB; BootTidal.hs define eqlow, eqmid, eqhigh)
 //    Graves: estante a 200 Hz · Medios: campana a 1 kHz · Agudos: estante a 4 kHz. Solo filtros de serie (sin plugins).
 //    Va como módulo de SuperDirt: se aplica a cada nota de la pista, antes del volumen final.
+try {
 ~dirt.addFilterModule(\studio_eq, { |out, eqlow = 0, eqmid = 0, eqhigh = 0|
     var sig = In.ar(out, ~dirt.numChannels);
     sig = BLowShelf.ar(sig, 200, 1, eqlow.clip(-24, 24));
@@ -118,4 +144,5 @@ SynthDef(\supertrumpet, { |out, sustain=1, pan, freq=440, accelerate=0, speed=1,
     ReplaceOut.ar(out, sig);
 }, { ~eqlow.notNil or: { ~eqmid.notNil } or: { ~eqhigh.notNil } });
 "Tidal Studio: ecualizador studio_eq listo.".postln;
+} { |err| ("Tidal Studio ERROR cargando el ecualizador: " ++ err.errorString).postln };
 )

@@ -13,9 +13,10 @@ import os
 import shutil
 import subprocess
 import tempfile
-import ssl
 import urllib.error
 import urllib.request
+
+import net
 
 
 class LLMError(Exception):
@@ -30,14 +31,13 @@ def _post(url, headers, body, timeout=120):
     for k, v in headers.items():
         req.add_header(k, v)
     try:
-        ctx = ssl.create_default_context()
-        with urllib.request.urlopen(req, timeout=timeout, context=ctx) as resp:
+        with net.urlopen(req, timeout=timeout) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")[:500]
         raise LLMError(f"La IA respondió con error {e.code}: {detail}")
     except urllib.error.URLError as e:
-        raise LLMError(f"No se pudo conectar con la IA ({url}): {e.reason}")
+        raise LLMError(f"No se pudo conectar con la IA ({url}): {e.reason}{net.ssl_hint(e.reason)}")
     except TimeoutError:
         raise LLMError("La IA tardó demasiado en responder")
 

@@ -25,6 +25,7 @@ from llm import chat_completion, LLMError, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 import github  # noqa: E402
+import net  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -202,7 +203,7 @@ class Handler(SimpleHTTPRequestHandler):
                 try:
                     check_remote(url)
                     import urllib.request as _u
-                    with _u.urlopen(_u.Request(url, headers={"User-Agent": "tidal-studio"}), timeout=20) as r:
+                    with net.urlopen(_u.Request(url, headers={"User-Agent": "tidal-studio"}), timeout=20) as r:
                         body = r.read(25 * 1024 * 1024)
                 except Exception as e:
                     return self._json({"error": str(e)}, 502)
@@ -232,6 +233,8 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
                 return
+            if path == "/api/sounds":
+                return self._json(ENGINE.sound_list())
             if path == "/api/log":
                 return self._json({"log": ENGINE.log_tail(200)})
             return self._json({"error": "Ruta no encontrada"}, 404)
@@ -424,23 +427,54 @@ def check():
                        "Meanwhile the studio runs in simulation mode (no sound)."))
 
 
+def _studio_running(port):
+    """True si en ese puerto responde un Tidal Studio (p. ej. abierto en otra ventana)."""
+    import urllib.request
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}/api/status", timeout=2) as r:
+            return r.status == 200 and b"{" in r.read(200)
+    except Exception:
+        return False
+
+
 def main():
     global ARGS
     ap = argparse.ArgumentParser(description="Tidal Studio")
     ap.add_argument("--port", type=int, default=int(os.environ.get("TIDAL_STUDIO_PORT", 8765)))
     ap.add_argument("--no-browser", action="store_true")
+    ap.add_argument("--insecure-ssl", action="store_true",
+                    help="No comprobar certificados SSL en las descargas (último recurso; ver server/net.py)")
     ap.add_argument("--no-engine", action="store_true", help="No arrancar SuperCollider/Tidal automáticamente")
     ap.add_argument("--allow-remote", action="store_true", help="Permitir acceso desde otros equipos (no recomendado)")
     ap.add_argument("--check", action="store_true", help="Comprobar la instalación y salir")
     ARGS = ap.parse_args()
+    if ARGS.insecure_ssl:
+        net.FORCE_INSECURE = True
 
     if ARGS.check:
         check()
         return
 
     host = "0.0.0.0" if ARGS.allow_remote else "127.0.0.1"
-    server = ThreadingHTTPServer((host, ARGS.port), Handler)
-    url = f"http://localhost:{ARGS.port}"
+    port = ARGS.port
+    server = None
+    for port in range(ARGS.port, ARGS.port + 10):
+        try:
+            server = ThreadingHTTPServer((host, port), Handler)
+            break
+        except OSError:
+            # ¿Ya hay un Tidal Studio abierto en este puerto? Entonces solo abrimos el navegador.
+            if _studio_running(port):
+                url = f"http://localhost:{port}"
+                print(f"\n🎛  Tidal Studio ya estaba abierto / is already running: {url}\n")
+                if not ARGS.no_browser:
+                    webbrowser.open(url)
+                return
+            print(f"[server] Puerto {port} ocupado por otro programa, pruebo el siguiente / port busy, trying the next one")
+    if server is None:
+        print(f"No hay puertos libres entre {ARGS.port} y {ARGS.port + 9} / no free port. Usa --port.")
+        sys.exit(1)
+    url = f"http://localhost:{port}"
     print(f"\n🎛  Tidal Studio listo en {url}\n   (Ctrl+C para salir)\n")
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()

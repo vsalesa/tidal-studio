@@ -151,6 +151,20 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 
 ## Instalación (una sola vez)
 
+### Lo más fácil: el instalador para Mac con todo dentro
+
+Descarga `TidalStudio-…-macOS-AppleSilicon.pkg` de la
+[última versión](https://github.com/vsalesa/tidal-studio/releases/latest) y haz doble clic. Lleva todo dentro
+(TidalCycles con su propio Haskell, SuperCollider, SuperDirt y sus sonidos, Python) y **no descarga nada** al instalar.
+Después abre **Tidal Studio** desde Aplicaciones.
+
+Aún no está firmado por Apple, así que la primera vez macOS lo bloquea: ve a
+**Ajustes del Sistema → Privacidad y seguridad**, pulsa **Abrir igualmente** y vuelve a abrir el `.pkg`.
+Instala el motor en `/Users/Shared/TidalStudio` (unos 3 GB) y no toca el SuperCollider, Haskell o Python que ya tengas.
+Cómo se construye: [packaging/README.md](packaging/README.md).
+
+### Desde la carpeta del código (Windows, Linux o Mac)
+
 Descarga o clona esta carpeta y:
 
 | Sistema | Qué hacer |
