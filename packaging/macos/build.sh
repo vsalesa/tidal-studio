@@ -128,8 +128,13 @@ log "Building the installer package"
 # SuperCollider.app elsewhere on the Mac instead of installing ours. Turn that off.
 nonreloc() {  # root plist
   pkgbuild --analyze --root "$1" "$2"
-  local n; n="$(/usr/libexec/PlistBuddy -c 'Print' "$2" | grep -c 'RootRelativeBundlePath' || true)"
-  for ((i=0; i<n; i++)); do /usr/libexec/PlistBuddy -c "Set :$i:BundleIsRelocatable false" "$2"; done
+  local i=0
+  while /usr/libexec/PlistBuddy -c "Print :$i" "$2" >/dev/null 2>&1; do
+    /usr/libexec/PlistBuddy -c "Set :$i:BundleIsRelocatable false" "$2" 2>/dev/null \
+      || /usr/libexec/PlistBuddy -c "Add :$i:BundleIsRelocatable bool false" "$2"
+    i=$((i+1))
+  done
+  /usr/libexec/PlistBuddy -c 'Print' "$2"
 }
 nonreloc "$RT" "$WORK/runtime.plist"
 nonreloc "$APPSTAGE" "$WORK/app.plist"
