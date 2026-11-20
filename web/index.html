@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tidal Studio</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🎛 <strong>Tidal Studio</strong> <span class="sub">tu compositor en casa</span></div>
+    <div class="transport">
+      <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto">
+        BPM <input id="bpm" type="number" min="40" max="220" value="120">
+      </label>
+      <button id="btn-play" class="primary" title="Hacer sonar todo">▶ Tocar todo</button>
+      <button id="btn-hush" class="danger" title="Silenciar todo ya">■ Silencio</button>
+      <label class="toggle" title="Cuando cambias algo, suena al momento">
+        <input id="autoplay" type="checkbox" checked> En vivo
+      </label>
+    </div>
+    <div class="status">
+      <span id="st-engine" class="pill">Motor…</span>
+      <span id="st-llm" class="pill">IA…</span>
+      <button id="btn-settings" class="icon" title="Ajustes">⚙️</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Columna 1: catálogo -->
+    <aside class="panel catalog">
+      <h2>Componentes</h2>
+      <p class="hint">Pulsa <b>+</b> para añadir. Los efectos y "¿cuándo pasa?" se aplican a la pista seleccionada.</p>
+      <select id="style-filter" title="Filtra sugerencias por estilo">
+        <option value="">Todos los estilos</option>
+      </select>
+      <div id="catalog"></div>
+    </aside>
+
+    <!-- Columna 2: pistas + código -->
+    <section class="panel center">
+      <div class="tabs">
+        <button class="tab active" data-tab="tracks">🎚 Pistas</button>
+        <button class="tab" data-tab="code">⌨️ Código</button>
+        <button class="tab" data-tab="log">📜 Registro</button>
+      </div>
+
+      <div id="tab-tracks" class="tabpane active">
+        <div id="tracks"></div>
+        <div id="empty" class="empty">
+          <p>Todavía no hay música.</p>
+          <p>Habla con el asistente de la derecha 👉 o añade un componente de la izquierda 👈</p>
+        </div>
+      </div>
+
+      <div id="tab-code" class="tabpane">
+        <p class="hint">Este es el código TidalCycles de tu canción. Puedes editarlo a mano y pulsar <b>Aplicar</b>. Las líneas que empiezan por <code>--</code> son comentarios.</p>
+        <textarea id="code" spellcheck="false"></textarea>
+        <div class="row">
+          <button id="btn-apply-code" class="primary">▶ Aplicar código</button>
+          <button id="btn-copy-code">Copiar</button>
+          <span id="code-msg" class="hint"></span>
+        </div>
+      </div>
+
+      <div id="tab-log" class="tabpane">
+        <p class="hint">Mensajes de SuperCollider y Tidal. Útil si algo no suena.</p>
+        <pre id="log"></pre>
+        <div class="row">
+          <button id="btn-engine-start">Arrancar motor de sonido</button>
+          <button id="btn-engine-stop">Parar motor</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Columna 3: asistente -->
+    <aside class="panel assistant">
+      <h2>🧑‍🏫 Maestro <span class="hint" id="assistant-mode"></span></h2>
+      <div id="chat"></div>
+      <div id="chips"></div>
+      <form id="chat-form">
+        <input id="chat-input" placeholder="Pide lo que quieras: «más oscuro», «quita el bombo»…" autocomplete="off">
+        <button class="primary" type="submit">Enviar</button>
+      </form>
+    </aside>
+  </main>
+
+  <!-- Ajustes -->
+  <dialog id="settings">
+    <form method="dialog" id="settings-form">
+      <h2>⚙️ Conectar la IA</h2>
+      <p class="hint">Elige con qué inteligencia artificial habla el asistente. Las claves se guardan solo en tu ordenador (<code>config.json</code>).</p>
+      <div class="radio">
+        <label><input type="radio" name="provider" value="openai" checked> Compatible con OpenAI <span class="hint">(OpenAI, OpenRouter, Groq, Ollama, LM Studio…)</span></label>
+        <label><input type="radio" name="provider" value="anthropic"> Claude <span class="hint">(Anthropic)</span></label>
+      </div>
+      <fieldset id="fs-openai">
+        <label>Servicio
+          <select id="oa-preset">
+            <option value="https://api.openai.com/v1|gpt-4o-mini">OpenAI</option>
+            <option value="https://openrouter.ai/api/v1|openai/gpt-4o-mini">OpenRouter</option>
+            <option value="https://api.groq.com/openai/v1|llama-3.3-70b-versatile">Groq</option>
+            <option value="https://api.deepseek.com/v1|deepseek-chat">DeepSeek</option>
+            <option value="https://api.mistral.ai/v1|mistral-small-latest">Mistral</option>
+            <option value="http://localhost:11434/v1|llama3.1">Ollama (local, gratis)</option>
+            <option value="http://localhost:1234/v1|local-model">LM Studio (local, gratis)</option>
+            <option value="custom">Otro (escribe la URL)</option>
+          </select>
+        </label>
+        <label>URL base (endpoint) <input id="oa-url" placeholder="https://api.openai.com/v1"></label>
+        <label>Clave API <input id="oa-key" type="password" placeholder="sk-… (vacío si es local)"></label>
+        <label>Modelo <input id="oa-model" placeholder="gpt-4o-mini"></label>
+      </fieldset>
+      <fieldset id="fs-anthropic" hidden>
+        <label>Clave API de Anthropic <input id="an-key" type="password" placeholder="sk-ant-…"></label>
+        <label>Modelo <input id="an-model" placeholder="claude-opus-5-5"></label>
+      </fieldset>
+      <div class="row">
+        <button type="button" id="btn-test">Probar conexión</button>
+        <span id="test-msg" class="hint"></span>
+      </div>
+      <div class="row end">
+        <button value="cancel">Cerrar</button>
+        <button type="button" id="btn-save" class="primary">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
