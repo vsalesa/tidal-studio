@@ -111,7 +111,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 
 /* ----- Pestañas ----- */
 .center { display: flex; flex-direction: column; }
-.tabs { display: flex; gap: 2px; margin-bottom: 12px; border-bottom: 1px solid var(--rule); }
+.tabs { display: flex; flex-wrap: wrap; gap: 2px; margin-bottom: 12px; border-bottom: 1px solid var(--rule); }
 .tab { background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0; color: var(--ink-2); padding: 8px 12px; margin-bottom: -1px; }
 .tab.active { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
 .tabpane { display: none; flex: 1; flex-direction: column; min-height: 0; }
