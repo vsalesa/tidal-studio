@@ -2,7 +2,7 @@ import { L, LANG, setLang } from "./i18n.js";
 import { STYLES, CATEGORIES, COMPONENTS, byId } from "./catalog.js";
 import { compIcon } from "./comp-icons.js";
 import { startTour, stopTour, tourFlag, tourSeen } from "./tour.js";
-import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep } from "./instruments.js";
+import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep, stopBeeps } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
@@ -143,6 +143,16 @@ const playTrack = (t) => evalCode(trackLine(t), t);
 const silenceId = (id) => evalCode(`${id} silence`);
 const playAll = () => evalCode([cps(state.bpm), ...state.tracks.map(trackLine)].join("\n\n"));
 const live = () => $("#autoplay").checked;
+// Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
+// seguían sonando, y una pre-escucha en marcha volvía a poner la música al acabar su tiempo.
+// "panic" (BootTidal) además corta todo lo que suena en SuperDirt; y paramos el audio del navegador.
+function hushAll() {
+  if (preview) { clearTimeout(preview.timer); const { onEnd } = preview; preview = null; if (onEnd) onEnd(); }
+  clearTimeout(ctlTimer);
+  seqTimers.forEach(clearTimeout); seqTimers = [];
+  smStop(); stopBeeps();
+  return evalCode("panic");
+}
 
 // ------------------------------------------------------------------ pistas
 function freeId() {
@@ -737,15 +747,16 @@ function instHear(ins, what) {
   if (isSim() || !instReady(ins, sound)) return beep(what, ins.voice);
   evalCode(`once $ ${melodyCode(ins, [what], sound)}`);
 }
+let seqTimers = [];
 function instPlaySeq(ins) {
   const sound = instSound(ins);
   if (!isSim() && (ins.id === "drums" || instReady(ins, sound))) return evalCode(`once $ ${instCode(ins)}`);
   const step = 60 / (state.bpm || 120) / 2 * 1000;
   if (ins.id === "drums") {
-    (inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps).forEach((v, i) => v && setTimeout(() => hearDirt(inst.piece, 0), i * step));
+    (inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps).forEach((v, i) => v && seqTimers.push(setTimeout(() => hearDirt(inst.piece, 0), i * step)));
     return;
   }
-  inst.seq.forEach((m, i) => m != null && setTimeout(() => beep(m, ins.voice), i * step));
+  inst.seq.forEach((m, i) => m != null && seqTimers.push(setTimeout(() => beep(m, ins.voice), i * step)));
 }
 function wireInstrument() {
   $("#inst-body").addEventListener("click", async (e) => {
@@ -2053,7 +2064,7 @@ function init() {
     changed(); evalCode(cps(state.bpm));
   });
   $("#btn-play").onclick = playAll;
-  $("#btn-hush").onclick = () => evalCode("hush");
+  $("#btn-hush").onclick = hushAll;
   $("#style-filter").onchange = (e) => { state.style = e.target.value; save(); renderCatalog(); renderIdeas(); };
   $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
   $("#btn-more-ideas").onclick = () => {

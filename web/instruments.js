@@ -134,11 +134,18 @@ export function melodyCode(ins, seq, sound) {
 }
 
 // ------------------------------------------------------------------ vista previa en el navegador
-let ac = null;
+let ac = null, master = null;
+const dest = () => { if (!master) { master = ac.createGain(); master.connect(ac.destination); } return master; };
+// Corta en seco todo lo que suena en la vista previa del navegador
+export function stopBeeps() {
+  if (!master) return;
+  try { master.gain.setValueAtTime(0, ac.currentTime); master.disconnect(); } catch {}
+  master = null;
+}
 // Voces de la vista previa: "piano" y "brass" imitan algo mejor el instrumento que una onda pelada
 function voiceNote(midi, voice, dur) {
   const t = ac.currentTime, f = noteFreq(midi), out = ac.createGain();
-  out.connect(ac.destination);
+  out.connect(dest());
   const osc = (type, freq, gain, decay) => {
     const o = ac.createOscillator(), g = ac.createGain();
     o.type = type; o.frequency.value = freq;
@@ -177,7 +184,7 @@ export function beep(midi, voice = "triangle", dur = 0.45) {
     o.type = voice; o.frequency.value = noteFreq(midi);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(voice === "square" || voice === "sawtooth" ? 0.08 : 0.22, t + 0.015);
     g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + 0.05);
+    o.connect(g).connect(dest()); o.start(t); o.stop(t + dur + 0.05);
   } catch {}
 }
 
