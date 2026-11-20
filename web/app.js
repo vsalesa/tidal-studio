@@ -1,5 +1,7 @@
 import { L, LANG, setLang } from "./i18n.js";
 import { STYLES, CATEGORIES, COMPONENTS, byId } from "./catalog.js";
+import { compIcon } from "./comp-icons.js";
+import { INSTRUMENTS, instById, instThumb, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
@@ -618,6 +620,9 @@ function undoIdea() {
 }
 
 // ------------------------------------------------------------------ catálogo
+// Cada familia enseña sus 2 componentes más útiles (los que encajan con el estilo primero) y «Ver más»
+const CAT_PREVIEW = 2;
+const catMore = new Set(), catClosed = new Set();
 function renderCatalog() {
   const sel = $("#style-filter");
   if (sel.options.length === 1)
@@ -625,7 +630,9 @@ function renderCatalog() {
   sel.value = state.style || "";
   const style = sel.value;
   const box = $("#catalog");
-  box.innerHTML = "";
+  box.innerHTML = `<div class="inst-strip"><div class="inst-head">${icon("speaker", 15)} ${L("Instrumentos", "Instruments")}<span>${L("pulsa uno para tocarlo", "press one to play it")}</span></div>
+    <div class="inst-row">${INSTRUMENTS.map((i) => `<button class="inst-card" data-i="${i.id}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span><span>${esc(L(i.es, i.en))}</span></button>`).join("")}</div></div>`;
+  box.querySelectorAll(".inst-card").forEach((b) => b.onclick = () => openInstrument(b.dataset.i));
   for (const cat of CATEGORIES) {
     let items = COMPONENTS.filter((c) => c.cat === cat.id);
     if (style && items[0] && items[0].estilos) {
@@ -633,25 +640,158 @@ function renderCatalog() {
     }
     const d = document.createElement("details");
     d.className = "cat";
-    d.open = ["percusion", "bajo"].includes(cat.id) || !!style;
-    d.innerHTML = `<summary><span class="cat-ico" style="background:${KIND_COLOR[cat.id]}">${icon(cat.id, 16)}</span>${esc(cat.nombre)}</summary><p class="help">${esc(cat.ayuda)}</p>`;
-    for (const c of items) {
+    d.open = !catClosed.has(cat.id);
+    d.dataset.cat = cat.id;
+    d.style.setProperty("--k", KIND_COLOR[cat.id]);
+    d.ontoggle = () => { d.open ? catClosed.delete(cat.id) : catClosed.add(cat.id); };
+    d.innerHTML = `<summary title="${esc(cat.ayuda)}"><span class="cat-ico" style="background:${KIND_COLOR[cat.id]}">${icon(cat.id, 16)}</span>${esc(cat.nombre)}<span class="cat-n">${items.length}</span></summary><div class="comp-grid"></div>`;
+    const grid = d.querySelector(".comp-grid");
+    const full = catMore.has(cat.id), shown = full ? items : items.slice(0, CAT_PREVIEW);
+    const isMod = cat.id === "efecto" || cat.id === "estructura";
+    for (const c of shown) {
       const fits = style && c.estilos && c.estilos.includes(style);
-      const row = document.createElement("div");
-      row.className = "comp";
-      row.innerHTML = `<div class="txt"><div class="name"></div><div class="desc"></div></div>
-        <button title="${c.cat === "efecto" || c.cat === "estructura" ? L("Aplicar a la pista seleccionada", "Apply to the selected track") : L("Añadir pista", "Add track")}">${icon("plus", 16)}</button>`;
+      const row = document.createElement("button");
+      row.className = "comp" + (fits ? " fits" : "");
+      row.dataset.id = c.id;
+      row.title = `${c.desc}\n${isMod ? L("Clic: aplicar a la pista seleccionada", "Click: apply to the selected track") : L("Clic: añadir como pista nueva", "Click: add as a new track")}`;
+      row.innerHTML = `<span class="comp-ico">${compIcon(c.id, 24)}</span><span class="name"></span><span class="comp-add">${icon("plus", 12)}</span>${fits ? `<span class="fit">${L("encaja", "fits")}</span>` : ""}`;
       row.querySelector(".name").textContent = c.nombre;
-      if (fits) row.querySelector(".name").insertAdjacentHTML("beforeend", `<span class="fit">${L("encaja", "fits")}</span>`);
-      row.querySelector(".desc").textContent = c.desc;
-      row.querySelector("button").onclick = () => {
+      row.onclick = () => {
         const t = addComponent(c);
         if (t) teachAbout(c, t);
       };
-      d.appendChild(row);
+      grid.appendChild(row);
+    }
+    if (items.length > CAT_PREVIEW) {
+      const more = document.createElement("button");
+      more.className = "cat-more";
+      more.innerHTML = full ? `${icon("back", 14)}<span>${L("Menos", "Less")}</span>` : `<b>+${items.length - CAT_PREVIEW}</b><span>${L("ver más", "more")}</span>`;
+      more.onclick = () => { full ? catMore.delete(cat.id) : catMore.add(cat.id); renderCatalog(); };
+      grid.appendChild(more);
     }
     box.appendChild(d);
   }
+}
+
+// ------------------------------------------------------------------ instrumentos ilustrados
+const inst = { id: "drums", piece: "bd", steps: {}, seqs: {}, oct: {}, sound: {}, lib: null, get seq() { return this.seqs[this.id] || (this.seqs[this.id] = []); }, set seq(v) { this.seqs[this.id] = v; } };
+const isSim = () => !!(server.engine && server.engine.simulation);
+async function openInstrument(id) {
+  inst.id = id || inst.id;
+  try { inst.lib = (await api("/api/samples")).sounds || []; } catch { inst.lib = inst.lib || []; }
+  renderInstrument();
+  if (!$("#instrument").open) $("#instrument").showModal();
+}
+function instSound(ins) {
+  if (inst.sound[ins.id] !== undefined) return inst.sound[ins.id];
+  if (ins.freesound) { const m = (inst.lib || []).find((x) => x.name.includes(ins.freesound)); return m ? m.name : ""; }
+  return ins.sound;
+}
+const instReady = (ins, sound) => !!sound && (!ins.pack || (inst.lib || []).some((x) => x.name === sound));
+function instCode(ins) {
+  if (ins.id === "drums") return drumCode(inst.piece, inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps);
+  return melodyCode(ins, inst.seq, instSound(ins) || "?");
+}
+function renderInstrument() {
+  const ins = instById[inst.id];
+  const tabs = `<div class="inst-tabs">${INSTRUMENTS.map((i) => `<button data-i="${i.id}" class="${i.id === ins.id ? "active" : ""}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span>${esc(L(i.es, i.en))}</button>`).join("")}</div>`;
+  let art, side;
+  if (ins.id === "drums") {
+    const P = DRUM_PIECES[inst.piece], steps = inst.steps[inst.piece] || P.steps;
+    art = drumKitSVG(inst.piece, true);
+    side = `<div class="inst-piece"><code>${inst.piece}</code><b>${esc(L(P.es, P.en))}</b></div>
+      <p class="inst-tip">${esc(L(...P.tip))}</p>
+      <div class="inst-lbl">${L("¿En qué pasos suena? (8 pasos = un compás)", "Which steps does it play on? (8 steps = one bar)")}</div>
+      <div class="inst-steps">${steps.map((v, i) => `<button data-st="${i}" class="${v ? "on" : ""}${i % 2 ? "" : " beat"}">${i % 2 ? "" : i / 2 + 1}</button>`).join("")}</div>`;
+  } else {
+    const oct = inst.oct[ins.id] ?? ins.oct, sound = instSound(ins), ready = instReady(ins, sound);
+    art = `<div class="inst-big">${ins.svg}</div>`;
+    let src = "";
+    if (ins.freesound) {
+      const mine = (inst.lib || []).filter((x) => x.type !== "percusion");
+      src = `<div class="inst-src"><label>${L("Sonido", "Sound")} <select data-a="sound"><option value="">${L("— elige uno de tus samples —", "— pick one of your samples —")}</option>${mine.map((x) => `<option ${x.name === sound ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>
+        <button data-a="freesound">${icon("search", 14)} ${L(`Buscar «${ins.freesound}» en Freesound`, `Search «${ins.freesound}» on Freesound`)}</button></div>`;
+    } else if (ins.pack) {
+      src = ready ? `<div class="inst-src ok">${icon("check", 14)} ${L(`«${sound}» instalado en tu biblioteca`, `«${sound}» installed in your library`)}</div>`
+        : `<div class="inst-src"><span>${L("Este sonido se descarga una vez del pack libre VCSL (CC0).", "This sound is downloaded once from the free VCSL pack (CC0).")}</span><button class="primary" data-a="install">${icon("download", 14)} ${L("Instalar sonido", "Install sound")}</button></div>`;
+    } else {
+      src = `<div class="inst-src ok"><code>s "${esc(sound)}"</code> ${ins.synth ? L("sintetizador de SuperDirt: toca cualquier nota", "SuperDirt synth: plays any note") : L("viene con Tidal (Dirt-Samples)", "comes with Tidal (Dirt-Samples)")}</div>`;
+    }
+    side = `<div class="inst-piece"><b>${esc(L(ins.es, ins.en))}</b></div><p class="inst-tip">${esc(L(...ins.tip))}</p>${src}
+      <div class="inst-lbl">${L("Pulsa teclas para escribir tu melodía (máx. 16 notas)", "Press keys to write your melody (max. 16 notes)")}
+        <span class="inst-oct"><button data-a="oct" data-d="-1" title="${L("Octava abajo", "Octave down")}">−</button>${L("octava", "octave")} ${oct}<button data-a="oct" data-d="1" title="${L("Octava arriba", "Octave up")}">+</button></span></div>
+      ${keyboardHTML(oct, new Set(inst.seq.filter((m) => m != null)))}
+      <div class="inst-seq">${inst.seq.length ? inst.seq.map((m) => `<span class="${m == null ? "rest" : ""}">${m == null ? "~" : noteName(m)}</span>`).join("") : `<em>${L("Aún no hay notas", "No notes yet")}</em>`}</div>
+      <div class="inst-seqbtns"><button data-a="rest">~ ${L("silencio", "rest")}</button><button data-a="pop">${icon("back", 13)} ${L("borrar última", "delete last")}</button><button data-a="clear">${icon("trash", 13)} ${L("vaciar", "clear")}</button></div>`;
+  }
+  const code = instCode(ins);
+  $("#inst-body").innerHTML = `${tabs}<div class="inst-main"><div class="inst-stage" style="--k:${KIND_COLOR[ins.kind]}">${art}</div>
+    <div class="inst-side">${side}
+      <div class="inst-code"><span>${L("Código Tidal", "Tidal code")}</span><code>${esc(code)}</code></div>
+      <div class="inst-actions"><button data-a="listen">${icon("play", 13)} ${L("Escuchar", "Listen")}</button>
+        <button class="primary" data-a="add">${icon("plus", 14)} ${L("Añadir como pista", "Add as a track")}</button></div></div></div>`;
+}
+function instHear(ins, what) {
+  if (ins.id === "drums") return isSim() ? hearDirt(what, 0) : evalCode(`once $ s "${what}"`);
+  const sound = instSound(ins);
+  if (isSim() || !instReady(ins, sound)) return beep(what, ins.voice);
+  evalCode(`once $ ${melodyCode(ins, [what], sound)}`);
+}
+function instPlaySeq(ins) {
+  const sound = instSound(ins);
+  if (!isSim() && (ins.id === "drums" || instReady(ins, sound))) return evalCode(`once $ ${instCode(ins)}`);
+  const step = 60 / (state.bpm || 120) / 2 * 1000;
+  if (ins.id === "drums") {
+    (inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps).forEach((v, i) => v && setTimeout(() => hearDirt(inst.piece, 0), i * step));
+    return;
+  }
+  inst.seq.forEach((m, i) => m != null && setTimeout(() => beep(m, ins.voice), i * step));
+}
+function wireInstrument() {
+  $("#inst-body").addEventListener("click", async (e) => {
+    const ins = instById[inst.id];
+    const tab = e.target.closest(".inst-tabs [data-i]");
+    if (tab) { inst.id = tab.dataset.i; return renderInstrument(); }
+    const piece = e.target.closest("[data-p]");
+    if (piece && ins.id === "drums") { inst.piece = piece.dataset.p; renderInstrument(); return instHear(ins, inst.piece); }
+    const st = e.target.closest("[data-st]");
+    if (st) { const arr = [...(inst.steps[inst.piece] || DRUM_PIECES[inst.piece].steps)]; arr[+st.dataset.st] = arr[+st.dataset.st] ? 0 : 1; inst.steps[inst.piece] = arr; return renderInstrument(); }
+    const key = e.target.closest(".key");
+    if (key) { const m = +key.dataset.m; instHear(ins, m); if (inst.seq.length < 16) inst.seq.push(m); return renderInstrument(); }
+    const b = e.target.closest("button[data-a]");
+    if (!b) return;
+    const a = b.dataset.a;
+    if (a === "oct") { inst.oct[ins.id] = Math.max(1, Math.min(8, (inst.oct[ins.id] ?? ins.oct) + +b.dataset.d)); return renderInstrument(); }
+    if (a === "rest") { if (inst.seq.length < 16) inst.seq.push(null); return renderInstrument(); }
+    if (a === "pop") { inst.seq.pop(); return renderInstrument(); }
+    if (a === "clear") { inst.seq = []; return renderInstrument(); }
+    if (a === "listen") return instPlaySeq(ins);
+    if (a === "freesound") { $("#instrument").close(); sm.q = ins.freesound; sm.page = 1; await openSamples("online"); return smSearch(); }
+    if (a === "install") {
+      b.disabled = true; b.textContent = L("Descargando…", "Downloading…");
+      try {
+        const P = PACKS.find((x) => x.id === ins.pack);
+        const r = await api("/api/samples/pack-install", { url: P.url, sound: ins.sound, name: ins.sound, type: "melodico" });
+        toast(L(`«${r.name}» instalado.`, `«${r.name}» installed.`));
+      } catch (err) { toast(err.message); }
+      return openInstrument(ins.id);
+    }
+    if (a === "add") {
+      if (ins.id !== "drums" && !inst.seq.some((m) => m != null)) return toast(L("Primero pulsa algunas teclas.", "Press a few keys first."));
+      if (ins.id !== "drums" && !instReady(ins, instSound(ins))) return toast(ins.freesound ? L("Elige o busca un sonido primero.", "Pick or search a sound first.") : L("Instala el sonido primero.", "Install the sound first."));
+      const code = instCode(ins);
+      const name = ins.id === "drums" ? L(DRUM_PIECES[inst.piece].es, DRUM_PIECES[inst.piece].en) : L(ins.es, ins.en);
+      const t = addTrack(name, ins.kind, code);
+      if (!t) return;
+      const ex = explainLocal(code);
+      state.chat.push({ role: "assistant", content: L(`He añadido ${name.toLowerCase()} en la pista ${t.id}. ${ins.id === "drums" ? L(...DRUM_PIECES[inst.piece].tip) : ""}`, `I added the ${name.toLowerCase()} on track ${t.id}. ${ins.id === "drums" ? L(...DRUM_PIECES[inst.piece].tip) : ""}`).trim(), explicacion: ex.partes });
+      save(); renderChat();
+      $("#instrument").close();
+    }
+  });
+  $("#inst-body").addEventListener("change", (e) => {
+    if (e.target.dataset.a === "sound") { inst.sound[inst.id] = e.target.value; renderInstrument(); }
+  });
 }
 
 // Cuando añades algo, Maestro explica el código nuevo
@@ -2001,6 +2141,7 @@ function init() {
   $("#btn-save").onclick = async () => { await saveSettings(); $("#settings").close(); };
   $("#btn-gh").onclick = openGitHubSave;
   $("#btn-samples").onclick = () => openSamples();
+  wireInstrument();
   wireSamples();
   wireControls();
   wireArrange();
