@@ -685,7 +685,6 @@ async function openInstrument(id) {
 }
 function instSound(ins) {
   if (inst.sound[ins.id] !== undefined) return inst.sound[ins.id];
-  if (ins.freesound) { const m = (inst.lib || []).find((x) => x.name.includes(ins.freesound)); return m ? m.name : ""; }
   return ins.sound;
 }
 const instReady = (ins, sound) => !!sound && (!ins.pack || (inst.lib || []).some((x) => x.name === sound));
@@ -710,7 +709,7 @@ function renderInstrument() {
     let src = "";
     if (ins.freesound) {
       const mine = (inst.lib || []).filter((x) => x.type !== "percusion");
-      src = `<div class="inst-src"><label>${L("Sonido", "Sound")} <select data-a="sound"><option value="">${L("— elige uno de tus samples —", "— pick one of your samples —")}</option>${mine.map((x) => `<option ${x.name === sound ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>
+      src = `<div class="inst-src"><label>${L("Sonido", "Sound")} <select data-a="sound"><option value="${ins.sound}">${ins.sound} (${L("sintetizador de Tidal Studio", "Tidal Studio synth")})</option>${mine.map((x) => `<option ${x.name === sound ? "selected" : ""}>${esc(x.name)}</option>`).join("")}</select></label>
         <button data-a="freesound">${icon("search", 14)} ${L(`Buscar «${ins.freesound}» en Freesound`, `Search «${ins.freesound}» on Freesound`)}</button></div>`;
     } else if (ins.pack) {
       src = ready ? `<div class="inst-src ok">${icon("check", 14)} ${L(`«${sound}» instalado en tu biblioteca`, `«${sound}» installed in your library`)}</div>`
@@ -791,7 +790,7 @@ function wireInstrument() {
     }
   });
   $("#inst-body").addEventListener("change", (e) => {
-    if (e.target.dataset.a === "sound") { inst.sound[inst.id] = e.target.value; renderInstrument(); }
+    if (e.target.dataset.a === "sound") { inst.sound[inst.id] = e.target.value; renderInstrument(); instHear(instById[inst.id], 72); }
   });
 }
 

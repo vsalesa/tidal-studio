@@ -89,6 +89,7 @@ export const BUILTIN = [
   B("synth", "superfm", "Sintetizador FM", "FM synth"),
   B("synth", "supergong", "Gong / campana", "Gong / bell"),
   B("synth", "supermandolin", "Mandolina", "Mandolin"),
+  B("synth", "supertrumpet", "Trompeta (sintetizador de Tidal Studio)", "Trumpet (Tidal Studio synth)"),
 ];
 
 // Código de partida para una pista nueva según el tipo

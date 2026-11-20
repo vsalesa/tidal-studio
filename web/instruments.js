@@ -91,7 +91,7 @@ export function drumKitSVG(sel = "", labels = true) {
 export const INSTRUMENTS = [
   { id: "drums", es: "Batería", en: "Drum kit", kind: "percusion",
     tip: ["Pulsa cada pieza para oírla. Luego elige en qué pasos suena y añádela como pista.", "Press each piece to hear it. Then choose which steps it plays on and add it as a track."] },
-  { id: "piano", es: "Piano", en: "Piano", kind: "armonia", sound: "superpiano", synth: true, oct: 5, voice: "triangle",
+  { id: "piano", es: "Piano", en: "Piano", kind: "armonia", sound: "superpiano", synth: true, oct: 5, voice: "piano",
     tip: ["El instrumento para aprender armonía: toca varias notas a la vez y tendrás un acorde.", "The instrument for learning harmony: play several notes at once and you have a chord."] },
   { id: "bass", es: "Bajo eléctrico", en: "Bass guitar", kind: "bajo", sound: "superpwm", synth: true, oct: 3, voice: "sawtooth", extra: " # lpf 900",
     tip: ["Notas graves que unen el ritmo con la armonía. Suele tocar la nota principal del acorde.", "Low notes that glue the beat to the harmony. It usually plays the chord's main note."] },
@@ -99,8 +99,8 @@ export const INSTRUMENTS = [
     tip: ["Muestra de guitarra de Dirt-Samples. Tidal cambia su altura con note.", "A guitar sample from Dirt-Samples. Tidal changes its pitch with note."] },
   { id: "sax", es: "Saxofón", en: "Saxophone", kind: "melodia", sound: "sax", oct: 5, voice: "square",
     tip: ["Viento-metal del jazz y el soul: melodías cortas con huecos para respirar.", "The wind instrument of jazz and soul: short melodies with gaps to breathe."] },
-  { id: "trumpet", es: "Trompeta", en: "Trumpet", kind: "melodia", sound: "", oct: 5, voice: "square", freesound: "trumpet",
-    tip: ["Tidal no trae trompeta: búscala en Freesound (biblioteca de samples) y aparecerá aquí.", "Tidal has no trumpet built in: find one on Freesound (sample library) and it will show up here."] },
+  { id: "trumpet", es: "Trompeta", en: "Trumpet", kind: "melodia", sound: "supertrumpet", synth: true, oct: 5, voice: "brass", freesound: "trumpet",
+    tip: ["Viento-metal brillante. Tidal no trae trompeta, así que Tidal Studio incluye un sintetizador (supertrumpet). Si prefieres una grabación real, búscala en Freesound.", "Bright brass. Tidal has no trumpet, so Tidal Studio ships a synth (supertrumpet). If you prefer a real recording, find one on Freesound."] },
   { id: "marimba", es: "Marimba", en: "Marimba", kind: "melodia", sound: "marimba", pack: "vcsl", oct: 5, voice: "sine",
     tip: ["Láminas de madera golpeadas: suena cálido y redondo. Viene del pack libre VCSL (CC0).", "Struck wooden bars: warm and round. It comes from the free VCSL pack (CC0)."] },
   { id: "kalimba", es: "Kalimba", en: "Kalimba", kind: "melodia", sound: "kalimba", pack: "vcsl", oct: 5, voice: "sine",
@@ -128,15 +128,51 @@ export function drumCode(p, steps) {
 }
 // seq: lista de midi (número) o null para silencio
 export function melodyCode(ins, seq, sound) {
-  const body = seq.length ? seq.map((m) => (m == null ? "~" : ins.synth ? noteName(m) : String(m - 60))).join(" ") : "~";
-  return ins.synth ? `n "${body}" # s "${sound}"${ins.extra || ""}` : `note "${body}" # s "${sound}"`;
+  const synth = ins.synth && sound === ins.sound;   // un sample elegido por ti se afina con note
+  const body = seq.length ? seq.map((m) => (m == null ? "~" : synth ? noteName(m) : String(m - 60))).join(" ") : "~";
+  return synth ? `n "${body}" # s "${sound}"${ins.extra || ""}` : `note "${body}" # s "${sound}"`;
 }
 
 // ------------------------------------------------------------------ vista previa en el navegador
 let ac = null;
+// Voces de la vista previa: "piano" y "brass" imitan algo mejor el instrumento que una onda pelada
+function voiceNote(midi, voice, dur) {
+  const t = ac.currentTime, f = noteFreq(midi), out = ac.createGain();
+  out.connect(ac.destination);
+  const osc = (type, freq, gain, decay) => {
+    const o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gain, t + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+    o.connect(g).connect(out); o.start(t); o.stop(t + decay + 0.05);
+    return o;
+  };
+  if (voice === "piano") {
+    const decay = Math.min(3, Math.max(0.6, 1.6 * Math.pow(f / 262, -0.5)));
+    [[1, 0.2], [2, 0.07], [3, 0.035], [4, 0.015]].forEach(([k, a], i) => osc("sine", f * k * (1 + 0.0004 * k * k), a, decay / (1 + i * 0.7)));
+    osc("triangle", f * 1.002, 0.05, decay * 0.8);
+    return;
+  }
+  // brass: dientes de sierra con un filtro que se abre al soplar, pequeña subida de afinación y vibrato
+  const len = Math.max(dur, 0.3), lp = ac.createBiquadFilter(), g = ac.createGain();
+  lp.type = "lowpass"; lp.Q.value = 2;
+  lp.frequency.setValueAtTime(f * 1.5, t); lp.frequency.exponentialRampToValueAtTime(f * 7, t + 0.05); lp.frequency.exponentialRampToValueAtTime(f * 4.5, t + 0.25);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.03); g.gain.exponentialRampToValueAtTime(0.09, t + 0.12);
+  g.gain.setValueAtTime(0.09, t + len - 0.1); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  const lfo = ac.createOscillator(), lfoG = ac.createGain();
+  lfo.frequency.value = 5.5; lfoG.gain.setValueAtTime(0, t); lfoG.gain.linearRampToValueAtTime(f * 0.006, t + 0.4);
+  lfo.connect(lfoG);
+  [1, 1.003].forEach((d) => {
+    const o = ac.createOscillator(); o.type = "sawtooth";
+    o.frequency.setValueAtTime(f * d * 0.97, t); o.frequency.exponentialRampToValueAtTime(f * d, t + 0.05);
+    lfoG.connect(o.frequency); o.connect(lp); o.start(t); o.stop(t + len + 0.05);
+  });
+  lp.connect(g).connect(out); lfo.start(t); lfo.stop(t + len + 0.05);
+}
 export function beep(midi, voice = "triangle", dur = 0.45) {
   try {
     ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (voice === "piano" || voice === "brass") return voiceNote(midi, voice, dur);
     const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
     o.type = voice; o.frequency.value = noteFreq(midi);
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(voice === "square" || voice === "sawtooth" ? 0.08 : 0.22, t + 0.015);
