@@ -283,3 +283,7 @@ fieldset { border: 1px solid var(--rule); border-radius: var(--r-sm); margin: 10
 .prehear.playing { background: var(--teal); color: #fff; border-color: var(--teal); animation: pulse 1s ease-in-out infinite alternate; }
 @keyframes pulse { from { box-shadow: 0 0 0 0 rgba(21,122,110,.35); } to { box-shadow: 0 0 0 5px rgba(21,122,110,0); } }
 @media (prefers-reduced-motion: reduce) { .prehear.playing { animation: none; } }
+
+/* selector de idioma */
+.lang-btn { font: 600 12px var(--mono); letter-spacing: .04em; padding: 5px 8px; border-radius: 7px; border: 1.5px solid var(--rule-strong); background: var(--card); color: var(--ink-2); }
+.lang-btn:hover { border-color: var(--ink); color: var(--ink); }

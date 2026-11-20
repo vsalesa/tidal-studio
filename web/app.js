@@ -1,3 +1,4 @@
+import { L, LANG, setLang } from "./i18n.js";
 import { STYLES, CATEGORIES, COMPONENTS, byId } from "./catalog.js";
 import { icon, hydrateIcons } from "./icons.js";
 import { explainLocal } from "./explain.js";
@@ -46,7 +47,7 @@ function save() {
     // También en «Mis proyectos» (solo si tiene algo)
     if (state.tracks.length || state.name) {
       const list = listProjects().filter((p) => p.id !== state.projectId);
-      list.unshift({ id: state.projectId, name: state.name || "Proyecto sin título", updated: Date.now(),
+      list.unshift({ id: state.projectId, name: state.name || L("Proyecto sin título", "Untitled project"), updated: Date.now(),
         data: { ...state, trying: null } });
       localStorage.setItem(PROJ_KEY, JSON.stringify(list.slice(0, 30)));
     }
@@ -60,7 +61,7 @@ function listProjects() {
 // ------------------------------------------------------------------ API
 async function api(path, body) {
   const opts = body === undefined ? {} : {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body),
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: LANG, ...body }),
   };
   const r = await fetch(path, opts);
   const data = await r.json().catch(() => ({}));
@@ -115,10 +116,10 @@ async function evalCode(code, track) {
     const errs = r.errors && r.errors.length ? r.errors : [];
     if (track) track.error = errs.join("\n");
     state.lastError = errs.slice(0, 6).join(" ");
-    if (!r.ok && !track) toast("Tidal dio un error. Mira la pestaña Registro o pregunta a Maestro.");
+    if (!r.ok && !track) toast(L("Tidal dio un error. Mira la pestaña Registro o pregunta a Maestro.", "Tidal returned an error. Check the Log tab or ask Maestro."));
     return r;
   } catch (e) {
-    toast("No se pudo enviar el código: " + e.message);
+    toast(L("No se pudo enviar el código: ", "Couldn't send the code: ") + e.message);
   } finally {
     renderTracks();
   }
@@ -139,7 +140,7 @@ function selectedTrack() {
 }
 function addTrack(name, kind, code) {
   const id = freeId();
-  if (!id) { toast("Máximo 12 pistas. Borra alguna primero."); return null; }
+  if (!id) { toast(L("Máximo 12 pistas. Borra alguna primero.", "Maximum 12 tracks. Delete one first.")); return null; }
   const t = { id, name, kind, code, muted: false };
   state.tracks.push(t);
   state.selected = id;
@@ -149,7 +150,7 @@ function addTrack(name, kind, code) {
 }
 function applyModifier(comp, target) {
   const t = target || selectedTrack();
-  if (!t) { toast("Primero añade una pista para aplicarle esto."); return null; }
+  if (!t) { toast(L("Primero añade una pista para aplicarle esto.", "Add a track first to apply this to it.")); return null; }
   if (comp.sufijo) {
     // Si la pista ya tenía ese parámetro con un valor simple, lo sustituimos en vez de repetirlo
     let code = t.code;
@@ -184,11 +185,11 @@ function changed() {
 
 function explainHTML(ex, onClose) {
   const parts = (ex.partes || []).map((p) => `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("");
-  return `${onClose ? `<button class="close" title="Cerrar">${icon("close", 16)}</button>` : ""}
+  return `${onClose ? `<button class="close" title="${L("Cerrar", "Close")}">${icon("close", 16)}</button>` : ""}
     ${ex.resumen ? `<p class="sum">${esc(ex.resumen)}</p>` : ""}
     ${parts ? `<ul class="parts">${parts}</ul>` : ""}
-    ${ex.reto ? `<div class="reto"><b>Reto.</b> ${esc(ex.reto.replace(/^Reto:\s*/i, ""))}</div>` : ""}
-    ${ex.idea ? `<div class="idea-note"><b>Idea de Maestro.</b> ${esc(ex.idea)}</div>` : ""}`;
+    ${ex.reto ? `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(ex.reto.replace(/^Reto:\s*/i, ""))}</div>` : ""}
+    ${ex.idea ? `<div class="idea-note"><b>${L("Idea de Maestro.", "Maestro's idea.")}</b> ${esc(ex.idea)}</div>` : ""}`;
 }
 
 function renderTracks() {
@@ -205,15 +206,15 @@ function renderTracks() {
         <span class="id">${t.id}</span>
         <input class="tname">
         <span class="actions">
-          <button data-a="explain" class="explain" title="¿Qué hace este código?">${icon("explain", 15)} Explícame</button>
-          <button data-a="play" title="Hacer sonar esta pista">${icon("play", 14)}</button>
-          <button data-a="mute" title="${t.muted ? "Activar" : "Silenciar"}">${icon(t.muted ? "unmute" : "mute", 16)}</button>
-          <button data-a="del" title="Borrar pista">${icon("trash", 16)}</button>
+          <button data-a="explain" class="explain" title=L("¿Qué hace este código?", "What does this code do?")>${icon("explain", 15)} ${L("Explícame", "Explain")}</button>
+          <button data-a="play" title=L("Hacer sonar esta pista", "Play this track")>${icon("play", 14)}</button>
+          <button data-a="mute" title="${t.muted ? L("Activar", "Unmute") : L("Silenciar", "Mute")}">${icon(t.muted ? "unmute" : "mute", 16)}</button>
+          <button data-a="del" title=L("Borrar pista", "Delete track")>${icon("trash", 16)}</button>
         </span>
       </div>
-      <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="Ctrl+Enter para escuchar"></textarea>
+      <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title=L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")></textarea>
       ${t.error ? `<div class="err"></div>` : ""}
-      ${t.explain ? `<div class="explain-box">${t.explain.loading ? '<span class="typing">Maestro está leyendo el código…</span>' : explainHTML(t.explain, true)}</div>` : ""}`;
+      ${t.explain ? `<div class="explain-box">${t.explain.loading ? L('<span class="typing">Maestro está leyendo el código…</span>', '<span class="typing">Maestro is reading the code…</span>') : explainHTML(t.explain, true)}</div>` : ""}`;
     el.querySelector(".tname").value = t.name;
     el.querySelector("textarea").value = t.code;
     if (t.error) el.querySelector(".err").textContent = t.error;
@@ -260,12 +261,12 @@ function renderProgress() {
   const all = state.tracks.map((t) => t.code).join("\n");
   const codeDone = CODE_CONCEPTS.filter((c) => c.re.test(all) || (c.id === "s" && false));
   const autoMusic = new Set(state.learnedMusic);
-  if (state.tracks.some((t) => t.kind === "percusion")) autoMusic.add("Pulso");
+  if (state.tracks.some((t) => t.kind === "percusion")) autoMusic.add(L("Pulso", "Pulse"));
   if (/\b(cp|sn)\b/.test(all)) autoMusic.add("Backbeat");
-  if (state.tracks.some((t) => t.kind === "bajo")) autoMusic.add("Graves y groove");
-  if (state.tracks.some((t) => t.kind === "armonia")) autoMusic.add("Armonía");
-  if (state.tracks.some((t) => t.kind === "melodia")) autoMusic.add("Melodía");
-  if (/whenmod/.test(all)) autoMusic.add("Contraste y estructura");
+  if (state.tracks.some((t) => t.kind === "bajo")) autoMusic.add(L("Graves y groove", "Low end and groove"));
+  if (state.tracks.some((t) => t.kind === "armonia")) autoMusic.add(L("Armonía", "Harmony"));
+  if (state.tracks.some((t) => t.kind === "melodia")) autoMusic.add(L("Melodía", "Melody"));
+  if (/whenmod/.test(all)) autoMusic.add(L("Contraste y estructura", "Contrast and structure"));
   const musicDone = MUSIC_CONCEPTS.filter((c) => autoMusic.has(c));
   $("#bar-code").style.width = `${(100 * codeDone.length) / CODE_CONCEPTS.length}%`;
   $("#bar-music").style.width = `${(100 * musicDone.length) / MUSIC_CONCEPTS.length}%`;
@@ -318,7 +319,7 @@ function wirePreHear(btn, cambios) {
     document.querySelectorAll(".prehear.playing").forEach((b) => { b.classList.remove("playing"); b.innerHTML = icon("speaker", 13) + " Escuchar"; });
     const secs = preHear(cambios, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " Escuchar"; });
     btn.classList.add("playing");
-    btn.innerHTML = icon("stop", 12) + ` Escuchando… ${Math.round(secs)} s`;
+    btn.innerHTML = icon("stop", 12) + ` ${L("Escuchando…", "Listening…")} ${Math.round(secs)} s`;
   };
 }
 
@@ -334,8 +335,8 @@ function renderIdeas() {
     el.innerHTML = `<div class="t"></div><div class="p"></div>
       ${idea.concepto ? `<span class="tag"></span>` : ""}
       <div class="row">${trying
-        ? `<button data-a="keep" class="primary">Me gusta, me lo quedo</button><button data-a="undo">Deshacer</button>`
-        : `<button class="prehear" title="Escúchala unos compases sin cambiar tu proyecto" ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} Escuchar</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} Probar y ver el código</button>`}</div>`;
+        ? `<button data-a="keep" class="primary">${L("Me gusta, me lo quedo", "I like it, keep it")}</button><button data-a="undo">${L("Deshacer", "Undo")}</button>`
+        : `<button class="prehear" title=L("Escúchala unos compases sin cambiar tu proyecto", "Hear it for a few bars without changing your project") ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} ${L("Probar y ver el código", "Try it and see the code")}</button>`}</div>`;
     el.querySelector(".t").textContent = idea.titulo;
     el.querySelector(".p").textContent = idea.porque;
     if (idea.concepto) el.querySelector(".tag").textContent = idea.concepto;
@@ -358,7 +359,7 @@ function tryIdea(ideas, i) {
   applyChanges(ideas[i].cambios);
   renderIdeas();
   const idea = ideas[i];
-  say(`Probando: «${idea.titulo}»\n${idea.porque}\n\nEscucha unos compases y decide abajo si te lo quedas. Así lo he hecho:`,
+  say(L(`Probando: «${idea.titulo}»\n${idea.porque}\n\nEscucha unos compases y decide abajo si te lo quedas. Así lo he hecho:`, `Trying: «${idea.titulo}»\n${idea.porque}\n\nListen for a few bars and decide below whether to keep it. Here's how I did it:`),
     state.options, { diff: diffFor(before, idea.cambios, idea.pasos) });
 }
 
@@ -366,8 +367,8 @@ function tryIdea(ideas, i) {
 function diffFor(before, cambios, pasos = {}) {
   const out = [];
   if (cambios.bpm && Math.round(cambios.bpm) !== before.bpm)
-    out.push({ id: "tempo", nombre: "Velocidad", antes: cps(before.bpm), despues: cps(Math.round(cambios.bpm)),
-      explicacion: `De ${before.bpm} a ${Math.round(cambios.bpm)} BPM: el tempo típico de este estilo.` });
+    out.push({ id: "tempo", nombre: L("Velocidad", "Tempo"), antes: cps(before.bpm), despues: cps(Math.round(cambios.bpm)),
+      explicacion: L(`De ${before.bpm} a ${Math.round(cambios.bpm)} BPM: el tempo típico de este estilo.`, `From ${before.bpm} to ${Math.round(cambios.bpm)} BPM: the typical tempo of this style.`) });
   for (const p of cambios.pistas || []) {
     const old = before.tracks.find((t) => t.id === p.id);
     const antes = old ? old.code : "";
@@ -407,9 +408,9 @@ function diffHTML(diff) {
   return `<div class="diff">${diff.map((d) => {
     const after = d.antes ? markNew(d.antes, d.despues) : esc(d.despues);
     const idLabel = d.id === "tempo" ? "" : `${esc(d.id)} $ `;
-    return `<div class="diff-item"><div class="diff-h">${esc(d.id === "tempo" ? "" : d.id + " · ")}${esc(d.nombre)}${d.antes ? "" : " <span class='new'>nueva</span>"}</div>
-      ${d.antes ? `<div class="diff-row"><span>Antes</span><code class="before">${idLabel}${esc(d.antes)}</code></div>` : ""}
-      <div class="diff-row"><span>Después</span><code class="after">${idLabel}${after}</code></div>
+    return `<div class="diff-item"><div class="diff-h">${esc(d.id === "tempo" ? "" : d.id + " · ")}${esc(d.nombre)}${d.antes ? "" : L(" <span class='new'>nueva</span>", " <span class='new'>new</span>")}</div>
+      ${d.antes ? `<div class="diff-row"><span>${L("Antes", "Before")}</span><code class="before">${idLabel}${esc(d.antes)}</code></div>` : ""}
+      <div class="diff-row"><span>${L("Después", "After")}</span><code class="after">${idLabel}${after}</code></div>
       ${d.explicacion ? `<p>${esc(d.explicacion)}</p>` : ""}</div>`;
   }).join("")}</div>`;
 }
@@ -418,7 +419,7 @@ function keepIdea() {
   if (idea.concepto && !state.learnedMusic.includes(idea.concepto)) state.learnedMusic.push(idea.concepto);
   state.trying = null;
   state.ideas = state.ideas.filter((x) => x !== idea);
-  say(`¡Bien! Te lo quedas. Has practicado: ${idea.concepto || "una idea nueva"}.\n${idea.porque}`, state.options);
+  say(L(`¡Bien! Te lo quedas. Has practicado: ${idea.concepto || "una idea nueva"}.\n${idea.porque}`, `Nice! It's yours. You practiced: ${idea.concepto || "a new idea"}.\n${idea.porque}`), state.options);
   changed();
 }
 function undoIdea() {
@@ -429,7 +430,7 @@ function undoIdea() {
   state.trying = null;
   removed.forEach(silenceId);
   if (live()) playAll();
-  sysMsg("Deshecho. Todo vuelve a como estaba. Está bien que no te guste: tu oído decide.");
+  sysMsg(L("Deshecho. Todo vuelve a como estaba. Está bien que no te guste: tu oído decide.", "Undone. Everything is back as it was. It's fine not to like it: your ear decides."));
   changed();
 }
 
@@ -456,9 +457,9 @@ function renderCatalog() {
       const row = document.createElement("div");
       row.className = "comp";
       row.innerHTML = `<div class="txt"><div class="name"></div><div class="desc"></div></div>
-        <button title="${c.cat === "efecto" || c.cat === "estructura" ? "Aplicar a la pista seleccionada" : "Añadir pista"}">${icon("plus", 16)}</button>`;
+        <button title="${c.cat === "efecto" || c.cat === "estructura" ? L("Aplicar a la pista seleccionada", "Apply to the selected track") : L("Añadir pista", "Add track")}">${icon("plus", 16)}</button>`;
       row.querySelector(".name").textContent = c.nombre;
-      if (fits) row.querySelector(".name").insertAdjacentHTML("beforeend", `<span class="fit">encaja</span>`);
+      if (fits) row.querySelector(".name").insertAdjacentHTML("beforeend", `<span class="fit">${L("encaja", "fits")}</span>`);
       row.querySelector(".desc").textContent = c.desc;
       row.querySelector("button").onclick = () => {
         const t = addComponent(c);
@@ -475,7 +476,7 @@ function teachAbout(comp, t) {
   const isMod = comp.sufijo || comp.envoltura;
   const fragment = isMod ? (comp.sufijo || comp.envoltura).trim().replace(/\s*\$$/, "") : comp.codigo;
   const ex = explainLocal(fragment);
-  const what = isMod ? `He aplicado «${comp.nombre}» a ${t.id} (${t.name}).` : `He añadido «${comp.nombre}» en la pista ${t.id}.`;
+  const what = isMod ? L(`He aplicado «${comp.nombre}» a ${t.id} (${t.name}).`, `I applied «${comp.nombre}» to ${t.id} (${t.name}).`) : L(`He añadido «${comp.nombre}» en la pista ${t.id}.`, `I added «${comp.nombre}» on track ${t.id}.`);
   state.chat.push({ role: "assistant", content: `${what} ${comp.desc}`, explicacion: ex.partes, reto: retoFor(comp) });
   save(); renderChat();
 }
@@ -493,11 +494,11 @@ function renderChat() {
         `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("")}</ul>`);
     }
     if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
-    if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>Reto.</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
+    if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
     box.appendChild(el);
   }
-  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">Maestro está pensando…</div>`);
+  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}</div>`);
   box.scrollTop = box.scrollHeight;
   const chips = $("#chips");
   chips.innerHTML = "";
@@ -518,16 +519,16 @@ const toast = sysMsg;
 
 function greet() {
   state.step = "estilo";
-  say("¡Hola! Soy Maestro. Aquí vas a aprender música y a programarla con TidalCycles mientras creas tu propia canción.\n\nIremos paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa. En cada paso te explico el código y te propongo ideas, como haría un productor a tu lado. No hace falta saber nada.\n\nPara empezar rápido, usa el wizard: eliges opciones paso a paso y se crea tu proyecto base. Si prefieres hablarlo, la lluvia de ideas te hace preguntas abiertas. O dime directamente un estilo.",
-    ["Crear proyecto con wizard", "Lluvia de ideas: diseñar mi canción", ...Object.values(STYLES).map((s) => s.nombre), "Sorpréndeme"]);
+  say(L("¡Hola! Soy Maestro. Aquí vas a aprender música y a programarla con TidalCycles mientras creas tu propia canción.\n\nIremos paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa. En cada paso te explico el código y te propongo ideas, como haría un productor a tu lado. No hace falta saber nada.\n\nPara empezar rápido, usa el wizard: eliges opciones paso a paso y se crea tu proyecto base. Si prefieres hablarlo, la lluvia de ideas te hace preguntas abiertas. O dime directamente un estilo.", "Hi! I'm Maestro. Here you'll learn music and how to code it with TidalCycles while you create your own song.\n\nWe'll go step by step: style, beat, tempo, bass, chords, melody, effects and when each thing changes. At each step I explain the code and suggest ideas, like a producer by your side. You don't need to know anything.\n\nFor a quick start, use the wizard: pick options step by step and your base project is created. If you'd rather talk it through, the brainstorm asks you open questions. Or just tell me a style."),
+    [L("Crear proyecto con wizard", "Create project with wizard"), L("Lluvia de ideas: diseñar mi canción", "Brainstorm: design my song"), ...Object.values(STYLES).map((s) => s.nombre), L("Sorpréndeme", "Surprise me")]);
 }
 
 async function send(text) {
   text = text.trim();
   if (!text || busy) return;
-  if (text.startsWith("Lluvia de ideas")) return openWizard();
-  if (text.startsWith("Crear proyecto con wizard")) return openBuilder();
-  if (text.startsWith("Empieza tú con un ritmo")) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
+  if (text.startsWith(L("Lluvia de ideas", "Brainstorm"))) return openWizard();
+  if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
+  if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
   state.chat.push({ role: "user", content: text });
   state.options = [];
   save(); renderChat();
@@ -542,7 +543,7 @@ async function askLLM() {
     const session = {
       bpm: state.bpm, step: state.step, lastError: state.lastError,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted,
-        ...(t.edited ? { name: t.name + " (editada a mano por el alumno)" } : {}) })),
+        ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
     state.tracks.forEach((t) => delete t.edited);
     const r = await api("/api/chat", { messages: history, session });
@@ -556,7 +557,7 @@ async function askLLM() {
     renderIdeas();
   } catch (e) {
     busy = false;
-    say("Uy, no he podido hablar con la IA: " + e.message + "\n\nRevisa los Ajustes. Mientras tanto te sigo guiando sin IA.", ["Seguir sin IA"]);
+    say(L("Uy, no he podido hablar con la IA: ", "Oops, I couldn't reach the AI: ") + e.message + L("\n\nRevisa los Ajustes. Mientras tanto te sigo guiando sin IA.", "\n\nCheck Settings. Meanwhile I'll keep guiding you without AI."), [L("Seguir sin IA", "Continue without AI")]);
   }
 }
 
@@ -568,33 +569,33 @@ function applyChanges(c) {
     if (live()) evalCode(cps(state.bpm));
   }
   for (const id of c.eliminar || []) {
-    if (state.tracks.find((t) => t.id === id)) { removeTrack(id); notes.push(`borrada ${id}`); }
+    if (state.tracks.find((t) => t.id === id)) { removeTrack(id); notes.push(L(`borrada ${id}`, `deleted ${id}`)); }
   }
   for (const p of c.pistas || []) {
     let t = state.tracks.find((x) => x.id === p.id);
-    if (t) { t.code = p.codigo; t.name = p.nombre || t.name; t.kind = p.tipo || t.kind; t.muted = false; t.explain = null; notes.push(`cambiada ${p.id} ${t.name}`); }
-    else { t = { id: p.id, name: p.nombre, kind: p.tipo, code: p.codigo, muted: false }; state.tracks.push(t); notes.push(`nueva ${p.id} ${t.name}`); }
+    if (t) { t.code = p.codigo; t.name = p.nombre || t.name; t.kind = p.tipo || t.kind; t.muted = false; t.explain = null; notes.push(L(`cambiada ${p.id} ${t.name}`, `changed ${p.id} ${t.name}`)); }
+    else { t = { id: p.id, name: p.nombre, kind: p.tipo, code: p.codigo, muted: false }; state.tracks.push(t); notes.push(L(`nueva ${p.id} ${t.name}`, `new ${p.id} ${t.name}`)); }
     state.tracks.sort((a, b) => parseInt(a.id.slice(1)) - parseInt(b.id.slice(1)));
     state.selected = p.id;
     if (live()) playTrack(t);
   }
   changed();
-  return notes.length ? "Cambios: " + notes.join(" · ") : "";
+  return notes.length ? L("Cambios: ", "Changes: ") + notes.join(" · ") : "";
 }
 
 // ------------------------------------------------------------------ guía sin IA
-const NEXT = "Siguiente paso";
+const NEXT = L("Siguiente paso", "Next step");
 const FLOW = ["estilo", "percusion", "tempo", "bajo", "armonia", "melodia", "textura", "efecto", "estructura", "libre"];
 const STEP_TEXT = {
-  percusion: "Empezamos por el ritmo. La percusión es el esqueleto de la canción: marca el pulso, el latido que hace mover el pie. Elige una (las primeras encajan con tu estilo). Puedes añadir varias.",
-  tempo: "Hablemos de velocidad. Ahora está a {bpm} BPM (pulsaciones por minuto). Más BPM da más energía; menos, más calma. En el código es la línea setcps.",
-  bajo: "Ahora el bajo: las notas graves. Une el ritmo con la armonía y es lo que da 'groove'. Un truco de productor: que el bajo suene entre los bombos, no encima.",
-  armonia: "Turno de los acordes: varias notas a la vez. Deciden la emoción: los menores suenan melancólicos, los mayores alegres.",
-  melodia: "Ahora una melodía, la parte que se tararea. Si usa notas de los acordes, siempre encaja.",
-  textura: "¿Añadimos una textura de fondo? Son detalles que crean atmósfera: se sienten más que se oyen.",
-  efecto: "Hora de los efectos. Cambian el carácter de un sonido: espacio, eco, brillo… Se aplican a la pista seleccionada ({track}); pulsa otra pista en el centro para cambiarla.",
-  estructura: "Por último: ¿cuándo pasan las cosas? La música se organiza en frases de 4 y 8 compases; si nada cambia, aburre. Se aplica a {track}.",
-  libre: "¡Ya tienes una canción completa!\n\nA partir de aquí, mira las Ideas de Maestro: pruébalas y quédate solo con lo que te guste. También puedes editar el código a mano o pedirme que te explique cualquier pista.\n\nCon una IA conectada en Ajustes puedo entender todo lo que escribas.",
+  percusion: L("Empezamos por el ritmo. La percusión es el esqueleto de la canción: marca el pulso, el latido que hace mover el pie. Elige una (las primeras encajan con tu estilo). Puedes añadir varias.", "Let's start with the beat. Drums are the skeleton of the song: they mark the pulse, the heartbeat that makes your foot tap. Pick one (the first ones fit your style). You can add several."),
+  tempo: L("Hablemos de velocidad. Ahora está a {bpm} BPM (pulsaciones por minuto). Más BPM da más energía; menos, más calma. En el código es la línea setcps.", "Let's talk tempo. It's now at {bpm} BPM (beats per minute). More BPM gives more energy; fewer, more calm. In the code it's the setcps line."),
+  bajo: L("Ahora el bajo: las notas graves. Une el ritmo con la armonía y es lo que da 'groove'. Un truco de productor: que el bajo suene entre los bombos, no encima.", "Now the bass: the low notes. It ties rhythm to harmony and brings the 'groove'. A producer's trick: put the bass between the kicks, not on top."),
+  armonia: L("Turno de los acordes: varias notas a la vez. Deciden la emoción: los menores suenan melancólicos, los mayores alegres.", "Time for chords: several notes at once. They set the emotion: minor sounds melancholic, major sounds happy."),
+  melodia: L("Ahora una melodía, la parte que se tararea. Si usa notas de los acordes, siempre encaja.", "Now a melody, the part you hum. If it uses notes from the chords, it always fits."),
+  textura: L("¿Añadimos una textura de fondo? Son detalles que crean atmósfera: se sienten más que se oyen.", "Shall we add a background texture? They're details that create atmosphere: you feel them more than hear them."),
+  efecto: L("Hora de los efectos. Cambian el carácter de un sonido: espacio, eco, brillo… Se aplican a la pista seleccionada ({track}); pulsa otra pista en el centro para cambiarla.", "Effects time. They change a sound's character: space, echo, brightness… They apply to the selected track ({track}); click another track in the middle to change it."),
+  estructura: L("Por último: ¿cuándo pasan las cosas? La música se organiza en frases de 4 y 8 compases; si nada cambia, aburre. Se aplica a {track}.", "Finally: when do things happen? Music is organized in 4- and 8-bar phrases; if nothing changes, it gets boring. It applies to {track}."),
+  libre: L("¡Ya tienes una canción completa!\n\nA partir de aquí, mira las Ideas de Maestro: pruébalas y quédate solo con lo que te guste. También puedes editar el código a mano o pedirme que te explique cualquier pista.\n\nCon una IA conectada en Ajustes puedo entender todo lo que escribas.", "You have a complete song!\n\nFrom here, check Maestro's Ideas: try them and keep only what you like. You can also edit the code by hand or ask me to explain any track.\n\nWith an AI connected in Settings I can understand anything you type."),
 };
 
 function compsFor(cat) {
@@ -606,11 +607,11 @@ function compsFor(cat) {
 function goStep(step) {
   state.step = step;
   const t = selectedTrack();
-  const text = (STEP_TEXT[step] || "").replace("{bpm}", state.bpm).replace("{track}", t ? `${t.id} · ${t.name}` : "ninguna");
-  if (step === "tempo") return say(text, ["Más lento", "Más rápido", "Así está perfecto"]);
-  if (step === "libre") return say(text, ["Explícame la canción", "Empezar otra canción"]);
+  const text = (STEP_TEXT[step] || "").replace("{bpm}", state.bpm).replace("{track}", t ? `${t.id} · ${t.name}` : L("ninguna", "none"));
+  if (step === "tempo") return say(text, [L("Más lento", "Slower"), L("Más rápido", "Faster"), L("Así está perfecto", "That's perfect")]);
+  if (step === "libre") return say(text, [L("Explícame la canción", "Explain the song"), L("Empezar otra canción", "Start another song")]);
   if (step === "efecto" || step === "estructura") {
-    const tracks = state.tracks.slice(-4).map((x) => `Usar ${x.id} · ${x.name}`);
+    const tracks = state.tracks.slice(-4).map((x) => L(`Usar ${x.id} · ${x.name}`, `Use ${x.id} · ${x.name}`));
     return say(text, [...compsFor(step).slice(0, 5).map((c) => c.nombre), ...tracks.slice(0, 2), NEXT]);
   }
   say(text, [...compsFor(step).map((c) => c.nombre), NEXT]);
@@ -622,55 +623,55 @@ function nextStep() {
 
 async function offlineGuide(text) {
   const low = text.toLowerCase();
-  if (low.includes("empezar otra") || low.includes("reiniciar")) {
+  if (low.includes("empezar otra") || low.includes("reiniciar") || low.includes("start another") || low.includes("restart")) {
     evalCode("hush"); state.tracks = []; state.style = ""; state.ideas = []; changed(); renderCatalog(); return greet();
   }
-  if (low.includes("seguir sin ia")) { state.offline = true; return goStep(state.step); }
-  if (low.includes("explícame") || low.includes("explicame") || low.includes("qué hace") || low.includes("que hace")) {
+  if (low.includes("seguir sin ia") || low.includes("without ai")) { state.offline = true; return goStep(state.step); }
+  if (low.includes("explícame") || low.includes("explicame") || low.includes("qué hace") || low.includes("que hace") || low.includes("explain") || low.includes("what does")) {
     const ex = explainLocal(state.tracks.map((t) => t.code).join("\n"));
-    return say("Así funciona tu canción, trozo a trozo:", state.options, { explicacion: ex.partes.slice(0, 10) });
+    return say(L("Así funciona tu canción, trozo a trozo:", "This is how your song works, piece by piece:"), state.options, { explicacion: ex.partes.slice(0, 10) });
   }
-  if (low.includes("otra idea")) { state.ideas = []; localSuggestions(state, 2, true); renderIdeas();
-    return say("Te he dejado ideas nuevas abajo, en «Ideas de Maestro». Pruébalas y quédate con lo que te guste.", state.options); }
-  if (low.includes("qué hago") || low.includes("que hago") || low.includes("estructura")) {
-    return say("Un buen ejercicio: escucha la canción y silencia pistas (botón del altavoz) para construir cada parte de la estructura. Así aprendes cómo cada capa cambia la energía. Después prueba las Ideas de Maestro o pulsa «Explícame» en una pista para entender su código.",
-      ["Dame otra idea", "Explícame la canción"]); }
-  if (text === NEXT || low.includes("siguiente") || low.includes("perfecto")) return nextStep();
+  if (low.includes("otra idea") || low.includes("another idea")) { state.ideas = []; localSuggestions(state, 2, true); renderIdeas();
+    return say(L("Te he dejado ideas nuevas abajo, en «Ideas de Maestro». Pruébalas y quédate con lo que te guste.", "I left you new ideas below, in «Maestro's ideas». Try them and keep what you like."), state.options); }
+  if (low.includes("qué hago") || low.includes("que hago") || low.includes("estructura") || low.includes("what do i do") || low.includes("structure")) {
+    return say(L("Un buen ejercicio: escucha la canción y silencia pistas (botón del altavoz) para construir cada parte de la estructura. Así aprendes cómo cada capa cambia la energía. Después prueba las Ideas de Maestro o pulsa «Explícame» en una pista para entender su código.", "A good exercise: listen to the song and mute tracks (speaker button) to build each part of the structure. That's how you learn how each layer changes the energy. Then try Maestro's Ideas or press «Explain» on a track to understand its code."),
+      [L("Dame otra idea", "Give me another idea"), L("Explícame la canción", "Explain the song")]); }
+  if (text === NEXT || low.includes("siguiente") || low.includes("perfecto") || low.includes("next") || low.includes("perfect")) return nextStep();
 
   if (state.step === "estilo") {
     let key = Object.keys(STYLES).find((k) => low.includes(STYLES[k].nombre.toLowerCase()) || low.includes(k));
-    if (!key && (low.includes("sorpr") || low.includes("no sé") || low.includes("no se"))) {
+    if (!key && (low.includes("sorpr") || low.includes("no sé") || low.includes("no se") || low.includes("surprise") || low.includes("don't know"))) {
       const ks = Object.keys(STYLES); key = ks[Math.floor(Math.random() * ks.length)];
     }
-    if (!key) return say("No conozco ese estilo todavía. Elige uno de estos y lo adaptamos después:", Object.values(STYLES).map((s) => s.nombre));
+    if (!key) return say(L("No conozco ese estilo todavía. Elige uno de estos y lo adaptamos después:", "I don't know that style yet. Pick one of these and we'll adapt it later:"), Object.values(STYLES).map((s) => s.nombre));
     const s = STYLES[key];
     state.style = key; state.bpm = s.bpm; $("#bpm").value = s.bpm; renderCatalog();
     if (live()) evalCode(cps(s.bpm));
-    say(`¡${s.nombre}! ${s.desc}\nLo pongo a ${s.bpm} BPM, la velocidad típica del estilo.`, [], {
-      explicacion: [{ fragmento: cps(s.bpm), explicacion: `Fija la velocidad: ${s.bpm} pulsos por minuto, divididos entre 60 segundos y entre 4 pulsos por ciclo (un ciclo = un compás).` }] });
+    say(L(`¡${s.nombre}! ${s.desc}\nLo pongo a ${s.bpm} BPM, la velocidad típica del estilo.`, `${s.nombre}! ${s.desc}\nI'll set it to ${s.bpm} BPM, the typical tempo for the style.`), [], {
+      explicacion: [{ fragmento: cps(s.bpm), explicacion: L(`Fija la velocidad: ${s.bpm} pulsos por minuto, divididos entre 60 segundos y entre 4 pulsos por ciclo (un ciclo = un compás).`, `Sets the tempo: ${s.bpm} beats per minute, divided by 60 seconds and by 4 beats per cycle (one cycle = one bar).`) }] });
     return goStep("percusion");
   }
   if (state.step === "tempo") {
-    if (low.includes("lento")) state.bpm = Math.max(40, state.bpm - 10);
-    else if (low.includes("rápido") || low.includes("rapido")) state.bpm = Math.min(220, state.bpm + 10);
+    if (low.includes("lento") || low.includes("slower")) state.bpm = Math.max(40, state.bpm - 10);
+    else if (low.includes("rápido") || low.includes("rapido") || low.includes("faster")) state.bpm = Math.min(220, state.bpm + 10);
     else { const n = parseInt(low.match(/\d+/)?.[0]); if (n) state.bpm = Math.max(40, Math.min(220, n)); }
     $("#bpm").value = state.bpm; evalCode(cps(state.bpm)); changed();
-    return say(`Ahora a ${state.bpm} BPM. ¿Mejor así?`, ["Más lento", "Más rápido", "Así está perfecto"]);
+    return say(L(`Ahora a ${state.bpm} BPM. ¿Mejor así?`, `Now at ${state.bpm} BPM. Better?`), [L("Más lento", "Slower"), L("Más rápido", "Faster"), L("Así está perfecto", "That's perfect")]);
   }
-  const target = text.match(/Usar (d\d+)/);
+  const target = text.match(/(?:Usar|Use) (d\d+)/);
   if (target) { state.selected = target[1]; save(); renderTracks(); return goStep(state.step); }
 
   const comp = COMPONENTS.find((c) => low === c.nombre.toLowerCase()) || COMPONENTS.find((c) => low.includes(c.nombre.toLowerCase()));
   if (comp) {
     const t = addComponent(comp);
-    if (!t) return say("Primero necesitas alguna pista para aplicarle eso.", [NEXT]);
+    if (!t) return say(L("Primero necesitas alguna pista para aplicarle eso.", "You need a track first to apply that to."), [NEXT]);
     teachAbout(comp, t);
     const opts = state.step === "efecto" || state.step === "estructura"
       ? [...compsFor(state.step).slice(0, 5).map((c) => c.nombre), NEXT]
       : [...compsFor(state.step).filter((c) => c.id !== comp.id).map((c) => c.nombre), NEXT];
-    return say("¿Añadimos algo más aquí o pasamos al siguiente paso? Mira también las Ideas de Maestro, abajo.", opts);
+    return say(L("¿Añadimos algo más aquí o pasamos al siguiente paso? Mira también las Ideas de Maestro, abajo.", "Shall we add something else here or go to the next step? Also check Maestro's Ideas below."), opts);
   }
-  say("Sin una IA conectada solo entiendo los botones. Conecta una en Ajustes para hablar con libertad.", state.options.length ? state.options : [NEXT]);
+  say(L("Sin una IA conectada solo entiendo los botones. Conecta una en Ajustes para hablar con libertad.", "Without an AI connected I only understand the buttons. Connect one in Settings to talk freely."), state.options.length ? state.options : [NEXT]);
 }
 
 
@@ -699,17 +700,17 @@ function renderWizard() {
     <h2 class="q"></h2>
     <p class="wz-help"></p>
     <div class="wz-examples ${wz.loading ? "loading" : ""}"></div>
-    <input class="wz-free" placeholder="O escribe tu propia respuesta…">
+    <input class="wz-free" placeholder=L("O escribe tu propia respuesta…", "Or type your own answer…")>
     <div class="wz-nav">
-      <button data-a="back" ${wz.i === 0 ? "disabled" : ""}>${icon("back", 16)} Atrás</button>
+      <button data-a="back" ${wz.i === 0 ? "disabled" : ""}>${icon("back", 16)} ${L("Atrás", "Back")}</button>
       <div class="right">
-        <button data-a="skip">Saltar</button>
-        <button data-a="next" class="primary">${wz.i === QUESTIONS.length - 1 ? "Ver mi plan" : "Siguiente"} ${icon("arrow", 16)}</button>
+        <button data-a="skip">${L("Saltar", "Skip")}</button>
+        <button data-a="next" class="primary">${wz.i === QUESTIONS.length - 1 ? L("Ver mi plan", "See my plan") : L("Siguiente", "Next")} ${icon("arrow", 16)}</button>
       </div>
     </div>`;
   if (wz.comment) body.querySelector(".wz-comment span").textContent = wz.comment;
   body.querySelector(".q").textContent = q.pregunta;
-  body.querySelector(".wz-help").textContent = q.ayuda + (wz.loading ? " (Maestro está pensando ejemplos para ti…)" : "");
+  body.querySelector(".wz-help").textContent = q.ayuda + (wz.loading ? L(" (Maestro está pensando ejemplos para ti…)", " (Maestro is thinking up examples for you…)") : "");
   const ex = body.querySelector(".wz-examples");
   for (const e of examples) {
     const b = document.createElement("button");
@@ -772,23 +773,23 @@ async function buildPlan() {
   renderWizard();
 }
 function renderPlan(body) {
-  if (!wz.plan) { body.innerHTML = `<p class="typing">Maestro está diseñando el plan de tu canción…</p>`; return; }
+  if (!wz.plan) { body.innerHTML = `<p class="typing">${L("Maestro está diseñando el plan de tu canción…", "Maestro is designing your song plan…")}</p>`; return; }
   const p = wz.plan;
   const total = p.partes.reduce((n, x) => n + (Number(x.compases) || 8), 0) || 1;
   body.innerHTML = `<div class="plan">
-    <span class="wz-kicker">Tu plan</span>
+    <span class="wz-kicker">${L("Tu plan", "Your plan")}</span>
     <h2></h2><p class="resumen"></p>
-    <div class="meta">${p.estilo ? `<span>${esc(STYLES[p.estilo].nombre)}</span>` : ""}${p.bpm ? `<span>${p.bpm} BPM</span>` : ""}<span>${total} compases</span></div>
-    <h3>Estructura</h3>
-    <div class="timeline">${p.partes.map((x) => `<div style="flex:${Math.max(3, Number(x.compases) || 8)}" title="${esc(x.que)}"><b>${esc(x.nombre)}</b><span>${esc(x.compases)} compases</span></div>`).join("")}</div>
+    <div class="meta">${p.estilo ? `<span>${esc(STYLES[p.estilo].nombre)}</span>` : ""}${p.bpm ? `<span>${p.bpm} BPM</span>` : ""}<span>${total} ${L("compases", "bars")}</span></div>
+    <h3>${L("Estructura", "Structure")}</h3>
+    <div class="timeline">${p.partes.map((x) => `<div style="flex:${Math.max(3, Number(x.compases) || 8)}" title="${esc(x.que)}"><b>${esc(x.nombre)}</b><span>${esc(x.compases)} ${L("compases", "bars")}</span></div>`).join("")}</div>
     <p class="hint">${p.partes.map((x) => `<b>${esc(x.nombre)}:</b> ${esc(x.que)}`).join(" · ")}</p>
-    <h3>Cambios para empezar a probar</h3>
-    ${p.sugerencias.map((x, k) => `<div class="sug"><button class="prehear" data-k="${k}" style="float:right">${icon("speaker", 13)} Escuchar</button><div class="t">${esc(x.titulo)}${x.concepto ? `<span class="tag">${esc(x.concepto)}</span>` : ""}</div><div class="p">${esc(x.porque)}</div>${x.cambios.pistas.map((t) => `<code>${esc(t.id)} $ ${esc(t.codigo)}</code>`).join("")}</div>`).join("")}
+    <h3>${L("Cambios para empezar a probar", "Changes to start trying")}</h3>
+    ${p.sugerencias.map((x, k) => `<div class="sug"><button class="prehear" data-k="${k}" style="float:right">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><div class="t">${esc(x.titulo)}${x.concepto ? `<span class="tag">${esc(x.concepto)}</span>` : ""}</div><div class="p">${esc(x.porque)}</div>${x.cambios.pistas.map((t) => `<code>${esc(t.id)} $ ${esc(t.codigo)}</code>`).join("")}</div>`).join("")}
     <div class="wz-nav">
-      <button data-a="restart">${icon("back", 16)} Volver a empezar</button>
+      <button data-a="restart">${icon("back", 16)} ${L("Volver a empezar", "Start over")}</button>
       <div class="right">
-        <button data-a="ideas">Llevar las ideas a Maestro</button>
-        <button data-a="all" class="primary">${icon("play", 14)} Empezar con todo</button>
+        <button data-a="ideas">${L("Llevar las ideas a Maestro", "Send the ideas to Maestro")}</button>
+        <button data-a="all" class="primary">${icon("play", 14)} ${L("Empezar con todo", "Start with everything")}</button>
       </div>
     </div></div>`;
   body.querySelector("h2").textContent = p.titulo;
@@ -805,26 +806,26 @@ function adoptPlan(p, applyAll) {
   $("#wizard").close();
   if (p.estilo) { state.style = p.estilo; renderCatalog(); }
   if (p.bpm) { state.bpm = p.bpm; $("#bpm").value = p.bpm; if (live()) evalCode(cps(p.bpm)); }
-  const estructura = p.partes.map((x) => `• ${x.nombre} (${x.compases} compases): ${x.que}`).join("\n");
+  const estructura = p.partes.map((x) => `• ${x.nombre} (${x.compases} ${L("compases", "bars")}): ${x.que}`).join("\n");
   state.step = "libre";
   if (applyAll) {
     const pistas = p.sugerencias.flatMap((x) => x.cambios.pistas);
     const note = applyChanges({ pistas });
     p.sugerencias.forEach((x) => x.concepto && !state.learnedMusic.includes(x.concepto) && state.learnedMusic.push(x.concepto));
     state.ideas = [];
-    say(`Plan «${p.titulo}» en marcha. ${p.resumen}\n\nLa estructura que diseñamos:\n${estructura}\n\nYa suena todo. Pulsa «Explícame» en cualquier pista para entender su código, o silencia pistas para escuchar cada parte.`,
-      ["¿Qué hago ahora?", "Explícame la canción"], { changes: note });
+    say(L(`Plan «${p.titulo}» en marcha. ${p.resumen}\n\nLa estructura que diseñamos:\n${estructura}\n\nYa suena todo. Pulsa «Explícame» en cualquier pista para entender su código, o silencia pistas para escuchar cada parte.`, `Plan «${p.titulo}» is running. ${p.resumen}\n\nThe structure we designed:\n${estructura}\n\nEverything is playing. Press «Explain» on any track to understand its code, or mute tracks to hear each part.`),
+      [L("¿Qué hago ahora?", "What do I do now?"), L("Explícame la canción", "Explain the song")], { changes: note });
   } else {
     state.ideas = p.sugerencias;
-    say(`Plan «${p.titulo}». ${p.resumen}\n\nLa estructura que diseñamos:\n${estructura}\n\nTe he dejado ${p.sugerencias.length} ideas abajo: pruébalas una a una y quédate con las que te gusten.`,
-      ["Explícame la estructura", "Dame otra idea"]);
+    say(L(`Plan «${p.titulo}». ${p.resumen}\n\nLa estructura que diseñamos:\n${estructura}\n\nTe he dejado ${p.sugerencias.length} ideas abajo: pruébalas una a una y quédate con las que te gusten.`, `Plan «${p.titulo}». ${p.resumen}\n\nThe structure we designed:\n${estructura}\n\nI left you ${p.sugerencias.length} ideas below: try them one by one and keep the ones you like.`),
+      [L("Explícame la estructura", "Explain the structure"), L("Dame otra idea", "Give me another idea")]);
   }
   changed(); renderIdeas();
 }
 
 
 // ------------------------------------------------------------------ proyectos
-const FRESH = () => ({ bpm: 120, tracks: [], selected: null, style: "", step: "estilo", chat: [], options: [], ideas: [],
+const FRESH = () => ({ lang: LANG, bpm: 120, tracks: [], selected: null, style: "", step: "estilo", chat: [], options: [], ideas: [],
   trying: null, learnedMusic: state.learnedMusic || [], lastError: "", offline: state.offline, projectId: "p" + Date.now(), name: "" });
 
 function renderAll() {
@@ -833,14 +834,14 @@ function renderAll() {
   $("#code").value = buildCode();
 }
 function openNewProject() {
-  $("#np-kicker").innerHTML = icon("plus", 16) + " Nuevo proyecto";
+  $("#np-kicker").innerHTML = icon("plus", 16) + L(" Nuevo proyecto", " New project");
   const body = $("#np-body");
-  body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">¿Cómo quieres empezar?</h2>
-    <p class="wz-help">Tu proyecto actual se guarda solo en «Mis proyectos».</p>
+  body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">${L("¿Cómo quieres empezar?", "How do you want to start?")}</h2>
+    <p class="wz-help">${L("Tu proyecto actual se guarda solo en «Mis proyectos».", "Your current project is saved automatically in «My projects».")}</p>
     <div class="np-choices">
-      <button class="np-choice" data-m="blank">${icon("blank", 28)}<b>En blanco</b><span>Un lienzo vacío. Tú añades cada pieza desde el catálogo o pidiéndosela a Maestro.</span></button>
-      <button class="np-choice rec" data-m="wizard"><em>Recomendado</em>${icon("steps", 28)}<b>Con wizard</b><span>Vas pulsando opciones paso a paso (estilo, ritmo, bajo, acordes…) y se crea tu proyecto base. Todo suena mientras eliges.</span></button>
-      <button class="np-choice" data-m="ideas">${icon("wand", 28)}<b>Lluvia de ideas</b><span>Maestro te hace preguntas abiertas sobre lo que quieres sentir y diseña contigo un plan.</span></button>
+      <button class="np-choice" data-m="blank">${icon("blank", 28)}<b>${L("En blanco", "Blank")}</b><span>${L("Un lienzo vacío. Tú añades cada pieza desde el catálogo o pidiéndosela a Maestro.", "An empty canvas. You add each piece from the catalog or by asking Maestro.")}</span></button>
+      <button class="np-choice rec" data-m="wizard"><em>${L("Recomendado", "Recommended")}</em>${icon("steps", 28)}<b>${L("Con wizard", "With wizard")}</b><span>${L("Vas pulsando opciones paso a paso (estilo, ritmo, bajo, acordes…) y se crea tu proyecto base. Todo suena mientras eliges.", "Click options step by step (style, beat, bass, chords…) and your base project is built. Everything plays while you choose.")}</span></button>
+      <button class="np-choice" data-m="ideas">${icon("wand", 28)}<b>${L("Lluvia de ideas", "Brainstorm")}</b><span>${L("Maestro te hace preguntas abiertas sobre lo que quieres sentir y diseña contigo un plan.", "Maestro asks you open questions about what you want to feel and designs a plan with you.")}</span></button>
     </div>`;
   body.querySelector(".np-choices").onclick = (e) => {
     const m = e.target.closest("button")?.dataset.m;
@@ -861,21 +862,21 @@ function startFresh() {
 function startBlank() {
   startFresh();
   state.step = "libre";
-  say("Proyecto en blanco. Puedes:\n• Añadir piezas desde el catálogo de la izquierda (pulsa +).\n• Pedírmelo con tus palabras: «pon un bombo», «algo de jazz»…\n• Escribir código directamente en la pestaña Código.\n\nCada vez que añadas algo te explico su código.",
-    ["Empieza tú con un ritmo", "Lluvia de ideas: diseñar mi canción", ...Object.values(STYLES).slice(0, 4).map((x) => x.nombre)]);
+  say(L("Proyecto en blanco. Puedes:\n• Añadir piezas desde el catálogo de la izquierda (pulsa +).\n• Pedírmelo con tus palabras: «pon un bombo», «algo de jazz»…\n• Escribir código directamente en la pestaña Código.\n\nCada vez que añadas algo te explico su código.", "Blank project. You can:\n• Add pieces from the catalog on the left (press +).\n• Ask me in your own words: «add a kick», «something jazzy»…\n• Write code directly in the Code tab.\n\nEvery time you add something I'll explain its code."),
+    [L("Empieza tú con un ritmo", "You start with a beat"), L("Lluvia de ideas: diseñar mi canción", "Brainstorm: design my song"), ...Object.values(STYLES).slice(0, 4).map((x) => x.nombre)]);
   state.step = "estilo";
 }
 function openProjects() {
   $("#np-kicker").innerHTML = icon("folder", 16) + " Mis proyectos";
   const list = listProjects();
   const body = $("#np-body");
-  body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">Mis proyectos</h2>
-    <p class="wz-help">Se guardan en este navegador. Tu progreso de aprendizaje es común a todos.</p>
+  body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">${L("Mis proyectos", "My projects")}</h2>
+    <p class="wz-help">${L("Se guardan en este navegador. Tu progreso de aprendizaje es común a todos.", "Saved in this browser. Your learning progress is shared by all of them.")}</p>
     <div class="np-list">${list.length ? list.map((p) => `<div class="np-item ${p.id === state.projectId ? "current" : ""}" data-id="${esc(p.id)}">
-      <span class="n">${esc(p.name)}<span class="d">${p.data.tracks.length} pistas · ${p.data.bpm} BPM · ${new Date(p.updated).toLocaleString("es-ES")}</span></span>
-      ${p.id === state.projectId ? `<span class="hint">abierto</span>` : `<button data-a="open">Abrir</button>`}
-      <button data-a="del" class="icon-btn" title="Borrar">${icon("trash", 16)}</button></div>`).join("") : `<p class="hint">Todavía no hay proyectos guardados.</p>`}</div>
-    <div class="wz-nav"><span></span><div class="right"><button class="primary" data-a="new">${icon("plus", 14)} Nuevo proyecto</button></div></div>`;
+      <span class="n">${esc(p.name)}<span class="d">${p.data.tracks.length} ${L("pistas", "tracks")} · ${p.data.bpm} BPM · ${new Date(p.updated).toLocaleString(L("es-ES", "en-GB"))}</span></span>
+      ${p.id === state.projectId ? `<span class="hint">${L("abierto", "open")}</span>` : `<button data-a="open">${L("Abrir", "Open")}</button>`}
+      <button data-a="del" class="icon-btn" title="${L("Borrar", "Delete")}">${icon("trash", 16)}</button></div>`).join("") : `<p class="hint">${L("Todavía no hay proyectos guardados.", "No saved projects yet.")}</p>`}</div>
+    <div class="wz-nav"><span></span><div class="right"><button class="primary" data-a="new">${icon("plus", 14)} ${L("Nuevo proyecto", "New project")}</button></div></div>`;
   body.onclick = (e) => {
     const btn = e.target.closest("button"); if (!btn) return;
     const id = btn.closest(".np-item")?.dataset.id;
@@ -886,7 +887,7 @@ function openProjects() {
       evalCode("hush");
       state = { ...FRESH(), ...p.data, trying: null };
       $("#newproj").close(); renderAll(); if (live()) playAll();
-      sysMsg(`Proyecto «${state.name}» abierto.`);
+      sysMsg(L(`Proyecto «${state.name}» abierto.`, `Project «${state.name}» opened.`));
     }
     if (btn.dataset.a === "del" && confirmDelete(id)) openProjects();
   };
@@ -896,7 +897,7 @@ function confirmDelete(id) {
   const list = listProjects();
   const p = list.find((x) => x.id === id);
   if (!p) return false;
-  if (!window.confirm(`¿Borrar «${p.name}»? No se puede deshacer.`)) return false;
+  if (!window.confirm(L(`¿Borrar «${p.name}»? No se puede deshacer.`, `Delete «${p.name}»? This can't be undone.`))) return false;
   localStorage.setItem(PROJ_KEY, JSON.stringify(list.filter((x) => x.id !== id)));
   if (id === state.projectId) { state.name = ""; state.projectId = "p" + Date.now(); }
   return true;
@@ -931,13 +932,13 @@ function renderBuilder() {
   const cur = bd.sel[step.id];
   const isOn = (id) => (Array.isArray(cur) ? cur.includes(id) : cur === id);
   body.innerHTML = `<h2 class="q">${esc(step.titulo)}</h2>
-    <p class="wz-help">${esc(step.ayuda)}${step.multi ? ` <b>Puedes elegir ${step.multi > 3 ? "varios" : "hasta " + step.multi}.</b>` : ""}${bd.sel.estilo && bd.i > 0 ? " Ya te he dejado marcadas mis recomendaciones: cámbialas a tu gusto." : ""}</p>
+    <p class="wz-help">${esc(step.ayuda)}${step.multi ? L(` <b>Puedes elegir ${step.multi > 3 ? "varios" : "hasta " + step.multi}.</b>`, ` <b>You can choose ${step.multi > 3 ? "several" : "up to " + step.multi}.</b>`) : ""}${bd.sel.estilo && bd.i > 0 ? L(" Ya te he dejado marcadas mis recomendaciones: cámbialas a tu gusto.", " I've already marked my recommendations: change them as you like.") : ""}</p>
     <div class="opt-grid">${step.opciones.map((o) => `<button class="opt ${isOn(o.id) ? "on" : ""}" data-id="${esc(o.id)}">
-      <b>${esc(o.titulo)} ${o.fit ? `<span class="fit">encaja</span>` : ""}</b><span>${esc(o.desc)}</span>${o.codigo ? `<code>${esc(o.codigo)}</code>` : ""}</button>`).join("")}</div>
-    ${bd.sel.estilo ? `<details class="bd-preview"><summary>Ver el código que llevas hasta ahora</summary><pre>${esc(compCode(compose(bd.sel)))}</pre></details>` : ""}
+      <b>${esc(o.titulo)} ${o.fit ? `<span class="fit">${L("encaja", "fits")}</span>` : ""}</b><span>${esc(o.desc)}</span>${o.codigo ? `<code>${esc(o.codigo)}</code>` : ""}</button>`).join("")}</div>
+    ${bd.sel.estilo ? `<details class="bd-preview"><summary>${L("Ver el código que llevas hasta ahora", "See the code so far")}</summary><pre>${esc(compCode(compose(bd.sel)))}</pre></details>` : ""}
     <div class="wz-nav">
-      <button data-a="back" ${bd.i === 0 ? "disabled" : ""}>${icon("back", 16)} Atrás</button>
-      <div class="right"><button data-a="next" class="primary" ${bd.sel.estilo ? "" : "disabled"}>${bd.i === st.length - 1 ? "Ver resumen" : "Siguiente"} ${icon("arrow", 16)}</button></div>
+      <button data-a="back" ${bd.i === 0 ? "disabled" : ""}>${icon("back", 16)} ${L("Atrás", "Back")}</button>
+      <div class="right"><button data-a="next" class="primary" ${bd.sel.estilo ? "" : "disabled"}>${bd.i === st.length - 1 ? L("Ver resumen", "See summary") : L("Siguiente", "Next")} ${icon("arrow", 16)}</button></div>
     </div>`;
   body.querySelector(".opt-grid").onclick = (e) => {
     const id = e.target.closest(".opt")?.dataset.id;
@@ -963,16 +964,16 @@ function renderBuilderSummary(body) {
   const st = STYLES[bd.sel.estilo];
   const items = c.tracks.map((t) => `<li><code>${esc(t.id)}</code><span><b>${esc(t.name)}</b>: ${esc(byId[Object.keys(byId).find((k) => byId[k].nombre === t.name)]?.desc || "")}</span></li>`).join("");
   body.innerHTML = `<div class="bd-summary">
-    <span class="wz-kicker">Resumen</span>
-    <h2 class="q">Tu proyecto ${esc(st.nombre)} a ${c.bpm} BPM</h2>
-    <p class="wz-help">${c.tracks.length} pistas. Así queda el código: cada línea <code>dN $ …</code> es una pista que suena a la vez que las demás.</p>
+    <span class="wz-kicker">${L("Resumen", "Summary")}</span>
+    <h2 class="q">${L(`Tu proyecto ${esc(st.nombre)} a ${c.bpm} BPM`, `Your ${esc(st.nombre)} project at ${c.bpm} BPM`)}</h2>
+    <p class="wz-help">${L(`${c.tracks.length} pistas. Así queda el código: cada línea <code>dN $ …</code> es una pista que suena a la vez que las demás.`, `${c.tracks.length} tracks. Here's the code: each <code>dN $ …</code> line is a track that plays at the same time as the others.`)}</p>
     <ul class="parts">${items}</ul>
-    <div class="idea-note"><b>Estructura.</b> ${esc(STRUCTURE_EXPLAIN[bd.sel.estructura] || "")}</div>
-    <details class="bd-preview" open><summary>Código completo</summary><pre>${esc(compCode(c))}</pre></details>
-    <label class="hint" style="display:block;margin-top:12px">Nombre del proyecto <input id="bd-name" style="width:100%;margin-top:4px" value="${esc(st.nombre + " · " + new Date().toLocaleDateString("es-ES"))}"></label>
+    <div class="idea-note"><b>${L("Estructura.", "Structure.")}</b> ${esc(STRUCTURE_EXPLAIN[bd.sel.estructura] || "")}</div>
+    <details class="bd-preview" open><summary>${L("Código completo", "Full code")}</summary><pre>${esc(compCode(c))}</pre></details>
+    <label class="hint" style="display:block;margin-top:12px">${L("Nombre del proyecto", "Project name")} <input id="bd-name" style="width:100%;margin-top:4px" value="${esc(st.nombre + " · " + new Date().toLocaleDateString(L("es-ES", "en-GB")))}"></label>
     <div class="wz-nav">
-      <button data-a="back">${icon("back", 16)} Atrás</button>
-      <div class="right"><button data-a="create" class="primary">${icon("play", 14)} Crear proyecto</button></div>
+      <button data-a="back">${icon("back", 16)} ${L("Atrás", "Back")}</button>
+      <div class="right"><button data-a="create" class="primary">${icon("play", 14)} ${L("Crear proyecto", "Create project")}</button></div>
     </div></div>`;
   body.querySelector(".wz-nav").onclick = (e) => {
     const a = e.target.closest("button")?.dataset.a;
@@ -985,19 +986,19 @@ function createFromBuilder(c, name) {
   $("#builder").close();
   bd.created = false;
   startFresh();
-  state.name = name || "Proyecto sin título";
+  state.name = name || L("Proyecto sin título", "Untitled project");
   state.style = bd.sel.estilo; state.bpm = c.bpm; state.tracks = c.tracks; state.step = "libre"; state.selected = c.tracks[0]?.id || null;
   renderAll();
   playAll();
   const efectos = (bd.sel.efectos || []).map((id) => EFFECTS.find((e) => e.id === id)).filter(Boolean);
   const explicacion = [
-    { fragmento: cps(c.bpm), explicacion: `La velocidad: ${c.bpm} BPM.` },
-    ...c.tracks.slice(0, 7).map((t) => ({ fragmento: `${t.id} $ …`, explicacion: `${t.name}. Pulsa «Explícame» en la pista para ver cada trozo de su código.` })),
+    { fragmento: cps(c.bpm), explicacion: L(`La velocidad: ${c.bpm} BPM.`, `The tempo: ${c.bpm} BPM.`) },
+    ...c.tracks.slice(0, 7).map((t) => ({ fragmento: `${t.id} $ …`, explicacion: L(`${t.name}. Pulsa «Explícame» en la pista para ver cada trozo de su código.`, `${t.name}. Press «Explain» on the track to see each piece of its code.`) })),
     ...efectos.map((e) => ({ fragmento: e.codigo, explicacion: e.desc })),
   ];
-  say(`¡Proyecto «${state.name}» creado! Ya está sonando.\n\n${STRUCTURE_EXPLAIN[bd.sel.estructura] || ""}\n\nAsí está montado:`,
-    ["¿Qué hago ahora?", "Dame otra idea", "Explícame la canción"],
-    { explicacion, reto: "Silencia una pista con el botón del altavoz y escucha qué papel cumple en la canción. Luego vuelve a activarla." });
+  say(L(`¡Proyecto «${state.name}» creado! Ya está sonando.\n\n${STRUCTURE_EXPLAIN[bd.sel.estructura] || ""}\n\nAsí está montado:`, `Project «${state.name}» created! It's playing.\n\n${STRUCTURE_EXPLAIN[bd.sel.estructura] || ""}\n\nThis is how it's built:`),
+    [L("¿Qué hago ahora?", "What do I do now?"), L("Dame otra idea", "Give me another idea"), L("Explícame la canción", "Explain the song")],
+    { explicacion, reto: L("Silencia una pista con el botón del altavoz y escucha qué papel cumple en la canción. Luego vuelve a activarla.", "Mute a track with the speaker button and hear what role it plays in the song. Then turn it back on.") });
   changed();
 }
 
@@ -1008,13 +1009,13 @@ async function refreshStatus() {
     const s = await api("/api/status");
     server.llm = s.llm_configured; server.engine = s.engine;
     const e = s.engine, pe = $("#st-engine");
-    if (e.tidal_running && e.superdirt_ready) setPill(pe, "ok", "speaker", "Sonido listo");
-    else if (e.tidal_running || e.sc_running) setPill(pe, "warn", "speaker", "Arrancando sonido…");
-    else if (!e.ghci_path || !e.sclang_path) setPill(pe, "bad", "mute", "Simulación (falta instalar)");
-    else setPill(pe, "warn", "mute", "Motor parado");
+    if (e.tidal_running && e.superdirt_ready) setPill(pe, "ok", "speaker", L("Sonido listo", "Sound ready"));
+    else if (e.tidal_running || e.sc_running) setPill(pe, "warn", "speaker", L("Arrancando sonido…", "Starting sound…"));
+    else if (!e.ghci_path || !e.sclang_path) setPill(pe, "bad", "mute", L("Simulación (falta instalar)", "Simulation (not installed)"));
+    else setPill(pe, "warn", "mute", L("Motor parado", "Engine stopped"));
     setPill($("#st-llm"), s.llm_configured ? "ok" : "warn", "brain",
-      s.llm_configured ? `IA: ${s.provider === "anthropic" ? "Claude" : "OpenAI-compatible"}` : "IA sin conectar");
-    $("#assistant-mode").textContent = s.llm_configured && !state.offline ? "" : "· guía sin IA";
+      s.llm_configured ? L(`IA: ${s.provider === "anthropic" ? "Claude" : "OpenAI-compatible"}`, `AI: ${s.provider === "anthropic" ? "Claude" : "OpenAI-compatible"}`) : L("IA sin conectar", "AI not connected"));
+    $("#assistant-mode").textContent = s.llm_configured && !state.offline ? "" : L("· guía sin IA", "· guide without AI");
   } catch {
     setPill($("#st-engine"), "bad", "power", "Servidor apagado");
   }
@@ -1054,8 +1055,22 @@ async function saveSettings() {
 }
 
 // ------------------------------------------------------------------ arranque
+function translateStatic() {
+  document.querySelectorAll("[data-t]").forEach((el) => { if (LANG === "en") el.textContent = el.dataset.t; });
+  document.querySelectorAll("[data-th]").forEach((el) => { if (LANG === "en") el.innerHTML = el.dataset.th; });
+  document.querySelectorAll("[data-tt]").forEach((el) => { if (LANG === "en") el.title = el.dataset.tt; });
+  document.querySelectorAll("[data-tp]").forEach((el) => { if (LANG === "en") el.placeholder = el.dataset.tp; });
+  const b = $("#btn-lang");
+  b.textContent = LANG === "en" ? "ES" : "EN";
+  b.title = LANG === "en" ? "Cambiar a español" : "Switch to English";
+  b.onclick = () => { save(); setLang(LANG === "en" ? "es" : "en"); };
+}
+
 function init() {
   load();
+  // Si cambió el idioma, Maestro vuelve a saludar en el nuevo idioma (las pistas se mantienen)
+  if (state.lang !== LANG) { state.chat = []; state.options = []; state.ideas = []; state.lang = LANG; }
+  translateStatic();
   hydrateIcons();
   $("#bpm").value = state.bpm;
   $("#proj-name").value = state.name || "";
@@ -1072,13 +1087,13 @@ function init() {
   $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
   $("#btn-more-ideas").onclick = () => {
     if (state.trying) return;
-    if (server.llm && !state.offline) return send("Dame otra idea para mejorar la canción, y explícame qué concepto musical enseña.");
+    if (server.llm && !state.offline) return send(L("Dame otra idea para mejorar la canción, y explícame qué concepto musical enseña.", "Give me another idea to improve the song, and explain what musical concept it teaches."));
     state.ideas = []; localSuggestions(state, 2, true); flavorTurn++; renderIdeas();
   };
   $("#flavors").onclick = (e) => {
     const k = e.target.closest("button")?.dataset.f;
     if (!k || state.trying) return;
-    if (!state.tracks.length) return toast("Primero crea algo de música (aunque sea un bombo) para poder transformarla.");
+    if (!state.tracks.length) return toast(L("Primero crea algo de música (aunque sea un bombo) para poder transformarla.", "First make some music (even just a kick) so it can be transformed."));
     const idea = flavorIdea(k, state.tracks);
     if (idea) tryIdea([idea], 0);
   };
@@ -1103,16 +1118,16 @@ function init() {
   };
   $("#btn-explain-all").onclick = async () => {
     const code = $("#code").value;
-    $("#code-msg").textContent = "Maestro está leyendo el código…";
-    const ex = await explain(code, "canción completa");
-    $("#code-msg").textContent = "La explicación está en el chat de Maestro.";
-    say(ex.resumen || "Así funciona tu código:", state.options, { explicacion: ex.partes, reto: ex.reto });
+    $("#code-msg").textContent = L("Maestro está leyendo el código…", "Maestro is reading the code…");
+    const ex = await explain(code, L("canción completa", "whole song"));
+    $("#code-msg").textContent = L("La explicación está en el chat de Maestro.", "The explanation is in Maestro's chat.");
+    say(ex.resumen || L("Así funciona tu código:", "This is how your code works:"), state.options, { explicacion: ex.partes, reto: ex.reto });
   };
   $("#code").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $("#btn-apply-code").click(); }
     if (e.key === "Tab") { e.preventDefault(); document.execCommand("insertText", false, "  "); }
   });
-  $("#btn-copy-code").onclick = () => navigator.clipboard.writeText($("#code").value).then(() => $("#code-msg").textContent = "Copiado");
+  $("#btn-copy-code").onclick = () => navigator.clipboard.writeText($("#code").value).then(() => $("#code-msg").textContent = L("Copiado", "Copied"));
   $("#btn-engine-start").onclick = async () => { await api("/api/engine/start", {}); refreshStatus(); };
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };
 
@@ -1134,8 +1149,8 @@ function init() {
   };
   $("#btn-save").onclick = async () => { await saveSettings(); $("#settings").close(); };
   $("#btn-test").onclick = async () => {
-    $("#test-msg").textContent = "Probando…";
-    try { await saveSettings(); const r = await api("/api/llm/test", {}); $("#test-msg").textContent = "Conectado: " + r.reply; }
+    $("#test-msg").textContent = L("Probando…", "Testing…");
+    try { await saveSettings(); const r = await api("/api/llm/test", {}); $("#test-msg").textContent = L("Conectado: ", "Connected: ") + r.reply; }
     catch (e) { $("#test-msg").textContent = "Error: " + e.message; }
   };
 

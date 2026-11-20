@@ -1,3 +1,4 @@
+import { applyEN } from "./i18n.js";
 // Catálogo de componentes listos para usar.
 // "codigo" es el patrón de Tidal que va después de "dN $".
 // Los efectos y estructuras modifican una pista existente: "sufijo" se añade al final,
@@ -160,3 +161,74 @@ export const COMPONENTS = [
 ];
 
 export const byId = Object.fromEntries(COMPONENTS.map(c => [c.id, c]));
+
+// ---------- English ----------
+const EN_STYLES = {
+  house: { desc: "Steady kick, claps and bouncy bass. Made for dancing." },
+  techno: { desc: "Repetitive, hypnotic and dark." },
+  hiphop: { nombre: "Hip hop", desc: "Heavy groove, perfect for rapping." },
+  lofi: { desc: "Relaxed, warm and a little 'dirty'." },
+  ambient: { desc: "Slow atmospheres, no hurry, almost no beat." },
+  reggaeton: { nombre: "Reggaeton", desc: "The classic 'dembow' rhythm." },
+  dnb: { desc: "Super-fast drums and deep basses." },
+};
+const EN_CATS = {
+  percusion: { nombre: "Drums", ayuda: "The rhythmic skeleton: kick, snare, claps, cymbals." },
+  bajo: { nombre: "Bass", ayuda: "The low notes that bring weight and groove." },
+  armonia: { nombre: "Chords and pads", ayuda: "Several notes at once: they set the emotion (happy, sad, mysterious)." },
+  melodia: { nombre: "Melody", ayuda: "The part you hum." },
+  textura: { nombre: "Textures", ayuda: "Ambient sounds and background details." },
+  efecto: { nombre: "Effects", ayuda: "Change how a track sounds: space, echo, filters, distortion." },
+  estructura: { nombre: "When does it happen?", ayuda: "Make something change every so often: fills, cuts, build-ups." },
+};
+const EN_COMPS = {
+  kick4: ["Four-on-the-floor kick", "A kick on every beat: the heartbeat of house and techno."],
+  kickhh: ["Hip hop kick", "A kick with pauses and an off-beat hit that brings groove."],
+  clap: ["Claps on 2 and 4", "Claps on the weak beats, like in almost all dance music."],
+  snare: ["Snare on 2 and 4", "The classic 'crack' of hip hop and rock."],
+  hats8: ["Eighth-note hi-hats", "A steady closed cymbal: gives a feeling of motion."],
+  hatsoff: ["Off-beat open hi-hat", "The 'tsss' between kicks, typical of house."],
+  hatstrap: ["Trap hi-hats (rolls)", "Fast hi-hats with rolls, very trap."],
+  dembow: ["Dembow", "The reggaeton rhythm: steady kick and snare in 3+3+2."],
+  amen: ["Chopped 'amen' break", "The most famous drum & bass break, chopped into pieces."],
+  lofidrums: ["Full lo-fi kit", "Kick, snare and hi-hats together, with a muffled, warm sound."],
+  shaker: ["Soft shaker", "Very light percussion to fill in."],
+  bass_off: ["Off-beat bass", "Low notes between kicks: makes it bounce."],
+  bass_roll: ["Rolling techno bass", "Fast, even notes with a filter that opens and closes."],
+  bass_hh: ["Groovy bass", "Few notes, well placed."],
+  bass_sub: ["Long sub bass", "Very low, long notes you feel more than hear."],
+  chords_min: ["Melancholic piano chords", "Four repeating minor chords: calm emotion."],
+  stabs: ["Short house stabs", "Off-beat chord hits, very danceable."],
+  pad: ["Ambient pad", "A long, soft cushion of sound."],
+  rhodes: ["Jazz electric piano", "Jazzy chords: very lo-fi."],
+  reggae_chords: ["Latin chords", "Minor chords with a syncopated rhythm."],
+  arp: ["Arpeggio", "The notes of the chords played one after another."],
+  pent: ["Random pentatonic melody", "Random notes from a scale that always sounds good."],
+  arpy: ["Short catchy melody", "Four notes that stick in your head."],
+  bell: ["Slow bells", "Single notes that ring out."],
+  wind: ["Wind", "Background air to create atmosphere."],
+  birds: ["Birds", "Random birds."],
+  glitch: ["Glitch", "Little digital noises jumping from side to side."],
+  vinyl: ["Vinyl crackle", "The 'crrr' of an old record."],
+  fx_reverb: ["Reverb (space)", "Sounds like it's in a big room."],
+  fx_delay: ["Delay (echo)", "Repeats the sound like an echo."],
+  fx_lpf: ["Low-pass filter (muffled)", "Removes the highs: darker, as if behind a wall."],
+  fx_sweep: ["Filter that opens and closes", "The sound slowly brightens and darkens."],
+  fx_hpf: ["High-pass filter (thin)", "Removes the lows: thin, like through a phone."],
+  fx_dist: ["Distortion", "Dirties it up and makes it more aggressive."],
+  fx_crush: ["Lo-fi / 8 bits", "Makes it sound like an old video game console."],
+  fx_pan: ["Moving pan", "The sound travels from one speaker to the other."],
+  fx_jux: ["Reversed stereo (jux rev)", "Normal in one ear, backwards in the other."],
+  fx_human: ["Humanize volume", "Each hit has a different strength, like a real musician."],
+  fx_echo: ["Rhythmic repeats", "Each note repeats three times, quieter each time."],
+  fx_holes: ["Random gaps", "Removes some notes at random so it can breathe."],
+  st_fill: ["Fill every 4 bars", "Every 4 bars the track goes twice as fast: a drum fill."],
+  st_rev: ["Reversed ending every 8", "In the last 2 bars of every 8, the track plays backwards."],
+  st_inout: ["In and out (8 on, 8 off)", "Plays 8 bars, then rests 8. Great for building sections."],
+  st_buildup: ["Build-up before the 'drop'", "In the last 4 of every 16 bars it gets thin, then comes back hard."],
+  st_alt: ["One bar on, one bar off", "Appears and disappears every bar."],
+  st_sometimes: ["Occasional variations", "Sometimes (1 in 4) it plays higher: a surprise."],
+};
+applyEN(Object.entries(STYLES).map(([k, v]) => Object.assign(v, { _k: k })), EN_STYLES, "_k");
+applyEN(CATEGORIES, EN_CATS);
+applyEN(COMPONENTS, Object.fromEntries(Object.entries(EN_COMPS).map(([k, [nombre, desc]]) => [k, { nombre, desc }])));

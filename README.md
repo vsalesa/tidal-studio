@@ -1,109 +1,130 @@
-# Tidal Studio · aprende música con tu maestro
+# Tidal Studio · learn music with your teacher
 
-Plataforma para **aprender música y [TidalCycles](https://tidalcycles.org) a la vez**, creando tu propia canción
-en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque no sepas nada de música ni de programación.
+**English** · [Español](README.es.md) · [Website](https://vsalesa.github.io/tidal-studio/)
 
-- **Maestro te guía** paso a paso: estilo → ritmo → velocidad → bajo → acordes → melodía → efectos → cuándo cambia cada cosa.
-- **Te explica el código**: botón «Explícame» en cada pista y «Explícame todo el código»; cada cambio llega con su
-  explicación trozo a trozo y, a veces, un pequeño **reto** para que edites tú.
-- **Te sugiere ideas como un productor**: «Yo le añadiría palmas en el 2 y el 4… pruébalo a ver qué te parece».
-  Cada idea enseña un concepto musical (backbeat, contraste, pregunta y respuesta, mayor y menor…). Pulsas **Probar**,
-  escuchas y decides: **Me lo quedo** o **Deshacer**.
-- **Lluvia de ideas**: un wizard te hace preguntas abiertas (¿qué quieres sentir?, ¿qué lugar imaginas?, ¿cómo cambia la
-  energía?…) con ejemplos para pulsar, y al final diseña contigo el **plan de tu canción**: estilo, tempo, estructura por
-  partes y cambios concretos para empezar a probar.
-- **Recetas de estilo**: «¿Quieres que suene tipo jazz?» (también latino, techno, lo-fi, ambient). Transforma tu canción y
-  te enseña **cómo lo ha hecho**: el código de antes y de después con lo nuevo resaltado y explicado, para que aprendas a
-  hacerlo tú solo.
-- **Nuevo proyecto en blanco o con wizard**: eliges estilo, tempo, ritmo, bajo, acordes, melodía, textura, efectos y
-  estructura pulsando opciones (las recomendadas vienen marcadas) y lo oyes en vivo mientras eliges.
-- **Pre-escucha**: botón «Escuchar» en cada idea o receta: suena unos compases y vuelve sola a tu versión.
-- **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
-- **Tu progreso**: conceptos de código y de música que ya has usado.
-- **Componentes para añadir** y **código siempre visible y editable**.
-- **Cualquier IA**: endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
-  o Claude (Anthropic). Sin IA también funciona: guía con botones, explicaciones e ideas locales.
-- **macOS, Windows y Linux**: el instalador detecta tu sistema.
+A platform to **learn music and [TidalCycles](https://tidalcycles.org) at the same time**, building your own song live
+with an AI teacher ("Maestro") who supports you at every step, even if you know nothing about music or programming.
 
-## Capturas
+![Tidal Studio](docs/screenshots/studio.png)
 
-| Nuevo proyecto | Wizard de proyecto base |
+- **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.
+- **It explains the code**: an «Explain» button on every track and «Explain all the code». Every change comes with a
+  piece-by-piece explanation and, sometimes, a small **challenge** so you edit it yourself.
+- **It suggests ideas like a producer**: «I'd add claps on 2 and 4… try it and see what you think». Each idea teaches a
+  musical concept (backbeat, contrast, call and response, major and minor…). Press **Try**, listen and decide:
+  **Keep it** or **Undo**.
+- **Pre-listen**: a «Listen» button on every idea and recipe plays it for a few bars and then returns to your version.
+- **New project: blank, with a wizard or with a brainstorm.** The wizard lets you pick style, tempo, beat, bass, chords,
+  melody, texture, effects and structure by clicking options (recommended ones are marked) and you hear it live while you choose.
+- **Brainstorm**: open questions (what do you want to feel? what place do you imagine? how does the energy change?…)
+  with clickable examples, ending in a **plan for your song**: style, tempo, sections and concrete changes to try.
+- **Style recipes**: «Want it to sound like jazz?» (also Latin, techno, lo-fi, ambient). It transforms your song and
+  shows you **how it did it**: the code before and after, with what's new highlighted and explained.
+- **Your progress**: the code and music concepts you have already used.
+- **My projects**: your songs are saved automatically; open or delete them from the folder button.
+- **Components to add** and **code always visible and editable**.
+- **English and Spanish**: switch with the EN/ES button in the top bar. Maestro answers in the chosen language.
+- **Any AI**: an OpenAI-compatible endpoint (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
+  or Claude (Anthropic). It also works without AI: button-guided flow, explanations and local ideas.
+- **macOS, Windows and Linux**: the installer detects your system.
+
+## Screenshots
+
+| New project: blank, wizard or brainstorm | Style recipe «like jazz»: before and after, explained |
 |---|---|
-| ![Nuevo proyecto: en blanco, con wizard o lluvia de ideas](docs/screenshots/nuevo-proyecto.png) | ![Wizard: eliges el ritmo pulsando opciones](docs/screenshots/wizard-proyecto.png) |
-| **El estudio: pistas, «Explícame» e ideas con pre-escucha** | **Receta «tipo jazz»: antes y después, explicado** |
-| ![Estudio](docs/screenshots/estudio.png) | ![Receta jazz](docs/screenshots/receta-jazz.png) |
-| **Lluvia de ideas: preguntas con ejemplos** | **El plan de tu canción** |
-| ![Lluvia de ideas](docs/screenshots/lluvia-pregunta.png) | ![Plan de la canción](docs/screenshots/lluvia-plan.png) |
+| ![New project](docs/screenshots/new-project.png) | ![Jazz recipe](docs/screenshots/recipe-jazz.png) |
 
-## Instalación (una sola vez)
+### Base-project wizard, step by step
 
-Descarga o clona esta carpeta y:
+Click options and hear the result live. The ones recommended for your style are marked «fits».
 
-| Sistema | Qué hacer |
+| 1. Style | 2. Tempo |
 |---|---|
-| **Windows 10/11** | Doble clic en `install.bat` |
-| **macOS** | Abre Terminal en la carpeta y ejecuta `./install.sh` |
+| ![Choose style](docs/screenshots/wizard-1-style.png) | ![Choose tempo](docs/screenshots/wizard-2-tempo.png) |
+| **3. Beat (up to 3 layers)** | **4. Bass, chords, melody and texture** |
+| ![Choose beat](docs/screenshots/wizard-3-beat.png) | ![Choose chords](docs/screenshots/wizard-4-chords.png) |
+| **5. Effects** | **6. Structure over time** |
+| ![Choose effects](docs/screenshots/wizard-5-effects.png) | ![Choose structure](docs/screenshots/wizard-6-structure.png) |
+| **7. Summary with all the code explained** | |
+| ![Summary](docs/screenshots/wizard-7-summary.png) | |
+
+### Brainstorm
+
+| Questions with examples | Your song plan |
+|---|---|
+| ![Brainstorm question](docs/screenshots/brainstorm-question.png) | ![Song plan](docs/screenshots/brainstorm-plan.png) |
+
+## Installation (once)
+
+Download or clone this folder and:
+
+| System | What to do |
+|---|---|
+| **Windows 10/11** | Double-click `install.bat` |
+| **macOS** | Open Terminal in the folder and run `./install.sh` |
 | **Linux** (Debian/Ubuntu, Fedora, Arch, openSUSE) | `./install.sh` |
 
-El instalador pone, si faltan: Python 3, Git, SuperCollider, SuperDirt (sonidos), Haskell (vía ghcup) y TidalCycles.
-Tarda 15–40 minutos la primera vez (descarga ~1 GB). Puedes ejecutarlo otra vez sin miedo: se salta lo que ya está.
+The installer adds, if missing: Python 3, Git, SuperCollider, SuperDirt (sounds), Haskell (via ghcup) and TidalCycles.
+It takes 15–40 minutes the first time (~1 GB download). You can run it again safely: it skips what's already there.
 
-## Uso
+## Usage
 
-| Sistema | Abrir el estudio |
+| System | Open the studio |
 |---|---|
-| Windows | Doble clic en `start.bat` |
+| Windows | Double-click `start.bat` |
 | macOS / Linux | `./start.sh` |
 
-Se abre el navegador en <http://localhost:8765>. Después:
+Your browser opens at <http://localhost:8765>. Then:
 
-1. Pulsa **⚙️** y conecta tu IA (o sigue sin IA con la guía de botones).
-2. Habla con **Maestro** a la derecha, o añade componentes desde la izquierda.
-3. Mira y edita el código en la pestaña **⌨️ Código** (`Ctrl+Enter` aplica).
-4. **■ Silencio** para parar todo al instante.
+1. Press **New project** and choose blank, wizard or brainstorm.
+2. Optionally open **Settings** (gear icon) and connect your AI; without it, the button guide still works.
+3. Talk to **Maestro** on the right, try its ideas, or add components from the left.
+4. See and edit the code in the **Code** tab (`Ctrl+Enter` applies it).
+5. **Hush** stops everything instantly.
 
-### Configurar la IA
+### Setting up the AI
 
-| Servicio | URL base | Modelo de ejemplo |
+| Service | Base URL | Example model |
 |---|---|---|
 | OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` |
 | OpenRouter | `https://openrouter.ai/api/v1` | `openai/gpt-4o-mini` |
 | Groq | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
-| Ollama (local, gratis) | `http://localhost:11434/v1` | `llama3.1` |
-| LM Studio (local, gratis) | `http://localhost:1234/v1` | el que tengas cargado |
+| Ollama (local, free) | `http://localhost:11434/v1` | `llama3.1` |
+| LM Studio (local, free) | `http://localhost:1234/v1` | whichever you have loaded |
 | Claude (Anthropic) | — | `claude-opus-5-5` |
 
-Las claves se guardan solo en `config.json`, en tu ordenador (no se sube a git). También puedes usar las variables
-de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
+Keys are stored only in `config.json`, on your computer (it is not committed to git). You can also use the
+`OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variables.
 
-## Cómo funciona
+## How it works
 
 ```
- Navegador (web/)  ──HTTP──▶  server/app.py  ──stdin──▶  GHCi + TidalCycles ──OSC──▶ SuperCollider + SuperDirt ──▶ 🔊
-     │                            │
-     └── chat ───────────────────▶ server/llm.py ──▶ OpenAI-compatible / Claude
+ Browser (web/)  ──HTTP──▶  server/app.py  ──stdin──▶  GHCi + TidalCycles ──OSC──▶ SuperCollider + SuperDirt ──▶ speakers
+     │                          │
+     └── chat ─────────────────▶ server/llm.py ──▶ OpenAI-compatible / Claude
 ```
 
-- `server/app.py`: servidor local (solo biblioteca estándar de Python, sin `pip install`). Escucha solo en `127.0.0.1`.
-- `server/engine.py`: busca y arranca `sclang` (con `supercollider/start_superdirt.scd`) y `ghci` (con `tidal/BootTidal.hs`).
-  Si falta algo, trabaja en **modo simulación**: la interfaz funciona pero no suena.
-- `server/assistant.py`: las instrucciones de "Maestro" y la lectura de sus respuestas (JSON con mensaje, opciones y cambios de pistas).
-- `web/catalog.js`: el catálogo de componentes. Añadir uno nuevo es añadir un objeto a la lista.
-- `web/explain.js`: explicador local del código (sin IA). `web/suggest.js`: ideas de productor sin IA y conceptos del progreso.
-- `web/wizard.js`: preguntas de la lluvia de ideas y plan sin IA. `web/flavors.js`: recetas de estilo (jazz, latino, techno, lo-fi, ambient).
-- `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».
+- `server/app.py`: local server (Python standard library only, no `pip install`). Listens only on `127.0.0.1`.
+- `server/engine.py`: finds and starts `sclang` (with `supercollider/start_superdirt.scd`) and `ghci` (with `tidal/BootTidal.hs`).
+  If something is missing it runs in **simulation mode**: the interface works but there is no sound.
+- `server/assistant.py`: Maestro's instructions and parsing of its replies (JSON with message, options and track changes).
+- `web/catalog.js`: the component catalog. Adding one means adding an object to the list.
+- `web/builder.js`: the base-project wizard. `web/wizard.js`: brainstorm questions and offline plan.
+- `web/explain.js`: offline code explainer. `web/suggest.js`: offline producer ideas and progress concepts.
+- `web/flavors.js`: style recipes (jazz, Latin, techno, lo-fi, ambient).
+- `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
-Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit).
+Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).
 
-## Problemas frecuentes
+## Troubleshooting
 
-- **No suena nada**: mira la pestaña 📜 Registro. Ejecuta `python3 server/app.py --check` para ver qué falta.
-- **Linux sin sonido**: SuperCollider usa JACK. Con PipeWire se arranca solo con `pw-jack`; si usas JACK clásico, arráncalo antes.
-- **macOS pide permiso de micrófono** a SuperCollider: acéptalo (lo necesita para abrir el audio).
-- **Windows: "Haskell se está terminando de instalar en otra ventana"**: espera a que acabe y vuelve a ejecutar `install.bat`.
-- **Puerto ocupado**: `./start.sh --port 9000`.
+- **No sound**: check the **Log** tab. Run `python3 server/app.py --check` to see what's missing.
+- **Linux without sound**: SuperCollider uses JACK. With PipeWire it starts with `pw-jack`; with classic JACK, start it first.
+- **macOS asks for microphone permission** for SuperCollider: accept it (it needs it to open audio).
+- **Windows: "Haskell se está terminando de instalar en otra ventana"** (Haskell is finishing installing in another window): wait until it finishes and run `install.bat` again.
+- **Port in use**: `./start.sh --port 9000`.
 
-## Opciones del servidor
+## Server options
 
 ```
 python3 server/app.py [--port 8765] [--no-browser] [--no-engine] [--check]

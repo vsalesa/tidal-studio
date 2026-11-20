@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from engine import Engine, find_ghci, find_sclang  # noqa: E402
 from llm import chat_completion, LLMError  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
-                       build_brainstorm, parse_brainstorm)  # noqa: E402
+                       build_brainstorm, parse_brainstorm, with_lang)  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
@@ -188,7 +188,7 @@ class Handler(SimpleHTTPRequestHandler):
                 if not llm_configured(cfg):
                     return self._json({"error": "La IA no está configurada. Abre ⚙️ Ajustes."}, 400)
                 system, messages = build_messages(data.get("messages") or [], data.get("session") or {})
-                raw = chat_completion(cfg, system, messages, max_tokens=1800)
+                raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1800)
                 return self._json(parse_reply(raw))
 
             if path == "/api/explain":
@@ -196,7 +196,7 @@ class Handler(SimpleHTTPRequestHandler):
                 if not llm_configured(cfg):
                     return self._json({"error": "La IA no está configurada"}, 400)
                 system, messages = build_explain(data.get("code", ""), data.get("name", ""))
-                return self._json(parse_explain(chat_completion(cfg, system, messages, max_tokens=1500)))
+                return self._json(parse_explain(chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1500)))
 
             if path == "/api/brainstorm":
                 cfg = load_config()
@@ -204,7 +204,7 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"error": "La IA no está configurada"}, 400)
                 nxt = data.get("next")
                 system, messages = build_brainstorm(data.get("answers"), nxt, data.get("session"))
-                raw = chat_completion(cfg, system, messages, max_tokens=600 if nxt else 2500)
+                raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=600 if nxt else 2500)
                 return self._json(parse_brainstorm(raw, final=not nxt))
 
             if path == "/api/engine/start":

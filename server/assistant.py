@@ -246,3 +246,13 @@ def parse_brainstorm(raw, final):
         bpm = None
     return {"titulo": str(data.get("titulo") or "Tu canción"), "resumen": str(data.get("resumen") or ""),
             "estilo": str(data.get("estilo") or ""), "bpm": bpm, "partes": partes, "sugerencias": sugerencias}
+
+
+LANG_EN = ("\n\nIMPORTANT, LANGUAGE: the student uses the interface in ENGLISH. Write every text meant for the student "
+           "(mensaje, explicacion, reto, opciones, titulo, porque, concepto, comentario, resumen, track names, etc.) in clear, "
+           "simple English. Keep the JSON keys exactly as specified above (they stay in Spanish).")
+
+
+def with_lang(system, lang):
+    """Añade la instrucción de idioma al prompt de sistema si la interfaz está en inglés."""
+    return system + LANG_EN if lang == "en" else system

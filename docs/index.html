@@ -1,13 +1,13 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tidal Studio · aprende música con tu maestro</title>
-<meta name="description" content="Crea tu propia canción en vivo con TidalCycles mientras un maestro de IA te explica cada línea de código y cada idea musical.">
-<meta property="og:title" content="Tidal Studio · aprende música con tu maestro">
-<meta property="og:description" content="Crea tu canción en vivo y aprende música y código a la vez.">
-<meta property="og:image" content="screenshots/estudio.png">
+<title>Tidal Studio · learn music with your teacher</title>
+<meta name="description" content="Build your own song live with TidalCycles while an AI teacher explains every line of code and every musical idea.">
+<meta property="og:title" content="Tidal Studio · learn music with your teacher">
+<meta property="og:description" content="Make your song live and learn music and code at the same time.">
+<meta property="og:image" content="screenshots/studio.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9482b' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M4 12c1.6 0 1.6-5 3.2-5s1.6 10 3.2 10 1.6-10 3.2-10 1.6 10 3.2 10 1.6-5 3.2-5'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,7 +34,7 @@ body {
   overflow-x: hidden;
 }
 a { color: var(--accent); }
-img { max-width: 100%; display: block; }
+img { max-width: 100%; height: auto; display: block; }
 .wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
@@ -162,6 +162,16 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   .final { margin: 0 16px; }
   .lead { font-size: 18px; }
 }
+.lang { font: 600 13px var(--mono); padding: 7px 10px; border-radius: 8px; border: 1.5px solid var(--rule-strong); background: var(--card); color: var(--ink-2); cursor: pointer; }
+.lang:hover { border-color: var(--ink); color: var(--ink); }
+.stepper { display: grid; grid-template-columns: 260px 1fr; gap: 28px; align-items: start; }
+.stepper ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; counter-reset: st; }
+.stepper li button { width: 100%; text-align: left; display: flex; gap: 12px; align-items: center; padding: 11px 14px; border-radius: 12px; border: 1px solid var(--rule); background: var(--card); font: 500 15px var(--sans); color: var(--ink-2); cursor: pointer; counter-increment: st; }
+.stepper li button::before { content: counter(st); width: 26px; height: 26px; flex: none; border-radius: 50%; display: grid; place-items: center; background: var(--sunk); font: 700 13px var(--serif); color: var(--ink-2); }
+.stepper li button[aria-selected=true] { border-color: var(--accent); color: var(--ink); box-shadow: var(--shadow); }
+.stepper li button[aria-selected=true]::before { background: var(--accent); color: #fff; }
+.stepper .note { margin-top: 14px; color: var(--ink-3); font-size: 14px; }
+@media (max-width: 900px) { .stepper { grid-template-columns: 1fr; } .stepper ol { grid-template-columns: repeat(7, 1fr); } .stepper li button { justify-content: center; padding: 8px 0; } .stepper li button span { display: none; } }
 </style>
 </head>
 <body>
@@ -170,9 +180,11 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   <div class="wrap">
     <a class="brand" href="#"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M4 12c1.6 0 1.6-5 3.2-5s1.6 10 3.2 10 1.6-10 3.2-10 1.6 10 3.2 10 1.6-5 3.2-5"/></svg>Tidal Studio</a>
     <div class="links">
-      <a href="#maestro">El maestro</a>
-      <a href="#capturas">Capturas</a>
-      <a href="#empezar">Empezar</a>
+      <a href="#maestro" data-i="nav1">The teacher</a>
+      <a href="#wizard" data-i="nav2">Wizard</a>
+      <a href="#capturas" data-i="nav3">Screenshots</a>
+      <a href="#empezar" data-i="nav4">Get started</a>
+      <button class="lang" id="lang" title="Español">ES</button>
       <a class="btn dark" href="https://github.com/vsalesa/tidal-studio"><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>GitHub</a>
     </div>
   </div>
@@ -181,23 +193,23 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
 <header class="hero">
   <div class="wrap">
     <div>
-      <span class="eyebrow">TidalCycles + IA · gratis y local</span>
-      <h1>Haz tu canción.<br><em>Aprende</em> cómo la has hecho.</h1>
-      <p class="lead">Tidal Studio es un estudio de música en vivo con un maestro que te acompaña en cada paso: te propone ideas como un productor, te explica cada línea de código y te enseña por qué suena bien.</p>
+      <span class="eyebrow" data-i="eyebrow">TidalCycles + AI · free and local</span>
+      <h1 data-i="h1">Make your song.<br><em>Learn</em> how you made it.</h1>
+      <p class="lead" data-i="lead">Tidal Studio is a live music studio with a teacher who supports you at every step: it suggests ideas like a producer, explains every line of code and teaches you why it sounds good.</p>
       <div class="cta">
-        <a class="btn primary" href="#empezar"><svg class="i" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>Empezar ahora</a>
-        <a class="btn ghost" href="#capturas">Ver cómo es</a>
+        <a class="btn primary" href="#empezar"><svg class="i" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg><span data-i="cta1">Get started</span></a>
+        <a class="btn ghost" href="#capturas" data-i="cta2">See what it looks like</a>
       </div>
-      <p class="small">macOS, Windows y Linux. Funciona con o sin IA.</p>
+      <p class="small" data-i="small">macOS, Windows and Linux. Works with or without AI. English and Spanish.</p>
     </div>
 
-    <div class="seq reveal" aria-label="Animación: un secuenciador tocando un patrón mientras se escribe el código Tidal">
-      <div class="seq-head"><span class="dot"></span>Sonando en vivo<span class="bpm">setcps (124/60/4)</span></div>
+    <div class="seq reveal" aria-label="Animation: a sequencer playing a pattern while the Tidal code is typed">
+      <div class="seq-head"><span class="dot"></span><span data-i="live">Playing live</span><span class="bpm">setcps (124/60/4)</span></div>
       <div id="grid"></div>
       <div class="code" id="code"></div>
       <div class="bubble" id="bubble">
         <svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 21c0-4 2.9-6.5 6.5-6.5 1.6 0 3 .5 4.1 1.3"/><path d="M14 13l7.5-7.5"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/><path d="M17 17.5l1 1 3-3"/></svg>
-        <div><strong>Maestro</strong><span id="bubble-text">«bd*4» es un bombo en cada tiempo: el pulso que hace mover el pie.</span></div>
+        <div><strong>Maestro</strong><span id="bubble-text"></span></div>
       </div>
     </div>
   </div>
@@ -205,27 +217,27 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
 
 <section id="maestro">
   <div class="wrap">
-    <div class="kicker">Un maestro, tres sombreros</div>
-    <h2 class="sec-title">No solo genera música. Te enseña a hacerla.</h2>
-    <p class="sec-lead">Cada cambio en tu canción llega con su porqué. Así, poco a poco, pasas de pulsar botones a escribir tú el código.</p>
+    <div class="kicker" data-i="k1">One teacher, three hats</div>
+    <h2 class="sec-title" data-i="t1">It doesn't just make music. It teaches you to make it.</h2>
+    <p class="sec-lead" data-i="l1">Every change to your song comes with its why. Little by little you go from clicking buttons to writing the code yourself.</p>
     <div class="roles">
       <div class="role reveal" style="--c: var(--accent); --soft: var(--accent-soft)">
         <div class="ic" style="background: var(--accent-soft); color: var(--accent)"><svg class="i" viewBox="0 0 24 24"><path d="M4 20L15 9"/><path d="M15 9l2-2" stroke-width="3"/><path d="M17 2.5v2M20.5 6h-2M19.5 3.5l-1.4 1.4M10 4v1.5M9.25 4.75h1.5M20 13v1.5M19.25 13.75h1.5"/></svg></div>
-        <h3>Productor</h3>
-        <p>Escucha tu canción y te propone ideas concretas, en primera persona.</p>
-        <blockquote>«Yo quitaría el bombo 8 compases de cada 16. Cuando vuelve, pega el doble. Prueba a ver qué te parece.»</blockquote>
+        <h3 data-i="r1h">Producer</h3>
+        <p data-i="r1p">It listens to your song and suggests concrete ideas, in the first person.</p>
+        <blockquote data-i="r1q">“I'd drop the kick for 8 bars out of every 16. When it comes back, it hits twice as hard. Try it and see what you think.”</blockquote>
       </div>
       <div class="role reveal" style="--c: var(--teal); --soft: var(--teal-soft)">
         <div class="ic" style="background: var(--teal-soft); color: var(--teal)"><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></div>
-        <h3>Profe de código</h3>
-        <p>Pulsa «Explícame» en cualquier pista y te cuenta qué hace cada trozo.</p>
-        <blockquote>«mask "&lt;f!8 t!8&gt;" es un interruptor por compás: 8 compases callado y 8 sonando.»</blockquote>
+        <h3 data-i="r2h">Code teacher</h3>
+        <p data-i="r2p">Press «Explain» on any track and it tells you what each piece does.</p>
+        <blockquote data-i="r2q">“mask "&lt;f!8 t!8&gt;" is a switch per bar: 8 bars silent and 8 playing.”</blockquote>
       </div>
       <div class="role reveal" style="--c: var(--plum); --soft: var(--plum-soft)">
         <div class="ic" style="background: var(--plum-soft); color: var(--plum)"><svg class="i" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg></div>
-        <h3>Profe de música</h3>
-        <p>Cada idea enseña un concepto: pulso, backbeat, mayor y menor, contraste…</p>
-        <blockquote>«Los acordes menores suenan melancólicos; los mayores, luminosos. Mismo ritmo, otro color.»</blockquote>
+        <h3 data-i="r3h">Music teacher</h3>
+        <p data-i="r3p">Every idea teaches a concept: pulse, backbeat, major and minor, contrast…</p>
+        <blockquote data-i="r3q">“Minor chords sound melancholic; major ones, bright. Same rhythm, different color.”</blockquote>
       </div>
     </div>
   </div>
@@ -234,129 +246,193 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
 <section style="padding-top: 0">
   <div class="wrap">
     <div class="feat reveal">
-      <div><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><h4>Wizard de proyecto</h4><p>Estilo, tempo, ritmo, bajo, acordes, melodía y estructura, pulsando opciones. Lo oyes mientras eliges.</p></div>
-      <div><svg class="i" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/></svg><h4>Lluvia de ideas</h4><p>¿Qué quieres sentir? ¿Qué lugar imaginas? Con tus respuestas diseña contigo el plan de tu canción.</p></div>
-      <div><svg class="i" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><circle cx="12" cy="14.5" r="3.5"/><circle cx="12" cy="7" r="1.3"/></svg><h4>Pre-escucha</h4><p>«Escuchar» toca cada idea unos compases y vuelve sola a tu versión. Decides con el oído.</p></div>
-      <div><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg><h4>Código siempre visible</h4><p>Cada pista es código TidalCycles real que puedes editar. Nada de cajas negras.</p></div>
-      <div><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg><h4>Tu progreso</h4><p>Ve qué conceptos de código y de música ya has usado, y cuáles te quedan por descubrir.</p></div>
-      <div><svg class="i" viewBox="0 0 24 24"><path d="M3.5 7.5A2 2 0 0 1 5.5 5.5h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></svg><h4>Mis proyectos</h4><p>Tus canciones se guardan solas. Empieza en blanco, con wizard o con una lluvia de ideas.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><h4 data-i="f1h">Project wizard</h4><p data-i="f1p">Style, tempo, beat, bass, chords, melody and structure, by clicking options. You hear it while you choose.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/></svg><h4 data-i="f2h">Brainstorm</h4><p data-i="f2p">What do you want to feel? What place do you imagine? From your answers it designs your song plan with you.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><circle cx="12" cy="14.5" r="3.5"/><circle cx="12" cy="7" r="1.3"/></svg><h4 data-i="f3h">Pre-listen</h4><p data-i="f3p">«Listen» plays each idea for a few bars and then returns to your version. Decide with your ears.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg><h4 data-i="f4h">Code always visible</h4><p data-i="f4p">Every track is real TidalCycles code you can edit. No black boxes.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg><h4 data-i="f5h">Your progress</h4><p data-i="f5p">See which code and music concepts you have used, and which are left to discover.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><h4 data-i="f6h">English and Spanish</h4><p data-i="f6p">Switch language with one button. Maestro answers in the language you choose.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="wizard" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker" data-i="k2">Base-project wizard</div>
+    <h2 class="sec-title" data-i="t2">Your first song in seven clicks.</h2>
+    <p class="sec-lead" data-i="l2">Pick options and hear the result live. The ones that fit your style are marked, and the last step shows all the code explained.</p>
+    <div class="stepper reveal">
+      <div>
+        <ol id="wz-steps" role="tablist"></ol>
+        <p class="note" id="wz-note"></p>
+      </div>
+      <div class="frame"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="wz-img" alt="" width="2880" height="1800"></div>
     </div>
   </div>
 </section>
 
 <section id="capturas" style="background: var(--sunk); border-block: 1px solid var(--rule)">
   <div class="wrap">
-    <div class="kicker">Así se ve</div>
-    <h2 class="sec-title">Un estudio claro, como una partitura.</h2>
+    <div class="kicker" data-i="k3">What it looks like</div>
+    <h2 class="sec-title" data-i="t3">A clear studio, like a music score.</h2>
     <div class="gal-tabs" role="tablist" id="gal-tabs"></div>
-    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="gal-img" src="screenshots/estudio.png" alt="" width="2880" height="1800"></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="gal-img" alt="" width="2880" height="1800"></div>
     <p class="gal-cap" id="gal-cap"></p>
   </div>
 </section>
 
 <section>
   <div class="wrap">
-    <div class="kicker">Recetas de estilo</div>
-    <h2 class="sec-title">«¿Quieres que suene tipo jazz?»</h2>
-    <p class="sec-lead">Pulsa un estilo y tu canción se transforma. Verás el antes y el después con lo nuevo resaltado, y una explicación de cada cambio para que mañana lo hagas tú.</p>
+    <div class="kicker" data-i="k4">Style recipes</div>
+    <h2 class="sec-title" data-i="t4">“Want it to sound like jazz?”</h2>
+    <p class="sec-lead" data-i="l4">Pick a style and your song transforms. You see the before and after with what's new highlighted, plus an explanation of every change, so tomorrow you can do it yourself.</p>
     <div class="recipe reveal">
-      <div class="diff"><h5>Antes</h5><code>s "bd*4 , ~ cp ~ cp"
+      <div class="diff"><h5 data-i="before">Before</h5><code>s "bd*4 , ~ cp ~ cp"
 n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
-      <div class="diff"><h5>Después: jazz</h5><code><mark>swingBy (1/3) 4 $</mark> s "<mark>bd ~ [~ bd] ~</mark> , ~ cp ~ cp"
+      <div class="diff"><h5 data-i="after">After: jazz</h5><code><mark>swingBy (1/3) 4 $</mark> s "<mark>bd ~ [~ bd] ~</mark> , ~ cp ~ cp"
 <mark>swingBy (1/3) 4 $</mark> n "&lt;c'<mark>min9</mark> f'<mark>min9</mark>&gt;" # s "superpiano"</code></div>
     </div>
-    <p class="gal-cap">«swingBy (1/3) 4» retrasa un poco cada segunda nota: eso es el swing. Y los acordes ganan una nota más ('min9) para sonar más jazz.</p>
-    <div class="styles"><span>Jazz</span><span>Latino (bossa)</span><span>Techno</span><span>Lo-fi</span><span>Ambient</span></div>
+    <p class="gal-cap" data-i="jazzcap">«swingBy (1/3) 4» delays every second note a little: that's swing. And the chords gain an extra note ('min9) to sound jazzier.</p>
+    <div class="styles"><span>Jazz</span><span data-i="latin">Latin (bossa)</span><span>Techno</span><span>Lo-fi</span><span>Ambient</span></div>
   </div>
 </section>
 
 <section id="empezar" style="padding-top: 20px">
   <div class="wrap">
-    <div class="kicker">Empezar</div>
-    <h2 class="sec-title">De cero a sonar en tres pasos.</h2>
-    <p class="sec-lead">No necesitas tener nada instalado. El instalador detecta tu sistema y prepara SuperCollider, SuperDirt y TidalCycles.</p>
+    <div class="kicker" data-i="k5">Get started</div>
+    <h2 class="sec-title" data-i="t5">From zero to sound in three steps.</h2>
+    <p class="sec-lead" data-i="l5">You don't need anything installed. The installer detects your system and sets up SuperCollider, SuperDirt and TidalCycles.</p>
     <div class="steps">
       <div class="step reveal">
-        <h4>Descarga</h4>
-        <p>Baja el proyecto como zip y descomprímelo, o clónalo con git.</p>
-        <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/archive/refs/heads/main.zip"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Descargar zip</a>
+        <h4 data-i="s1h">Download</h4>
+        <p data-i="s1p">Get the project as a zip and unzip it, or clone it with git.</p>
+        <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/archive/refs/heads/main.zip"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="s1b">Download zip</span></a>
       </div>
       <div class="step reveal">
-        <h4>Instala</h4>
-        <p>Una sola vez. Tarda un rato: descarga Haskell y los sonidos.</p>
+        <h4 data-i="s2h">Install</h4>
+        <p data-i="s2p">Only once. It takes a while: it downloads Haskell and the sounds.</p>
         <div class="os" role="tablist" data-group="install"></div>
         <pre class="cmd" data-out="install"></pre>
       </div>
       <div class="step reveal">
-        <h4>Toca</h4>
-        <p>Se abre el navegador con el estudio. Pulsa «Nuevo proyecto» y deja que el maestro te guíe.</p>
+        <h4 data-i="s3h">Play</h4>
+        <p data-i="s3p">Your browser opens the studio. Press «New project» and let Maestro guide you.</p>
         <div class="os" role="tablist" data-group="start"></div>
         <pre class="cmd" data-out="start"></pre>
       </div>
     </div>
-    <div class="ai">Conecta la IA que quieras, o ninguna:
-      <span>Claude</span><span>OpenAI</span><span>OpenRouter</span><span>Groq</span><span>Ollama</span><span>LM Studio</span><span>sin IA</span>
+    <div class="ai"><span data-i="ai" style="border:0;background:none;padding:0;font:inherit;color:inherit">Connect any AI you like, or none:</span>
+      <span>Claude</span><span>OpenAI</span><span>OpenRouter</span><span>Groq</span><span>Ollama</span><span>LM Studio</span><span data-i="noai">no AI</span>
     </div>
   </div>
 </section>
 
 <section>
   <div class="final reveal">
-    <h2>Tu primera canción<br><em>empieza con un bombo.</em></h2>
-    <p>El resto te lo enseña el maestro.</p>
-    <a class="btn primary" href="#empezar">Empezar ahora</a>
+    <h2 data-i="fh">Your first song<br><em>starts with a kick.</em></h2>
+    <p data-i="fp">Maestro teaches you the rest.</p>
+    <a class="btn primary" href="#empezar" data-i="cta1b">Get started</a>
     <svg class="wave" viewBox="0 0 1200 80" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2"><path id="wave" d=""/></svg>
   </div>
 </section>
 
 <footer>
-  <div class="wrap">Tidal Studio · hecho sobre <a href="https://tidalcycles.org">TidalCycles</a> y <a href="https://supercollider.github.io">SuperCollider</a> · <a href="https://github.com/vsalesa/tidal-studio">Código en GitHub</a></div>
+  <div class="wrap" data-i="foot">Tidal Studio · built on <a href="https://tidalcycles.org">TidalCycles</a> and <a href="https://supercollider.github.io">SuperCollider</a> · <a href="https://github.com/vsalesa/tidal-studio">Code on GitHub</a></div>
 </footer>
 
 <script>
-// Secuenciador animado del hero
+// ---------- Idioma (inglés por defecto, español con el botón) ----------
+const ES = {
+  nav1: "El maestro", nav2: "Wizard", nav3: "Capturas", nav4: "Empezar",
+  eyebrow: "TidalCycles + IA · gratis y local",
+  h1: "Haz tu canción.<br><em>Aprende</em> cómo la has hecho.",
+  lead: "Tidal Studio es un estudio de música en vivo con un maestro que te acompaña en cada paso: te propone ideas como un productor, te explica cada línea de código y te enseña por qué suena bien.",
+  cta1: "Empezar ahora", cta1b: "Empezar ahora", cta2: "Ver cómo es",
+  small: "macOS, Windows y Linux. Funciona con o sin IA. En español e inglés.",
+  live: "Sonando en vivo",
+  k1: "Un maestro, tres sombreros", t1: "No solo genera música. Te enseña a hacerla.",
+  l1: "Cada cambio en tu canción llega con su porqué. Así, poco a poco, pasas de pulsar botones a escribir tú el código.",
+  r1h: "Productor", r1p: "Escucha tu canción y te propone ideas concretas, en primera persona.",
+  r1q: "«Yo quitaría el bombo 8 compases de cada 16. Cuando vuelve, pega el doble. Prueba a ver qué te parece.»",
+  r2h: "Profe de código", r2p: "Pulsa «Explícame» en cualquier pista y te cuenta qué hace cada trozo.",
+  r2q: "«mask \"&lt;f!8 t!8&gt;\" es un interruptor por compás: 8 compases callado y 8 sonando.»",
+  r3h: "Profe de música", r3p: "Cada idea enseña un concepto: pulso, backbeat, mayor y menor, contraste…",
+  r3q: "«Los acordes menores suenan melancólicos; los mayores, luminosos. Mismo ritmo, otro color.»",
+  f1h: "Wizard de proyecto", f1p: "Estilo, tempo, ritmo, bajo, acordes, melodía y estructura, pulsando opciones. Lo oyes mientras eliges.",
+  f2h: "Lluvia de ideas", f2p: "¿Qué quieres sentir? ¿Qué lugar imaginas? Con tus respuestas diseña contigo el plan de tu canción.",
+  f3h: "Pre-escucha", f3p: "«Escuchar» toca cada idea unos compases y vuelve sola a tu versión. Decides con el oído.",
+  f4h: "Código siempre visible", f4p: "Cada pista es código TidalCycles real que puedes editar. Nada de cajas negras.",
+  f5h: "Tu progreso", f5p: "Ve qué conceptos de código y de música ya has usado, y cuáles te quedan por descubrir.",
+  f6h: "Español e inglés", f6p: "Cambia de idioma con un botón. Maestro responde en el idioma que elijas.",
+  k2: "Wizard de proyecto base", t2: "Tu primera canción en siete clics.",
+  l2: "Pulsa opciones y escucha el resultado en vivo. Las que encajan con tu estilo vienen marcadas, y el último paso te enseña todo el código explicado.",
+  k3: "Así se ve", t3: "Un estudio claro, como una partitura.",
+  k4: "Recetas de estilo", t4: "«¿Quieres que suene tipo jazz?»",
+  l4: "Pulsa un estilo y tu canción se transforma. Verás el antes y el después con lo nuevo resaltado, y una explicación de cada cambio para que mañana lo hagas tú.",
+  before: "Antes", after: "Después: jazz", latin: "Latino (bossa)",
+  jazzcap: "«swingBy (1/3) 4» retrasa un poco cada segunda nota: eso es el swing. Y los acordes ganan una nota más ('min9) para sonar más jazz.",
+  k5: "Empezar", t5: "De cero a sonar en tres pasos.",
+  l5: "No necesitas tener nada instalado. El instalador detecta tu sistema y prepara SuperCollider, SuperDirt y TidalCycles.",
+  s1h: "Descarga", s1p: "Baja el proyecto como zip y descomprímelo, o clónalo con git.", s1b: "Descargar zip",
+  s2h: "Instala", s2p: "Una sola vez. Tarda un rato: descarga Haskell y los sonidos.",
+  s3h: "Toca", s3p: "Se abre el navegador con el estudio. Pulsa «Nuevo proyecto» y deja que el maestro te guíe.",
+  ai: "Conecta la IA que quieras, o ninguna:", noai: "sin IA",
+  fh: "Tu primera canción<br><em>empieza con un bombo.</em>", fp: "El resto te lo enseña el maestro.",
+  foot: 'Tidal Studio · hecho sobre <a href="https://tidalcycles.org">TidalCycles</a> y <a href="https://supercollider.github.io">SuperCollider</a> · <a href="https://github.com/vsalesa/tidal-studio">Código en GitHub</a>',
+};
+let lang = "en";
+try { if (localStorage.getItem("ts-site-lang") === "es") lang = "es"; } catch {}
+const EN = {};
+document.querySelectorAll("[data-i]").forEach((el) => { EN[el.dataset.i] = el.innerHTML; });
+const T = (en, es) => (lang === "es" ? es : en);
+
+// ---------- Secuenciador animado ----------
 const TRACKS = [
-  { name: "Bombo", c: "#d9482b", p: "x...x...x...x..." },
-  { name: "Palmas", c: "#d9482b", p: "....x.......x..." },
-  { name: "Hi-hat", c: "#c98a12", p: "..x...x...x...x." },
-  { name: "Bajo", c: "#6b4fa1", p: "..x...x.x.x...x." },
-  { name: "Acordes", c: "#157a6e", p: "x.....x.....x..." },
+  { en: "Kick", es: "Bombo", c: "#d9482b", p: "x...x...x...x..." },
+  { en: "Claps", es: "Palmas", c: "#d9482b", p: "....x.......x..." },
+  { en: "Hi-hat", es: "Hi-hat", c: "#c98a12", p: "..x...x...x...x." },
+  { en: "Bass", es: "Bajo", c: "#6b4fa1", p: "..x...x.x.x...x." },
+  { en: "Chords", es: "Acordes", c: "#157a6e", p: "x.....x.....x..." },
 ];
 const grid = document.getElementById("grid");
-grid.innerHTML = TRACKS.map((t) => `<div class="row"><div class="lab"><b style="background:${t.c}"></b>${t.name}</div>${
-  [...t.p].map((ch) => `<div class="cell${ch === "x" ? " on" : ""}" style="--c:${t.c}"></div>`).join("")}</div>`).join("");
-const rows = [...grid.querySelectorAll(".row")].map((r) => [...r.querySelectorAll(".cell")]);
+function drawGrid() {
+  grid.innerHTML = TRACKS.map((t) => `<div class="row"><div class="lab"><b style="background:${t.c}"></b>${T(t.en, t.es)}</div>${
+    [...t.p].map((ch) => `<div class="cell${ch === "x" ? " on" : ""}" style="--c:${t.c}"></div>`).join("")}</div>`).join("");
+}
+drawGrid();
 let stepN = 0;
 const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 if (!reduced) setInterval(() => {
-  rows.forEach((cells) => cells.forEach((c, i) => { c.classList.toggle("ph", i === stepN); c.classList.toggle("hit", i === stepN && c.classList.contains("on")); }));
+  grid.querySelectorAll(".row").forEach((r) => r.querySelectorAll(".cell").forEach((c, i) => {
+    c.classList.toggle("ph", i === stepN); c.classList.toggle("hit", i === stepN && c.classList.contains("on")); }));
   stepN = (stepN + 1) % 16;
 }, 60000 / 124 / 4);
 
-// Código que se escribe solo, con explicación del maestro
+// ---------- Código que se escribe solo ----------
 const LINES = [
-  { h: '<span class="k">d1</span> $ s <span class="s">"bd*4"</span>', t: "«bd*4» es un bombo en cada tiempo: el pulso que hace mover el pie." },
-  { h: '<span class="k">d2</span> $ s <span class="s">"~ cp ~ cp"</span>', t: "Palmas en el 2 y el 4: contestan al bombo. Eso es el backbeat." },
-  { h: '<span class="k">d3</span> $ s <span class="s">"[~ hh]*4"</span> # gain <span class="n">0.8</span>', t: "Hi-hats entre bombos: dividen el tiempo y dan sensación de velocidad." },
-  { h: '<span class="k">d4</span> $ n <span class="s">"~ c2 [~ c2] ~"</span> # s <span class="s">"superpwm"</span>', t: "El bajo suena entre los bombos, así no chocan y se reparten los graves." },
-  { h: '<span class="k">d5</span> $ n <span class="s">"&lt;c\'min7 f\'min7&gt;"</span> # room <span class="n">0.5</span>', t: "Acordes menores con reverb: color melancólico y sensación de espacio." },
+  { h: '<span class="k">d1</span> $ s <span class="s">"bd*4"</span>', en: "«bd*4» is a kick on every beat: the pulse that makes your foot tap.", es: "«bd*4» es un bombo en cada tiempo: el pulso que hace mover el pie." },
+  { h: '<span class="k">d2</span> $ s <span class="s">"~ cp ~ cp"</span>', en: "Claps on 2 and 4: they answer the kick. That's the backbeat.", es: "Palmas en el 2 y el 4: contestan al bombo. Eso es el backbeat." },
+  { h: '<span class="k">d3</span> $ s <span class="s">"[~ hh]*4"</span> # gain <span class="n">0.8</span>', en: "Hi-hats between kicks: they split the beat and feel faster.", es: "Hi-hats entre bombos: dividen el tiempo y dan sensación de velocidad." },
+  { h: '<span class="k">d4</span> $ n <span class="s">"~ c2 [~ c2] ~"</span> # s <span class="s">"superpwm"</span>', en: "The bass plays between the kicks, so they don't clash in the low end.", es: "El bajo suena entre los bombos, así no chocan y se reparten los graves." },
+  { h: '<span class="k">d5</span> $ n <span class="s">"&lt;c\'min7 f\'min7&gt;"</span> # room <span class="n">0.5</span>', en: "Minor chords with reverb: a melancholic color and a sense of space.", es: "Acordes menores con reverb: color melancólico y sensación de espacio." },
 ];
 const code = document.getElementById("code"), bubbleText = document.getElementById("bubble-text"), bubble = document.getElementById("bubble");
+let lastLine = 0;
 function plain(h) { const d = document.createElement("div"); d.innerHTML = h; return d.textContent; }
 function render(n, partial) {
   code.innerHTML = LINES.slice(0, n).map((l) => `<div class="ln">${l.h}</div>`).join("") +
     (partial != null ? `<div class="ln">${partial}<span class="caret"></span></div>` : "");
 }
 async function typeLoop() {
-  if (reduced) { render(LINES.length); return; }
+  if (reduced) { render(LINES.length); bubbleText.textContent = T(LINES[0].en, LINES[0].es); return; }
   const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   for (;;) {
     for (let i = 0; i < LINES.length; i++) {
       const txt = plain(LINES[i].h);
       for (let k = 1; k <= txt.length; k++) { render(i, txt.slice(0, k).replace(/</g, "&lt;")); await wait(28); }
-      render(i + 1);
+      render(i + 1); lastLine = i;
       bubble.style.opacity = 0; await wait(250);
-      bubbleText.textContent = LINES[i].t; bubble.style.opacity = 1;
+      bubbleText.textContent = T(LINES[i].en, LINES[i].es); bubble.style.opacity = 1;
       await wait(2600);
     }
     await wait(1500);
@@ -364,47 +440,80 @@ async function typeLoop() {
 }
 typeLoop();
 
-// Galería
+// ---------- Wizard paso a paso ----------
+const WZ = [
+  { en: ["Style", "wizard-1-style", "The style sets the tempo and which components are recommended next."], es: ["Estilo", "wizard-1-estilo", "El estilo decide el tempo y qué componentes te recomienda después."] },
+  { en: ["Tempo", "wizard-2-tempo", "Calmer, typical or with more energy. In Tidal it's the setcps line."], es: ["Velocidad", "wizard-2-tempo", "Más tranquilo, el típico o con más energía. En Tidal es la línea setcps."] },
+  { en: ["Beat", "wizard-3-beat", "Up to three drum layers. You hear each one as soon as you pick it."], es: ["Ritmo", "wizard-3-ritmo", "Hasta tres capas de percusión. Cada una suena en cuanto la eliges."] },
+  { en: ["Bass, chords, melody", "wizard-4-chords", "Each part with its code visible. «Fits» marks what suits your style."], es: ["Bajo, acordes, melodía", "wizard-4-acordes", "Cada parte con su código a la vista. «Encaja» marca lo que va con tu estilo."] },
+  { en: ["Effects", "wizard-5-effects", "Reverb, echo, filters, lo-fi… applied to the right tracks."], es: ["Efectos", "wizard-5-efectos", "Reverb, eco, filtros, lo-fi… aplicados a las pistas que tocan."] },
+  { en: ["Structure", "wizard-6-structure", "Loop, build-up, drop or waves: how the song evolves over time."], es: ["Estructura", "wizard-6-estructura", "Bucle, entrada poco a poco, drop u olas: cómo evoluciona en el tiempo."] },
+  { en: ["Summary", "wizard-7-summary", "Every track explained and the full code, ready to create the project."], es: ["Resumen", "wizard-7-resumen", "Cada pista explicada y el código completo, listo para crear el proyecto."] },
+];
+const wzList = document.getElementById("wz-steps"), wzImg = document.getElementById("wz-img"), wzNote = document.getElementById("wz-note");
+let wzI = 0;
+function shotPath(file) { return lang === "es" ? `screenshots/es/${file}.png` : `screenshots/${file}.png`; }
+function drawWz() {
+  wzList.innerHTML = WZ.map((s, i) => `<li><button role="tab" aria-selected="${i === wzI}" data-n="${i}"><span>${T(s.en[0], s.es[0])}</span></button></li>`).join("");
+  const s = lang === "es" ? WZ[wzI].es : WZ[wzI].en;
+  wzImg.src = shotPath(s[1]); wzImg.alt = s[2]; wzNote.textContent = s[2];
+}
+wzList.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { wzI = +b.dataset.n; drawWz(); } });
+
+// ---------- Galería ----------
 const SHOTS = [
-  { id: "estudio", t: "El estudio", c: "Tus pistas con su código, «Explícame» en cada una y las ideas del maestro con pre-escucha." },
-  { id: "nuevo-proyecto", t: "Nuevo proyecto", c: "Empieza en blanco, con el wizard de opciones o con una lluvia de ideas." },
-  { id: "wizard-proyecto", t: "Wizard", c: "Eliges cada parte pulsando opciones. Las que encajan con tu estilo vienen marcadas." },
-  { id: "receta-jazz", t: "Receta jazz", c: "El antes y el después de tu código, con lo nuevo resaltado y explicado." },
-  { id: "lluvia-pregunta", t: "Lluvia de ideas", c: "Preguntas abiertas con ejemplos para pulsar o escribir lo tuyo." },
-  { id: "lluvia-plan", t: "Plan de canción", c: "Estilo, tempo, partes y cambios concretos para empezar a probar." },
+  { en: ["The studio", "studio", "Your tracks with their code, «Explain» on each one and Maestro's ideas with pre-listen."], es: ["El estudio", "estudio", "Tus pistas con su código, «Explícame» en cada una y las ideas del maestro con pre-escucha."] },
+  { en: ["New project", "new-project", "Start blank, with the options wizard or with a brainstorm."], es: ["Nuevo proyecto", "nuevo-proyecto", "Empieza en blanco, con el wizard de opciones o con una lluvia de ideas."] },
+  { en: ["Jazz recipe", "recipe-jazz", "Your code before and after, with what's new highlighted and explained."], es: ["Receta jazz", "receta-jazz", "El antes y el después de tu código, con lo nuevo resaltado y explicado."] },
+  { en: ["Brainstorm", "brainstorm-question", "Open questions with examples to click, or type your own."], es: ["Lluvia de ideas", "lluvia-pregunta", "Preguntas abiertas con ejemplos para pulsar o escribir lo tuyo."] },
+  { en: ["Song plan", "brainstorm-plan", "Style, tempo, sections and concrete changes to start trying."], es: ["Plan de canción", "lluvia-plan", "Estilo, tempo, partes y cambios concretos para empezar a probar."] },
 ];
 const tabs = document.getElementById("gal-tabs"), img = document.getElementById("gal-img"), cap = document.getElementById("gal-cap");
-tabs.innerHTML = SHOTS.map((s, i) => `<button role="tab" aria-selected="${i === 0}" data-i="${i}">${s.t}</button>`).join("");
-function show(i) {
-  const s = SHOTS[i];
-  img.src = `screenshots/${s.id}.png`; img.alt = s.c; cap.textContent = s.c;
-  tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", b.dataset.i == i));
+let galI = 0;
+function drawGal() {
+  tabs.innerHTML = SHOTS.map((s, i) => `<button role="tab" aria-selected="${i === galI}" data-n="${i}">${T(s.en[0], s.es[0])}</button>`).join("");
+  const s = lang === "es" ? SHOTS[galI].es : SHOTS[galI].en;
+  img.src = shotPath(s[1]); img.alt = s[2]; cap.textContent = s[2];
 }
-tabs.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
-show(0);
-SHOTS.forEach((s) => { const p = new Image(); p.src = `screenshots/${s.id}.png`; });
+tabs.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { galI = +b.dataset.n; drawGal(); } });
 
-// Comandos por sistema
+// ---------- Comandos por sistema ----------
 const CMDS = {
-  install: { macOS: "./install.sh", Windows: "doble clic en install.bat", Linux: "./install.sh" },
-  start: { macOS: "./start.sh", Windows: "doble clic en start.bat", Linux: "./start.sh" },
+  install: { macOS: ["./install.sh", "./install.sh"], Windows: ["double-click install.bat", "doble clic en install.bat"], Linux: ["./install.sh", "./install.sh"] },
+  start: { macOS: ["./start.sh", "./start.sh"], Windows: ["double-click start.bat", "doble clic en start.bat"], Linux: ["./start.sh", "./start.sh"] },
 };
 const ua = navigator.userAgent;
-const myOS = /Win/.test(ua) ? "Windows" : /Mac/.test(ua) ? "macOS" : "Linux";
-document.querySelectorAll(".os").forEach((box) => {
-  const g = box.dataset.group, out = document.querySelector(`[data-out=${g}]`);
-  const set = (os) => { out.textContent = CMDS[g][os]; box.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", b.textContent === os)); };
-  box.innerHTML = Object.keys(CMDS[g]).map((os) => `<button role="tab">${os}</button>`).join("");
-  box.addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") set(e.target.textContent); });
-  set(myOS);
-});
+const osSel = { install: /Win/.test(ua) ? "Windows" : /Mac/.test(ua) ? "macOS" : "Linux" };
+osSel.start = osSel.install;
+function drawOS() {
+  document.querySelectorAll(".os").forEach((box) => {
+    const g = box.dataset.group, out = document.querySelector(`[data-out=${g}]`);
+    box.innerHTML = Object.keys(CMDS[g]).map((os) => `<button role="tab" aria-selected="${os === osSel[g]}">${os}</button>`).join("");
+    out.textContent = CMDS[g][osSel[g]][lang === "es" ? 1 : 0];
+  });
+}
+document.querySelectorAll(".os").forEach((box) => box.addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON") { osSel[box.dataset.group] = e.target.textContent; drawOS(); } }));
 
-// Onda decorativa
+// ---------- Aplicar idioma ----------
+const langBtn = document.getElementById("lang");
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i]").forEach((el) => { const k = el.dataset.i; el.innerHTML = lang === "es" && ES[k] ? ES[k] : EN[k]; });
+  langBtn.textContent = lang === "es" ? "EN" : "ES";
+  langBtn.title = lang === "es" ? "English" : "Español";
+  document.title = T("Tidal Studio · learn music with your teacher", "Tidal Studio · aprende música con tu maestro");
+  bubbleText.textContent = T(LINES[lastLine].en, LINES[lastLine].es);
+  drawGrid(); drawWz(); drawGal(); drawOS();
+}
+langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
+applyLang();
+[...SHOTS, ...WZ].forEach((s) => { const p = new Image(); p.src = shotPath((lang === "es" ? s.es : s.en)[1]); });
+
+// ---------- Onda decorativa y aparición ----------
 let d = "M0 40";
 for (let x = 0; x <= 1200; x += 10) d += ` L${x} ${40 + Math.sin(x / 40) * 18 * Math.sin(x / 300)}`;
 document.getElementById("wave").setAttribute("d", d);
-
-// Aparición al hacer scroll
 const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .15 });
 document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
 </script>

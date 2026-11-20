@@ -15,25 +15,26 @@
       <i data-icon="logo" data-size="30" class="logo"></i>
       <div>
         <strong>Tidal Studio</strong>
-        <span class="sub">Aprende música y TidalCycles con tu maestro</span>
+        <span class="sub"><span data-t="Learn music and TidalCycles with your teacher">Aprende música y TidalCycles con tu maestro</span></span>
       </div>
     </div>
-    <button id="btn-new" class="wizard-btn" title="Empezar un proyecto nuevo"><i data-icon="plus" data-size="16"></i> Nuevo proyecto</button>
-    <button id="btn-projects" class="icon-btn" title="Mis proyectos"><i data-icon="folder" data-size="20"></i></button>
+    <button id="btn-new" class="wizard-btn" title="Empezar un proyecto nuevo" data-tt="Start a new project"><i data-icon="plus" data-size="16"></i> <span data-t="New project">Nuevo proyecto</span></button>
+    <button id="btn-projects" class="icon-btn" title="Mis proyectos" data-tt="My projects"><i data-icon="folder" data-size="20"></i></button>
     <div class="transport">
-      <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto">
+      <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto" data-tt="Song tempo in beats per minute">
         <span>BPM</span> <input id="bpm" type="number" min="40" max="220" value="120">
       </label>
-      <button id="btn-play" class="primary" title="Hacer sonar todo"><i data-icon="play" data-size="14"></i> Tocar todo</button>
-      <button id="btn-hush" class="outline-danger" title="Silenciar todo ya"><i data-icon="stop" data-size="14"></i> Silencio</button>
-      <label class="toggle" title="Cuando cambias algo, suena al momento">
-        <input id="autoplay" type="checkbox" checked> En vivo
+      <button id="btn-play" class="primary" title="Hacer sonar todo" data-tt="Play everything"><i data-icon="play" data-size="14"></i> <span data-t="Play all">Tocar todo</span></button>
+      <button id="btn-hush" class="outline-danger" title="Silenciar todo ya" data-tt="Silence everything now"><i data-icon="stop" data-size="14"></i> <span data-t="Hush">Silencio</span></button>
+      <label class="toggle" title="Cuando cambias algo, suena al momento" data-tt="When you change something, it plays right away">
+        <input id="autoplay" type="checkbox" checked> <span data-t="Live">En vivo</span>
       </label>
     </div>
     <div class="status">
-      <span id="st-engine" class="pill"><i data-icon="speaker" data-size="14"></i><span>Motor…</span></span>
-      <span id="st-llm" class="pill"><i data-icon="brain" data-size="14"></i><span>IA…</span></span>
-      <button id="btn-settings" class="icon-btn" title="Ajustes"><i data-icon="settings" data-size="20"></i></button>
+      <span id="st-engine" class="pill"><i data-icon="speaker" data-size="14"></i><span><span data-t="Engine…">Motor…</span></span></span>
+      <span id="st-llm" class="pill"><i data-icon="brain" data-size="14"></i><span><span data-t="AI…">IA…</span></span></span>
+      <button id="btn-lang" class="lang-btn" title="Switch to English">EN</button>
+      <button id="btn-settings" class="icon-btn" title="Ajustes" data-tt="Settings"><i data-icon="settings" data-size="20"></i></button>
     </div>
   </header>
 
@@ -41,57 +42,57 @@
     <!-- Columna 1: progreso + catálogo -->
     <aside class="panel catalog">
       <section class="progress">
-        <h2>Tu progreso</h2>
-        <div class="bar-row"><span>Código</span><div class="bar"><div id="bar-code"></div></div><b id="num-code">0/0</b></div>
-        <div class="bar-row"><span>Música</span><div class="bar"><div id="bar-music"></div></div><b id="num-music">0/0</b></div>
+        <h2><span data-t="Your progress">Tu progreso</span></h2>
+        <div class="bar-row"><span><span data-t="Code">Código</span></span><div class="bar"><div id="bar-code"></div></div><b id="num-code">0/0</b></div>
+        <div class="bar-row"><span><span data-t="Music">Música</span></span><div class="bar"><div id="bar-music"></div></div><b id="num-music">0/0</b></div>
         <details>
-          <summary>Ver conceptos</summary>
+          <summary><span data-t="See concepts">Ver conceptos</span></summary>
           <div id="concepts"></div>
         </details>
       </section>
-      <h2>Componentes</h2>
-      <p class="hint">Pulsa <b>+</b> para añadir. Los efectos y «¿Cuándo pasa?» se aplican a la pista seleccionada.</p>
-      <select id="style-filter" title="Destaca lo que encaja con un estilo">
-        <option value="">Todos los estilos</option>
+      <h2><span data-t="Components">Componentes</span></h2>
+      <p class="hint"><span data-th="Press <b>+</b> to add. Effects and «When does it happen?» apply to the selected track.">Pulsa <b>+</b> para añadir. Los efectos y «¿Cuándo pasa?» se aplican a la pista seleccionada.</span></p>
+      <select id="style-filter" title="Destaca lo que encaja con un estilo" data-tt="Highlight what fits a style">
+        <option value=""><span data-t="All styles">Todos los estilos</span></option>
       </select>
       <div id="catalog"></div>
     </aside>
 
     <!-- Columna 2: pistas + código -->
     <section class="panel center">
-      <input id="proj-name" class="proj-name" title="Nombre del proyecto" placeholder="Proyecto sin título">
+      <input id="proj-name" class="proj-name" title="Nombre del proyecto" data-tt="Project name" placeholder="Proyecto sin título" data-tp="Untitled project">
       <div class="tabs">
-        <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> Pistas</button>
-        <button class="tab" data-tab="code"><i data-icon="code" data-size="16"></i> Código</button>
-        <button class="tab" data-tab="log"><i data-icon="log" data-size="16"></i> Registro</button>
+        <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> <span data-t="Tracks">Pistas</span></button>
+        <button class="tab" data-tab="code"><i data-icon="code" data-size="16"></i> <span data-t="Code">Código</span></button>
+        <button class="tab" data-tab="log"><i data-icon="log" data-size="16"></i> <span data-t="Log">Registro</span></button>
       </div>
 
       <div id="tab-tracks" class="tabpane active">
         <div id="tracks"></div>
         <div id="empty" class="empty">
           <i data-icon="logo" data-size="56"></i>
-          <p><b>Todavía no hay música.</b></p>
-          <p>Habla con Maestro a la derecha o añade un componente de la izquierda.</p>
+          <p><b><span data-t="No music yet.">Todavía no hay música.</span></b></p>
+          <p><span data-t="Talk to Maestro on the right or add a component from the left.">Habla con Maestro a la derecha o añade un componente de la izquierda.</span></p>
         </div>
       </div>
 
       <div id="tab-code" class="tabpane">
-        <p class="hint">Este es el código TidalCycles de tu canción. Edítalo y pulsa <b>Aplicar</b> (o Ctrl+Enter). Las líneas que empiezan por <code>--</code> son comentarios.</p>
+        <p class="hint"><span data-th="This is your song's TidalCycles code. Edit it and press <b>Apply</b> (or Ctrl+Enter). Lines starting with <code>--</code> are comments.">Este es el código TidalCycles de tu canción. Edítalo y pulsa <b>Aplicar</b> (o Ctrl+Enter). Las líneas que empiezan por <code>--</code> son comentarios.</span></p>
         <textarea id="code" spellcheck="false"></textarea>
         <div class="row">
-          <button id="btn-apply-code" class="primary"><i data-icon="play" data-size="14"></i> Aplicar código</button>
-          <button id="btn-explain-all"><i data-icon="explain" data-size="16"></i> Explícame todo el código</button>
-          <button id="btn-copy-code"><i data-icon="copy" data-size="16"></i> Copiar</button>
+          <button id="btn-apply-code" class="primary"><i data-icon="play" data-size="14"></i> <span data-t="Apply code">Aplicar código</span></button>
+          <button id="btn-explain-all"><i data-icon="explain" data-size="16"></i> <span data-t="Explain all the code">Explícame todo el código</span></button>
+          <button id="btn-copy-code"><i data-icon="copy" data-size="16"></i> <span data-t="Copy">Copiar</span></button>
           <span id="code-msg" class="hint"></span>
         </div>
       </div>
 
       <div id="tab-log" class="tabpane">
-        <p class="hint">Mensajes de SuperCollider y Tidal. Útil si algo no suena.</p>
+        <p class="hint"><span data-t="Messages from SuperCollider and Tidal. Useful if something doesn't play.">Mensajes de SuperCollider y Tidal. Útil si algo no suena.</span></p>
         <pre id="log"></pre>
         <div class="row">
-          <button id="btn-engine-start"><i data-icon="power" data-size="16"></i> Arrancar motor de sonido</button>
-          <button id="btn-engine-stop">Parar motor</button>
+          <button id="btn-engine-start"><i data-icon="power" data-size="16"></i> <span data-t="Start sound engine">Arrancar motor de sonido</span></button>
+          <button id="btn-engine-stop"><span data-t="Stop engine">Parar motor</span></button>
         </div>
       </div>
     </section>
@@ -102,18 +103,18 @@
       <div id="chat"></div>
       <section id="ideas">
         <div class="ideas-head">
-          <h3><i data-icon="explain" data-size="16"></i> Ideas de Maestro</h3>
-          <button id="btn-more-ideas" class="link">Otra idea <i data-icon="arrow" data-size="14"></i></button>
+          <h3><i data-icon="explain" data-size="16"></i> <span data-t="Maestro's ideas">Ideas de Maestro</span></h3>
+          <button id="btn-more-ideas" class="link"><span data-t="Another idea">Otra idea</span> <i data-icon="arrow" data-size="14"></i></button>
         </div>
         <div id="idea-list"></div>
-        <div class="flavors"><span>¿Que suene a…?</span><span id="flavors">
-          <button data-f="jazz">Jazz</button><button data-f="latino">Latino</button><button data-f="techno">Techno</button><button data-f="lofi">Lo-fi</button><button data-f="ambient">Ambient</button>
+        <div class="flavors"><span><span data-t="Make it sound like…">¿Que suene a…?</span></span><span id="flavors">
+          <button data-f="jazz">Jazz</button><button data-f="latino"><span data-t="Latin">Latino</span></button><button data-f="techno">Techno</button><button data-f="lofi">Lo-fi</button><button data-f="ambient">Ambient</button>
         </span></div>
       </section>
       <div id="chips"></div>
       <form id="chat-form">
-        <input id="chat-input" placeholder="Pregunta o pide algo: «¿qué hace el #?», «más oscuro»…" autocomplete="off">
-        <button class="primary icon-only" type="submit" title="Enviar"><i data-icon="send" data-size="18"></i></button>
+        <input id="chat-input" placeholder="Pregunta o pide algo: «¿qué hace el #?», «más oscuro»…" data-tp="Ask or request something: «what does # do?», «darker»…" autocomplete="off">
+        <button class="primary icon-only" type="submit" title="Enviar" data-tt="Send"><i data-icon="send" data-size="18"></i></button>
       </form>
     </aside>
   </main>
@@ -121,8 +122,8 @@
   <!-- Nuevo proyecto / Mis proyectos -->
   <dialog id="newproj">
     <div class="wz-head">
-      <span class="wz-kicker" id="np-kicker"><i data-icon="plus" data-size="16"></i> Nuevo proyecto</span>
-      <button class="icon-btn" data-close title="Cerrar"><i data-icon="close" data-size="18"></i></button>
+      <span class="wz-kicker" id="np-kicker"><i data-icon="plus" data-size="16"></i> <span data-t="New project">Nuevo proyecto</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
     </div>
     <div id="np-body"></div>
   </dialog>
@@ -130,8 +131,8 @@
   <!-- Wizard de proyecto base -->
   <dialog id="builder">
     <div class="wz-head">
-      <span class="wz-kicker"><i data-icon="steps" data-size="16"></i> Nuevo proyecto con wizard</span>
-      <button class="icon-btn" id="bd-close" title="Cancelar"><i data-icon="close" data-size="18"></i></button>
+      <span class="wz-kicker"><i data-icon="steps" data-size="16"></i> <span data-t="New project with wizard">Nuevo proyecto con wizard</span></span>
+      <button class="icon-btn" id="bd-close" title="Cancelar" data-tt="Cancel"><i data-icon="close" data-size="18"></i></button>
     </div>
     <div id="bd-dots" class="wz-dots"></div>
     <div id="bd-body"></div>
@@ -140,8 +141,8 @@
   <!-- Wizard de lluvia de ideas -->
   <dialog id="wizard">
     <div class="wz-head">
-      <span class="wz-kicker"><i data-icon="wand" data-size="16"></i> Lluvia de ideas con Maestro</span>
-      <button class="icon-btn" id="wz-close" title="Cerrar"><i data-icon="close" data-size="18"></i></button>
+      <span class="wz-kicker"><i data-icon="wand" data-size="16"></i> <span data-t="Brainstorm with Maestro">Lluvia de ideas con Maestro</span></span>
+      <button class="icon-btn" id="wz-close" title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
     </div>
     <div id="wz-dots" class="wz-dots"></div>
     <div id="wz-body"></div>
@@ -150,40 +151,40 @@
   <!-- Ajustes -->
   <dialog id="settings">
     <form method="dialog" id="settings-form">
-      <h2>Conectar la IA</h2>
-      <p class="hint">Elige con qué inteligencia artificial habla Maestro. Las claves se guardan solo en tu ordenador (<code>config.json</code>).</p>
+      <h2><span data-t="Connect the AI">Conectar la IA</span></h2>
+      <p class="hint"><span data-th="Choose which AI Maestro talks to. Keys are stored only on your computer (<code>config.json</code>).">Elige con qué inteligencia artificial habla Maestro. Las claves se guardan solo en tu ordenador (<code>config.json</code>).</span></p>
       <div class="radio">
-        <label><input type="radio" name="provider" value="openai" checked> Compatible con OpenAI <span class="hint">(OpenAI, OpenRouter, Groq, Ollama, LM Studio…)</span></label>
+        <label><input type="radio" name="provider" value="openai" checked> <span data-t="OpenAI-compatible">Compatible con OpenAI</span> <span class="hint">(OpenAI, OpenRouter, Groq, Ollama, LM Studio…)</span></label>
         <label><input type="radio" name="provider" value="anthropic"> Claude <span class="hint">(Anthropic)</span></label>
       </div>
       <fieldset id="fs-openai">
-        <label>Servicio
+        <label><span data-t="Service">Servicio</span>
           <select id="oa-preset">
             <option value="https://api.openai.com/v1|gpt-4o-mini">OpenAI</option>
             <option value="https://openrouter.ai/api/v1|openai/gpt-4o-mini">OpenRouter</option>
             <option value="https://api.groq.com/openai/v1|llama-3.3-70b-versatile">Groq</option>
             <option value="https://api.deepseek.com/v1|deepseek-chat">DeepSeek</option>
             <option value="https://api.mistral.ai/v1|mistral-small-latest">Mistral</option>
-            <option value="http://localhost:11434/v1|llama3.1">Ollama (local, gratis)</option>
-            <option value="http://localhost:1234/v1|local-model">LM Studio (local, gratis)</option>
-            <option value="custom">Otro (escribe la URL)</option>
+            <option value="http://localhost:11434/v1|llama3.1"><span data-t="Ollama (local, free)">Ollama (local, gratis)</span></option>
+            <option value="http://localhost:1234/v1|local-model"><span data-t="LM Studio (local, free)">LM Studio (local, gratis)</span></option>
+            <option value="custom"><span data-t="Other (type the URL)">Otro (escribe la URL)</span></option>
           </select>
         </label>
-        <label>URL base (endpoint) <input id="oa-url" placeholder="https://api.openai.com/v1"></label>
-        <label>Clave API <input id="oa-key" type="password" placeholder="sk-… (vacío si es local)"></label>
-        <label>Modelo <input id="oa-model" placeholder="gpt-4o-mini"></label>
+        <label><span data-t="Base URL (endpoint)">URL base (endpoint)</span> <input id="oa-url" placeholder="https://api.openai.com/v1"></label>
+        <label><span data-t="API key">Clave API</span> <input id="oa-key" type="password" placeholder="sk-… (vacío si es local)" data-tp="sk-… (empty if local)"></label>
+        <label><span data-t="Model">Modelo</span> <input id="oa-model" placeholder="gpt-4o-mini"></label>
       </fieldset>
       <fieldset id="fs-anthropic" hidden>
-        <label>Clave API de Anthropic <input id="an-key" type="password" placeholder="sk-ant-…"></label>
-        <label>Modelo <input id="an-model" placeholder="claude-opus-5-5"></label>
+        <label><span data-t="Anthropic API key">Clave API de Anthropic</span> <input id="an-key" type="password" placeholder="sk-ant-…"></label>
+        <label><span data-t="Model">Modelo</span> <input id="an-model" placeholder="claude-opus-5-5"></label>
       </fieldset>
       <div class="row">
-        <button type="button" id="btn-test">Probar conexión</button>
+        <button type="button" id="btn-test"><span data-t="Test connection">Probar conexión</span></button>
         <span id="test-msg" class="hint"></span>
       </div>
       <div class="row end">
-        <button value="cancel">Cerrar</button>
-        <button type="button" id="btn-save" class="primary">Guardar</button>
+        <button value="cancel"><span data-t="Close">Cerrar</span></button>
+        <button type="button" id="btn-save" class="primary"><span data-t="Save">Guardar</span></button>
       </div>
     </form>
   </dialog>
