@@ -34,8 +34,13 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Biblioteca de samples**: sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX,
   sintes). Escúchalos, úsalos en una pista nueva o ponlos en la pista seleccionada manteniendo el ritmo. Sube tus archivos
   (WAV, AIFF, FLAC, OGG) o **busca en Freesound** (clave API gratuita) filtrando por licencia; lo descargado queda listo para
-  Tidal y los créditos de los sonidos CC BY se apuntan en `samples/CREDITS.md`. La pestaña Packs reúne otras colecciones
-  libres (tidal-drum-machines, VCSL, packs de Strudel…).
+  Tidal y los créditos de los sonidos CC BY se apuntan en `samples/CREDITS.md`. La pestaña **Packs** explora packs de la
+  comunidad en GitHub (unas 70 cajas de ritmos, Uzu drumkit, VCSL, un piano de cola, SP-12, mridangam, o cualquier
+  `github:usuario/repo` con un `strudel.json`): escucha, instala un sonido o una caja de ritmos entera. Maestro conoce tu
+  biblioteca y puede usarla.
+- **Controles en el chat (agentic UI)**: Maestro pone deslizadores, control de tempo, selector de sonido y un secuenciador
+  por pasos dentro de sus mensajes. Al moverlos se escribe el código Tidal en directo, así ves qué palabra cambia. Usa el
+  botón de deslizadores de cada pista, el botón «Ajustar con controles» o pídeselo.
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
   `README.md`), mira el historial y abre cualquier versión antigua desde Mis proyectos → GitHub.
 - **Tu progreso**: conceptos de código y de música que ya has usado.
@@ -77,6 +82,10 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 | Tu canción en bloques anidados | Biblioteca de samples por tipo |
 |---|---|
 | ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Biblioteca de samples](docs/screenshots/es/biblioteca-samples.png) |
+
+| Controles en el chat | Packs online: cajas de ritmos enteras |
+|---|---|
+| ![Controles en el chat](docs/screenshots/es/controles-chat.png) | ![Packs online](docs/screenshots/es/packs-online.png) |
 
 | Buscar en Freesound por licencia | GitHub: cada guardado es una versión |
 |---|---|

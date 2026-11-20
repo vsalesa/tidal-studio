@@ -21,7 +21,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
-AUDIO_EXT = (".wav", ".aif", ".aiff", ".flac", ".ogg")
+AUDIO_EXT = (".wav", ".aif", ".aiff", ".flac", ".ogg", ".mp3")
 TYPES = ["bombo", "caja", "platos", "percusion", "bajo", "melodico", "pad", "voz", "fx", "loop", "otro"]
 GUESS = [
     ("bombo", r"kick|bd|bombo|bassdrum"), ("caja", r"snare|sn|sd|caja|clap|cp|rim"),
@@ -207,6 +207,98 @@ class Library:
         return self.add_file(name, fname, data, stype, {
             "source": "freesound", "title": title, "author": item.get("author"), "license": item.get("license"),
             "license_name": item.get("license_name") or license_name(item.get("license", "")), "url": item.get("url")})
+
+
+# ------------------------------------------------------------------ packs con índice strudel.json
+# Muchos packs de la comunidad (Strudel / Tidal) publican un índice JSON:
+#   {"_base": "https://raw.githubusercontent.com/…/", "bd": ["bd/1.wav", "bd/2.wav"], "piano": {"A0": "A0.mp3", …}}
+REMOTE_HOSTS = ("raw.githubusercontent.com", "github.com", "cdn.freesound.org", "freesound.org", "codeload.github.com")
+_index_cache = {}
+
+
+def normalize_pack_url(url):
+    url = (url or "").strip()
+    m = re.match(r"^github:([\w.-]+)/([\w.-]+)(?:/([\w.-]+))?(?:/(.*))?$", url)
+    if m:
+        user, repo, branch, path = m.groups()
+        path = (path or "").strip("/")
+        if not path.endswith(".json"):
+            path = (path + "/" if path else "") + "strudel.json"
+        return f"https://raw.githubusercontent.com/{user}/{repo}/{branch or 'main'}/{path}"
+    m = re.match(r"^https://github\.com/([\w.-]+)/([\w.-]+)/?(?:tree|blob)?/?([\w.-]+)?/?(.*)$", url)
+    if m:
+        user, repo, branch, path = m.groups()
+        return normalize_pack_url(f"github:{user}/{repo}/{branch or 'main'}/{path}")
+    if not url.startswith("https://"):
+        raise SampleError("Escribe github:usuario/repo o una URL https a un strudel.json")
+    return url
+
+
+def check_remote(url):
+    host = urllib.parse.urlparse(url).hostname or ""
+    if not url.startswith("https://") or not any(host == h or host.endswith("." + h) for h in REMOTE_HOSTS):
+        raise SampleError("Solo descargo de GitHub y Freesound")
+    return url
+
+
+def _fetch(url, limit):
+    req = urllib.request.Request(url, headers={"User-Agent": "tidal-studio"})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = r.read(limit + 1)
+    except urllib.error.HTTPError as e:
+        raise SampleError(f"No encuentro {url} ({e.code})" if e.code == 404 else f"Error {e.code} al descargar")
+    except urllib.error.URLError as e:
+        raise SampleError(f"No se pudo descargar: {e.reason}")
+    if len(data) > limit:
+        raise SampleError("Demasiado grande")
+    return data
+
+
+def pack_index(url):
+    url = normalize_pack_url(url)
+    if url in _index_cache:
+        return _index_cache[url]
+    check_remote(url)
+    try:
+        data = json.loads(_fetch(url, 4 * 1024 * 1024).decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        raise SampleError("Ese archivo no es un índice de samples (JSON)")
+    if not isinstance(data, dict):
+        raise SampleError("Ese archivo no es un índice de samples")
+    base = data.get("_base") or url.rsplit("/", 1)[0] + "/"
+    sounds = []
+    for k, v in data.items():
+        if k.startswith("_"):
+            continue
+        files = v if isinstance(v, list) else list(v.values()) if isinstance(v, dict) else [v]
+        files = [f if str(f).startswith("http") else base + str(f) for f in files if isinstance(f, str)]
+        if files:
+            sounds.append({"name": k, "files": files})
+    out = {"url": url, "count": len(sounds), "sounds": sounds}
+    _index_cache[url] = out
+    return out
+
+
+def _install_pack_sound(lib, url, sound, name, stype):
+    idx = pack_index(url)
+    snd = next((x for x in idx["sounds"] if x["name"] == sound), None)
+    if not snd:
+        raise SampleError("Ese sonido no está en el pack")
+    files = snd["files"][:64]
+    total, out = 0, None
+    for f in files:
+        check_remote(f)
+        data = _fetch(f, 25 * 1024 * 1024)
+        total += len(data)
+        if total > 80 * 1024 * 1024:
+            break
+        fname = urllib.parse.unquote(f.rsplit("/", 1)[-1])
+        out = lib.add_file(name or sound, fname, data, stype, {"source": "pack", "title": sound, "url": f, "pack": idx["url"]})
+    return {"name": out["name"], "files": len(files)}
+
+
+Library.pack_install = lambda self, url, sound, name, stype: _install_pack_sound(self, url, sound, name, stype)
 
 
 def license_name(url):

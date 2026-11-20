@@ -25,7 +25,7 @@ from llm import chat_completion, LLMError  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 import github  # noqa: E402
-from samples import Library, SampleError, safe_name, TYPES as SAMPLE_TYPES  # noqa: E402
+from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
@@ -188,6 +188,25 @@ class Handler(SimpleHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(body)
                 return
+            if path == "/api/samples/remote":
+                # Escuchar un sample remoto (GitHub/Freesound) a través del servidor
+                q = parse_qs(urlparse(self.path).query)
+                url = q.get("url", [""])[0]
+                try:
+                    check_remote(url)
+                    import urllib.request as _u
+                    with _u.urlopen(_u.Request(url, headers={"User-Agent": "tidal-studio"}), timeout=20) as r:
+                        body = r.read(25 * 1024 * 1024)
+                except Exception as e:
+                    return self._json({"error": str(e)}, 502)
+                ext = os.path.splitext(urlparse(url).path)[1].lower()
+                self.send_response(200)
+                self.send_header("Content-Type", {".wav": "audio/wav", ".ogg": "audio/ogg", ".mp3": "audio/mpeg", ".flac": "audio/flac"}.get(ext, "application/octet-stream"))
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "max-age=3600")
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path == "/api/log":
                 return self._json({"log": ENGINE.log_tail(200)})
             return self._json({"error": "Ruta no encontrada"}, 404)
@@ -290,6 +309,13 @@ class Handler(SimpleHTTPRequestHandler):
                         else:
                             ENGINE.sc_eval(f"~dirt.freeSoundFiles([\\{safe_name(name)}]);")
                         return self._json(LIBRARY.list())
+                    if act == "pack":
+                        return self._json(pack_index(data.get("url", "")))
+                    if act == "pack-install":
+                        r = LIBRARY.pack_install(data.get("url", ""), data.get("sound", ""), data.get("name"),
+                                                 data.get("type") if data.get("type") in SAMPLE_TYPES else None)
+                        r["loaded"] = ENGINE.reload_sample(os.path.join(LIBRARY.dir, safe_name(r["name"])), safe_name(r["name"]))
+                        return self._json(r)
                     if act == "search":
                         return self._json(LIBRARY.freesound_search(sc["freesound_key"], data.get("query", ""), data.get("license", "libre"),
                                                                    data.get("oneshot", True), int(data.get("page") or 1), sc["freesound_api"]))

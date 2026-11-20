@@ -110,11 +110,44 @@ export function starterCode(name, type) {
 }
 
 // Cambia el sonido de una pista manteniendo su ritmo: s "bd*4 ~ bd" → s "kick*4 ~ kick"
-export function swapSound(code, name, variant = null) {
+export function swapSound(code, name, variant = null, from = null) {
   const re = /\b(s|sound)\s+"([^"]*)"/;
   const m = code.match(re);
   if (!m) return null;
   const word = variant != null && variant > 0 ? `${name}:${variant}` : name;
-  const pat = m[2].replace(/(^|[\s\[<{,])([A-Za-z][\w]*)(:\d+)?/g, (all, pre) => pre + word);
+  // Solo se cambia el sonido principal (el primero, o el que se indique): en "bd sn" cambiar el bombo no toca la caja
+  const tokRe = /(^|[\s\[<{,])([A-Za-z][\w]*)(:\d+)?/g;
+  const first = from || (tokRe.exec(m[2]) || [])[2];
+  tokRe.lastIndex = 0;
+  const pat = m[2].replace(tokRe, (all, pre, nm) => (nm === first ? pre + word : all));
   return code.replace(re, `${m[1]} "${pat}"`);
 }
+
+// Packs online con índice strudel.json (la comunidad de Strudel/Tidal los publica en GitHub)
+const DOUGH = "https://raw.githubusercontent.com/felixroos/dough-samples/main/";
+export const DIRT_INDEX = "https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json";
+export const PACKS = [
+  { id: "drum-machines", name: "Tidal Drum Machines", url: DOUGH + "tidal-drum-machines.json", repo: "https://github.com/ritchse/tidal-drum-machines", grouped: true,
+    es: "Unas 70 cajas de ritmos clásicas (808, 909, LinnDrum, DMX, SP-12…), separadas por máquina.", en: "About 70 classic drum machines (808, 909, LinnDrum, DMX, SP-12…), split by machine.", lic: "" },
+  { id: "uzu", name: "Uzu drumkit", url: "https://raw.githubusercontent.com/tidalcycles/uzu-drumkit/main/strudel.json", repo: "https://github.com/tidalcycles/uzu-drumkit",
+    es: "Kit de batería moderno de la comunidad TidalCycles.", en: "Modern drum kit from the TidalCycles community.", lic: "" },
+  { id: "vcsl", name: "VCSL", url: DOUGH + "vcsl.json", repo: "https://github.com/sgossner/VCSL",
+    es: "Instrumentos acústicos y orquestales: percusión del mundo, vientos, cuerdas, campanas…", en: "Acoustic and orchestral instruments: world percussion, winds, strings, bells…", lic: "CC0" },
+  { id: "piano", name: "Salamander Grand Piano", url: DOUGH + "piano.json", repo: "https://github.com/felixroos/dough-samples",
+    es: "Un piano de cola muestreado nota a nota (MP3).", en: "A grand piano sampled note by note (MP3).", lic: "CC BY" },
+  { id: "sp12", name: "E-mu SP-12", url: DOUGH + "EmuSP12.json", repo: "https://github.com/ritchse/tidal-drum-machines",
+    es: "La caja de ritmos del hip hop clásico.", en: "The classic hip hop drum machine.", lic: "" },
+  { id: "mridangam", name: "Mridangam", url: DOUGH + "mridangam.json", repo: "https://github.com/yaxu/mrid",
+    es: "Tambor del sur de la India, golpe a golpe.", en: "South Indian drum, stroke by stroke.", lic: "" },
+  { id: "dirt", name: "Dirt-Samples", url: DIRT_INDEX, repo: "https://github.com/tidalcycles/Dirt-Samples",
+    es: "Los sonidos que trae SuperDirt (ya los tienes instalados; aquí puedes escucharlos).", en: "The sounds that come with SuperDirt (already installed; listen to them here).", lic: "" },
+];
+export function guessType(t) {
+  t = (t || "").toLowerCase();
+  const rules = [["bombo", /kick|_bd\b|^bd|bassdrum/], ["caja", /snare|_sd\b|^sd|^sn|clap|_cp\b|rim|_rs\b/], ["platos", /hat|_hh\b|_oh\b|cymbal|crash|ride|_cr\b|_cy\b/],
+    ["bajo", /bass/], ["voz", /vocal|voice|vox/], ["pad", /pad|drone|ambien|field/], ["loop", /loop|break/],
+    ["percusion", /perc|tom|_lt\b|_mt\b|_ht\b|conga|bongo|shaker|_sh\b|_cb\b|_tb\b|tabla|gumki|thom|clave|block/],
+    ["melodico", /piano|rhodes|chord|synth|guitar|pluck|key|marimba|vibra|xylo|bell|glock|string|harp|flute|sax|organ/], ["fx", /fx|noise|vinyl|glitch|riser/]];
+  return (rules.find(([, re]) => re.test(t)) || ["otro"])[0];
+}
+export const safeName = (n) => { let s = (n || "").toLowerCase().replace(/[^a-z0-9_]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40); return /^\d/.test(s) ? "s" + s : s; };

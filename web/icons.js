@@ -43,6 +43,7 @@ const P = {
   wave: `<path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 7v10M21 12h0"/>`,
   upload: `<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>`,
   search: `<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/>`,
+  sliders: `<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>`,
   cloud: `<path d="M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.4-1.2A4.6 4.6 0 0 1 17.5 18z"/><path d="M12 15.5v-5M9.8 12.6L12 10.4l2.2 2.2"/>`,
   history: `<circle cx="6" cy="5" r="2"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="9" r="2"/><path d="M6 7v10M18 11c0 3-3.5 3.5-10 6.5"/>`,
   link: `<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>`,

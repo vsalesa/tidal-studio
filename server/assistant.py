@@ -37,6 +37,12 @@ SALIDA OBLIGATORIA: responde SOLO con un objeto JSON válido (sin texto fuera, s
 - "opciones": 2 a 5 respuestas rápidas que el alumno puede pulsar (textos cortos).
 - "cambios": omítelo si no cambias la música. "pistas" solo incluye pistas nuevas o modificadas.
 - "sugerencias": 1 a 3 ideas tuyas que NO aplicas todavía, en primera persona y en tono cercano. "titulo": la propuesta corta («Yo le quitaría el bombo 4 compases»). "porque": el motivo musical en una frase («al volver, el bombo pegará el doble: es un contraste»). "concepto": el concepto musical que enseña (2-3 palabras). "cambios": lo que haría. Que sean variadas (ritmo, armonía, sonido, estructura). De vez en cuando, una de ellas puede proponer llevar la canción a otro género para aprender cómo se construye («¿Quieres que suene tipo jazz?»: swing con swingBy (1/3) 4, acordes 'min9/'maj9, bajo caminante; latino: clave 3-2 con rm; techno; lo-fi; ambient…).
+- "controles": opcional, 1 a 4 CONTROLES VISUALES que aparecen dentro de tu mensaje para que el alumno ajuste él mismo y vea qué parte del código cambia. Úsalos cuando quiera ajustar algo (volumen, brillo, espacio, eco, velocidad, ritmo, sonido) o cuando crees una pista nueva. Formatos:
+  {"tipo": "deslizador", "pista": "d1", "param": "lpf", "min": 200, "max": 8000, "valor": 1200, "etiqueta": "Brillo", "explica": "una frase"}  (param: gain, lpf, hpf, room, size, delay, delaytime, delayfeedback, pan, speed, crush, shape, legato, resonance, coarse)
+  {"tipo": "bpm", "min": 70, "max": 160}
+  {"tipo": "selector", "pista": "d1", "que": "sonido", "opciones": ["bd", "808bd", "clubkick"], "etiqueta": "Bombo"}  (cambia el sonido sin tocar el ritmo)
+  {"tipo": "pasos", "pista": "d1", "pasos": 16, "sonidos": ["bd", "sn", "hh"]}  (secuenciador por pasos; solo para pistas con s "…" sencillo, sin < > ? ( ) /)
+  "pista" debe existir o crearse en esta misma respuesta. En el mensaje, invita a moverlos y a fijarse en el código que cambia.
 - "tipo" es uno de: percusion, bajo, armonia, melodia, textura, voz, fx.
 - Si el alumno pregunta qué hace algo, responde con "explicacion" y sin cambios.
 
@@ -72,6 +78,10 @@ def session_summary(session):
         lines.append(f'- {t.get("id")} · {t.get("name", "")} ({t.get("kind", "")}){estado}: {t.get("code", "")}')
     if session.get("step"):
         lines.append(f"Paso actual de la guía: {session['step']}")
+    samples = session.get("samples") or []
+    if samples:
+        lines.append("Samples propios del alumno en su biblioteca (puedes usarlos con s \"nombre\" o s \"nombre:n\"; propónselos cuando encajen): "
+                     + ", ".join(f'{x.get("name")} ({x.get("type")}, {x.get("n")} variantes)' for x in samples[:40] if isinstance(x, dict)))
     if session.get("lastError"):
         lines.append(f"ÚLTIMO ERROR DE TIDAL (arréglalo si es tuyo): {session['lastError']}")
     return "\n".join(lines)
@@ -174,6 +184,7 @@ def parse_reply(raw):
         "opciones": [str(o) for o in (data.get("opciones") or [])][:5],
         "paso": data.get("paso"),
         "cambios": _parse_changes(data.get("cambios") or {}),
+        "controles": [c for c in (data.get("controles") or []) if isinstance(c, dict)][:6],
     }
 
 

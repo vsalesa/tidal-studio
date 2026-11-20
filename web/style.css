@@ -435,3 +435,28 @@ fieldset { border: 1px solid var(--rule); border-radius: var(--r-sm); margin: 10
 .sm-upload > * { min-width: 0; }
 .sm-upload label.file input { min-width: 0; max-width: 100%; }
 dialog label input, dialog label select { box-sizing: border-box; }
+
+/* Controles en el chat (agentic UI) */
+.ctl-panel { white-space: normal; margin-top: 10px; background: var(--card); border: 1px solid var(--rule-strong); border-radius: 10px; padding: 8px 10px; display: flex; flex-direction: column; gap: 8px; color: var(--ink); }
+.ctl-head { display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.ctl-reset { font-size: 12px; padding: 2px 8px; text-transform: none; letter-spacing: 0; }
+.ctl { border-top: 1px dashed var(--rule); padding-top: 7px; }
+.ctl:first-of-type { border-top: 0; padding-top: 0; }
+.ctl.off { color: var(--ink-3); font-size: 13px; }
+.ctl-top { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; font-size: 13.5px; }
+.ctl-trk { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.ctl-code { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--ink-2); background: var(--sunk); border-radius: 4px; padding: 1px 6px; max-width: 100%; overflow-wrap: anywhere; }
+.ctl-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.ctl-row input[type=range] { flex: 1; accent-color: var(--accent); min-width: 0; }
+.ctl-row output { font-family: var(--mono); font-size: 12.5px; min-width: 56px; text-align: right; }
+.ctl-ex { margin: 3px 0 0; font-size: 12px; color: var(--ink-3); }
+.ctl-opts { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.ctl-opts button { font-family: var(--mono); font-size: 12px; padding: 3px 9px; border-radius: 999px; }
+.ctl-opts button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.seq { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; }
+.seq-row { display: grid; grid-template-columns: 44px repeat(var(--n), 1fr); gap: 2px; align-items: center; }
+.seq-name { font-family: var(--mono); font-size: 11px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seq-cell { height: 22px; padding: 0; min-width: 0; border-radius: 4px; border: 1px solid var(--rule-strong); background: var(--paper); }
+.seq-cell.beat { background: var(--sunk); }
+.seq-cell.on { background: var(--accent); border-color: var(--accent); }
+.track .ctlbtn { color: var(--accent); }

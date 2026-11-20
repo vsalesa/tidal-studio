@@ -33,8 +33,12 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **Sample library**: sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths).
   Listen to them, use one on a new track, or put it on the selected track keeping the same rhythm. Upload your own files
   (WAV, AIFF, FLAC, OGG) or **search Freesound** (free API key) filtering by license; downloads are ready for Tidal and
-  credits for CC BY sounds are written to `samples/CREDITS.md`. A Packs tab lists other free collections
-  (tidal-drum-machines, VCSL, Strudel packs…).
+  credits for CC BY sounds are written to `samples/CREDITS.md`. The **Packs** tab browses community packs on GitHub
+  (about 70 drum machines, Uzu drumkit, VCSL, a grand piano, SP-12, mridangam, or any `github:user/repo` with a
+  `strudel.json`): listen, install one sound or a whole drum machine. Maestro knows your library and can use it.
+- **Controls in the chat (agentic UI)**: Maestro puts sliders, a tempo control, a sound selector and a step sequencer
+  right inside its messages. Moving them writes the Tidal code live, so you see which word changes. Use the sliders button
+  on any track, the «Tweak with controls» chip, or just ask for controls.
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`, `README.md`),
   browse the history and open any old version from My projects → GitHub.
 - **Your progress**: the code and music concepts you have already used.
@@ -76,6 +80,10 @@ Click options and hear the result live. The ones recommended for your style are 
 | Your song as nested blocks | Sample library by type |
 |---|---|
 | ![Blocks view](docs/screenshots/blocks.png) | ![Sample library](docs/screenshots/sample-library.png) |
+
+| Controls in the chat | Online packs: whole drum machines |
+|---|---|
+| ![Chat controls](docs/screenshots/chat-controls.png) | ![Online packs](docs/screenshots/online-packs.png) |
 
 | Search Freesound by license | GitHub: every save is a version |
 |---|---|
@@ -164,7 +172,7 @@ repositories). Then use the cloud button in the top bar to save a version with a
 - `web/explain.js`: offline code explainer. `web/suggest.js`: offline producer ideas and progress concepts.
 - `web/flavors.js`: style recipes (jazz, Latin, techno, lo-fi, ambient).
 - `web/doctor.js`: offline code checks and fixes for the Help panel (`/api/fix` with AI). `web/palette.js`: code palette blocks.
-- `web/blocks.js`: blocks view. `web/samples.js` + `server/samples.py`: sample library and Freesound. `server/github.py`: GitHub versions.
+- `web/controls.js`: controls in the chat (agentic UI). `web/blocks.js`: blocks view. `web/samples.js` + `server/samples.py`: sample library and Freesound. `server/github.py`: GitHub versions.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).
