@@ -43,7 +43,7 @@ export const COMPONENTS = [
     codigo: 's "hh*8" # gain (range 0.75 1 rand)' },
   { id: "hatsoff", cat: "percusion", nombre: "Hi-hat abierto a contratiempo", estilos: ["house", "techno"],
     desc: "El 'tsss' entre bombos típico del house.",
-    codigo: 's "[~ oh]*4" # gain 0.8' },
+    codigo: 's "[~ ho]*4" # gain 0.8' },
   { id: "hatstrap", cat: "percusion", nombre: "Hi-hats trap (redobles)", estilos: ["hiphop"],
     desc: "Hi-hats rápidos con redobles, muy de trap.",
     codigo: 's "hh*2 hh*2 hh*4 [hh*3]" # gain 0.8' },

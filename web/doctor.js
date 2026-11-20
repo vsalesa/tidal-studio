@@ -5,17 +5,21 @@ import { L } from "./i18n.js";
 import { SOUNDS, FUNCS, PARAMS } from "./explain.js";
 
 // Bancos de sonidos habituales de SuperDirt (Dirt-Samples) y sintes incluidos
-const BANKS = ("808 808bd 808cy 808hc 808ht 808lc 808lt 808mc 808mt 808oh 808sd 909 ab ade alphabet amencutup arp arpy auto baa bass bass0 bass1 " +
-  "bass2 bass3 bassdm bassfoo bd bend bev bin birds birds3 bleep blip blue bottle breaks125 breaks152 breaks157 breaks165 breath bubble can " +
-  "casio cb cc chin chink circus clak click clubkick co coins control cosmicg cp cr crow d db diphone diphone2 dist dr dr2 dr55 dr_few drum " +
-  "drumtraks e east electro1 em2 erk f feel feelfx fest fire flick fm foo future gab gabba gabbaloud glasstap glitch glitch2 gretsch gtr h " +
-  "hand hardcore hardkick haw hc hh hh27 hit hmm ho hoover house ht if ifdrums incoming industrial insect invaders jazz jungbass jungle juno " +
-  "jvbass kicklinn koy kurt latibro led less lighter linnhats lt made made2 mash mash2 metal miniyeah monsterb moog mouth mp3 msg mt mute " +
-  "newnotes noise noise2 notes numbers oc odx off oh outdoor pad padlong pebbles perc peri pluck popkick print proc procshort psr rave rave2 " +
-  "ravemono realclaps reverbkick rm rs sax sd seawolf sequential sf sheffield short sid sine sitar sn space speakspell speech speechless " +
-  "speedupdown stab stomp subroc3d sugar sundance tabla tabla2 tablex tacscan tech techno tink tok toys trump ul ulgab uxay v voodoo wind " +
-  "wobble world xmas yeah superpiano supersaw superpwm supersquare superhammond superchip supergong superfm superhoover supermandolin supertrumpet sawtooth saw square triangle tri pulse sinewave " +
-  "superzow supersiren superstatic supercomparator superkick super808 superhat supersnare superclap soskick sosbass").split(" ");
+const BANKS = (
+  "808 808bd 808cy 808hc 808ht 808lc 808lt 808mc 808mt 808oh 808sd 909 ab ade ades2 ades3 ades4 alex alphabet amencutup " +
+  "armora arp arpy auto baa baa2 bass bass0 bass1 bass2 bass3 bassdm bassfoo battles bd bend bev bin birds birds3 bleep " +
+  "blip blue bottle breaks125 breaks152 breaks157 breaks165 breath bubble can casio cb cc chin circus clak click clubkick " +
+  "co coins control cosmicg cp cr crow d db diphone diphone2 dist dork2 dorkbot dr dr2 dr55 dr_few drum drumtraks e east " +
+  "electro1 em2 erk f feel feelfx fest fire flick fm foo future gab gabba gabbaloud gabbalouder glasstap glitch glitch2 " +
+  "gretsch gtr h hand hardcore hardkick haw hc hh hh27 hit hmm ho hoover house ht if ifdrums incoming industrial insect " +
+  "invaders jazz jungbass jungle juno jvbass kicklinn koy kurt latibro led less lighter linnhats lt made made2 mash mash2 " +
+  "metal miniyeah monsterb moog mouth mp3 msg mt mute newnotes noise noise2 notes num numbers oc odx off outdoor pad " +
+  "padlong pebbles perc peri pluck popkick print proc procshort psr rave rave2 ravemono realclaps reverbkick rm rs sax sd " +
+  "seawolf sequential sf sheffield short sid simplesine sitar sn space speakspell speech speechless speedupdown stab stomp " +
+  "subroc3d sugar sundance tabla tabla2 tablex tacscan tech techno tink tok toys trump ul ulgab uxay v voodoo wind wobble " +
+  "world xmas yeah sosbass soskick super808 superchip superclap supercomparator superfm supergong superhammond superhat " +
+  "superhoover superkick supermandolin superpiano superpwm supersaw supersiren supersnare supersquare superstatic " +
+  "supertrumpet superzow sawtooth saw square triangle tri pulse sine sinewave").split(" ");
 const SOUND_SET = new Set([...BANKS, ...Object.keys(SOUNDS)]);
 const PARAM_SET = new Set([...Object.keys(PARAMS), "s", "n", "note", "sound", "orbit", "cut", "begin", "end", "loop", "squiz", "lpq",
   "hpq", "bandf", "bandq", "djf", "dry", "up", "attack", "release", "hold", "sustain", "voice", "detune", "octave", "amp", "velocity",

@@ -36,7 +36,7 @@ export const BUILTIN = [
   B("caja", "rm", "Rimshot (golpe en el aro)", "Rimshot"),
   B("platos", "hh", "Hi-hat cerrado", "Closed hi-hat"),
   B("platos", "hh27", "Hi-hat suave", "Soft hi-hat"),
-  B("platos", "oh", "Hi-hat abierto", "Open hi-hat"),
+  B("platos", "ho", "Hi-hat abierto", "Open hi-hat"),
   B("platos", "808hc", "Hi-hat cerrado de 808", "808 closed hi-hat"),
   B("platos", "808oh", "Hi-hat abierto de 808", "808 open hi-hat"),
   B("platos", "linnhats", "Hi-hats de LinnDrum", "LinnDrum hats"),
@@ -94,7 +94,7 @@ export const BUILTIN = [
   B("synth", "square", "Onda básica: cuadrada", "Basic wave: square"),
   B("synth", "triangle", "Onda básica: triangular", "Basic wave: triangle"),
   B("synth", "pulse", "Onda básica: pulso", "Basic wave: pulse"),
-  B("synth", "sinewave", "Onda básica: seno", "Basic wave: sine"),
+  B("synth", "sine", "Onda básica: seno", "Basic wave: sine"),
 ];
 
 // Código de partida para una pista nueva según el tipo
