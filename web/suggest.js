@@ -96,7 +96,7 @@ export const CODE_CONCEPTS = [
   { id: "acordes", nombre: "Acordes: c'min7", re: /'(min|maj|dom)/ },
   { id: "efectos", nombre: "Efectos: #", re: /#\s*\w/ },
   { id: "dolar", nombre: "Aplicar: $", re: /\$/ },
-  { id: "tiempo", nombre: "Cuándo: every / whenmod", re: /\b(every|whenmod)\b/ },
+  { id: "tiempo", nombre: "Cuándo: every / whenmod / mask", re: /\b(every|whenmod|mask)\b/ },
   { id: "azar", nombre: "Azar: ? rand sometimes", re: /\?|\brand\b|irand|sometimes|degradeBy/ },
   { id: "capas", nombre: "Capas: stack y ,", re: /\bstack\b|"[^"]*,/ },
 ];

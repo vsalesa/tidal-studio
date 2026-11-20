@@ -1,0 +1,412 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tidal Studio · aprende música con tu maestro</title>
+<meta name="description" content="Crea tu propia canción en vivo con TidalCycles mientras un maestro de IA te explica cada línea de código y cada idea musical.">
+<meta property="og:title" content="Tidal Studio · aprende música con tu maestro">
+<meta property="og:description" content="Crea tu canción en vivo y aprende música y código a la vez.">
+<meta property="og:image" content="screenshots/estudio.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d9482b' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M4 12c1.6 0 1.6-5 3.2-5s1.6 10 3.2 10 1.6-10 3.2-10 1.6 10 3.2 10 1.6-5 3.2-5'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f6f1e7; --card: #fffdf8; --sunk: #efe8da;
+  --ink: #1f1c17; --ink-2: #5d564a; --ink-3: #8f8676;
+  --rule: #ddd3c1; --rule-strong: #c9bca5;
+  --accent: #d9482b; --accent-soft: #fbe3db;
+  --teal: #157a6e; --teal-soft: #dcefeb;
+  --gold: #c98a12; --gold-soft: #f8ecd2;
+  --plum: #6b4fa1; --plum-soft: #ebe5f5;
+  --serif: "Fraunces", Georgia, serif;
+  --sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --shadow: 0 1px 0 var(--rule), 0 18px 40px -24px rgba(60, 40, 10, .35);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.6 var(--sans);
+  background-image: repeating-linear-gradient(0deg, transparent 0 31px, rgba(201,188,165,.18) 31px 32px);
+  overflow-x: hidden;
+}
+a { color: var(--accent); }
+img { max-width: 100%; display: block; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+
+/* nav */
+nav { position: sticky; top: 0; z-index: 10; background: rgba(246,241,231,.88); backdrop-filter: blur(8px); border-bottom: 1px solid var(--rule); }
+nav .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
+.brand { display: flex; align-items: center; gap: 10px; font: 700 20px var(--serif); color: var(--ink); text-decoration: none; }
+.brand svg { color: var(--accent); width: 28px; height: 28px; }
+nav .links { margin-left: auto; display: flex; gap: 22px; align-items: center; }
+nav .links a { color: var(--ink-2); text-decoration: none; font-weight: 500; font-size: 15px; }
+nav .links a:hover { color: var(--ink); }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font: 600 16px var(--sans); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; transition: transform .15s, box-shadow .15s; }
+.btn:hover { transform: translateY(-1px); }
+.btn.primary { background: var(--accent); color: #fff; box-shadow: 0 8px 20px -10px var(--accent); }
+.btn.dark { background: var(--ink); color: var(--paper); }
+.btn.ghost { border-color: var(--rule-strong); color: var(--ink); background: var(--card); }
+nav .btn { padding: 8px 14px; font-size: 14px; }
+
+/* hero */
+.hero { padding: 72px 0 56px; }
+.hero .wrap { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; }
+.eyebrow { display: inline-flex; gap: 8px; align-items: center; font: 600 13px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--teal); background: var(--teal-soft); padding: 6px 12px; border-radius: 99px; }
+h1 { font: 800 clamp(42px, 6.4vw, 76px)/1.02 var(--serif); letter-spacing: -.02em; margin: 20px 0 20px; }
+h1 em { font-style: italic; font-weight: 400; color: var(--accent); }
+.lead { font-size: 20px; color: var(--ink-2); max-width: 34em; margin: 0 0 28px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; }
+.small { font-size: 14px; color: var(--ink-3); margin-top: 16px; }
+
+/* sequencer */
+.seq { background: var(--card); border: 1px solid var(--rule); border-radius: 18px; box-shadow: var(--shadow); padding: 20px; position: relative; }
+.seq-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font: 600 14px var(--sans); color: var(--ink-2); }
+.seq-head .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); animation: pulse 1s infinite; }
+.seq-head .bpm { margin-left: auto; font: 600 13px var(--mono); color: var(--ink-3); }
+@keyframes pulse { 50% { opacity: .3; } }
+.row { display: grid; grid-template-columns: 92px repeat(16, 1fr); gap: 4px; align-items: center; margin-bottom: 6px; }
+.row .lab { font: 500 13px var(--sans); color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.row .lab b { width: 8px; height: 8px; border-radius: 2px; }
+.cell { aspect-ratio: 1; border-radius: 4px; background: var(--sunk); transition: transform .08s, filter .08s; }
+.cell:nth-child(4n+2) { background: #e6dcc8; }
+.cell.on { background: var(--c); }
+.cell.on.hit { transform: scale(1.18); filter: brightness(1.15); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); }
+.cell.ph { outline: 2px solid var(--ink); outline-offset: 1px; }
+.code { margin-top: 16px; background: #1f1c17; color: #efe8da; border-radius: 12px; padding: 14px 16px; font: 13.5px/1.75 var(--mono); min-height: 156px; overflow: hidden; }
+.code .k { color: #f29b80; } .code .s { color: #b8dcc0; } .code .n { color: #f1c66a; } .code .c { color: #8f8676; }
+.code .ln { white-space: pre; overflow: hidden; text-overflow: ellipsis; }
+.caret { display: inline-block; width: 8px; height: 1.1em; background: var(--accent); vertical-align: -2px; animation: pulse .9s steps(1) infinite; }
+.bubble { position: absolute; right: -14px; bottom: -26px; max-width: 290px; background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow); font-size: 14px; line-height: 1.45; display: flex; gap: 10px; transition: opacity .4s; }
+.bubble svg { color: var(--teal); width: 26px; height: 26px; }
+.bubble strong { display: block; font: 600 13px var(--sans); color: var(--teal); }
+
+/* sections */
+section { padding: 80px 0; }
+.sec-title { font: 800 clamp(32px, 4.4vw, 48px)/1.08 var(--serif); letter-spacing: -.015em; margin: 0 0 14px; }
+.sec-lead { color: var(--ink-2); font-size: 19px; max-width: 40em; margin: 0 0 44px; }
+.kicker { font: 600 13px var(--mono); color: var(--accent); letter-spacing: .08em; text-transform: uppercase; }
+
+.roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.role { background: var(--card); border: 1px solid var(--rule); border-radius: 16px; padding: 26px; box-shadow: var(--shadow); }
+.role .ic { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 16px; }
+.role h3 { font: 700 22px var(--serif); margin: 0 0 8px; }
+.role p { margin: 0 0 14px; color: var(--ink-2); }
+.role blockquote { margin: 0; padding: 12px 14px; border-left: 3px solid var(--c); background: var(--soft); border-radius: 0 10px 10px 0; font: italic 400 16px/1.45 var(--serif); }
+
+.feat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; }
+.feat div { background: var(--card); padding: 26px; }
+.feat svg { color: var(--accent); margin-bottom: 10px; width: 26px; height: 26px; }
+.feat h4 { font: 600 18px var(--sans); margin: 0 0 6px; }
+.feat p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
+
+/* gallery */
+.gal-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.gal-tabs button { font: 500 15px var(--sans); padding: 9px 16px; border-radius: 99px; border: 1.5px solid var(--rule-strong); background: var(--card); color: var(--ink-2); cursor: pointer; }
+.gal-tabs button[aria-selected=true] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.frame { border-radius: 14px; overflow: hidden; border: 1px solid var(--rule-strong); box-shadow: var(--shadow); background: var(--card); }
+.frame .bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 14px; background: var(--sunk); border-bottom: 1px solid var(--rule); }
+.frame .bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--rule-strong); }
+.frame .bar span { margin-left: 10px; font: 12px var(--mono); color: var(--ink-3); }
+.gal-cap { margin: 16px 0 0; color: var(--ink-2); font-size: 16px; }
+
+/* recipe demo */
+.recipe { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.diff { background: var(--card); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; font: 14px/1.7 var(--mono); }
+.diff h5 { font: 600 13px var(--sans); color: var(--ink-3); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 10px; }
+.diff code { display: block; white-space: pre-wrap; word-break: break-word; }
+.diff mark { background: var(--gold-soft); color: var(--ink); border-bottom: 2px solid var(--gold); padding: 0 2px; border-radius: 2px; }
+.styles { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+.styles span { padding: 7px 14px; border-radius: 99px; background: var(--plum-soft); color: var(--plum); font-weight: 600; font-size: 14px; }
+
+/* install */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; }
+.step { background: var(--card); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; position: relative; }
+.step::before { counter-increment: s; content: counter(s); position: absolute; top: -18px; left: 22px; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font: 700 17px var(--serif); }
+.step h4 { font: 700 20px var(--serif); margin: 8px 0 8px; }
+.step p { margin: 0 0 12px; color: var(--ink-2); font-size: 15.5px; }
+.os { display: flex; gap: 6px; margin-bottom: 10px; }
+.os button { font: 500 13px var(--sans); padding: 5px 10px; border-radius: 8px; border: 1px solid var(--rule-strong); background: var(--paper); cursor: pointer; color: var(--ink-2); }
+.os button[aria-selected=true] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+pre.cmd { margin: 0; background: #1f1c17; color: #efe8da; padding: 12px 14px; border-radius: 10px; font: 13.5px var(--mono); overflow-x: auto; }
+.ai { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; align-items: center; color: var(--ink-2); font-size: 15px; }
+.ai span { border: 1px solid var(--rule-strong); background: var(--card); border-radius: 8px; padding: 5px 11px; font: 500 14px var(--mono); color: var(--ink); }
+
+.final { text-align: center; background: var(--ink); color: var(--paper); border-radius: 24px; padding: 64px 24px; margin: 0 24px; position: relative; overflow: hidden; }
+.final h2 { font: 800 clamp(32px, 5vw, 54px)/1.05 var(--serif); margin: 0 0 14px; }
+.final h2 em { color: #f29b80; font-weight: 400; }
+.final p { color: #c9bca5; font-size: 19px; margin: 0 0 28px; }
+.final .wave { position: absolute; inset: auto 0 0 0; height: 80px; opacity: .25; color: var(--accent); }
+footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14px; }
+
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s, transform .6s; }
+.reveal.in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; } * { animation: none !important; } }
+
+@media (max-width: 900px) {
+  .hero .wrap, .recipe { grid-template-columns: 1fr; }
+  .roles, .feat, .steps { grid-template-columns: 1fr; }
+  nav .links a:not(.btn) { display: none; }
+  .bubble { position: static; margin-top: 14px; max-width: none; }
+  .steps { gap: 32px; }
+}
+@media (max-width: 520px) {
+  .wrap { padding: 0 16px; }
+  .row { grid-template-columns: 62px repeat(16, 1fr); gap: 2px; }
+  .row .lab { font-size: 11px; }
+  .seq { padding: 14px; }
+  .final { margin: 0 16px; }
+  .lead { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="brand" href="#"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5"/><path d="M4 12c1.6 0 1.6-5 3.2-5s1.6 10 3.2 10 1.6-10 3.2-10 1.6 10 3.2 10 1.6-5 3.2-5"/></svg>Tidal Studio</a>
+    <div class="links">
+      <a href="#maestro">El maestro</a>
+      <a href="#capturas">Capturas</a>
+      <a href="#empezar">Empezar</a>
+      <a class="btn dark" href="https://github.com/vsalesa/tidal-studio"><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg>GitHub</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">TidalCycles + IA · gratis y local</span>
+      <h1>Haz tu canción.<br><em>Aprende</em> cómo la has hecho.</h1>
+      <p class="lead">Tidal Studio es un estudio de música en vivo con un maestro que te acompaña en cada paso: te propone ideas como un productor, te explica cada línea de código y te enseña por qué suena bien.</p>
+      <div class="cta">
+        <a class="btn primary" href="#empezar"><svg class="i" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor"/></svg>Empezar ahora</a>
+        <a class="btn ghost" href="#capturas">Ver cómo es</a>
+      </div>
+      <p class="small">macOS, Windows y Linux. Funciona con o sin IA.</p>
+    </div>
+
+    <div class="seq reveal" aria-label="Animación: un secuenciador tocando un patrón mientras se escribe el código Tidal">
+      <div class="seq-head"><span class="dot"></span>Sonando en vivo<span class="bpm">setcps (124/60/4)</span></div>
+      <div id="grid"></div>
+      <div class="code" id="code"></div>
+      <div class="bubble" id="bubble">
+        <svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3.5"/><path d="M2.5 21c0-4 2.9-6.5 6.5-6.5 1.6 0 3 .5 4.1 1.3"/><path d="M14 13l7.5-7.5"/><circle cx="14" cy="13" r="1.2" fill="currentColor"/><path d="M17 17.5l1 1 3-3"/></svg>
+        <div><strong>Maestro</strong><span id="bubble-text">«bd*4» es un bombo en cada tiempo: el pulso que hace mover el pie.</span></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section id="maestro">
+  <div class="wrap">
+    <div class="kicker">Un maestro, tres sombreros</div>
+    <h2 class="sec-title">No solo genera música. Te enseña a hacerla.</h2>
+    <p class="sec-lead">Cada cambio en tu canción llega con su porqué. Así, poco a poco, pasas de pulsar botones a escribir tú el código.</p>
+    <div class="roles">
+      <div class="role reveal" style="--c: var(--accent); --soft: var(--accent-soft)">
+        <div class="ic" style="background: var(--accent-soft); color: var(--accent)"><svg class="i" viewBox="0 0 24 24"><path d="M4 20L15 9"/><path d="M15 9l2-2" stroke-width="3"/><path d="M17 2.5v2M20.5 6h-2M19.5 3.5l-1.4 1.4M10 4v1.5M9.25 4.75h1.5M20 13v1.5M19.25 13.75h1.5"/></svg></div>
+        <h3>Productor</h3>
+        <p>Escucha tu canción y te propone ideas concretas, en primera persona.</p>
+        <blockquote>«Yo quitaría el bombo 8 compases de cada 16. Cuando vuelve, pega el doble. Prueba a ver qué te parece.»</blockquote>
+      </div>
+      <div class="role reveal" style="--c: var(--teal); --soft: var(--teal-soft)">
+        <div class="ic" style="background: var(--teal-soft); color: var(--teal)"><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg></div>
+        <h3>Profe de código</h3>
+        <p>Pulsa «Explícame» en cualquier pista y te cuenta qué hace cada trozo.</p>
+        <blockquote>«mask "&lt;f!8 t!8&gt;" es un interruptor por compás: 8 compases callado y 8 sonando.»</blockquote>
+      </div>
+      <div class="role reveal" style="--c: var(--plum); --soft: var(--plum-soft)">
+        <div class="ic" style="background: var(--plum-soft); color: var(--plum)"><svg class="i" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg></div>
+        <h3>Profe de música</h3>
+        <p>Cada idea enseña un concepto: pulso, backbeat, mayor y menor, contraste…</p>
+        <blockquote>«Los acordes menores suenan melancólicos; los mayores, luminosos. Mismo ritmo, otro color.»</blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top: 0">
+  <div class="wrap">
+    <div class="feat reveal">
+      <div><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/></svg><h4>Wizard de proyecto</h4><p>Estilo, tempo, ritmo, bajo, acordes, melodía y estructura, pulsando opciones. Lo oyes mientras eliges.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/></svg><h4>Lluvia de ideas</h4><p>¿Qué quieres sentir? ¿Qué lugar imaginas? Con tus respuestas diseña contigo el plan de tu canción.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><circle cx="12" cy="14.5" r="3.5"/><circle cx="12" cy="7" r="1.3"/></svg><h4>Pre-escucha</h4><p>«Escuchar» toca cada idea unos compases y vuelve sola a tu versión. Decides con el oído.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg><h4>Código siempre visible</h4><p>Cada pista es código TidalCycles real que puedes editar. Nada de cajas negras.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg><h4>Tu progreso</h4><p>Ve qué conceptos de código y de música ya has usado, y cuáles te quedan por descubrir.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M3.5 7.5A2 2 0 0 1 5.5 5.5h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/></svg><h4>Mis proyectos</h4><p>Tus canciones se guardan solas. Empieza en blanco, con wizard o con una lluvia de ideas.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="capturas" style="background: var(--sunk); border-block: 1px solid var(--rule)">
+  <div class="wrap">
+    <div class="kicker">Así se ve</div>
+    <h2 class="sec-title">Un estudio claro, como una partitura.</h2>
+    <div class="gal-tabs" role="tablist" id="gal-tabs"></div>
+    <div class="frame"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="gal-img" src="screenshots/estudio.png" alt="" width="2880" height="1800"></div>
+    <p class="gal-cap" id="gal-cap"></p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="kicker">Recetas de estilo</div>
+    <h2 class="sec-title">«¿Quieres que suene tipo jazz?»</h2>
+    <p class="sec-lead">Pulsa un estilo y tu canción se transforma. Verás el antes y el después con lo nuevo resaltado, y una explicación de cada cambio para que mañana lo hagas tú.</p>
+    <div class="recipe reveal">
+      <div class="diff"><h5>Antes</h5><code>s "bd*4 , ~ cp ~ cp"
+n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
+      <div class="diff"><h5>Después: jazz</h5><code><mark>swingBy (1/3) 4 $</mark> s "<mark>bd ~ [~ bd] ~</mark> , ~ cp ~ cp"
+<mark>swingBy (1/3) 4 $</mark> n "&lt;c'<mark>min9</mark> f'<mark>min9</mark>&gt;" # s "superpiano"</code></div>
+    </div>
+    <p class="gal-cap">«swingBy (1/3) 4» retrasa un poco cada segunda nota: eso es el swing. Y los acordes ganan una nota más ('min9) para sonar más jazz.</p>
+    <div class="styles"><span>Jazz</span><span>Latino (bossa)</span><span>Techno</span><span>Lo-fi</span><span>Ambient</span></div>
+  </div>
+</section>
+
+<section id="empezar" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker">Empezar</div>
+    <h2 class="sec-title">De cero a sonar en tres pasos.</h2>
+    <p class="sec-lead">No necesitas tener nada instalado. El instalador detecta tu sistema y prepara SuperCollider, SuperDirt y TidalCycles.</p>
+    <div class="steps">
+      <div class="step reveal">
+        <h4>Descarga</h4>
+        <p>Baja el proyecto como zip y descomprímelo, o clónalo con git.</p>
+        <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/archive/refs/heads/main.zip"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>Descargar zip</a>
+      </div>
+      <div class="step reveal">
+        <h4>Instala</h4>
+        <p>Una sola vez. Tarda un rato: descarga Haskell y los sonidos.</p>
+        <div class="os" role="tablist" data-group="install"></div>
+        <pre class="cmd" data-out="install"></pre>
+      </div>
+      <div class="step reveal">
+        <h4>Toca</h4>
+        <p>Se abre el navegador con el estudio. Pulsa «Nuevo proyecto» y deja que el maestro te guíe.</p>
+        <div class="os" role="tablist" data-group="start"></div>
+        <pre class="cmd" data-out="start"></pre>
+      </div>
+    </div>
+    <div class="ai">Conecta la IA que quieras, o ninguna:
+      <span>Claude</span><span>OpenAI</span><span>OpenRouter</span><span>Groq</span><span>Ollama</span><span>LM Studio</span><span>sin IA</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="final reveal">
+    <h2>Tu primera canción<br><em>empieza con un bombo.</em></h2>
+    <p>El resto te lo enseña el maestro.</p>
+    <a class="btn primary" href="#empezar">Empezar ahora</a>
+    <svg class="wave" viewBox="0 0 1200 80" preserveAspectRatio="none" fill="none" stroke="currentColor" stroke-width="2"><path id="wave" d=""/></svg>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Tidal Studio · hecho sobre <a href="https://tidalcycles.org">TidalCycles</a> y <a href="https://supercollider.github.io">SuperCollider</a> · <a href="https://github.com/vsalesa/tidal-studio">Código en GitHub</a></div>
+</footer>
+
+<script>
+// Secuenciador animado del hero
+const TRACKS = [
+  { name: "Bombo", c: "#d9482b", p: "x...x...x...x..." },
+  { name: "Palmas", c: "#d9482b", p: "....x.......x..." },
+  { name: "Hi-hat", c: "#c98a12", p: "..x...x...x...x." },
+  { name: "Bajo", c: "#6b4fa1", p: "..x...x.x.x...x." },
+  { name: "Acordes", c: "#157a6e", p: "x.....x.....x..." },
+];
+const grid = document.getElementById("grid");
+grid.innerHTML = TRACKS.map((t) => `<div class="row"><div class="lab"><b style="background:${t.c}"></b>${t.name}</div>${
+  [...t.p].map((ch) => `<div class="cell${ch === "x" ? " on" : ""}" style="--c:${t.c}"></div>`).join("")}</div>`).join("");
+const rows = [...grid.querySelectorAll(".row")].map((r) => [...r.querySelectorAll(".cell")]);
+let stepN = 0;
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (!reduced) setInterval(() => {
+  rows.forEach((cells) => cells.forEach((c, i) => { c.classList.toggle("ph", i === stepN); c.classList.toggle("hit", i === stepN && c.classList.contains("on")); }));
+  stepN = (stepN + 1) % 16;
+}, 60000 / 124 / 4);
+
+// Código que se escribe solo, con explicación del maestro
+const LINES = [
+  { h: '<span class="k">d1</span> $ s <span class="s">"bd*4"</span>', t: "«bd*4» es un bombo en cada tiempo: el pulso que hace mover el pie." },
+  { h: '<span class="k">d2</span> $ s <span class="s">"~ cp ~ cp"</span>', t: "Palmas en el 2 y el 4: contestan al bombo. Eso es el backbeat." },
+  { h: '<span class="k">d3</span> $ s <span class="s">"[~ hh]*4"</span> # gain <span class="n">0.8</span>', t: "Hi-hats entre bombos: dividen el tiempo y dan sensación de velocidad." },
+  { h: '<span class="k">d4</span> $ n <span class="s">"~ c2 [~ c2] ~"</span> # s <span class="s">"superpwm"</span>', t: "El bajo suena entre los bombos, así no chocan y se reparten los graves." },
+  { h: '<span class="k">d5</span> $ n <span class="s">"&lt;c\'min7 f\'min7&gt;"</span> # room <span class="n">0.5</span>', t: "Acordes menores con reverb: color melancólico y sensación de espacio." },
+];
+const code = document.getElementById("code"), bubbleText = document.getElementById("bubble-text"), bubble = document.getElementById("bubble");
+function plain(h) { const d = document.createElement("div"); d.innerHTML = h; return d.textContent; }
+function render(n, partial) {
+  code.innerHTML = LINES.slice(0, n).map((l) => `<div class="ln">${l.h}</div>`).join("") +
+    (partial != null ? `<div class="ln">${partial}<span class="caret"></span></div>` : "");
+}
+async function typeLoop() {
+  if (reduced) { render(LINES.length); return; }
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  for (;;) {
+    for (let i = 0; i < LINES.length; i++) {
+      const txt = plain(LINES[i].h);
+      for (let k = 1; k <= txt.length; k++) { render(i, txt.slice(0, k).replace(/</g, "&lt;")); await wait(28); }
+      render(i + 1);
+      bubble.style.opacity = 0; await wait(250);
+      bubbleText.textContent = LINES[i].t; bubble.style.opacity = 1;
+      await wait(2600);
+    }
+    await wait(1500);
+  }
+}
+typeLoop();
+
+// Galería
+const SHOTS = [
+  { id: "estudio", t: "El estudio", c: "Tus pistas con su código, «Explícame» en cada una y las ideas del maestro con pre-escucha." },
+  { id: "nuevo-proyecto", t: "Nuevo proyecto", c: "Empieza en blanco, con el wizard de opciones o con una lluvia de ideas." },
+  { id: "wizard-proyecto", t: "Wizard", c: "Eliges cada parte pulsando opciones. Las que encajan con tu estilo vienen marcadas." },
+  { id: "receta-jazz", t: "Receta jazz", c: "El antes y el después de tu código, con lo nuevo resaltado y explicado." },
+  { id: "lluvia-pregunta", t: "Lluvia de ideas", c: "Preguntas abiertas con ejemplos para pulsar o escribir lo tuyo." },
+  { id: "lluvia-plan", t: "Plan de canción", c: "Estilo, tempo, partes y cambios concretos para empezar a probar." },
+];
+const tabs = document.getElementById("gal-tabs"), img = document.getElementById("gal-img"), cap = document.getElementById("gal-cap");
+tabs.innerHTML = SHOTS.map((s, i) => `<button role="tab" aria-selected="${i === 0}" data-i="${i}">${s.t}</button>`).join("");
+function show(i) {
+  const s = SHOTS[i];
+  img.src = `screenshots/${s.id}.png`; img.alt = s.c; cap.textContent = s.c;
+  tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", b.dataset.i == i));
+}
+tabs.addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) show(+b.dataset.i); });
+show(0);
+SHOTS.forEach((s) => { const p = new Image(); p.src = `screenshots/${s.id}.png`; });
+
+// Comandos por sistema
+const CMDS = {
+  install: { macOS: "./install.sh", Windows: "doble clic en install.bat", Linux: "./install.sh" },
+  start: { macOS: "./start.sh", Windows: "doble clic en start.bat", Linux: "./start.sh" },
+};
+const ua = navigator.userAgent;
+const myOS = /Win/.test(ua) ? "Windows" : /Mac/.test(ua) ? "macOS" : "Linux";
+document.querySelectorAll(".os").forEach((box) => {
+  const g = box.dataset.group, out = document.querySelector(`[data-out=${g}]`);
+  const set = (os) => { out.textContent = CMDS[g][os]; box.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", b.textContent === os)); };
+  box.innerHTML = Object.keys(CMDS[g]).map((os) => `<button role="tab">${os}</button>`).join("");
+  box.addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") set(e.target.textContent); });
+  set(myOS);
+});
+
+// Onda decorativa
+let d = "M0 40";
+for (let x = 0; x <= 1200; x += 10) d += ` L${x} ${40 + Math.sin(x / 40) * 18 * Math.sin(x / 300)}`;
+document.getElementById("wave").setAttribute("d", d);
+
+// Aparición al hacer scroll
+const io = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: .15 });
+document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+</script>
+</body>
+</html>

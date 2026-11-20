@@ -47,6 +47,8 @@ const FUNCS = [
   [/^const$/, "sustituye el patrón por otra cosa; 'const silence' = silencio."],
   [/^silence$/, "nada, silencio."],
   [/^chop$/, "corta cada sonido en trocitos."],
+  [/^mask$/, "es un interruptor por compás: donde pone t (verdadero) la pista suena, donde pone f (falso) se calla."],
+  [/^swingBy$/, "da swing: retrasa un poco una de cada dos notas para que el ritmo 'cojee' con gracia."],
   [/^striate$/, "corta y entrelaza los sonidos."],
 ];
 
@@ -78,6 +80,9 @@ function explainMini(str) {
   if (str.includes("?")) bits.push("«?» hace que a veces no suene");
   if (str.includes(",")) bits.push("la coma «,» hace sonar varias capas a la vez");
   if (str.includes("..")) bits.push("«a .. b» cuenta de a hasta b");
+  const bang = str.match(/!(\d+)/);
+  if (bang) bits.push(`«!${bang[1]}» repite el elemento anterior ${bang[1]} veces seguidas (aquí, ${bang[1]} compases)`);
+  if (/\b[tf]!/.test(str)) bits.push("t = suena, f = calla");
   const steps = str.trim().split(/\s+(?![^\[]*\])(?![^<]*>)/).filter(Boolean).length;
   if (!str.includes(",") && steps > 1) bits.push(`el compás se divide en ${steps} partes iguales`);
   return bits.join(". ");
@@ -112,7 +117,7 @@ export function explainLocal(code) {
     partes.push({ fragmento: frag.trim(), explicacion: cap(PARAMS[p] || `efecto «${p}».`) + extra });
   }
   // 3. Funciones que transforman el patrón (antes de $ o entre paréntesis)
-  for (const m of code.matchAll(/\b(every|whenmod|fast|slow|jux|degradeBy|sometimesBy|sometimes|rarely|often|arp|echo|off|stack|segment|chop|striate)\b[^$#"]*/g)) {
+  for (const m of code.matchAll(/\b(every|whenmod|fast|slow|jux|degradeBy|sometimesBy|sometimes|rarely|often|arp|echo|off|stack|segment|chop|striate|swingBy)\b[^$#"]*/g)) {
     const frag = m[0].trim().replace(/\s*\$$/, "");
     if (seen.has(m[1] + frag)) continue; seen.add(m[1] + frag);
     const f = FUNCS.find(([re]) => re.test(m[1]));

@@ -18,7 +18,8 @@
         <span class="sub">Aprende música y TidalCycles con tu maestro</span>
       </div>
     </div>
-    <button id="btn-wizard" class="wizard-btn" title="Diseña tu canción con preguntas"><i data-icon="wand" data-size="16"></i> Lluvia de ideas</button>
+    <button id="btn-new" class="wizard-btn" title="Empezar un proyecto nuevo"><i data-icon="plus" data-size="16"></i> Nuevo proyecto</button>
+    <button id="btn-projects" class="icon-btn" title="Mis proyectos"><i data-icon="folder" data-size="20"></i></button>
     <div class="transport">
       <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto">
         <span>BPM</span> <input id="bpm" type="number" min="40" max="220" value="120">
@@ -58,6 +59,7 @@
 
     <!-- Columna 2: pistas + código -->
     <section class="panel center">
+      <input id="proj-name" class="proj-name" title="Nombre del proyecto" placeholder="Proyecto sin título">
       <div class="tabs">
         <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> Pistas</button>
         <button class="tab" data-tab="code"><i data-icon="code" data-size="16"></i> Código</button>
@@ -115,6 +117,25 @@
       </form>
     </aside>
   </main>
+
+  <!-- Nuevo proyecto / Mis proyectos -->
+  <dialog id="newproj">
+    <div class="wz-head">
+      <span class="wz-kicker" id="np-kicker"><i data-icon="plus" data-size="16"></i> Nuevo proyecto</span>
+      <button class="icon-btn" data-close title="Cerrar"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="np-body"></div>
+  </dialog>
+
+  <!-- Wizard de proyecto base -->
+  <dialog id="builder">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="steps" data-size="16"></i> Nuevo proyecto con wizard</span>
+      <button class="icon-btn" id="bd-close" title="Cancelar"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="bd-dots" class="wz-dots"></div>
+    <div id="bd-body"></div>
+  </dialog>
 
   <!-- Wizard de lluvia de ideas -->
   <dialog id="wizard">

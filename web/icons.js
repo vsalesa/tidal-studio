@@ -34,6 +34,9 @@ const P = {
   dice: `<rect x="3.5" y="3.5" width="17" height="17" rx="3.5"/><circle cx="8.5" cy="8.5" r="1.3" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.3" fill="currentColor"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>`,
   wand: `<path d="M4 20L15 9"/><path d="M15 9l2-2" stroke-width="3"/><path d="M17 2.5v2M20.5 6h-2M19.5 3.5l-1.4 1.4M10 4v1.5M9.25 4.75h1.5M20 13v1.5M19.25 13.75h1.5"/>`,
   back: `<path d="M19 12H5M11 6l-6 6 6 6"/>`,
+  folder: `<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4l2 2.5h9A1.5 1.5 0 0 1 21 9v9.5a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18.5z"/>`,
+  blank: `<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>`,
+  steps: `<rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/>`,
   arrow: `<path d="M5 12h14M13 6l6 6-6 6"/>`,
 };
 

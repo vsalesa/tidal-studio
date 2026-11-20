@@ -15,11 +15,25 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Recetas de estilo**: «¿Quieres que suene tipo jazz?» (también latino, techno, lo-fi, ambient). Transforma tu canción y
   te enseña **cómo lo ha hecho**: el código de antes y de después con lo nuevo resaltado y explicado, para que aprendas a
   hacerlo tú solo.
+- **Nuevo proyecto en blanco o con wizard**: eliges estilo, tempo, ritmo, bajo, acordes, melodía, textura, efectos y
+  estructura pulsando opciones (las recomendadas vienen marcadas) y lo oyes en vivo mientras eliges.
+- **Pre-escucha**: botón «Escuchar» en cada idea o receta: suena unos compases y vuelve sola a tu versión.
+- **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
 - **Tu progreso**: conceptos de código y de música que ya has usado.
 - **Componentes para añadir** y **código siempre visible y editable**.
 - **Cualquier IA**: endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
   o Claude (Anthropic). Sin IA también funciona: guía con botones, explicaciones e ideas locales.
 - **macOS, Windows y Linux**: el instalador detecta tu sistema.
+
+## Capturas
+
+| Nuevo proyecto | Wizard de proyecto base |
+|---|---|
+| ![Nuevo proyecto: en blanco, con wizard o lluvia de ideas](docs/screenshots/nuevo-proyecto.png) | ![Wizard: eliges el ritmo pulsando opciones](docs/screenshots/wizard-proyecto.png) |
+| **El estudio: pistas, «Explícame» e ideas con pre-escucha** | **Receta «tipo jazz»: antes y después, explicado** |
+| ![Estudio](docs/screenshots/estudio.png) | ![Receta jazz](docs/screenshots/receta-jazz.png) |
+| **Lluvia de ideas: preguntas con ejemplos** | **El plan de tu canción** |
+| ![Lluvia de ideas](docs/screenshots/lluvia-pregunta.png) | ![Plan de la canción](docs/screenshots/lluvia-plan.png) |
 
 ## Instalación (una sola vez)
 

@@ -4,6 +4,7 @@ import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
+import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -22,6 +23,8 @@ let state = {
   chat: [],             // {role, content, explicacion?, reto?, changes?}
   options: [],
   ideas: [],            // sugerencias de la IA (si no hay, se usan las locales)
+  projectId: null,
+  name: "",
   trying: null,         // {index, snapshot}
   learnedMusic: [],
   lastError: "",
@@ -37,7 +40,21 @@ function load() {
   } catch { /* sesión corrupta: empezamos de cero */ }
 }
 function save() {
-  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch { /* sin almacenamiento */ }
+  try {
+    if (!state.projectId) state.projectId = "p" + Date.now();
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+    // También en «Mis proyectos» (solo si tiene algo)
+    if (state.tracks.length || state.name) {
+      const list = listProjects().filter((p) => p.id !== state.projectId);
+      list.unshift({ id: state.projectId, name: state.name || "Proyecto sin título", updated: Date.now(),
+        data: { ...state, trying: null } });
+      localStorage.setItem(PROJ_KEY, JSON.stringify(list.slice(0, 30)));
+    }
+  } catch { /* sin almacenamiento */ }
+}
+const PROJ_KEY = "tidal-studio-projects-v1";
+function listProjects() {
+  try { return JSON.parse(localStorage.getItem(PROJ_KEY) || "[]"); } catch { return []; }
 }
 
 // ------------------------------------------------------------------ API
@@ -271,6 +288,40 @@ function currentIdeas() {
   }
   return ideas;
 }
+// Pre-escucha: suena unos compases y vuelve sola a como estaba (sin tocar tu proyecto)
+let preview = null;
+function preHear(cambios, onEnd) {
+  if (preview) stopPreHear();
+  const bpm = cambios.bpm ? Math.round(cambios.bpm) : state.bpm;
+  const lines = [cps(bpm), ...(cambios.pistas || []).map((p) => `${p.id} $ ${p.codigo}`)];
+  const revert = [cps(state.bpm), ...(cambios.pistas || []).map((p) => {
+    const t = state.tracks.find((x) => x.id === p.id);
+    return t ? trackLine(t) : `${p.id} silence`;
+  })];
+  const secs = Math.max(6, Math.min(14, (4 * 4 * 60) / bpm)); // unos 4 compases
+  api("/api/eval", { code: lines.join("\n\n") }).catch(() => {});
+  preview = { revert, onEnd, timer: setTimeout(stopPreHear, secs * 1000), until: Date.now() + secs * 1000 };
+  return secs;
+}
+function stopPreHear() {
+  if (!preview) return;
+  clearTimeout(preview.timer);
+  const { revert, onEnd } = preview;
+  preview = null;
+  api("/api/eval", { code: revert.join("\n\n") }).catch(() => {});
+  if (onEnd) onEnd();
+}
+function wirePreHear(btn, cambios) {
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    if (btn.classList.contains("playing")) { stopPreHear(); return; }
+    document.querySelectorAll(".prehear.playing").forEach((b) => { b.classList.remove("playing"); b.innerHTML = icon("speaker", 13) + " Escuchar"; });
+    const secs = preHear(cambios, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " Escuchar"; });
+    btn.classList.add("playing");
+    btn.innerHTML = icon("stop", 12) + ` Escuchando… ${Math.round(secs)} s`;
+  };
+}
+
 function renderIdeas() {
   const list = $("#idea-list");
   const ideas = state.trying ? state.trying.ideas : currentIdeas();
@@ -284,10 +335,12 @@ function renderIdeas() {
       ${idea.concepto ? `<span class="tag"></span>` : ""}
       <div class="row">${trying
         ? `<button data-a="keep" class="primary">Me gusta, me lo quedo</button><button data-a="undo">Deshacer</button>`
-        : `<button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} Probar</button>`}</div>`;
+        : `<button class="prehear" title="Escúchala unos compases sin cambiar tu proyecto" ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} Escuchar</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} Probar y ver el código</button>`}</div>`;
     el.querySelector(".t").textContent = idea.titulo;
     el.querySelector(".p").textContent = idea.porque;
     if (idea.concepto) el.querySelector(".tag").textContent = idea.concepto;
+    const ph = el.querySelector(".prehear");
+    if (ph) wirePreHear(ph, idea.cambios);
     el.querySelector(".row").onclick = (e) => {
       const a = e.target.closest("button")?.dataset.a;
       if (a === "try") tryIdea(ideas, i);
@@ -298,6 +351,7 @@ function renderIdeas() {
   });
 }
 function tryIdea(ideas, i) {
+  if (preview) { preview.onEnd = null; clearTimeout(preview.timer); preview = null; }
   const snapshot = JSON.stringify({ bpm: state.bpm, tracks: state.tracks });
   const before = JSON.parse(snapshot);
   state.trying = { index: i, ideas, snapshot };
@@ -464,14 +518,16 @@ const toast = sysMsg;
 
 function greet() {
   state.step = "estilo";
-  say("¡Hola! Soy Maestro. Aquí vas a aprender música y a programarla con TidalCycles mientras creas tu propia canción.\n\nIremos paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa. En cada paso te explico el código y te propongo ideas, como haría un productor a tu lado. No hace falta saber nada.\n\n¿Qué estilo te apetece? Si no lo tienes claro, empieza por la lluvia de ideas: te hago unas preguntas y diseñamos juntos tu canción.",
-    ["Lluvia de ideas: diseñar mi canción", ...Object.values(STYLES).map((s) => s.nombre), "Sorpréndeme"]);
+  say("¡Hola! Soy Maestro. Aquí vas a aprender música y a programarla con TidalCycles mientras creas tu propia canción.\n\nIremos paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa. En cada paso te explico el código y te propongo ideas, como haría un productor a tu lado. No hace falta saber nada.\n\nPara empezar rápido, usa el wizard: eliges opciones paso a paso y se crea tu proyecto base. Si prefieres hablarlo, la lluvia de ideas te hace preguntas abiertas. O dime directamente un estilo.",
+    ["Crear proyecto con wizard", "Lluvia de ideas: diseñar mi canción", ...Object.values(STYLES).map((s) => s.nombre), "Sorpréndeme"]);
 }
 
 async function send(text) {
   text = text.trim();
   if (!text || busy) return;
   if (text.startsWith("Lluvia de ideas")) return openWizard();
+  if (text.startsWith("Crear proyecto con wizard")) return openBuilder();
+  if (text.startsWith("Empieza tú con un ritmo")) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
   state.chat.push({ role: "user", content: text });
   state.options = [];
   save(); renderChat();
@@ -727,7 +783,7 @@ function renderPlan(body) {
     <div class="timeline">${p.partes.map((x) => `<div style="flex:${Math.max(3, Number(x.compases) || 8)}" title="${esc(x.que)}"><b>${esc(x.nombre)}</b><span>${esc(x.compases)} compases</span></div>`).join("")}</div>
     <p class="hint">${p.partes.map((x) => `<b>${esc(x.nombre)}:</b> ${esc(x.que)}`).join(" · ")}</p>
     <h3>Cambios para empezar a probar</h3>
-    ${p.sugerencias.map((x) => `<div class="sug"><div class="t">${esc(x.titulo)}${x.concepto ? `<span class="tag">${esc(x.concepto)}</span>` : ""}</div><div class="p">${esc(x.porque)}</div>${x.cambios.pistas.map((t) => `<code>${esc(t.id)} $ ${esc(t.codigo)}</code>`).join("")}</div>`).join("")}
+    ${p.sugerencias.map((x, k) => `<div class="sug"><button class="prehear" data-k="${k}" style="float:right">${icon("speaker", 13)} Escuchar</button><div class="t">${esc(x.titulo)}${x.concepto ? `<span class="tag">${esc(x.concepto)}</span>` : ""}</div><div class="p">${esc(x.porque)}</div>${x.cambios.pistas.map((t) => `<code>${esc(t.id)} $ ${esc(t.codigo)}</code>`).join("")}</div>`).join("")}
     <div class="wz-nav">
       <button data-a="restart">${icon("back", 16)} Volver a empezar</button>
       <div class="right">
@@ -736,6 +792,7 @@ function renderPlan(body) {
       </div>
     </div></div>`;
   body.querySelector("h2").textContent = p.titulo;
+  body.querySelectorAll(".sug .prehear").forEach((b) => wirePreHear(b, p.sugerencias[+b.dataset.k].cambios));
   body.querySelector(".resumen").textContent = p.resumen;
   body.querySelector(".wz-nav").onclick = (e) => {
     const a = e.target.closest("button")?.dataset.a;
@@ -744,6 +801,7 @@ function renderPlan(body) {
   };
 }
 function adoptPlan(p, applyAll) {
+  if (preview) { preview.onEnd = null; clearTimeout(preview.timer); preview = null; }
   $("#wizard").close();
   if (p.estilo) { state.style = p.estilo; renderCatalog(); }
   if (p.bpm) { state.bpm = p.bpm; $("#bpm").value = p.bpm; if (live()) evalCode(cps(p.bpm)); }
@@ -762,6 +820,185 @@ function adoptPlan(p, applyAll) {
       ["Explícame la estructura", "Dame otra idea"]);
   }
   changed(); renderIdeas();
+}
+
+
+// ------------------------------------------------------------------ proyectos
+const FRESH = () => ({ bpm: 120, tracks: [], selected: null, style: "", step: "estilo", chat: [], options: [], ideas: [],
+  trying: null, learnedMusic: state.learnedMusic || [], lastError: "", offline: state.offline, projectId: "p" + Date.now(), name: "" });
+
+function renderAll() {
+  $("#bpm").value = state.bpm; $("#proj-name").value = state.name || "";
+  renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); renderChat();
+  $("#code").value = buildCode();
+}
+function openNewProject() {
+  $("#np-kicker").innerHTML = icon("plus", 16) + " Nuevo proyecto";
+  const body = $("#np-body");
+  body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">¿Cómo quieres empezar?</h2>
+    <p class="wz-help">Tu proyecto actual se guarda solo en «Mis proyectos».</p>
+    <div class="np-choices">
+      <button class="np-choice" data-m="blank">${icon("blank", 28)}<b>En blanco</b><span>Un lienzo vacío. Tú añades cada pieza desde el catálogo o pidiéndosela a Maestro.</span></button>
+      <button class="np-choice rec" data-m="wizard"><em>Recomendado</em>${icon("steps", 28)}<b>Con wizard</b><span>Vas pulsando opciones paso a paso (estilo, ritmo, bajo, acordes…) y se crea tu proyecto base. Todo suena mientras eliges.</span></button>
+      <button class="np-choice" data-m="ideas">${icon("wand", 28)}<b>Lluvia de ideas</b><span>Maestro te hace preguntas abiertas sobre lo que quieres sentir y diseña contigo un plan.</span></button>
+    </div>`;
+  body.querySelector(".np-choices").onclick = (e) => {
+    const m = e.target.closest("button")?.dataset.m;
+    if (!m) return;
+    $("#newproj").close();
+    if (m === "blank") startBlank();
+    if (m === "wizard") openBuilder();
+    if (m === "ideas") { startFresh(); openWizard(); }
+  };
+  $("#newproj").showModal();
+}
+function startFresh() {
+  save();
+  evalCode("hush");
+  state = FRESH();
+  renderAll();
+}
+function startBlank() {
+  startFresh();
+  state.step = "libre";
+  say("Proyecto en blanco. Puedes:\n• Añadir piezas desde el catálogo de la izquierda (pulsa +).\n• Pedírmelo con tus palabras: «pon un bombo», «algo de jazz»…\n• Escribir código directamente en la pestaña Código.\n\nCada vez que añadas algo te explico su código.",
+    ["Empieza tú con un ritmo", "Lluvia de ideas: diseñar mi canción", ...Object.values(STYLES).slice(0, 4).map((x) => x.nombre)]);
+  state.step = "estilo";
+}
+function openProjects() {
+  $("#np-kicker").innerHTML = icon("folder", 16) + " Mis proyectos";
+  const list = listProjects();
+  const body = $("#np-body");
+  body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">Mis proyectos</h2>
+    <p class="wz-help">Se guardan en este navegador. Tu progreso de aprendizaje es común a todos.</p>
+    <div class="np-list">${list.length ? list.map((p) => `<div class="np-item ${p.id === state.projectId ? "current" : ""}" data-id="${esc(p.id)}">
+      <span class="n">${esc(p.name)}<span class="d">${p.data.tracks.length} pistas · ${p.data.bpm} BPM · ${new Date(p.updated).toLocaleString("es-ES")}</span></span>
+      ${p.id === state.projectId ? `<span class="hint">abierto</span>` : `<button data-a="open">Abrir</button>`}
+      <button data-a="del" class="icon-btn" title="Borrar">${icon("trash", 16)}</button></div>`).join("") : `<p class="hint">Todavía no hay proyectos guardados.</p>`}</div>
+    <div class="wz-nav"><span></span><div class="right"><button class="primary" data-a="new">${icon("plus", 14)} Nuevo proyecto</button></div></div>`;
+  body.onclick = (e) => {
+    const btn = e.target.closest("button"); if (!btn) return;
+    const id = btn.closest(".np-item")?.dataset.id;
+    if (btn.dataset.a === "new") { $("#newproj").close(); return openNewProject(); }
+    if (btn.dataset.a === "open") {
+      save();
+      const p = listProjects().find((x) => x.id === id);
+      evalCode("hush");
+      state = { ...FRESH(), ...p.data, trying: null };
+      $("#newproj").close(); renderAll(); if (live()) playAll();
+      sysMsg(`Proyecto «${state.name}» abierto.`);
+    }
+    if (btn.dataset.a === "del" && confirmDelete(id)) openProjects();
+  };
+  $("#newproj").showModal();
+}
+function confirmDelete(id) {
+  const list = listProjects();
+  const p = list.find((x) => x.id === id);
+  if (!p) return false;
+  if (!window.confirm(`¿Borrar «${p.name}»? No se puede deshacer.`)) return false;
+  localStorage.setItem(PROJ_KEY, JSON.stringify(list.filter((x) => x.id !== id)));
+  if (id === state.projectId) { state.name = ""; state.projectId = "p" + Date.now(); }
+  return true;
+}
+
+// ------------------------------------------------------------------ wizard de proyecto base
+const bd = { i: 0, sel: {} };
+const ALL_SLOTS = ["d1", "d2", "d3", "d4", "d5", "d6", "d7"];
+function openBuilder() {
+  bd.i = 0; bd.sel = {};
+  renderBuilder();
+  $("#builder").showModal();
+}
+function builderPreview() {
+  if (!bd.sel.estilo) return;
+  const c = compose(bd.sel);
+  const lines = [cps(c.bpm), ...ALL_SLOTS.map((id) => { const t = c.tracks.find((x) => x.id === id); return t ? `${id} $ ${t.code}` : `${id} silence`; })];
+  // las pistas del proyecto actual que no usan estos huecos se silencian mientras pruebas
+  state.tracks.filter((t) => !ALL_SLOTS.includes(t.id)).forEach((t) => lines.push(`${t.id} silence`));
+  api("/api/eval", { code: lines.join("\n\n") }).catch(() => {});
+}
+function compCode(c) {
+  return [cps(c.bpm), "", ...c.tracks.map((t) => `${t.id} $ ${t.code}`)].join("\n");
+}
+function renderBuilder() {
+  const st = builderSteps(bd.sel);
+  const total = st.length + 1;
+  $("#bd-dots").innerHTML = Array.from({ length: total }, (_, i) => `<span class="${i < bd.i ? "done" : i === bd.i ? "now" : ""}"></span>`).join("");
+  const body = $("#bd-body");
+  if (bd.i >= st.length) return renderBuilderSummary(body);
+  const step = st[bd.i];
+  const cur = bd.sel[step.id];
+  const isOn = (id) => (Array.isArray(cur) ? cur.includes(id) : cur === id);
+  body.innerHTML = `<h2 class="q">${esc(step.titulo)}</h2>
+    <p class="wz-help">${esc(step.ayuda)}${step.multi ? ` <b>Puedes elegir ${step.multi > 3 ? "varios" : "hasta " + step.multi}.</b>` : ""}${bd.sel.estilo && bd.i > 0 ? " Ya te he dejado marcadas mis recomendaciones: cámbialas a tu gusto." : ""}</p>
+    <div class="opt-grid">${step.opciones.map((o) => `<button class="opt ${isOn(o.id) ? "on" : ""}" data-id="${esc(o.id)}">
+      <b>${esc(o.titulo)} ${o.fit ? `<span class="fit">encaja</span>` : ""}</b><span>${esc(o.desc)}</span>${o.codigo ? `<code>${esc(o.codigo)}</code>` : ""}</button>`).join("")}</div>
+    ${bd.sel.estilo ? `<details class="bd-preview"><summary>Ver el código que llevas hasta ahora</summary><pre>${esc(compCode(compose(bd.sel)))}</pre></details>` : ""}
+    <div class="wz-nav">
+      <button data-a="back" ${bd.i === 0 ? "disabled" : ""}>${icon("back", 16)} Atrás</button>
+      <div class="right"><button data-a="next" class="primary" ${bd.sel.estilo ? "" : "disabled"}>${bd.i === st.length - 1 ? "Ver resumen" : "Siguiente"} ${icon("arrow", 16)}</button></div>
+    </div>`;
+  body.querySelector(".opt-grid").onclick = (e) => {
+    const id = e.target.closest(".opt")?.dataset.id;
+    if (!id) return;
+    if (step.id === "estilo") bd.sel = defaultsFor(id);
+    else if (step.multi) {
+      const arr = Array.isArray(cur) ? [...cur] : [];
+      const k = arr.indexOf(id);
+      if (k >= 0) arr.splice(k, 1); else { arr.push(id); if (arr.length > step.multi) arr.shift(); }
+      bd.sel[step.id] = arr;
+    } else bd.sel[step.id] = id;
+    builderPreview();
+    renderBuilder();
+  };
+  body.querySelector(".wz-nav").onclick = (e) => {
+    const a = e.target.closest("button")?.dataset.a;
+    if (a === "back") { bd.i--; renderBuilder(); }
+    if (a === "next") { bd.i++; renderBuilder(); }
+  };
+}
+function renderBuilderSummary(body) {
+  const c = compose(bd.sel);
+  const st = STYLES[bd.sel.estilo];
+  const items = c.tracks.map((t) => `<li><code>${esc(t.id)}</code><span><b>${esc(t.name)}</b>: ${esc(byId[Object.keys(byId).find((k) => byId[k].nombre === t.name)]?.desc || "")}</span></li>`).join("");
+  body.innerHTML = `<div class="bd-summary">
+    <span class="wz-kicker">Resumen</span>
+    <h2 class="q">Tu proyecto ${esc(st.nombre)} a ${c.bpm} BPM</h2>
+    <p class="wz-help">${c.tracks.length} pistas. Así queda el código: cada línea <code>dN $ …</code> es una pista que suena a la vez que las demás.</p>
+    <ul class="parts">${items}</ul>
+    <div class="idea-note"><b>Estructura.</b> ${esc(STRUCTURE_EXPLAIN[bd.sel.estructura] || "")}</div>
+    <details class="bd-preview" open><summary>Código completo</summary><pre>${esc(compCode(c))}</pre></details>
+    <label class="hint" style="display:block;margin-top:12px">Nombre del proyecto <input id="bd-name" style="width:100%;margin-top:4px" value="${esc(st.nombre + " · " + new Date().toLocaleDateString("es-ES"))}"></label>
+    <div class="wz-nav">
+      <button data-a="back">${icon("back", 16)} Atrás</button>
+      <div class="right"><button data-a="create" class="primary">${icon("play", 14)} Crear proyecto</button></div>
+    </div></div>`;
+  body.querySelector(".wz-nav").onclick = (e) => {
+    const a = e.target.closest("button")?.dataset.a;
+    if (a === "back") { bd.i--; renderBuilder(); }
+    if (a === "create") createFromBuilder(c, $("#bd-name").value.trim());
+  };
+}
+function createFromBuilder(c, name) {
+  bd.created = true;
+  $("#builder").close();
+  bd.created = false;
+  startFresh();
+  state.name = name || "Proyecto sin título";
+  state.style = bd.sel.estilo; state.bpm = c.bpm; state.tracks = c.tracks; state.step = "libre"; state.selected = c.tracks[0]?.id || null;
+  renderAll();
+  playAll();
+  const efectos = (bd.sel.efectos || []).map((id) => EFFECTS.find((e) => e.id === id)).filter(Boolean);
+  const explicacion = [
+    { fragmento: cps(c.bpm), explicacion: `La velocidad: ${c.bpm} BPM.` },
+    ...c.tracks.slice(0, 7).map((t) => ({ fragmento: `${t.id} $ …`, explicacion: `${t.name}. Pulsa «Explícame» en la pista para ver cada trozo de su código.` })),
+    ...efectos.map((e) => ({ fragmento: e.codigo, explicacion: e.desc })),
+  ];
+  say(`¡Proyecto «${state.name}» creado! Ya está sonando.\n\n${STRUCTURE_EXPLAIN[bd.sel.estructura] || ""}\n\nAsí está montado:`,
+    ["¿Qué hago ahora?", "Dame otra idea", "Explícame la canción"],
+    { explicacion, reto: "Silencia una pista con el botón del altavoz y escucha qué papel cumple en la canción. Luego vuelve a activarla." });
+  changed();
 }
 
 // ------------------------------------------------------------------ estado del servidor
@@ -821,6 +1058,7 @@ function init() {
   load();
   hydrateIcons();
   $("#bpm").value = state.bpm;
+  $("#proj-name").value = state.name || "";
   renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); $("#code").value = buildCode();
   if (!state.chat.length) greet(); else renderChat();
 
@@ -879,8 +1117,16 @@ function init() {
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };
 
   $("#btn-settings").onclick = openSettings;
-  $("#btn-wizard").onclick = openWizard;
+  $("#btn-new").onclick = openNewProject;
+  $("#btn-projects").onclick = openProjects;
+  document.querySelectorAll("[data-close]").forEach((b) => b.onclick = () => b.closest("dialog").close());
+  $("#bd-close").onclick = () => $("#builder").close();
+  $("#builder").addEventListener("close", () => {
+    if (!bd.created && bd.sel.estilo) { evalCode("hush"); if (live() && state.tracks.length) playAll(); }
+  });
+  $("#proj-name").onchange = (e) => { state.name = e.target.value.trim(); save(); };
   $("#wz-close").onclick = () => $("#wizard").close();
+  $("#wizard").addEventListener("close", () => stopPreHear());
   document.querySelectorAll("input[name=provider]").forEach((r) => r.onchange = toggleProvider);
   $("#oa-preset").onchange = (e) => {
     if (e.target.value === "custom") return;
