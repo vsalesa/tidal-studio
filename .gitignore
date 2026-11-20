@@ -5,3 +5,4 @@ __pycache__/
 samples/*
 !samples/.gitkeep
 recordings/
+my-skills/

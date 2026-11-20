@@ -88,6 +88,12 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 ## Capturas
 
+### Skills de Maestro
+
+| Debajo de cada respuesta: qué skills se cargaron y cuáles usó Maestro | El panel de Skills: activar, cargar siempre, ver, instalar desde GitHub |
+|---|---|
+| ![Skills en el chat](docs/screenshots/skills-in-chat.png) | ![Panel de skills](docs/screenshots/es/panel-skills.png) |
+
 ### Cursos por género
 
 | Elige un género | Cada paso: por qué suena así, el código y Maestro explicándolo |
@@ -226,6 +232,13 @@ lento que la API (unos 10–20 s).
 
 Las claves se guardan solo en `config.json`, en tu ordenador (no se sube a git). También puedes usar las variables
 de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
+
+### Skills
+
+Maestro puede cargar **skills** (carpetas con un `SKILL.md`, el mismo formato que las Agent Skills de Claude). Vienen dos
+skills de música con licencia abierta; con el botón de skills de la barra superior puedes activarlas o desactivarlas,
+marcar una como «Cargar siempre», leerla o instalar otra pegando su enlace de GitHub. Debajo de cada respuesta de Maestro
+ves qué skills se cargaron para ese mensaje y cuáles usó de verdad. Detalles y fuentes: [skills/README.md](skills/README.md).
 
 ### Samples
 
