@@ -10,7 +10,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Tutorial interactivo**: la primera vez que abres el estudio, Maestro te enseña todo en 21 pasos cortos (tocar la
   batería, añadir pistas, efectos, controles en el chat, ideas, recetas, bloques, arreglo, código, biblioteca…). Cada paso
   espera a que lo hagas, y puedes repetirlo desde el botón del birrete.
-- **Instrumentos ilustrados**: una batería en la que pulsas cada pieza (bd, sn, hh, ho, toms, crash, aro) para oírla y
+- **Fotos reales de instrumentos** (con licencia libre, de Wikimedia Commons, ver [CREDITS.md](CREDITS.md)): una batería en la que pulsas cada pieza (bd, sn, hh, ho, toms, crash, aro) para oírla y
   aprender su nombre en Tidal, eliges sus pasos y la añades; piano, bajo, guitarra, saxo, trompeta, marimba y kalimba con
   un teclado en pantalla que escribe tu melodía como código. Cada componente tiene además su propio icono.
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.

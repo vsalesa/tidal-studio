@@ -1,10 +1,36 @@
-// Instrumentos ilustrados: batería interactiva y teclado para instrumentos melódicos.
-// Ilustraciones dibujadas a mano en SVG (estilo «Partitura»), sin imágenes externas.
+// Instrumentos con fotos reales: batería interactiva y teclado para instrumentos melódicos.
+// Fotos con licencia libre de Wikimedia Commons (créditos en cada instrumento y en CREDITS.md).
 import { L } from "./i18n.js";
 
-const INK = "#2a2620", IVORY = "#fbf6ea", BRASS = "#d9a531", BRASS_D = "#a8761a", RED = "#c4452c", RED_D = "#8f2d1b",
-  CHROME = "#c9c3b8", WOOD = "#b5713b", WOOD_D = "#7d4a22", TEAL = "#1d7f86";
-const S = `stroke="${INK}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"`;
+const IMG = "img/instruments/";
+const COMMONS = "https://commons.wikimedia.org/wiki/File:";
+const LIC = {
+  "CC BY-SA 3.0": "https://creativecommons.org/licenses/by-sa/3.0/",
+  "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+};
+// fit: "contain" = producto sobre fondo blanco (se funde con la tarjeta); "cover" = foto con su propio fondo
+const PHOTOS = {
+  drums: { src: "drums.jpg", fit: "cover", author: "Englishteacher68", license: "CC BY-SA 4.0", file: "Pearl_Midtown_compact_drum_kit.jpg" },
+  piano: { src: "piano.jpg", fit: "contain", author: "Steinway & Sons; derivative work: Morn", license: "CC BY-SA 3.0",
+    file: "Steinway_%26_Sons_concert_grand_piano,_model_D-274,_manufactured_at_Steinway%27s_factory_in_Hamburg,_Germany_cropped.jpg" },
+  bass: { src: "bass.jpg", fit: "contain", author: "Th. Ott", license: "CC BY-SA 3.0", file: "Fender_Jazz-Bass_1966.jpg" },
+  guitar: { src: "guitar.jpg", fit: "contain", author: "muzyczny.pl", license: "CC BY-SA 4.0", file: "Gitara_klasyczna_C30M_firmy_Yamaha.jpg" },
+  sax: { src: "sax.jpg", fit: "contain", author: "Yamaha Corporation", license: "CC BY-SA 4.0", file: "Yamaha_Saxophone_YAS-62.tif" },
+  trumpet: { src: "trumpet.jpg", fit: "contain", author: "Yamaha Corporation", license: "CC BY-SA 4.0", file: "Yamaha_Trumpet_YTR-8335LA_crop.jpg" },
+  marimba: { src: "marimba.jpg", fit: "cover", author: "HorsePunchKid", license: "CC BY-SA 3.0", file: "Bass_Marimba.jpg" },
+  kalimba: { src: "kalimba.jpg", fit: "cover", author: "Ernst-Andreas Müller (uploaded by Poipoi)", license: "CC BY-SA 3.0", file: "Kalimba.jpg" },
+};
+const escA = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+export function photoImg(id, cls = "") {
+  const p = PHOTOS[id];
+  return `<img class="inst-photo ${p.fit}${cls ? " " + cls : ""}" src="${IMG}${p.src}" alt="" draggable="false">`;
+}
+// pie de foto con autor y licencia (obligatorio en CC BY-SA)
+export function photoCredit(id) {
+  const p = PHOTOS[id];
+  return `<div class="inst-credit">${L("Foto", "Photo")}: <a href="${COMMONS}${p.file}" target="_blank" rel="noopener">${escA(p.author)}</a> · <a href="${LIC[p.license]}" target="_blank" rel="noopener">${p.license}</a> · ${L("vía Wikimedia Commons", "via Wikimedia Commons")}</div>`;
+}
 
 // ------------------------------------------------------------------ batería
 export const DRUM_PIECES = {
@@ -17,7 +43,7 @@ export const DRUM_PIECES = {
   ht: { es: "Tom agudo", en: "High tom", steps: [0, 0, 0, 0, 0, 1, 0, 0],
     tip: ["El tambor más pequeño y agudo. Los toms se usan para redobles al final de una frase.", "The smallest, highest drum. Toms are used for fills at the end of a phrase."] },
   mt: { es: "Tom medio", en: "Mid tom", steps: [0, 0, 0, 0, 0, 0, 1, 0],
-    tip: ["Tom de altura media: junto al agudo y al grave forma una escalera de tambores.", "Medium-pitched tom: with the high and low ones it makes a staircase of drums."] },
+    tip: ["Tom de altura media: junto al agudo y al grave forma una escalera de tambores. Esta batería compacta solo trae dos toms, así que el medio no sale en la foto: pulsa su botón debajo.", "Medium-pitched tom: with the high and low ones it makes a staircase of drums. This compact kit only has two toms, so the mid tom is not in the photo: press its button below."] },
   lt: { es: "Tom base (grave)", en: "Floor tom (low)", steps: [0, 0, 0, 0, 0, 0, 0, 1],
     tip: ["El tom más grave, apoyado en el suelo. Cierra los redobles con fuerza.", "The lowest tom, standing on the floor. It closes fills with power."] },
   bd: { es: "Bombo", en: "Kick drum", steps: [1, 0, 1, 0, 1, 0, 1, 0],
@@ -28,97 +54,61 @@ export const DRUM_PIECES = {
     tip: ["Golpear el borde metálico de la caja: un «toc» seco, típico del reggaetón y la música latina.", "Hitting the snare's metal rim: a dry «tock», typical of reggaeton and Latin music."] },
 };
 
-function badge(p, x, y, lx, ly) {
-  return `<g class="dk-badge" data-p="${p}"><path d="M${lx} ${ly}L${x} ${y}" stroke="${INK}" stroke-width="2"/><circle cx="${x}" cy="${y}" r="13" fill="#fff" stroke="${INK}" stroke-width="2.4"/><text x="${x}" y="${y + 4.5}" text-anchor="middle">${p}</text></g>`;
-}
+// Zonas clicables sobre la foto (coordenadas de la foto original, 1920×1472).
+// Se dibujan de atrás hacia delante: lo que tapa a otra pieza va después.
+const DK_W = 1920, DK_H = 1472;
+const DK_SHAPES = {
+  lt: `<path d="M338 655 L670 655 L670 1020 L338 1020 Z"/>`,
+  bd: `<circle cx="975" cy="968" r="300"/>`,
+  sn: `<path d="M872 585 L1258 585 L1258 705 L872 705 Z"/>`,
+  rm: `<path class="dk-rim" d="M880 580 Q1060 548 1255 582"/>`,
+  cr: `<ellipse cx="535" cy="418" rx="335" ry="48"/><ellipse cx="1520" cy="128" rx="240" ry="40"/>`,
+  ho: `<ellipse cx="1485" cy="346" rx="190" ry="24"/>`,
+  hh: `<ellipse cx="1490" cy="392" rx="190" ry="22"/>`,
+  ht: `<ellipse cx="1190" cy="500" rx="172" ry="158"/>`,
+};
+const DK_ORDER = ["lt", "bd", "sn", "rm", "cr", "ho", "hh", "ht"];
+// [x, y] de la etiqueta y [x, y] del punto al que señala
+const DK_BADGES = {
+  cr: [150, 290, 330, 400], ho: [1800, 260, 1660, 338], hh: [1800, 470, 1665, 398], ht: [1215, 215, 1195, 345],
+  sn: [1400, 760, 1250, 680], rm: [760, 520, 885, 576], lt: [170, 820, 340, 840], bd: [560, 1330, 720, 1190],
+};
 
 export function drumKitSVG(sel = "", labels = true) {
   // sin etiquetas = miniatura: no es interactiva
-  const on = (p) => labels ? `class="dk-p${sel === p ? " sel" : ""}" data-p="${p}"` : "";
-  return `<svg class="drumkit" viewBox="0 0 330 222" role="img" aria-label="${L("Batería", "Drum kit")}">
-  <ellipse cx="165" cy="212" rx="150" ry="7" fill="${INK}" opacity=".08"/>
-  <g ${S} fill="none" opacity=".85"><path d="M62 58L62 200M62 200l-18 10M62 200l18 10M62 150l-18 60M62 150l18 60" stroke="#8a847a"/>
-    <path d="M276 92V200M276 200l-16 10M276 200l16 10M276 160l-16 50M276 160l16 50" stroke="#8a847a"/>
-    <path d="M251 160l-14 46M251 160l14 46M251 150v10" stroke="#8a847a"/>
-    <path d="M160 100v-14M130 82l30 8 30-8" stroke="#8a847a"/></g>
-  <g ${on("cr")}><ellipse cx="66" cy="50" rx="58" ry="11" transform="rotate(-9 66 50)" fill="${BRASS}" ${S}/><ellipse cx="62" cy="50" rx="10" ry="3.6" transform="rotate(-9 62 50)" fill="${BRASS_D}"/></g>
-  <g ${on("lt")}><path d="M22 128v54c0 6 17 10 38 10s38-4 38-10v-54" fill="${RED}" ${S}/><path d="M22 140h76M22 172h76" stroke="${RED_D}" stroke-width="2"/><path d="M30 182l-4 22M90 182l4 22" ${S}/><ellipse cx="60" cy="128" rx="38" ry="10" fill="${IVORY}" ${S}/></g>
-  <g ${on("mt")}><g transform="rotate(-8 124 82)"><path d="M93 64v38c0 5 14 9 31 9s31-4 31-9V64" fill="${RED}" ${S}/><path d="M93 74h62" stroke="${RED_D}" stroke-width="2"/><ellipse cx="124" cy="64" rx="31" ry="8.5" fill="${IVORY}" ${S}/></g></g>
-  <g ${on("ht")}><g transform="rotate(8 196 82)"><path d="M168 66v34c0 5 13 8 28 8s28-3 28-8V66" fill="${RED}" ${S}/><path d="M168 76h56" stroke="${RED_D}" stroke-width="2"/><ellipse cx="196" cy="66" rx="28" ry="8" fill="${IVORY}" ${S}/></g></g>
-  <g ${on("bd")}><circle cx="160" cy="152" r="56" fill="${RED}" ${S}/><circle cx="160" cy="152" r="46" fill="${INK}"/><circle cx="160" cy="152" r="46" fill="none" stroke="${CHROME}" stroke-width="3"/><path d="M136 152c4 0 4-8 8-8s4 16 8 16 4-16 8-16 4 16 8 16 4-8 8-8" stroke="${IVORY}" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".85"/><path d="M128 204l-8 6M192 204l8 6" ${S}/></g>
-  <g ${on("sn")}><path d="M216 140v20c0 5 16 9 35 9s35-4 35-9v-20" fill="${CHROME}" ${S}/><path d="M226 145v21M238 147v22M251 148v22M264 147v22M276 145v21" stroke="#8a847a" stroke-width="1.6"/><ellipse cx="251" cy="140" rx="35" ry="9" fill="${IVORY}" ${S}/></g>
-  <g ${on("rm")}><path d="M216 140c0 5 16 9 35 9s35-4 35-9" fill="none" stroke="${INK}" stroke-width="5.5"/><path d="M216 140c0 5 16 9 35 9s35-4 35-9" fill="none" stroke="${CHROME}" stroke-width="2.6"/></g>
-  <g ${on("hh")}><ellipse cx="276" cy="100" rx="38" ry="6" fill="${BRASS}" ${S}/></g>
-  <g ${on("ho")}><ellipse cx="276" cy="86" rx="38" ry="6" fill="${BRASS}" ${S}/><path d="M276 80v-10" ${S}/></g>
-  ${labels ? [badge("cr", 22, 18, 40, 44), badge("ho", 312, 60, 300, 82), badge("hh", 314, 124, 304, 102), badge("mt", 108, 28, 118, 60), badge("ht", 220, 28, 206, 60),
-    badge("lt", 18, 104, 30, 122), badge("bd", 108, 206, 124, 190), badge("sn", 204, 196, 228, 162), badge("rm", 304, 160, 284, 146)].join("") : ""}
-</svg>`;
+  if (!labels) return photoImg("drums");
+  const shapes = DK_ORDER.map((p) => `<g class="dk-p${sel === p ? " sel" : ""}" data-p="${p}"><title>${p}: ${escA(L(DRUM_PIECES[p].es, DRUM_PIECES[p].en))}</title>${DK_SHAPES[p]}</g>`).join("");
+  const badges = Object.entries(DK_BADGES).map(([p, [x, y, lx, ly]]) =>
+    `<g class="dk-badge${sel === p ? " sel" : ""}" data-p="${p}"><path d="M${lx} ${ly}L${x} ${y}"/><circle cx="${x}" cy="${y}" r="64"/><text x="${x}" y="${y + 20}" text-anchor="middle">${p}</text></g>`).join("");
+  const chips = Object.keys(DRUM_PIECES).map((p) => `<button class="dk-chip${sel === p ? " sel" : ""}" data-p="${p}"><code>${p}</code> ${escA(L(DRUM_PIECES[p].es, DRUM_PIECES[p].en))}</button>`).join("");
+  return `<div class="drumkit" role="group" aria-label="${L("Batería", "Drum kit")}">
+  <div class="dk-photo">${photoImg("drums")}<svg viewBox="0 0 ${DK_W} ${DK_H}" preserveAspectRatio="none" aria-hidden="true">${shapes}${badges}</svg></div>
+  <div class="dk-chips">${chips}</div>
+</div>`;
 }
-
-// ------------------------------------------------------------------ instrumentos melódicos
-const piano = `<svg viewBox="0 0 240 160"><ellipse cx="120" cy="152" rx="100" ry="5" fill="${INK}" opacity=".08"/>
-  <path d="M40 56L196 20l6 10L52 68z" fill="${INK}" ${S}/><path d="M118 40l-6 34" ${S}/>
-  <path d="M30 70h150c22 0 36 10 34 26-2 14-22 16-34 24-10 7-20 10-40 10H30z" fill="${INK}" ${S}/>
-  <rect x="30" y="112" width="96" height="16" rx="2" fill="${IVORY}" ${S}/>
-  <path d="M42 112v16M54 112v16M66 112v16M78 112v16M90 112v16M102 112v16M114 112v16" stroke="${INK}" stroke-width="1.4"/>
-  <path d="M38 112v9M50 112v9M62 112v9M86 112v9M98 112v9" stroke="${INK}" stroke-width="4"/>
-  <path d="M40 130v18M120 130v18M180 120v28" ${S}/><path d="M60 98v-8h18v8" fill="none" stroke="${CHROME}" stroke-width="2"/></svg>`;
-const bass = `<svg viewBox="0 0 240 160"><ellipse cx="120" cy="152" rx="96" ry="5" fill="${INK}" opacity=".08"/>
-  <path d="M40 96c-14-14-6-36 14-34 10 1 14 8 24 6 12-2 18-14 32-10 18 5 16 26 4 34 10 8 14 26-2 34-14 7-24-4-36-2-10 2-14 12-30 10-20-3-24-26-6-38z" fill="${TEAL}" ${S}/>
-  <path d="M60 104l10-6 48-10" fill="none" stroke="${IVORY}" stroke-width="7" stroke-linecap="round"/>
-  <path d="M96 92L214 30" stroke="${WOOD}" stroke-width="10" stroke-linecap="round"/><path d="M96 92L214 30" ${S} fill="none" opacity=".25"/>
-  <path d="M206 26l20-12 8 10-20 14z" fill="${WOOD_D}" ${S}/>
-  <path d="M62 112L218 26M64 116L220 30M66 120L222 34M68 124L224 38" stroke="${CHROME}" stroke-width="1"/>
-  <rect x="58" y="104" width="20" height="9" rx="2" transform="rotate(-28 68 108)" fill="${INK}"/><circle cx="216" cy="14" r="3" fill="${CHROME}" ${S}/><circle cx="230" cy="22" r="3" fill="${CHROME}" ${S}/></svg>`;
-const guitar = `<svg viewBox="0 0 240 160"><ellipse cx="120" cy="152" rx="96" ry="5" fill="${INK}" opacity=".08"/>
-  <path d="M98 90L212 34" stroke="${WOOD_D}" stroke-width="11" stroke-linecap="round"/><path d="M204 30l22-10 7 12-22 10z" fill="${WOOD_D}" ${S}/>
-  <path d="M84 70c20-6 34 8 30 26-2 10-8 14-6 22 4 18-12 34-36 32-18-1-28-10-36-20-12-2-24-12-22-28 2-20 22-28 38-22 10 4 18-6 32-10z" fill="${WOOD}" ${S}/>
-  <circle cx="82" cy="104" r="12" fill="${INK}"/><circle cx="82" cy="104" r="15" fill="none" stroke="${WOOD_D}" stroke-width="2"/>
-  <rect x="40" y="114" width="22" height="7" rx="2" transform="rotate(-26 51 118)" fill="${WOOD_D}" ${S}/>
-  <path d="M50 122L216 36M50 117L214 32M48 112L212 28" stroke="${IVORY}" stroke-width="1" opacity=".9"/></svg>`;
-const sax = `<svg viewBox="0 0 240 160"><ellipse cx="120" cy="152" rx="80" ry="5" fill="${INK}" opacity=".08"/>
-  <path d="M74 18l18 6" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>
-  <path d="M92 24c10 4 14 10 16 22l12 66c4 22 20 32 38 26 12-4 18-14 20-30" fill="none" stroke="${BRASS_D}" stroke-width="22" stroke-linecap="round"/>
-  <path d="M92 24c10 4 14 10 16 22l12 66c4 22 20 32 38 26 12-4 18-14 20-30" fill="none" stroke="${BRASS}" stroke-width="17" stroke-linecap="round"/>
-  <path d="M164 90c2-14 14-24 30-22l6 30c-14 4-28 2-36-8z" fill="${BRASS}" ${S}/><ellipse cx="197" cy="83" rx="7" ry="16" transform="rotate(-12 197 83)" fill="${BRASS_D}" ${S}/>
-  ${[[112, 52], [114, 66], [117, 80], [120, 94], [128, 118], [146, 128]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.5" fill="${IVORY}" ${S}/>`).join("")}
-  <path d="M126 50l14 4M128 66l14 2" stroke="${BRASS_D}" stroke-width="2.4" stroke-linecap="round"/></svg>`;
-const trumpet = `<svg viewBox="0 0 240 160"><ellipse cx="120" cy="140" rx="100" ry="5" fill="${INK}" opacity=".08"/>
-  <path d="M22 74h10" stroke="${INK}" stroke-width="7" stroke-linecap="round"/>
-  <rect x="64" y="74" width="98" height="30" rx="15" fill="none" stroke="${BRASS_D}" stroke-width="9"/><rect x="64" y="74" width="98" height="30" rx="15" fill="none" stroke="${BRASS}" stroke-width="5"/>
-  <path d="M32 74H170" stroke="${BRASS_D}" stroke-width="9" stroke-linecap="round"/><path d="M32 74H170" stroke="${BRASS}" stroke-width="5" stroke-linecap="round"/>
-  <path d="M166 70l52-26v62l-52-26z" fill="${BRASS}" ${S}/><ellipse cx="218" cy="75" rx="9" ry="31" fill="${BRASS_D}" ${S}/>
-  ${[94, 112, 130].map((x) => `<rect x="${x}" y="52" width="13" height="58" rx="3" fill="${BRASS}" ${S}/><rect x="${x + 2}" y="40" width="9" height="12" rx="2" fill="${CHROME}" ${S}/><circle cx="${x + 6.5}" cy="37" r="6" fill="${IVORY}" ${S}/>`).join("")}</svg>`;
-const marimba = `<svg viewBox="0 0 240 160"><ellipse cx="120" cy="152" rx="104" ry="5" fill="${INK}" opacity=".08"/>
-  <path d="M28 82h188M40 82l-10 66M204 82l10 66" ${S} fill="none"/>
-  ${Array.from({ length: 11 }, (_, i) => { const x = 34 + i * 17, h = 46 - i * 2.6; return `<rect x="${x + 4}" y="86" width="7" height="${h}" rx="3" fill="${CHROME}" ${S}/><rect x="${x}" y="${72 - (10 - i) * 0.4}" width="15" height="${22 - i * 0.6}" rx="3" fill="${i % 2 ? WOOD : "#c88447"}" ${S}/>`; }).join("")}
-  <path d="M120 20l-20 44M150 20l-6 46" ${S}/><circle cx="98" cy="68" r="6" fill="${RED}" ${S}/><circle cx="143" cy="70" r="6" fill="${RED}" ${S}/></svg>`;
-const kalimba = `<svg viewBox="0 0 240 160"><ellipse cx="120" cy="150" rx="70" ry="5" fill="${INK}" opacity=".08"/>
-  <rect x="62" y="28" width="116" height="116" rx="22" fill="${WOOD}" ${S}/><circle cx="120" cy="112" r="12" fill="${WOOD_D}" ${S}/>
-  <path d="M74 84h92" stroke="${CHROME}" stroke-width="6" stroke-linecap="round"/><path d="M74 84h92" stroke="${INK}" stroke-width="1.5" opacity=".4"/>
-  ${[44, 52, 60, 68, 76, 80, 76, 68, 60, 52, 44].map((h, i) => `<path d="M${80 + i * 8} ${84 - h + 30}V${92}" stroke="${CHROME}" stroke-width="5" stroke-linecap="round"/><path d="M${80 + i * 8} ${84 - h + 30}V${92}" stroke="${INK}" stroke-width="1" opacity=".35"/>`).join("")}</svg>`;
 
 // sound: nombre del sonido en Tidal. synth: sintetizador de SuperDirt (n = nota real). pack: se instala de VCSL.
 export const INSTRUMENTS = [
-  { id: "drums", es: "Batería", en: "Drum kit", kind: "percusion", svg: null,
+  { id: "drums", es: "Batería", en: "Drum kit", kind: "percusion",
     tip: ["Pulsa cada pieza para oírla. Luego elige en qué pasos suena y añádela como pista.", "Press each piece to hear it. Then choose which steps it plays on and add it as a track."] },
-  { id: "piano", es: "Piano", en: "Piano", kind: "armonia", svg: piano, sound: "superpiano", synth: true, oct: 5, voice: "triangle",
+  { id: "piano", es: "Piano", en: "Piano", kind: "armonia", sound: "superpiano", synth: true, oct: 5, voice: "triangle",
     tip: ["El instrumento para aprender armonía: toca varias notas a la vez y tendrás un acorde.", "The instrument for learning harmony: play several notes at once and you have a chord."] },
-  { id: "bass", es: "Bajo eléctrico", en: "Bass guitar", kind: "bajo", svg: bass, sound: "superpwm", synth: true, oct: 3, voice: "sawtooth", extra: " # lpf 900",
+  { id: "bass", es: "Bajo eléctrico", en: "Bass guitar", kind: "bajo", sound: "superpwm", synth: true, oct: 3, voice: "sawtooth", extra: " # lpf 900",
     tip: ["Notas graves que unen el ritmo con la armonía. Suele tocar la nota principal del acorde.", "Low notes that glue the beat to the harmony. It usually plays the chord's main note."] },
-  { id: "guitar", es: "Guitarra", en: "Guitar", kind: "armonia", svg: guitar, sound: "gtr", oct: 5, voice: "triangle",
+  { id: "guitar", es: "Guitarra", en: "Guitar", kind: "armonia", sound: "gtr", oct: 5, voice: "triangle",
     tip: ["Muestra de guitarra de Dirt-Samples. Tidal cambia su altura con note.", "A guitar sample from Dirt-Samples. Tidal changes its pitch with note."] },
-  { id: "sax", es: "Saxofón", en: "Saxophone", kind: "melodia", svg: sax, sound: "sax", oct: 5, voice: "square",
+  { id: "sax", es: "Saxofón", en: "Saxophone", kind: "melodia", sound: "sax", oct: 5, voice: "square",
     tip: ["Viento-metal del jazz y el soul: melodías cortas con huecos para respirar.", "The wind instrument of jazz and soul: short melodies with gaps to breathe."] },
-  { id: "trumpet", es: "Trompeta", en: "Trumpet", kind: "melodia", svg: trumpet, sound: "", oct: 5, voice: "square", freesound: "trumpet",
+  { id: "trumpet", es: "Trompeta", en: "Trumpet", kind: "melodia", sound: "", oct: 5, voice: "square", freesound: "trumpet",
     tip: ["Tidal no trae trompeta: búscala en Freesound (biblioteca de samples) y aparecerá aquí.", "Tidal has no trumpet built in: find one on Freesound (sample library) and it will show up here."] },
-  { id: "marimba", es: "Marimba", en: "Marimba", kind: "melodia", svg: marimba, sound: "marimba", pack: "vcsl", oct: 5, voice: "sine",
+  { id: "marimba", es: "Marimba", en: "Marimba", kind: "melodia", sound: "marimba", pack: "vcsl", oct: 5, voice: "sine",
     tip: ["Láminas de madera golpeadas: suena cálido y redondo. Viene del pack libre VCSL (CC0).", "Struck wooden bars: warm and round. It comes from the free VCSL pack (CC0)."] },
-  { id: "kalimba", es: "Kalimba", en: "Kalimba", kind: "melodia", svg: kalimba, sound: "kalimba", pack: "vcsl", oct: 5, voice: "sine",
+  { id: "kalimba", es: "Kalimba", en: "Kalimba", kind: "melodia", sound: "kalimba", pack: "vcsl", oct: 5, voice: "sine",
     tip: ["Piano de pulgar africano: notas cristalinas, ideal para lo-fi y ambient. Pack VCSL (CC0).", "African thumb piano: crystal-clear notes, great for lo-fi and ambient. VCSL pack (CC0)."] },
 ];
 export const instById = Object.fromEntries(INSTRUMENTS.map((i) => [i.id, i]));
-export const instThumb = (ins) => ins.id === "drums" ? drumKitSVG("", false) : ins.svg;
+export const instThumb = (ins) => photoImg(ins.id);
+export const instArt = (ins) => photoImg(ins.id, "big");
 
 // ------------------------------------------------------------------ notas y código
 export const NOTE_NAMES = ["c", "cs", "d", "ds", "e", "f", "fs", "g", "gs", "a", "as", "b"];

@@ -512,36 +512,62 @@ dialog label input, dialog label select { box-sizing: border-box; }
 .sm-trim canvas { width: 100%; height: 90px; border-radius: 6px; }
 .sm-trim .ctl-code { margin-left: 0; align-self: flex-start; }
 
-/* ----- Instrumentos ilustrados ----- */
+/* ----- Instrumentos con fotos reales ----- */
 .inst-strip { margin: 2px 0 10px; }
 .inst-head { display: flex; align-items: center; gap: 6px; font-weight: 600; margin-bottom: 6px; }
 .inst-head span { margin-left: auto; color: var(--ink-3); font-weight: 400; font-size: 12px; }
 .inst-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
 .inst-card { --k: var(--accent); min-width: 0; line-height: 1.2; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 3px 5px; border: 1px solid var(--rule); border-radius: 10px; background: var(--card); font: inherit; font-size: 11px; font-weight: 500; color: var(--ink); cursor: pointer; transition: transform .15s, border-color .15s, box-shadow .15s; }
 .inst-card:hover { border-color: var(--k); transform: translateY(-2px); box-shadow: 0 4px 12px color-mix(in srgb, var(--k) 20%, transparent); }
-.inst-art { display: block; width: 100%; aspect-ratio: 3 / 2; border-radius: 8px; background: color-mix(in srgb, var(--k) 9%, var(--paper, #fbf8f1)); }
-.inst-art svg { width: 100%; height: 100%; display: block; }
-.inst-card:hover .inst-art svg { animation: inst-wiggle .5s ease; }
-@keyframes inst-wiggle { 30% { transform: rotate(-3deg); } 60% { transform: rotate(2deg); } }
-#instrument { width: min(980px, 96vw); padding: 22px 26px 24px; }
+.inst-art { display: block; width: 100%; aspect-ratio: 3 / 2; border-radius: 8px; overflow: hidden; background: color-mix(in srgb, var(--k) 9%, var(--paper, #fbf8f1)); }
+.inst-photo { display: block; width: 100%; height: 100%; user-select: none; }
+.inst-photo.cover { object-fit: cover; }
+/* fotos de producto sobre fondo blanco: multiply hace que el blanco tome el color de la tarjeta */
+.inst-photo.contain { object-fit: contain; mix-blend-mode: multiply; padding: 4%; box-sizing: border-box; }
+.inst-card:hover .inst-art .inst-photo { animation: inst-wiggle .5s ease; }
+@keyframes inst-wiggle { 30% { transform: rotate(-2deg) scale(1.03); } 60% { transform: rotate(1.5deg) scale(1.03); } }
+#instrument { width: min(1000px, 96vw); }
 .inst-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 12px; }
 .inst-tabs button { --k: var(--accent); flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 2px; width: 92px; padding: 5px; border: 1px solid var(--rule); border-radius: 12px; background: var(--card); font: inherit; font-size: 12px; cursor: pointer; }
 .inst-tabs button.active { border-color: var(--k); box-shadow: inset 0 0 0 1px var(--k); font-weight: 600; }
 .inst-main { display: grid; grid-template-columns: 1.15fr 1fr; gap: 22px; align-items: start; }
 .inst-stage { border-radius: 16px; padding: 10px; background: color-mix(in srgb, var(--k) 8%, var(--paper, #fbf8f1)); border: 1px solid var(--rule); }
-.inst-stage svg { width: 100%; height: auto; display: block; }
-.inst-big svg { max-height: 330px; }
-.drumkit .dk-p, .drumkit .dk-badge { cursor: pointer; transition: filter .15s, transform .15s; transform-box: fill-box; transform-origin: center; }
-.drumkit .dk-p:hover { filter: brightness(1.12) drop-shadow(0 0 4px rgba(217,72,43,.45)); }
-.drumkit .dk-p.sel { filter: drop-shadow(0 0 5px rgba(217,72,43,.9)); animation: dk-hit .35s ease; }
-@keyframes dk-hit { 40% { transform: scale(1.04); } }
-.drumkit .dk-badge text { font: 600 12px var(--mono, ui-monospace, monospace); fill: var(--ink); pointer-events: none; }
+.inst-big { border-radius: 10px; overflow: hidden; }
+.inst-big .inst-photo { height: auto; max-height: 340px; }
+.inst-big .inst-photo.contain { width: 100%; height: 300px; }
+.inst-big .inst-photo.cover { aspect-ratio: 4 / 3; height: auto; }
+.inst-credit { margin-top: 6px; font-size: 11px; color: var(--ink-3); line-height: 1.35; }
+.inst-credit a { color: inherit; text-decoration: underline; text-decoration-color: color-mix(in srgb, currentColor 40%, transparent); }
+.inst-credit a:hover { color: var(--ink); }
+.dk-photo { position: relative; border-radius: 10px; overflow: hidden; background: #0b0b0b; aspect-ratio: 1920 / 1472; }
+.dk-photo .inst-photo { position: absolute; inset: 0; object-fit: cover; }
+.dk-photo svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.drumkit .dk-p { cursor: pointer; fill: rgba(255,255,255,0); stroke: rgba(255,255,255,0); stroke-width: 6; transition: fill .15s, stroke .15s; }
+.drumkit .dk-p .dk-rim { fill: none; stroke-width: 34; stroke-linecap: round; }
+.drumkit .dk-p:hover { fill: rgba(242,112,80,.18); stroke: rgba(255,170,140,.9); }
+.drumkit .dk-p.sel { fill: rgba(242,112,80,.30); stroke: #ff8a66; stroke-width: 8; animation: dk-hit .35s ease; }
+.drumkit .dk-p .dk-rim, .drumkit .dk-p:hover .dk-rim { fill: none; }
+.drumkit .dk-p:hover .dk-rim { stroke: rgba(255,170,140,.9); }
+.drumkit .dk-p.sel .dk-rim { stroke: #ff8a66; }
+@keyframes dk-hit { 40% { opacity: .55; } }
+.drumkit .dk-badge { cursor: pointer; }
+.drumkit .dk-badge path { stroke: rgba(255,255,255,.85); stroke-width: 5; }
+.drumkit .dk-badge circle { fill: #fff; stroke: var(--ink, #2a2620); stroke-width: 7; transition: fill .15s; }
+.drumkit .dk-badge text { font: 700 56px var(--mono, ui-monospace, monospace); fill: var(--ink, #2a2620); pointer-events: none; }
 .drumkit .dk-badge:hover circle { fill: #fde9e3; }
+.drumkit .dk-badge.sel circle { fill: var(--k-percusion, #d9482b); stroke: #fff; }
+.drumkit .dk-badge.sel text { fill: #fff; }
+.dk-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.dk-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 99px; border: 1px solid var(--rule); background: var(--card); font: inherit; font-size: 11.5px; color: var(--ink-2); cursor: pointer; }
+.dk-chip code { font-weight: 600; color: var(--ink); background: none; padding: 0; }
+.dk-chip:hover { border-color: var(--k-percusion); }
+.dk-chip.sel { background: var(--k-percusion); border-color: var(--k-percusion); color: #fff; }
+.dk-chip.sel code { color: #fff; }
 .inst-piece { display: flex; align-items: center; gap: 8px; font-size: 18px; }
 .inst-piece code { background: var(--k-percusion); color: #fff; border-radius: 8px; padding: 2px 8px; font-size: 15px; }
 .inst-tip { color: var(--ink-2); margin: 6px 0 10px; }
 .inst-lbl { font-size: 12.5px; font-weight: 600; color: var(--ink-2); margin: 10px 0 6px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.inst-steps { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+.inst-steps { max-width: 440px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
 .inst-steps button { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--rule); background: var(--sunk); font: inherit; font-size: 11px; color: var(--ink-3); cursor: pointer; padding: 0; }
 .inst-steps button.beat { border-color: color-mix(in srgb, var(--ink) 25%, var(--rule)); }
 .inst-steps button.on { background: var(--k-percusion); border-color: var(--k-percusion); color: #fff; }

@@ -10,7 +10,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **Interactive tutorial**: the first time you open the studio, Maestro walks you through everything in 21 short steps
   (play the drums, add tracks, effects, chat controls, ideas, recipes, blocks, arrangement, code, library…). Each step
   waits for you to do it, and you can repeat it from the cap button.
-- **Illustrated instruments**: a drum kit where you press each piece (bd, sn, hh, ho, toms, crash, rimshot) to hear it
+- **Real instrument photos** (openly licensed, from Wikimedia Commons, see [CREDITS.md](CREDITS.md)): a drum kit where you press each piece (bd, sn, hh, ho, toms, crash, rimshot) to hear it
   and learn its Tidal name, then choose its steps and add it; piano, bass, guitar, sax, trumpet, marimba and kalimba
   with an on-screen keyboard that writes your melody as code. Every component also has its own icon.
 - **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.

@@ -2,7 +2,7 @@ import { L, LANG, setLang } from "./i18n.js";
 import { STYLES, CATEGORIES, COMPONENTS, byId } from "./catalog.js";
 import { compIcon } from "./comp-icons.js";
 import { startTour, stopTour, tourFlag, tourSeen } from "./tour.js";
-import { INSTRUMENTS, instById, instThumb, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep } from "./instruments.js";
+import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
@@ -674,7 +674,7 @@ function renderCatalog() {
   }
 }
 
-// ------------------------------------------------------------------ instrumentos ilustrados
+// ------------------------------------------------------------------ instrumentos con fotos reales
 const inst = { id: "drums", piece: "bd", steps: {}, seqs: {}, oct: {}, sound: {}, lib: null, get seq() { return this.seqs[this.id] || (this.seqs[this.id] = []); }, set seq(v) { this.seqs[this.id] = v; } };
 const isSim = () => !!(server.engine && server.engine.simulation);
 async function openInstrument(id) {
@@ -706,7 +706,7 @@ function renderInstrument() {
       <div class="inst-steps">${steps.map((v, i) => `<button data-st="${i}" class="${v ? "on" : ""}${i % 2 ? "" : " beat"}">${i % 2 ? "" : i / 2 + 1}</button>`).join("")}</div>`;
   } else {
     const oct = inst.oct[ins.id] ?? ins.oct, sound = instSound(ins), ready = instReady(ins, sound);
-    art = `<div class="inst-big">${ins.svg}</div>`;
+    art = `<div class="inst-big">${instArt(ins)}</div>`;
     let src = "";
     if (ins.freesound) {
       const mine = (inst.lib || []).filter((x) => x.type !== "percusion");
@@ -726,7 +726,7 @@ function renderInstrument() {
       <div class="inst-seqbtns"><button data-a="rest">~ ${L("silencio", "rest")}</button><button data-a="pop">${icon("back", 13)} ${L("borrar última", "delete last")}</button><button data-a="clear">${icon("trash", 13)} ${L("vaciar", "clear")}</button></div>`;
   }
   const code = instCode(ins);
-  $("#inst-body").innerHTML = `${tabs}<div class="inst-main"><div class="inst-stage" style="--k:${KIND_COLOR[ins.kind]}">${art}</div>
+  $("#inst-body").innerHTML = `${tabs}<div class="inst-main"><div class="inst-stage" style="--k:${KIND_COLOR[ins.kind]}">${art}${photoCredit(ins.id)}</div>
     <div class="inst-side">${side}
       <div class="inst-code"><span>${L("Código Tidal", "Tidal code")}</span><code>${esc(code)}</code></div>
       <div class="inst-actions"><button data-a="listen">${icon("play", 13)} ${L("Escuchar", "Listen")}</button>

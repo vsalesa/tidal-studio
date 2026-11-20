@@ -23,7 +23,7 @@ function steps(ctx) {
       text: L("En 5 minutos vas a hacer tu primera canción y conocer todo el estudio. Yo te ilumino cada parte y tú la pruebas. Puedes saltar cualquier paso.",
         "In 5 minutes you'll make your first song and get to know the whole studio. I light up each part and you try it. You can skip any step.") },
     { title: L("1 · Los instrumentos", "1 · The instruments"), target: ".inst-strip", before: () => ctx.closeDialogs(),
-      text: L("Aquí tienes instrumentos de verdad dibujados. Empezamos por el ritmo: abre la batería.", "Here are real instruments, illustrated. Let's start with the beat: open the drum kit."),
+      text: L("Aquí tienes fotos de instrumentos de verdad. Empezamos por el ritmo: abre la batería.", "Here are photos of real instruments. Let's start with the beat: open the drum kit."),
       todo: L("Pulsa «Batería»", "Press «Drum kit»"), done: () => open("#instrument") },
     { title: L("2 · Toca la batería", "2 · Play the drums"), target: "#instrument .inst-stage", before: () => { flags.delete("drum-piece"); if (!open("#instrument")) ctx.openInstrument("drums"); },
       text: L("Cada pieza tiene su nombre en Tidal: bd es el bombo, sn la caja, hh el hi-hat… Pulsa una pieza para oírla.",
