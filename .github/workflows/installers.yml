@@ -74,8 +74,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash packaging/macos/build.sh
 
+      - name: Check whether GHC + Tidal were built
+        id: hs
+        if: always() && steps.gate.outputs.skip != 'true'
+        run: |
+          if [ -f /Users/Shared/TidalStudio/tidal.env ] && [ -e /Users/Shared/TidalStudio/ghc/bin/ghci ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+
       - name: Save GHC + Tidal cache
-        if: steps.gate.outputs.skip != 'true' && steps.cache.outputs.cache-hit != 'true'
+        if: always() && steps.hs.outputs.ok == 'true' && steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
