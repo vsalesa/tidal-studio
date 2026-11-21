@@ -283,6 +283,13 @@ this repository) and then:
 Each plugin can be turned off (its skills and commands disappear) or removed. Check its license and any `NOTICE` before
 sharing its content.
 
+**Included by default: music composition.** The first time Tidal Studio starts with internet, it downloads
+[vsalesa/music-composition-skills](https://github.com/vsalesa/music-composition-skills) (the English translation of
+jtydhr88's 30-skill composition plugin, MIT) into `my-plugins/`. It is marked **Always use**: Maestro loads its main
+`music-composition` skill with every message and always gives one slot to its best-matching skill (harmony, jazz,
+groove, form…). It is downloaded instead of shipped in the installer because its reference files quote copyrighted
+books (see its `NOTICE`). If you remove it, it doesn't come back; untick «Always use» to make it an ordinary plugin.
+
 ### Samples
 
 Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`, `s "name:1"` for the second file).
@@ -303,11 +310,9 @@ repositories). Then use the cloud button in the top bar to save a version with a
 
 ## How it works
 
-```
- Browser (web/)  ──HTTP──▶  server/app.py  ──stdin──▶  GHCi + TidalCycles ──OSC──▶ SuperCollider + SuperDirt ──▶ speakers
-     │                          │
-     └── chat ─────────────────▶ server/llm.py ──▶ OpenAI-compatible / Claude
-```
+[![How Tidal Studio works](docs/diagrams/architecture.png)](docs/diagrams/architecture.svg)
+
+Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.puml) (PlantUML), rendered to [SVG](docs/diagrams/architecture.svg) and PNG with `docs/diagrams/render.sh`.
 
 - `server/app.py`: local server (Python standard library only, no `pip install`). Listens only on `127.0.0.1`.
 - `server/engine.py`: finds and starts `sclang` (with `supercollider/start_superdirt.scd`) and `ghci` (with `tidal/BootTidal.hs`).

@@ -1,0 +1,36 @@
+@startuml
+!include style.iuml
+title <size:20><b>How Tidal Studio works</b></size>
+
+actor "You" as you
+rectangle "<b>Browser</b>\nweb/ (vanilla JS)\nTracks · Blocks · Mix · Code\nMaestro chat" as web #fbe3db
+
+frame "Your computer  (127.0.0.1)" {
+  rectangle "<b>server/app.py</b>\nlocal web server\n(Python standard library)" as app
+  rectangle "<b>server/engine.py</b>\nstarts GHCi and sclang" as engine
+  rectangle "<b>GHCi + TidalCycles</b>\ntidal/BootTidal.hs\nd1 … d12" as tidal #dcefeb
+  rectangle "<b>SuperCollider + SuperDirt</b>\nsupercollider/start_superdirt.scd\nsamples · synths · EQ" as sc #f8ecd2
+  rectangle "<b>server/llm.py</b> + assistant.py\nMaestro's prompts and replies" as llm
+  rectangle "<b>server/skills.py</b> + plugins.py\nskills/ · my-skills/ · my-plugins/" as skills
+  rectangle "<b>server/samples.py</b>\nsamples/ library" as samples
+  node "Speakers" as out
+}
+
+cloud "AI\nOpenAI-compatible · Claude API\nor the claude CLI (your plan)" as ai
+cloud "GitHub · Freesound\nsample packs, your songs repo,\nskills and plugins" as gh
+
+you --> web
+web --> app : HTTP
+app --> engine
+engine --> tidal : code (stdin)
+tidal --> sc : OSC :57120
+sc --> out : audio
+sc ..> app : notes playing\nOSC :57140\n(live highlighting)
+app --> llm : chat
+skills --> llm : matching skills
+llm --> ai
+app --> samples
+samples --> sc : reload sounds\n(OSC /tidalstudio)
+samples ..> gh
+skills ..> gh
+@enduml

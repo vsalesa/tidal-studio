@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import urllib.error
@@ -98,9 +99,23 @@ def _copy_text_tree(src, dst):
             shutil.copyfile(p, t)
 
 
+def _real_git(git):
+    """En macOS sin las Command Line Tools, /usr/bin/git es un «stub» que abre el diálogo
+    «¿Instalar las herramientas de desarrollo?» en vez de fallar. Solo lo usamos si están instaladas;
+    si no, descargamos el .tar.gz."""
+    if sys.platform != "darwin" or os.path.realpath(git) != "/usr/bin/git":
+        return True
+    try:
+        r = subprocess.run(["/usr/bin/xcode-select", "-p"], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    path = r.stdout.strip()
+    return r.returncode == 0 and bool(path) and os.path.isdir(path)
+
+
 def _git(owner, repo, ref, dest):
     git = shutil.which("git")
-    if not git:
+    if not git or not _real_git(git):
         return False
     cmd = [git, "clone", "--depth", "1", "--quiet"] + (["--branch", ref] if ref else []) + \
           [f"https://github.com/{owner}/{repo}.git", dest]
@@ -349,6 +364,33 @@ def install(url, names=None):
         shutil.rmtree(tmp, ignore_errors=True)
 
 
+DEFAULT_REPOS = ["https://github.com/vsalesa/music-composition-skills"]
+
+
+def ensure_defaults(cfg):
+    """Instala los plugins que vienen «por defecto» la primera vez que arranca Tidal Studio.
+    No se empaquetan en el instalador: su contenido cita libros con copyright (ver su NOTICE),
+    así que se descargan de su repositorio. Si los quitas, no vuelven. Devuelve lo instalado."""
+    pl = cfg.setdefault("plugins", {})
+    done = set(pl.get("defaults_done") or [])
+    out = []
+    for url in pl.get("defaults") or []:
+        if url in done:
+            continue
+        owner, repo, _, _ = parse_url(url)
+        try:
+            r = install(url, None)
+        except PluginError as e:
+            print(f"[plugins] No se pudo instalar {owner}/{repo} (se reintentará al arrancar): {e}")
+            continue
+        if r.get("choose"):  # marketplace con varios: instalamos todos los que se puedan
+            r = install(url, [c["name"] for c in r["choose"] if c["installable"]])
+        out += r.get("installed", [])
+        done.add(url)
+    pl["defaults_done"] = sorted(done)
+    return out
+
+
 def remove(name):
     name = _slug(name)
     d = os.path.join(PLUGIN_DIR, name)
@@ -373,6 +415,7 @@ def _md_meta(path):
 def scan(cfg=None):
     pl = (cfg or {}).get("plugins") or {}
     disabled = set(pl.get("disabled") or [])
+    preferred = set(pl.get("preferred") or [])
     out = []
     if not os.path.isdir(PLUGIN_DIR):
         return out
@@ -409,6 +452,8 @@ def scan(cfg=None):
             "marketplace": src.get("marketplace") or "",
             "notice": os.path.isfile(os.path.join(folder, "NOTICE")),
             "enabled": entry not in disabled,
+            "preferred": entry in preferred,
+            "default": (src.get("repo") or "").lower() in {u.split("github.com/")[-1].lower() for u in DEFAULT_REPOS},
             "skills": [s.rsplit("/", 1)[-1] for s in skills],
             "commands": cmds,
             "agents": ags,

@@ -72,6 +72,11 @@ DEFAULT_CONFIG = {
     # Plugins de Claude Code instalados en my-plugins/ (sus skills y comandos los usa Maestro)
     "plugins": {
         "disabled": [],
+        # «Usar siempre»: Maestro carga su skill principal en cada mensaje y prefiere sus skills
+        "preferred": ["music-composition"],
+        # Se descargan la primera vez que arranca (no van en el instalador: ver plugins.ensure_defaults)
+        "defaults": ["https://github.com/vsalesa/music-composition-skills"],
+        "defaults_done": [],
     },
     "temperature": 0.7,
     "language": "es",
@@ -169,6 +174,30 @@ def install_any(cfg, url, names=None):
         if is_skill_link and "no parece un plugin" in str(e):
             return {"kind": "skill", **skillset.install(url, cfg["github"].get("token", ""))}
         raise
+
+
+DEFAULT_PLUGINS = {"state": "idle", "installed": []}
+
+
+def install_default_plugins():
+    """Primer arranque: descarga los plugins por defecto (el de composición musical) en my-plugins/."""
+    cfg = load_config()
+    pending = [u for u in cfg["plugins"].get("defaults") or [] if u not in (cfg["plugins"].get("defaults_done") or [])]
+    if not pending:
+        return
+    DEFAULT_PLUGINS["state"] = "installing"
+    print("[plugins] Descargando los plugins por defecto / downloading default plugins…")
+    try:
+        got = pluginset.ensure_defaults(cfg)
+        fresh = load_config()  # por si cambiaste algo mientras tanto
+        fresh["plugins"]["defaults_done"] = cfg["plugins"]["defaults_done"]
+        save_config(fresh)
+        DEFAULT_PLUGINS.update(state="done", installed=got)
+        if got:
+            print(f"[plugins] Instalado / installed: {', '.join(got)}")
+    except Exception as e:  # sin red, sin git…: se reintenta en el próximo arranque
+        DEFAULT_PLUGINS["state"] = "error"
+        print(f"[plugins] {e}")
 
 
 ENGINE = Engine(ROOT)
@@ -303,7 +332,8 @@ class Handler(SimpleHTTPRequestHandler):
             if path == "/api/skills":
                 cfg = load_config()
                 return self._json({"skills": skillset.public(skillset.scan(cfg)), "folder": skillset.USER_DIR,
-                                   "plugins": pluginset.public(pluginset.scan(cfg)), "plugin_folder": pluginset.PLUGIN_DIR})
+                                   "plugins": pluginset.public(pluginset.scan(cfg)), "plugin_folder": pluginset.PLUGIN_DIR,
+                                   "default_plugins": DEFAULT_PLUGINS["state"]})
             if path == "/api/skills/body":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -477,6 +507,11 @@ class Handler(SimpleHTTPRequestHandler):
                         cur = set(pl.get("disabled") or [])
                         (cur.discard if data.get("on") else cur.add)(name)
                         pl["disabled"] = sorted(cur)
+                        save_config(cfg)
+                    elif act == "prefer":
+                        cur = set(pl.get("preferred") or [])
+                        (cur.add if data.get("on") else cur.discard)(name)
+                        pl["preferred"] = sorted(cur)
                         save_config(cfg)
                     elif act == "install":
                         r = install_any(cfg, data.get("url"), data.get("names"))
@@ -671,6 +706,7 @@ def main():
     _write_port_file(port)
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
+    threading.Thread(target=install_default_plugins, daemon=True).start()
     if not ARGS.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
