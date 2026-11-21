@@ -265,7 +265,7 @@ fieldset { border: 1px solid var(--rule); border-radius: var(--r-sm); margin: 10
 .proj-name { border: 1px solid transparent; background: none; font-family: var(--serif); font-size: 22px; font-weight: 650; padding: 2px 6px; margin: -4px 0 6px -6px; width: 100%; }
 .proj-name:hover { border-color: var(--rule); }
 #newproj, #builder { width: min(820px, 95vw); padding: 22px 26px 24px; }
-.np-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0 6px; }
+.np-choices { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0 6px; }
 .np-choice { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: left; padding: 16px; border-radius: var(--r); background: var(--card); }
 .np-choice:hover { border-color: var(--accent); background: var(--accent-soft); }
 .np-choice .ico { color: var(--accent); }
@@ -1110,3 +1110,38 @@ dialog label.check input { display: inline-block; width: auto; margin: 0; }
 .fx-row .va-sp { flex: 1; }
 .fx-row button { padding: 4px 10px; font-size: 12.5px; }
 .fx-hear.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+/* Importar canción */
+.imp-drop { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 30px 20px; margin: 14px 0 10px; border: 2px dashed var(--rule-strong); border-radius: var(--r); background: var(--card); cursor: pointer; }
+.imp-drop:hover, .imp-drop.over, .imp-drop:focus-visible { border-color: var(--accent); background: var(--accent-soft); outline: none; }
+.imp-drop .ico { color: var(--accent); }
+.imp-drop b { font-family: var(--serif); font-size: 18px; }
+.imp-drop span { color: var(--ink-2); font-size: 13px; max-width: 520px; }
+.imp-tips { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--ink-2); }
+.imp-tips .ico { color: var(--teal); }
+.imp-err { color: var(--danger); background: #fbe6e9; border-radius: var(--r-sm); padding: 8px 12px; }
+.imp-bar { height: 10px; border-radius: 6px; background: var(--sunk); overflow: hidden; margin: 14px 0 6px; }
+.imp-bar div { height: 100%; background: var(--accent); transition: width .4s; }
+.imp-list { margin: 6px 0; padding-left: 20px; }
+.imp-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0; }
+.imp-facts div { background: var(--card); border: 1px solid var(--rule); border-radius: var(--r-sm); padding: 8px 10px; display: flex; flex-direction: column; min-width: 0; }
+.imp-facts small { color: var(--ink-3); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; }
+.imp-facts b { font-family: var(--serif); font-size: 19px; }
+.imp-facts b.sm { font-family: var(--sans); font-size: 13px; font-weight: 600; }
+.imp-facts span { color: var(--ink-2); font-size: 11.5px; }
+#np-body h3 { margin: 12px 0 4px; font-size: 16px; }
+#np-body h3 .hint { font-family: var(--sans); font-weight: 400; font-size: 12px; }
+.imp-prog { display: flex; flex-wrap: wrap; gap: 6px; }
+.imp-chord { display: inline-flex; flex-direction: column; align-items: center; min-width: 46px; padding: 4px 8px; border-radius: var(--r-sm); background: var(--plum-soft); color: #3f2c66; }
+.imp-chord b { font-size: 14px; }
+.imp-chord small { font-size: 11px; opacity: .8; }
+.imp-sections div { cursor: pointer; border: 2px solid transparent; }
+.imp-sections div:hover, .imp-sections div.on { border-color: var(--plum); }
+.imp-window { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 6px 0; font-size: 13px; }
+.imp-window input { width: 64px; }
+.imp-tracks { display: flex; flex-direction: column; gap: 4px; max-height: 260px; overflow: auto; }
+.imp-track { display: grid; grid-template-columns: auto auto 140px 1fr; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid var(--rule); border-left: 4px solid var(--k-textura); border-radius: var(--r-sm); background: var(--card); font-size: 13px; }
+.imp-track code { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.imp-track.k-percusion { border-left-color: var(--k-percusion); } .imp-track.k-bajo { border-left-color: var(--k-bajo); }
+.imp-track.k-armonia { border-left-color: var(--k-armonia); } .imp-track.k-melodia { border-left-color: var(--k-melodia); }
+@media (max-width: 640px) { .imp-facts { grid-template-columns: 1fr 1fr; } .imp-track { grid-template-columns: auto auto 1fr; } .imp-track code { grid-column: 1 / -1; } }
