@@ -102,6 +102,16 @@ números de una transformación (`every 4 (fast 2)`), añadir ajustes o transfor
 |---|---|
 | ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Editar un bloque](docs/screenshots/es/bloques-editar.png) |
 
+**Enciende y apaga cada efecto**: cada efecto (`# room`, `# delay`, `# lpf`, `# crush`…) tiene su propio interruptor, por
+pista, en la vista de Bloques, debajo del código de cada pista en Pistas y en la tarjeta configuradora de Maestro. Al
+apagarlo deja de sonar solo ese efecto y se guarda su valor, así que al encenderlo vuelve tal cual. En el código queda
+como comentario de Haskell, `{- # room 0.4 -}`, que Tidal ignora; suena al momento (con En vivo activado) y Deshacer lo
+recupera.
+
+| Bloques: un interruptor por efecto | Pistas: la fila de efectos bajo el código |
+|---|---|
+| ![Interruptores en Bloques](docs/screenshots/es/efectos-bloques.png) | ![Interruptores en Pistas](docs/screenshots/es/efectos-pistas.png) |
+
 **Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
 sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.
 
@@ -159,6 +169,12 @@ tu canción, y el botón «Recuperar el chat» la devuelve. «Ocultar» pliega l
 | «Ocultar» las ideas de Maestro para tener más chat | «Limpiar chat»: la canción se queda y el chat puede volver |
 |---|---|
 | ![Ocultar ideas](docs/screenshots/es/ocultar-ideas.png) | ![Limpiar chat](docs/screenshots/es/limpiar-chat.png) |
+
+**Descarta las ideas que no te gusten**: la × de cada idea de Maestro la quita. El navegador lo recuerda (también al
+recargar), su hueco lo ocupa la siguiente idea y Maestro sabe cuáles has descartado para no volver a proponerlas, ni otras
+casi iguales. «Recuperarlas» lo deshace.
+
+![Descartar ideas](docs/screenshots/es/descartar-ideas.png)
 
 ### Instrumentos
 
