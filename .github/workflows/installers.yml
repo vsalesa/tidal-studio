@@ -111,7 +111,7 @@ jobs:
         run: |
           "/Applications/Tidal Studio.app/Contents/MacOS/TidalStudio" --self-test & APP=$!
           ( sleep 240; echo "app still running after 240 s: killing it"; kill -9 $APP ) & WD=$!
-          wait $APP; CODE=$?; kill $WD 2>/dev/null || true
+          CODE=0; wait $APP || CODE=$?; kill $WD 2>/dev/null || true
           echo "--- studio log ---"; tail -n 60 "$HOME/Library/Logs/Tidal Studio/studio.log" || true
           [ "$CODE" = 0 ] || { echo "self-test exit code $CODE"; exit 1; }
           sleep 3
