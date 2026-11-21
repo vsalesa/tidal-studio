@@ -145,6 +145,18 @@ def split_blocks(code):
     return blocks
 
 
+def utf8_env(env=None):
+    """GHCi lee sus scripts con la codificación del sistema. Abierto desde Finder (app de Mac) o un
+    servicio no hay LANG y es ASCII: un acento en BootTidal.hs cortaba el arranque y d1..d12 no existían."""
+    env = dict(os.environ if env is None else env)
+    if SYSTEM != "Windows":
+        cur = env.get("LC_ALL") or env.get("LC_CTYPE") or env.get("LANG") or ""
+        if "utf-8" not in cur.lower() and "utf8" not in cur.lower():
+            env.pop("LC_ALL", None)
+            env["LANG"] = env["LC_CTYPE"] = "en_US.UTF-8" if SYSTEM == "Darwin" else "C.UTF-8"
+    return env
+
+
 class Engine:
     def __init__(self, root):
         self.root = root
@@ -251,7 +263,7 @@ class Engine:
                       stderr=subprocess.STDOUT, cwd=cwd, bufsize=0)
         if SYSTEM == "Windows":
             kwargs["creationflags"] = 0x08000000  # CREATE_NO_WINDOW
-        env = os.environ.copy()
+        env = utf8_env()
         if SYSTEM == "Linux" and not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
             env["QT_QPA_PLATFORM"] = "offscreen"
         kwargs["env"] = env

@@ -42,6 +42,7 @@ const P = {
   blank: `<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/>`,
   steps: `<rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7M17.5 14v7"/>`,
   // GitHub (icono genérico: nube con versiones, sin logotipos de marca)
+  timeline: `<path d="M3 4v16"/><path d="M3 20h18" opacity=".45"/><rect x="5.5" y="5" width="4" height="3" rx="1" fill="currentColor"/><rect x="12.5" y="5" width="4" height="3" rx="1" fill="currentColor"/><rect x="8" y="10.5" width="7" height="3" rx="1" fill="currentColor"/><rect x="16" y="10.5" width="3" height="3" rx="1" fill="currentColor"/><path d="M14.5 3v15" stroke="currentColor" stroke-width="1.6"/>`,
   blocks: `<rect x="3" y="3" width="18" height="5" rx="1.2"/><rect x="6" y="10" width="15" height="4.5" rx="1.2"/><rect x="9" y="16.5" width="12" height="4.5" rx="1.2"/><path d="M4.5 8v10.5H9M4.5 12.2H6"/>`,
   library: `<path d="M4 4v16M8 4v16"/><path d="M12 5l3.5-1 4 15.5-3.5 1z"/><path d="M3 20h18" opacity=".45"/>`,
   wave: `<path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 7v10M21 12h0"/>`,

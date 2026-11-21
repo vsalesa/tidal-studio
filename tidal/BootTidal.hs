@@ -41,7 +41,8 @@ let only = (hush >>)
     d10 = p 10 . (|< orbit 9)
     d11 = p 11 . (|< orbit 10)
     d12 = p 12 . (|< orbit 11)
-    -- Ecualizador de 3 bandas de la mesa de mezcla (en dB; módulo studio_eq de studio-synths.scd)
+    -- Ecualizador de 3 bandas de la mesa de mezcla (en dB; modulo studio_eq de studio-synths.scd)
+    -- (sin tildes dentro de :{ :}: sin locale UTF-8, GHCi no lo lee y d1..d12 no se definen)
     eqlow = pF "eqlow"
     eqmid = pF "eqmid"
     eqhigh = pF "eqhigh"
