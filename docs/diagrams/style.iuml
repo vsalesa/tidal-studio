@@ -1,0 +1,38 @@
+' Shared look for the Tidal Studio diagrams (light "Partitura" theme)
+skinparam backgroundColor #f6f1e7
+skinparam shadowing false
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 14
+skinparam defaultFontColor #1f1c17
+skinparam roundCorner 14
+skinparam ArrowColor #5d564a
+skinparam ArrowFontColor #5d564a
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.4
+skinparam rectangle {
+  BackgroundColor #fffdf8
+  BorderColor #c9bca5
+}
+skinparam node {
+  BackgroundColor #fffdf8
+  BorderColor #c9bca5
+}
+skinparam database {
+  BackgroundColor #efe8da
+  BorderColor #c9bca5
+}
+skinparam cloud {
+  BackgroundColor #ebe5f5
+  BorderColor #6b4fa1
+}
+skinparam frame {
+  BackgroundColor #fffdf8
+  BorderColor #d9482b
+  FontColor #d9482b
+}
+skinparam actor {
+  BackgroundColor #fbe3db
+  BorderColor #d9482b
+}
+skinparam nodesep 40
+skinparam ranksep 55
