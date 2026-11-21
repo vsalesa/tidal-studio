@@ -1,11 +1,12 @@
-## What's new in 0.3.0 / Novedades
+## What's new in 0.4.0 / Novedades
 
-- **Windows and Linux installers**, like the Mac one: everything inside, and the studio opens in its own window with no console. Closing the window stops SuperCollider and Tidal.
-- **Maestro explains how it decided**: under each answer, the skill and rule behind every musical decision, and its reasoning live while it thinks.
-- **Claude auto-detected**: Maestro finds the `claude` command, your subscription, model and endpoint by itself (you can still change them in Settings), plus a connection diagnostic.
-- Mac: the native app from 0.2.0 (own window, no Terminal).
+- **Pick by ear**: Maestro offers 3–4 options you can listen to over your song (live A/B) before keeping one.
+- **Timeline tab**: see where each sound plays in time, calculated by Tidal and linked to its code.
+- **Effects on/off**: bypass any effect without losing its value, and dismiss Maestro's ideas.
+- **Cleaner errors**: a track's old errors clear on a clean play, with an × button and a "stale" marker.
+- Fixes in the mixer.
 
-**Español:** instaladores para **Windows y Linux** (todo dentro, ventana propia, sin consola); Maestro enseña **cómo ha decidido** cada cosa (skill y regla) y su razonamiento en directo; **autodetección de Claude** (comando, suscripción, modelo y endpoint, que puedes cambiar en Ajustes); y en Mac la app nativa de la 0.2.0.
+**Español:** **elige de oído** entre 3–4 opciones que Maestro te deja escuchar sobre tu canción; pestaña **Línea de tiempo** (dónde suena cada sonido, calculado por Tidal y enlazado a su código); **activar/desactivar efectos** sin perder su valor y descartar ideas de Maestro; los errores viejos de una pista se limpian solos; y arreglos en la mezcla.
 
 ## Offline installer / Instalador offline
 
