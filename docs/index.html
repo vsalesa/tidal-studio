@@ -127,6 +127,8 @@ section { padding: 80px 0; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; }
 .step { background: var(--card); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; position: relative; }
 .step::before { counter-increment: s; content: counter(s); position: absolute; top: -18px; left: 22px; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font: 700 17px var(--serif); }
+.step.solo::before { display: none; }
+.step.solo { border-color: var(--accent); }
 .step h4 { font: 700 20px var(--serif); margin: 8px 0 8px; }
 .step p { margin: 0 0 12px; color: var(--ink-2); font-size: 15.5px; }
 .os { display: flex; gap: 6px; margin-bottom: 10px; }
@@ -315,6 +317,12 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="kicker" data-i="k5">Get started</div>
     <h2 class="sec-title" data-i="t5">From zero to sound in three steps.</h2>
     <p class="sec-lead" data-i="l5">You don't need anything installed. The installer detects your system and sets up SuperCollider, SuperDirt and TidalCycles.</p>
+    <div class="step solo reveal" style="margin-bottom:40px">
+      <h4 data-i="mach">Mac with Apple Silicon: one installer, everything inside</h4>
+      <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/latest"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows, Linux or an Intel Mac? Follow the three steps below.</p>
+    </div>
     <div class="steps">
       <div class="step reveal">
         <h4 data-i="s1h">Download</h4>
@@ -391,6 +399,10 @@ const ES = {
   jazzcap: "«swingBy (1/3) 4» retrasa un poco cada segunda nota: eso es el swing. Y los acordes ganan una nota más ('min9) para sonar más jazz.",
   k5: "Empezar", t5: "De cero a sonar en tres pasos.",
   l5: "No necesitas tener nada instalado. El instalador detecta tu sistema y prepara SuperCollider, SuperDirt y TidalCycles.",
+  mach: "Mac con Apple Silicon: un instalador con todo dentro",
+  macp: "TidalCycles, SuperCollider, los sonidos y Python van dentro del paquete, así que no se descarga nada al instalar. La primera vez, macOS te pedirá permitirlo en Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente.",
+  macb: "Descargar para Mac (.pkg)",
+  maco: "¿Windows, Linux o un Mac Intel? Sigue los tres pasos de abajo.",
   s1h: "Descarga", s1p: "Baja el proyecto como zip y descomprímelo, o clónalo con git.", s1b: "Descargar zip",
   s2h: "Instala", s2p: "Una sola vez. Tarda un rato: descarga Haskell y los sonidos.",
   s3h: "Toca", s3p: "Se abre el navegador con el estudio. Pulsa «Nuevo proyecto» y deja que el maestro te guíe.",
