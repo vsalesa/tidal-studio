@@ -9,7 +9,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
-**Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) ·
+**Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) · [Maestro's options](#hear-maestros-options-and-pick-one) ·
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Arrangement](#arrangement) ·
 [Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) ·
@@ -73,6 +73,28 @@ for the full list and sources.
   shows you **how it did it**: the code before and after, with what's new highlighted and explained.
 
 ![Jazz recipe: before and after, explained](docs/screenshots/recipe-jazz.png)
+
+### Hear Maestro's options and pick one
+
+Ask Maestro for something creative («add a bass», «darker», «more energy», «surprise me») and, like a brainstorming
+session with a producer, it doesn't just change your song: it offers **3 or 4 different options made for your request
+and your song**, each with a title, the musical idea it teaches and its code. If your request is too vague, it first
+asks you **one** question with answers to click.
+
+- **Listen** plays an option **live over your song**, for as long as you want. Press another option's Listen (or the
+  keys **1-4**) and it switches instantly; **A/B** jumps between the last two you heard; **Stop** (or **Esc**) goes back
+  to your version.
+- **See the code** shows what each option would change, before and after.
+- **Pick this one** adds it to your song and explains how the code changed; the others are discarded.
+  **Undo the pick** brings the options back.
+- **Other options**, **Refine…** («B but softer») or **None** ask Maestro for new ones.
+
+![Maestro's options: listen to each one over your song](docs/screenshots/maestro-options.png)
+
+![After picking: what changed in the code](docs/screenshots/maestro-options-picked.png)
+
+It works with every AI provider, and without AI too (type «give me options» and it builds them from its own ideas and
+style recipes). Turn it off with the **Options** switch at the top of the chat to have Maestro apply changes directly.
 
 ### Help with your code and code palette
 

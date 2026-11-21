@@ -22,6 +22,7 @@ import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSo
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
+import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS } from "./variants.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -178,6 +179,7 @@ const live = () => $("#autoplay").checked;
 // seguían sonando, y una pre-escucha en marcha volvía a poner la música al acabar su tiempo.
 // "panic" (BootTidal) además corta todo lo que suena en SuperDirt; y paramos el audio del navegador.
 function hushAll() {
+  audition = null; refreshVariants();
   if (preview) { clearTimeout(preview.timer); const { onEnd } = preview; preview = null; if (onEnd) onEnd(); }
   clearTimeout(ctlTimer);
   seqTimers.forEach(clearTimeout); seqTimers = [];
@@ -597,6 +599,7 @@ function openCard(id, key) {
 let clearedChat = null;
 function clearChat() {
   if (!state.chat.length) return;
+  stopAudition();
   clearedChat = { chat: state.chat, options: state.options };
   state.chat = [];
   say(L("Chat limpio. Tu canción sigue igual; solo he borrado la conversación.", "Chat cleared. Your song is unchanged; I only removed the conversation."),
@@ -863,6 +866,7 @@ function currentIdeas() {
 let preview = null;
 function preHear(cambios, onEnd) {
   if (preview) stopPreHear();
+  if (audition) stopAudition();
   const bpm = cambios.bpm ? Math.round(cambios.bpm) : state.bpm;
   const lines = [cps(bpm), ...(cambios.pistas || []).map((p) => `${p.id} $ ${p.codigo}`)];
   const revert = [cps(state.bpm), ...(cambios.pistas || []).map((p) => {
@@ -891,6 +895,129 @@ function wirePreHear(btn, cambios) {
     btn.classList.add("playing");
     btn.innerHTML = icon("stop", 12) + ` ${L("Escuchando…", "Listening…")} ${Math.round(secs)} s`;
   };
+}
+
+// ------------------------------------------------------------------ opciones para escuchar
+// La opción suena en directo sobre la canción, sin límite de tiempo, hasta que paras, eliges o cambias a otra (A/B).
+let audition = null; // { mi, k, prev, wasLive, touched: Set }
+function variantLines(v, touched) {
+  const c = v.cambios, gone = new Set(c.eliminar || []), mine = new Map((c.pistas || []).map((p) => [p.id, p]));
+  const lines = [cps(c.bpm ? Math.round(c.bpm) : state.bpm)];
+  for (const t of state.tracks) {
+    if (gone.has(t.id)) { lines.push(`${t.id} silence`); continue; }
+    const p = mine.get(t.id);
+    lines.push(trackLine(p ? { ...t, code: p.codigo, muted: false } : t));
+  }
+  for (const p of mine.values()) if (!state.tracks.some((t) => t.id === p.id)) lines.push(`${p.id} $ ${p.codigo}`);
+  // Lo que añadió la opción anterior y esta no tiene, se calla
+  for (const id of touched) if (!mine.has(id) && !state.tracks.some((t) => t.id === id)) lines.push(`${id} silence`);
+  return lines;
+}
+function startAudition(mi, k) {
+  const m = state.chat[mi]; if (!m || !m.variantes || !m.variantes[k]) return;
+  if (preview) stopPreHear();
+  const prev = audition && audition.mi === mi ? (audition.k === k ? audition.prev : audition.k) : null;
+  const wasLive = audition && audition.mi === mi ? audition.wasLive : live();
+  const touched = audition && audition.mi === mi ? audition.touched : new Set();
+  const v = m.variantes[k];
+  api("/api/eval", { code: variantLines(v, touched).join("\n\n") }).catch(() => {});
+  (v.cambios.pistas || []).forEach((p) => touched.add(p.id));
+  audition = { mi, k, prev, wasLive, touched };
+  refreshVariants();
+}
+async function stopAudition(revert = true) {
+  if (!audition) return;
+  const { wasLive, touched } = audition;
+  audition = null;
+  refreshVariants();
+  if (!revert) return;
+  const extra = [...touched].filter((id) => !state.tracks.some((t) => t.id === id)).map((id) => `${id} silence`);
+  const code = wasLive ? [cps(state.bpm), ...state.tracks.map(trackLine), ...extra].join("\n\n") : "hush";
+  try { await api("/api/eval", { code }); } catch { /* sin motor */ }
+}
+// El código de cada opción comparado con lo que suena ahora (explicación corta para no llenar el chat)
+function variantDiff(v) {
+  const d = diffFor({ bpm: state.bpm, tracks: state.tracks }, v.cambios);
+  d.forEach((x) => { if (x.explicacion && x.explicacion.length > 160) x.explicacion = x.explicacion.slice(0, 157).replace(/\s+\S*$/, "") + "…"; });
+  return diffHTML(d);
+}
+function refreshVariants() {
+  // Solo repinta los bloques de opciones (no todo el chat) para no perder el scroll
+  document.querySelectorAll("#chat .variants").forEach((box) => {
+    const mi = +box.closest(".msg").dataset.mi;
+    const m = state.chat[mi]; if (!m) return;
+    const openCodes = [...box.querySelectorAll(".va-code")].map((d) => d.open);
+    box.outerHTML = variantsHTML(m, mi, audition, (k) => variantDiff(m.variantes[k]));
+    const nb = $(`#chat .msg[data-mi="${mi}"] .variants`);
+    if (nb) nb.querySelectorAll(".va-code").forEach((d, i) => { if (openCodes[i]) d.open = true; });
+  });
+}
+async function pickVariant(mi, k) {
+  const m = state.chat[mi]; const v = m.variantes[k];
+  if (audition && live()) {
+    // Sigue sonando sin cortes: solo callamos lo que añadieron las otras opciones
+    const mine = new Set((v.cambios.pistas || []).map((p) => p.id));
+    const extra = [...audition.touched].filter((id) => !mine.has(id) && !state.tracks.some((t) => t.id === id));
+    audition = null;
+    api("/api/eval", { code: [cps(state.bpm), ...extra.map((id) => `${id} silence`)].join("\n\n") }).catch(() => {});
+  } else await stopAudition(true);
+  const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
+  m.picked = k;
+  state.chat.push({ role: "user", content: L(`Me quedo con la opción ${LETTERS[k]}: «${v.titulo}».`, `I'll keep option ${LETTERS[k]}: «${v.titulo}».`) });
+  const summary = applyChanges(v.cambios);
+  if (v.concepto && !state.learnedMusic.includes(v.concepto)) state.learnedMusic.push(v.concepto);
+  say(L(`¡Buena elección! La ${LETTERS[k]}, «${v.titulo}», ya forma parte de tu canción. ${v.descripcion}\n\nAsí ha cambiado el código:`, `Good choice! ${LETTERS[k]}, «${v.titulo}», is now part of your song. ${v.descripcion}\n\nHere's how the code changed:`),
+    [L("Explícame el código", "Explain the code"), L("Dame variaciones de esta", "Give me variations of this one"), VA_UNDO()],
+    { changes: summary, diff: diffFor(before, v.cambios), pickSnap: JSON.stringify(before) });
+}
+const VA_UNDO = () => L("Deshacer la elección", "Undo the pick");
+function undoPick() {
+  const m = [...state.chat].reverse().find((x) => x.pickSnap);
+  if (!m) return false;
+  const before = JSON.parse(m.pickSnap);
+  const keep = new Set(before.tracks.map((t) => t.id));
+  const removed = state.tracks.filter((t) => !keep.has(t.id)).map((t) => t.id);
+  state.bpm = before.bpm; $("#bpm").value = state.bpm; state.tracks = before.tracks;
+  removed.forEach(silenceId);
+  if (live()) playAll();
+  delete m.pickSnap;
+  const offer = [...state.chat].reverse().find((x) => x.variantes && x.picked != null);
+  if (offer) { offer.picked = null; offer.dismissed = false; }
+  sysMsg(L("Deshecho: tu canción vuelve a como estaba. Las opciones siguen ahí para que escuches otra.", "Undone: your song is back as it was. The options are still there so you can try another."));
+  changed();
+  return true;
+}
+function wireVariants() {
+  $("#chat").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-va]"); if (!b) return;
+    const mi = +b.dataset.mi, k = +b.dataset.k, a = b.dataset.va;
+    const m = state.chat[mi]; if (!m || !m.variantes) return;
+    if (a === "play") return audition && audition.mi === mi && audition.k === k ? stopAudition() : startAudition(mi, k);
+    if (a === "stop") return stopAudition();
+    if (a === "ab" && audition && audition.prev != null) return startAudition(mi, audition.prev);
+    if (a === "pick") return pickVariant(mi, k);
+    if (a === "more") { stopAudition(); return send(L("Dame otras opciones distintas a estas.", "Give me other options, different from these.")); }
+    if (a === "none") { stopAudition(); m.dismissed = true; save(); renderChat(); return send(L("No me convence ninguna. Pregúntame qué busco y propón otras.", "None of them convinces me. Ask me what I'm after and suggest others.")); }
+    if (a === "refine") { const f = b.closest(".variants").querySelector(".va-refine"); f.hidden = !f.hidden; if (!f.hidden) f.querySelector("input").focus(); }
+  });
+  $("#chat").addEventListener("submit", (e) => {
+    const f = e.target.closest(".va-refine"); if (!f) return;
+    e.preventDefault();
+    const txt = f.querySelector("input").value.trim(); if (!txt) return;
+    const m = state.chat[+f.dataset.mi];
+    const ref = audition && audition.mi === +f.dataset.mi ? ` (${L("estaba escuchando la", "I was listening to")} ${LETTERS[audition.k]}: «${m.variantes[audition.k].titulo}»)` : "";
+    stopAudition();
+    send(L(`Afina las opciones${ref}: ${txt}`, `Refine the options${ref}: ${txt}`));
+  });
+  // Teclas 1-4 cambian de opción al vuelo; Esc para (si no estás escribiendo)
+  document.addEventListener("keydown", (e) => {
+    if (!audition || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "")) return;
+    const m = state.chat[audition.mi];
+    if (/^[1-4]$/.test(e.key) && m.variantes[+e.key - 1]) { e.preventDefault(); startAudition(audition.mi, +e.key - 1); }
+    if (e.key === "Escape") stopAudition();
+  });
+  const t = $("#variants-on");
+  if (t) { t.checked = variantsEnabled(); t.onchange = () => setVariantsEnabled(t.checked); }
 }
 
 function renderIdeas() {
@@ -1208,6 +1335,7 @@ function renderChat() {
   state.chat.forEach((m, mi) => {
     const el = document.createElement("div");
     el.className = "msg " + m.role;
+    el.dataset.mi = mi;
     el.textContent = m.content;
     // Cómo ha usado Maestro las skills para decidir (justo debajo del texto, para que se vea)
     if (m.skills && m.skills.decisions && m.skills.decisions.length) el.insertAdjacentHTML("beforeend", decisionsHTML(m.skills.decisions, mi === state.chat.length - 1));
@@ -1216,6 +1344,7 @@ function renderChat() {
         `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("")}</ul>`);
     }
     if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
+    if (m.variantes && m.variantes.length) el.insertAdjacentHTML("beforeend", variantsHTML(m, mi, audition, (k) => variantDiff(m.variantes[k])));
     if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
     if (m.links && m.links.length) el.insertAdjacentHTML("beforeend", `<div class="links">${m.links.map((a) =>
@@ -1225,6 +1354,9 @@ function renderChat() {
     if (m.trace && m.trace.events && m.trace.events.length) el.insertAdjacentHTML("beforeend", traceHTML(m.trace));
     box.appendChild(el);
   });
+  // Mientras hay opciones por elegir, ocupan el sitio de las Ideas de Maestro
+  const last = state.chat[state.chat.length - 1];
+  $(".panel.assistant").classList.toggle("va-open", !!(last && last.variantes && last.picked == null && !last.dismissed));
   if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
   box.scrollTop = box.scrollHeight;
   const chips = $("#chips");
@@ -1258,6 +1390,7 @@ async function send(text) {
   if (text === COURSE_NEXT() && state.course) { const c = courseById(state.course.id); if (state.course.i < c.steps.length - 1) courseGo(state.course.i + 1); state.options = []; return renderChat(); }
   if (text === COURSE_ASK() && state.course) return courseAsk();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
+  if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
   if (text === L("Recuperar el chat", "Bring the chat back") && clearedChat) { state.chat = clearedChat.chat; state.options = clearedChat.options; clearedChat = null; save(); return renderChat(); }
   if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
   state.chat.push({ role: "user", content: text });
@@ -1320,10 +1453,10 @@ async function askLLM() {
   busy = true; renderChat();
   const trace = startTrace();
   try {
-    const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }));
+    const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples,
+      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(),
       master: state.master || undefined,
       ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
@@ -1342,7 +1475,11 @@ async function askLLM() {
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
     if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
     countUse(r.skills);
-    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
+    if (r.variantes && r.variantes.length) {
+      stopAudition();
+      state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
+    }
+    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
   } catch (e) {
     trace.end();
@@ -1420,6 +1557,19 @@ async function offlineGuide(text) {
   if (low.includes("explícame") || low.includes("explicame") || low.includes("qué hace") || low.includes("que hace") || low.includes("explain") || low.includes("what does")) {
     const ex = explainLocal(state.tracks.map((t) => t.code).join("\n"));
     return say(L("Así funciona tu canción, trozo a trozo:", "This is how your song works, piece by piece:"), state.options, { explicacion: ex.partes.slice(0, 10) });
+  }
+  if (variantsEnabled() && state.tracks.length && /opcion|opción|options?\b|sorpr|surprise|variaci|variation/.test(low)) {
+    // Sin IA: opciones hechas con las ideas y recetas de estilo locales
+    const pool = localSuggestions(state, 3, true);
+    const keys = Object.keys(FLAVORS).filter((k) => k !== state.style);
+    for (let i = 0; pool.length < 4 && i < keys.length; i++) { const f = flavorIdea(keys[(flavorTurn + i) % keys.length], state.tracks); if (f) pool.push(f); }
+    flavorTurn++;
+    const variantes = pool.slice(0, 4).map((x) => ({ titulo: x.titulo, descripcion: x.porque, concepto: x.concepto, cambios: x.cambios }));
+    if (variantes.length) {
+      stopAudition();
+      state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
+      return say(L("Sin IA puedo proponerte estas opciones. Escúchalas sobre tu canción y elige la que más te guste.", "Without AI I can offer you these options. Listen to them over your song and pick the one you like best."), state.options, { variantes });
+    }
   }
   if (low.includes("otra idea") || low.includes("another idea")) { state.ideas = []; localSuggestions(state, 2, true); renderIdeas();
     return say(L("Te he dejado ideas nuevas abajo, en «Ideas de Maestro». Pruébalas y quédate con lo que te guste.", "I left you new ideas below, in «Maestro's ideas». Try them and keep what you like."), state.options); }
@@ -2967,6 +3117,7 @@ function init() {
   $("#btn-play").onclick = () => playAll(hasArrangement());
   $("#btn-hush").onclick = hushAll;
   $("#style-filter").onchange = (e) => { state.style = e.target.value; save(); renderCatalog(); renderIdeas(); };
+  wireVariants();
   $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
   $("#btn-more-ideas").onclick = () => {
     if (state.trying) return;

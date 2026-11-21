@@ -260,6 +260,7 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
       <div><svg class="i" viewBox="0 0 24 24"><path d="M4 6h10M4 12h7M4 18h10"/><path d="M15 11l2.5 2.5L22 9"/></svg><h4 data-i="f10h">How I decided</h4><p data-i="f10p">Each answer explains which skill guided each musical decision, and you can watch Maestro's reasoning live while it thinks.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20M8.5 11l1.8 1.8L13.5 9.5"/></svg><h4 data-i="f11h">AI detection and Diagnostics</h4><p data-i="f11p">It finds your Claude Code and how it's signed in. If Maestro doesn't answer, Diagnostics checks each step and tells you how to fix it.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 8h18M9 21h6M12 18v3"/><circle cx="6" cy="6" r=".6" fill="currentColor"/><circle cx="8.2" cy="6" r=".6" fill="currentColor"/></svg><h4 data-i="f12h">A real app</h4><p data-i="f12p">Install it with everything inside and open it in its own window, with no Terminal. Closing it stops the sound engine.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M4 9v6h3l4 3V6L7 9z"/><path d="M15 9.5a3.5 3.5 0 010 5M17.5 7a7 7 0 010 10"/></svg><h4 data-i="f13h">Hear options, pick one</h4><p data-i="f13p">Ask Maestro for something and it offers 3 or 4 different takes. Listen to each one live over your song, switch A/B, and keep the one you like.</p></div>
     </div>
   </div>
 </section>
@@ -395,6 +396,7 @@ const ES = {
   f9h: "Skills y plugins", f9p: "Maestro carga skills musicales expertas y te enseña cuáles ha usado. Añade más, o plugins de Claude enteros, desde un enlace de GitHub.",
   f10h: "Cómo lo he decidido", f10p: "Cada respuesta explica qué skill guió cada decisión musical, y puedes ver el razonamiento de Maestro en directo mientras piensa.",
   f11h: "Detección de IA y Diagnóstico", f11p: "Encuentra tu Claude Code y cómo tiene la sesión iniciada. Si Maestro no responde, el Diagnóstico revisa cada paso y te dice cómo arreglarlo.",
+  f13h: "Escucha opciones y elige", f13p: "Pide algo a Maestro y te propone 3 o 4 versiones distintas. Escucha cada una en directo sobre tu canción, cambia entre ellas (A/B) y quédate con la que te guste.",
   f12h: "Una app de verdad", f12p: "Se instala con todo dentro y se abre en su propia ventana, sin Terminal. Al cerrarla se para el motor de sonido.",
   k2: "Wizard de proyecto base", t2: "Tu primera canción en siete clics.",
   l2: "Pulsa opciones y escucha el resultado en vivo. Las que encajan con tu estilo vienen marcadas, y el último paso te enseña todo el código explicado.",
@@ -503,6 +505,7 @@ wzList.addEventListener("click", (e) => { const b = e.target.closest("button"); 
 
 // ---------- Galería ----------
 const SHOTS = [
+  { en: ["Maestro's options", "maestro-options", "Ask for something and Maestro offers 3-4 different options. Each one plays live over your song: switch between them and pick one."], es: ["Opciones de Maestro", "opciones-maestro", "Pide algo y Maestro te propone 3-4 opciones distintas. Cada una suena en directo sobre tu canción: cambia entre ellas y elige una."] },
   { en: ["The studio", "studio", "Your tracks with their code, «Explain» on each one and Maestro's ideas with pre-listen."], es: ["El estudio", "estudio", "Tus pistas con su código, «Explícame» en cada una y las ideas del maestro con pre-escucha."] },
   { en: ["See what's sounding", "live-highlight-tracks", "While the music plays, the step that is sounding lights up in every track (also in Blocks and Code)."], es: ["Ver lo que suena", "resaltado-pistas", "Mientras suena la música, el paso que está sonando se ilumina en cada pista (también en Bloques y Código)."] },
   { en: ["Mix", "mixer", "A mixing desk: volume, 3-band EQ, mute and solo per track, and a Master for the whole song."], es: ["Mezcla", "mezcla", "Una mesa de mezcla: volumen, ecualizador de 3 bandas, silencio y solo por pista, y un Master para toda la canción."] },
