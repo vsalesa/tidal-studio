@@ -24,6 +24,7 @@ import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } f
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
 import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS } from "./variants.js";
+import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -1057,6 +1058,64 @@ function wireVariants() {
   if (t) { t.checked = variantsEnabled(); t.onchange = () => setVariantsEnabled(t.checked); }
 }
 
+// ------------------------------------------------------------------ samples de internet (Maestro los descarga)
+// Sin IA: «descarga un sample de cencerro» busca, descarga y ofrece una pista nueva con él
+async function offlineFetch(q) {
+  const name = safeName(q).split("_").slice(0, 2).join("_") || "sample";
+  sysMsg(L(`Buscando «${q}» en internet…`, `Searching the internet for «${q}»…`));
+  let r;
+  try { r = await api("/api/samples/find", { nombre: name, busqueda: q, auto: true }); } catch (e) { return say(L("No he podido buscar: ", "I couldn't search: ") + e.message, state.options); }
+  const d = (r.descargas || [])[0];
+  if (!d) return say(L("Dime qué sonido buscas, por ejemplo «descarga un sample de marimba».", "Tell me what sound you're after, e.g. «download a marimba sample»."), state.options);
+  server.samples = null; sm.mine = null;
+  const ok = d.estado === "descargado" || d.estado === "ya";
+  const type = guessType(`${q} ${(d.candidatos[0] || {}).title || ""}`);
+  say(ok ? L(`Listo: ya tienes «${d.nombre}». En Tidal se usa con s "${d.nombre}". ¿Le hago una pista?`, `Done: you now have «${d.nombre}». In Tidal you use it with s "${d.nombre}". Shall I make a track with it?`)
+    : d.estado === "permiso" ? L("He encontrado esto, pero es grande: dime si lo descargo.", "I found this, but it's big: tell me if I should download it.")
+      : L("No he encontrado nada con licencia libre. Prueba con otras palabras (en inglés suele ir mejor) o con la biblioteca.", "I didn't find anything with a free license. Try other words or the library."),
+    ok ? [L(`Añadir pista con ${d.nombre}`, `Add a track with ${d.nombre}`), ...(state.options || []).slice(0, 3)] : state.options, { descargas: [d], fxType: type });
+}
+let fxPlaying = null, fxAudio = null;
+function fxStop() { if (fxAudio) { fxAudio.pause(); fxAudio = null; } fxPlaying = null; }
+function refreshFetch(mi) {
+  const box = $(`#chat .msg[data-mi="${mi}"] .fetch`); const m = state.chat[mi];
+  if (box && m) box.outerHTML = fetchHTML(m, mi, fxPlaying);
+}
+async function fetchChoice(m, mi, d, k, replace) {
+  d.busy = true; refreshFetch(mi);
+  try {
+    const r = await api("/api/samples/fetch", { name: d.nombre, choice: d.candidatos[k], replace });
+    d.elegido = k; d.estado = "descargado"; d.loaded = r.loaded; delete d.error;
+    server.samples = null; sm.mine = null;
+  } catch (e) { d.error = e.message; if (d.estado !== "descargado") d.estado = "error"; toast(L("No se pudo descargar: ", "Couldn't download: ") + e.message); }
+  d.busy = false; save(); refreshFetch(mi);
+}
+function wireFetch() {
+  $("#chat").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-fx]"); if (!b) return;
+    const mi = +b.dataset.mi, k = +b.dataset.k, a = b.dataset.fx;
+    const m = state.chat[mi]; const d = m && m.descargas && m.descargas[k]; if (!d || d.busy) return;
+    if (a === "hear") {
+      const again = fxPlaying && fxPlaying.mi === mi && fxPlaying.k === k;
+      fxStop();
+      if (!again) {
+        const c = d.candidatos[d.elegido || 0];
+        const src = /descargado|ya/.test(d.estado) ? `/api/samples/file?name=${encodeURIComponent(d.nombre)}&i=0` : `/api/samples/remote?url=${encodeURIComponent(c.preview)}`;
+        fxAudio = new Audio(src); fxPlaying = { mi, k };
+        fxAudio.onended = () => { fxStop(); refreshFetch(mi); };
+        fxAudio.play().catch(() => { fxStop(); refreshFetch(mi); });
+      }
+      return refreshFetch(mi);
+    }
+    if (a === "get") return fetchChoice(m, mi, d, d.elegido || 0, false);
+    if (a === "skip") { d.estado = "rechazado"; save(); return refreshFetch(mi); }
+    if (a === "other") { fxStop(); return fetchChoice(m, mi, d, ((d.elegido || 0) + 1) % d.candidatos.length, true); }
+    if (a === "library") { sm.q = d.busqueda; sm.page = 1; return openSamples("online").then(() => (sm.keySet ? smSearch() : null)); }
+  });
+  const t = $("#web-samples-on");
+  if (t) { t.checked = fetchEnabled(); t.onchange = () => setFetchEnabled(t.checked); }
+}
+
 function renderIdeas() {
   const list = $("#idea-list");
   const ideas = state.trying ? state.trying.ideas : currentIdeas();
@@ -1381,6 +1440,7 @@ function renderChat() {
         `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("")}</ul>`);
     }
     if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
+    if (m.descargas && m.descargas.length) el.insertAdjacentHTML("beforeend", fetchHTML(m, mi, fxPlaying));
     if (m.variantes && m.variantes.length) el.insertAdjacentHTML("beforeend", variantsHTML(m, mi, audition, (k) => variantDiff(m.variantes[k])));
     if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
@@ -1430,6 +1490,16 @@ async function send(text) {
   if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
   if (text === L("Recuperar el chat", "Bring the chat back") && clearedChat) { state.chat = clearedChat.chat; state.options = clearedChat.options; clearedChat = null; save(); return renderChat(); }
   if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
+  // «Descárgalo» / «Download it» con un paquete grande pendiente: se descarga sin pasar por la IA
+  if (/^(desc[aá]rg(alo|ala|alos)?|b[aá]jalo|download( it)?|s[ií],? (desc[aá]rgalo|b[aá]jalo)|yes,? download( it)?)\b/i.test(text)) {
+    const mi = state.chat.map((m) => !!(m.descargas && m.descargas.some((d) => d.estado === "permiso"))).lastIndexOf(true);
+    if (mi >= 0) {
+      state.chat.push({ role: "user", content: text }); state.options = []; save(); renderChat();
+      for (const d of state.chat[mi].descargas.filter((x) => x.estado === "permiso")) await fetchChoice(state.chat[mi], mi, d, d.elegido || 0, false);
+      const ok = state.chat[mi].descargas.filter((x) => x.estado === "descargado").map((x) => x.nombre);
+      return sysMsg(ok.length ? L(`Descargado: ${ok.join(", ")}. Ya suena en tu canción.`, `Downloaded: ${ok.join(", ")}. It's playing in your song now.`) : L("No se pudo descargar.", "Couldn't download it."));
+    }
+  }
   state.chat.push({ role: "user", content: text });
   state.options = [];
   save(); renderChat();
@@ -1490,10 +1560,10 @@ async function askLLM() {
   busy = true; renderChat();
   const trace = startTrace();
   try {
-    const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) }));
+    const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) + fetchContext(m) }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(),
+      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       master: state.master || undefined,
       ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
@@ -1503,6 +1573,7 @@ async function askLLM() {
     const r = await api("/api/chat", { messages: history, session, trace: trace.id });
     const lastTrace = trace.end();
     busy = false;
+    if ((r.descargas || []).some((d) => d.estado === "descargado")) { server.samples = null; sm.mine = null; }
     if (r.paso) state.step = r.paso;
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
     const summary = applyChanges(r.cambios || {});
@@ -1516,7 +1587,7 @@ async function askLLM() {
       stopAudition();
       state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
     }
-    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
+    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), ...(r.descargas && r.descargas.length ? { descargas: r.descargas } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
   } catch (e) {
     trace.end();
@@ -1609,6 +1680,16 @@ async function offlineGuide(text) {
       return say(L("Sin IA puedo proponerte estas opciones. Escúchalas sobre tu canción y elige la que más te guste.", "Without AI I can offer you these options. Listen to them over your song and pick the one you like best."), state.options, { variantes });
     }
   }
+  const want = fetchEnabled() && text.match(/(?:descarga|descárgame|bájame|baja|busca|búscame|consigue|download|get|find|fetch)\s+(?:me\s+)?(?:un|una|unos|a|an|some)?\s*(?:sample|sonido|sound)s?\s+(?:de|del|of|for|with)?\s*(.{2,40})$/i);
+  const addFx = text.match(/^(?:Añadir pista con|Add a track with) ([a-z0-9_]+)$/);
+  if (addFx) {
+    const m = [...state.chat].reverse().find((x) => x.descargas && x.descargas.some((d) => d.nombre === addFx[1]));
+    const t = { id: freeId(), name: addFx[1], kind: typeKind((m && m.fxType) || "percusion"), code: starterCode(addFx[1], (m && m.fxType) || "percusion"), muted: false };
+    state.tracks.push(t); state.selected = t.id; if (live()) playTrack(t); changed();
+    return say(L(`Nueva pista ${t.id} con «${addFx[1]}». Cambia el ritmo en el código y escucha.`, `New track ${t.id} with «${addFx[1]}». Change the rhythm in the code and listen.`), state.options, { explicacion: explainLocal(t.code).partes.slice(0, 4) });
+  }
+  const want2 = !want && fetchEnabled() && text.match(/^(?:download|get|find|fetch)\s+(?:me\s+)?(?:a|an|some)\s+(.{2,30}?)\s+(?:sample|sound)s?[.!]?$/i);
+  if (want || want2) return offlineFetch((want || want2)[1].replace(/[.!?¿¡]+$/, "").trim());
   if (low.includes("otra idea") || low.includes("another idea")) { state.ideas = []; localSuggestions(state, 2, true); renderIdeas();
     return say(L("Te he dejado ideas nuevas abajo, en «Ideas de Maestro». Pruébalas y quédate con lo que te guste.", "I left you new ideas below, in «Maestro's ideas». Try them and keep what you like."), state.options); }
   if (low.includes("qué hago") || low.includes("que hago") || low.includes("estructura") || low.includes("what do i do") || low.includes("structure")) {
@@ -3430,6 +3511,7 @@ function init() {
   $("#btn-hush").onclick = hushAll;
   $("#style-filter").onchange = (e) => { state.style = e.target.value; save(); renderCatalog(); renderIdeas(); };
   wireVariants();
+  wireFetch();
   $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
   $("#btn-more-ideas").onclick = () => {
     if (state.trying) return;
