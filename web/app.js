@@ -24,6 +24,7 @@ import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } f
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
 import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS } from "./variants.js";
+import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -75,6 +76,7 @@ function save() {
   } catch { /* sin almacenamiento */ }
   record(state, renderHistoryButtons);
   renderHistoryButtons();
+  renderFileStatus();
 }
 const PROJ_KEY = "tidal-studio-projects-v1";
 function listProjects() {
@@ -101,11 +103,12 @@ function buildCode() {
                  cps(state.bpm), ""];
   const M = state.master || {};
   if (M.vol || M.low || M.mid || M.high) lines.push(L(`-- Master: ${dbText(M.vol || 0)} · EQ graves ${M.low || 0} / medios ${M.mid || 0} / agudos ${M.high || 0} dB (ya sumado en cada pista)`, `-- Master: ${dbText(M.vol || 0)} · EQ lows ${M.low || 0} / mids ${M.mid || 0} / highs ${M.high || 0} dB (already added to each track)`), "");
+  if (state.extra && state.extra.trim()) lines.push(EXTRA_HEADER(), state.extra.trim(), "");
   for (const t of state.tracks) {
     const ml = mixLine(t, state);
     const body = `${t.id} $ ${t.code}${ml ? "\n" + ml : ""}`;
     if (t.muted) {
-      lines.push(`-- [silenciada] ${t.name} · ${t.kind}`);
+      lines.push(`-- ${L("[silenciada]", "[muted]")} ${t.name} · ${t.kind}`);
       lines.push(body.split("\n").map((l) => "-- " + l).join("\n"));
     } else {
       lines.push(`-- ${t.name} · ${t.kind}`);
@@ -116,29 +119,22 @@ function buildCode() {
   return lines.join("\n");
 }
 
-function parseCode(text) {
-  const out = { bpm: state.bpm, tracks: [] };
-  const m = text.match(/setcps\s*\(\s*([\d.]+)\s*\/\s*60\s*\/\s*4\s*\)/);
-  if (m) out.bpm = Math.round(parseFloat(m[1]));
-  for (const block of text.replace(/\r\n/g, "\n").split(/\n\s*\n/)) {
-    const lines = block.split("\n").filter((l) => l.trim());
-    let name = "", kind = "fx", muted = false; const codeLines = [];
-    for (const l of lines) {
-      const header = l.match(/^--\s*(\[silenciada\]\s*)?(.+?)\s*·\s*(\w+)\s*$/);
-      if (header && !codeLines.length && !/^--\s*d\d+\s*\$/.test(l)) { muted = !!header[1]; name = header[2]; kind = header[3]; continue; }
-      if (/^--\s*Tidal Studio/.test(l) || /setcps/.test(l)) continue;
-      if (muted && l.startsWith("-- ")) codeLines.push(l.slice(3));
-      else if (!l.trim().startsWith("--")) codeLines.push(l);
-    }
-    let mix = null;
-    const plain = codeLines.filter((l) => { const m = parseMixLine(l, state); if (m) mix = m; return !m; });
-    const tm = plain.join("\n").match(/^\s*(d\d+)\s*\$\s*([\s\S]+)$/);
-    if (tm) {
-      const old = state.tracks.find((x) => x.id === tm[1]);
-      out.tracks.push({ id: tm[1], name: name || tm[1], kind, code: tm[2].trim(), muted, mix, ...(old && old.solo ? { solo: true } : {}) });
-    }
+// El archivo .tidal que se guarda: el mismo código + una línea con lo que el código no cuenta (nombre, tipos, solo, master)
+function fileText() {
+  const lines = buildCode().split("\n");
+  lines.splice(1, 0, metaLine(state));
+  return lines.join("\n").replace(/\n+$/, "") + "\n";
+}
+
+// Lee código de Tidal (pestaña Código o un archivo): pistas d1…d12 / p "nombre", el resto a «código extra»
+function parseCode(text, master = state.master) {
+  const r = parseTidalFile(text, { parseMixLine: (l) => parseMixLine(l, { master }) });
+  for (const t of r.tracks) {
+    const old = state.tracks.find((x) => x.id === t.id);
+    if (old && old.solo && !r.meta) t.solo = true;
+    if (!t.mix) t.mix = null;
   }
-  return out;
+  return { bpm: r.bpm ? Math.max(20, Math.min(300, Math.round(r.bpm))) : state.bpm, tracks: r.tracks, extra: r.extra, meta: r.meta, skipped: r.skipped };
 }
 
 // ------------------------------------------------------------------ sonido
@@ -175,7 +171,9 @@ const trackLine = (t) => { if (!audible(t, state)) return `${t.id} silence`; con
 const playTrack = (t) => evalCode(trackLine(t), t);
 const silenceId = (id) => evalCode(`${id} silence`);
 // fromTop: vuelve al compás 1 (resetCycles) para que el arreglo (mask "<…>") empiece desde el principio
-const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...state.tracks.map(trackLine)].join("\n\n"), null, state.tracks);
+// El «código extra» de un archivo abierto (let, definiciones…) va antes de las pistas, que pueden usarlo
+const extraCode = () => (state.extra && state.extra.trim() ? [state.extra.trim()] : []);
+const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...extraCode(), ...state.tracks.map(trackLine)].join("\n\n"), null, state.tracks);
 const hasArrangement = () => state.tracks.some((t) => /\bmask\s+"</.test(t.code));
 const live = () => $("#autoplay").checked;
 // Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
@@ -631,10 +629,28 @@ function fxRowHTML(t) {
   return `<div class="fx-row"><span class="fx-row-lbl">${L("Efectos", "Effects")}</span>${fx.map((e) =>
     `<button type="button" class="fx-chip ${e.off ? "off" : "on"}" data-fx="${esc(e.key)}" role="switch" aria-checked="${!e.off}" title="${esc(e.off ? L(`Encender ${e.name} (ahora no suena)`, `Turn ${e.name} on (bypassed now)`) : L(`Apagar ${e.name} sin perder su valor`, `Turn ${e.name} off, keeping its value`))}"><span class="fx-led"></span><code>${esc(e.op === "#" ? e.name : e.op + " " + e.name)}</code> ${esc(e.text)}</button>`).join("")}</div>`;
 }
+// Tarjeta «Código extra»: lo del archivo abierto que no es una pista (let, definiciones, once…), intacto
+function extraCard() {
+  const el = document.createElement("div");
+  el.className = "track extra-code";
+  el.innerHTML = `<div class="head"><span class="kico">${icon("code", 20)}</span><b>${L("Código extra", "Extra code")}</b>
+      <span class="actions"><button data-a="run" title="${L("Evaluar este código", "Evaluate this code")}">${icon("play", 14)}</button>
+      <button data-a="del" title="${L("Quitar el código extra", "Remove the extra code")}">${icon("trash", 16)}</button></span></div>
+    <p class="xc-help">${L("Venía en el archivo y no es una pista (definiciones con let, ajustes, once…). Se guarda tal cual y se evalúa antes de las pistas al pulsar Tocar todo.", "It came in the file and isn't a track (let definitions, settings, once…). It's kept as is and evaluated before the tracks when you press Play all.")}</p>
+    <textarea rows="${Math.min(10, state.extra.split("\n").length + 1)}" spellcheck="false"></textarea>`;
+  const ta = el.querySelector("textarea");
+  ta.value = state.extra;
+  ta.onchange = () => { state.extra = ta.value; save(); };
+  ta.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); state.extra = ta.value; save(); evalCode(state.extra); } });
+  el.querySelector("[data-a=run]").onclick = () => { state.extra = ta.value; save(); evalCode(state.extra); };
+  el.querySelector("[data-a=del]").onclick = () => { state.extra = ""; changed(); };
+  return el;
+}
 function renderTracks() {
   const box = $("#tracks");
   box.innerHTML = "";
-  $("#empty").style.display = state.tracks.length ? "none" : "block";
+  $("#empty").style.display = state.tracks.length || state.extra ? "none" : "block";
+  if (state.extra) box.appendChild(extraCard());
   for (const t of state.tracks) {
     const el = document.createElement("div");
     el.className = "track" + (t.id === state.selected ? " selected" : "") + (t.muted ? " muted" : "");
@@ -1787,15 +1803,17 @@ function adoptPlan(p, applyAll) {
 
 
 // ------------------------------------------------------------------ proyectos
-const FRESH = () => ({ lang: LANG, bpm: 120, tracks: [], selected: null, style: "", step: "estilo", chat: [], options: [], ideas: [],
+const FRESH = () => ({ lang: LANG, bpm: 120, tracks: [], extra: "", file: null, selected: null, style: "", step: "estilo", chat: [], options: [], ideas: [],
   trying: null, learnedMusic: state.learnedMusic || [], lastError: "", offline: state.offline, projectId: "p" + Date.now(), name: "" });
 
 function renderAll() {
   $("#bpm").value = state.bpm; $("#proj-name").value = state.name || "";
   renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); renderChat(); renderCourse(); renderTimeline();
   $("#code").value = buildCode();
+  renderFileStatus();
 }
-function openNewProject() {
+async function openNewProject() {
+  if (!(await guardUnsaved())) return;
   $("#np-kicker").innerHTML = icon("plus", 16) + L(" Nuevo proyecto", " New project");
   const body = $("#np-body");
   body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">${L("¿Cómo quieres empezar?", "How do you want to start?")}</h2>
@@ -1863,6 +1881,8 @@ function openProjects(tab = "local") {
     }
     if (a === "new") { $("#newproj").close(); return openNewProject(); }
     if (a === "open") {
+      if (!(await guardUnsaved())) return;
+      fileHandle = null;
       save();
       const p = listProjects().find((x) => x.id === id);
       evalCode("hush");
@@ -2820,6 +2840,276 @@ async function toggleRecord() {
     { links: [{ href: `/api/recordings/file?name=${encodeURIComponent(name)}`, label: L("Descargar WAV", "Download WAV") }] }), 600);
 }
 
+// ------------------------------------------------------------------ archivos .tidal (Archivo › Abrir / Guardar)
+// Dónde se elige el archivo, de mejor a peor:
+//  1. App de Mac: paneles nativos (main.swift, window.webkit.messageHandlers.tsFile)
+//  2. El servidor muestra el diálogo del sistema (osascript, PowerShell, zenity/kdialog)
+//  3. Chrome/Edge: showOpenFilePicker / showSaveFilePicker
+//  4. Abrir: <input type=file>; Guardar: escribir la ruta a mano (el servidor guarda) o descargar
+const RECENT_KEY = "tidal-studio-recent-files-v1";
+let fileHandle = null;   // archivo abierto con el selector de Chrome/Edge (no tiene ruta)
+let fileBusy = false;    // evita dos diálogos a la vez (atajo de teclado + menú de la app de Mac)
+let fileInfo = null;     // {dir, sep, dialog} del servidor
+const hashText = (t) => { let h = 5381; for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36) + ":" + t.length; };
+const isDirty = () => !!(state.file && state.file.hash !== hashText(fileText()));
+const macPanels = () => window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.tsFile;
+const KEY_MOD = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? "⌘" : "Ctrl+";
+const fileNameFor = () => (state.file && state.file.name) || `${slugify(state.name || L("cancion", "song"))}.tidal`;
+// «/Users/victor/Music/x.tidal» → «~/Music/x.tidal» (más corto en la cabecera)
+const shortPath = (p) => { const h = fileInfo && fileInfo.home; return h && p && p.startsWith(h) && /[\\/]/.test(p[h.length] || "") ? "~" + p.slice(h.length) : p; };
+const dirOf = (p) => { const i = Math.max(p.lastIndexOf("/"), p.lastIndexOf("\\")); return i > 0 ? p.slice(0, i) : ""; };
+
+function recentFiles() { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; } }
+function addRecent(path, name) {
+  if (!path) return;
+  const list = recentFiles().filter((r) => r.path !== path);
+  list.unshift({ path, name: name || baseName(path), at: Date.now() });
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 8))); } catch { /* nada */ }
+}
+function dropRecent(path) { try { localStorage.setItem(RECENT_KEY, JSON.stringify(recentFiles().filter((r) => r.path !== path))); } catch { /* nada */ } }
+const lastDir = () => (state.file && state.file.path && dirOf(state.file.path)) || (recentFiles()[0] && dirOf(recentFiles()[0].path)) || (fileInfo && fileInfo.dir) || "";
+
+// Cabecera: nombre del archivo y si hay cambios sin guardar
+function renderFileStatus() {
+  const chip = $("#file-chip"); if (!chip) return;
+  const f = state.file, dirty = isDirty();
+  chip.hidden = !f;
+  chip.classList.toggle("dirty", dirty);
+  if (f) chip.innerHTML = `${icon("file", 14)}<code title="${esc(f.path || f.name)}">${esc(f.path ? shortPath(f.path) : f.name)}</code>
+    <span class="fc-state">${dirty ? `<span class="dirty-dot"></span> ${L("cambios sin guardar", "unsaved changes")}` : L("guardado", "saved")}</span>`;
+  const btn = $("#btn-file");
+  if (btn) { const dot = btn.querySelector(".dirty-dot"); if (dirty && !dot) btn.insertAdjacentHTML("beforeend", '<span class="dirty-dot"></span>'); if (!dirty && dot) dot.remove(); }
+  document.title = f ? `${dirty ? "● " : ""}${f.name} · Tidal Studio` : "Tidal Studio";
+}
+
+// Diálogo propio (confirm()/prompt() no funcionan igual en todas las ventanas nativas)
+function ask({ title, text = "", input = null, buttons }) {
+  const dlg = $("#askdlg");
+  dlg.innerHTML = `<h2>${esc(title)}</h2>${text ? `<p>${text}</p>` : ""}
+    ${input !== null ? `<input id="ask-input" spellcheck="false" autocomplete="off">` : ""}
+    <div class="ask-btns">${buttons.map((b) => `<button data-k="${b.k}" class="${b.cls || ""}">${esc(b.label)}</button>`).join("")}</div>`;
+  if (input !== null) dlg.querySelector("#ask-input").value = input;
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (k) => { if (done) return; done = true; const v = input !== null ? dlg.querySelector("#ask-input").value.trim() : null; dlg.close(); resolve({ k, value: v }); };
+    dlg.querySelectorAll("button[data-k]").forEach((b) => b.onclick = () => finish(b.dataset.k));
+    dlg.onclose = () => finish("cancel");
+    const inp = dlg.querySelector("#ask-input");
+    if (inp) inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); finish(buttons.find((b) => b.cls && b.cls.includes("primary")).k); } });
+    dlg.showModal();
+    if (inp) { inp.focus(); const n = inp.value.length, dot = inp.value.lastIndexOf("."), sl = Math.max(inp.value.lastIndexOf("/"), inp.value.lastIndexOf("\\")); inp.setSelectionRange(sl + 1, dot > sl ? dot : n); }
+  });
+}
+
+// Antes de cambiar de canción: ¿guardar los cambios del archivo abierto?
+async function guardUnsaved() {
+  if (!isDirty()) return true;
+  const r = await ask({
+    title: L(`¿Guardar los cambios de «${state.file.name}»?`, `Save changes to «${state.file.name}»?`),
+    text: L("Si no los guardas, el archivo se queda como estaba. (La canción sigue en Mis proyectos de todas formas.)", "If you don't save them, the file stays as it was. (The song is still kept in My projects anyway.)"),
+    buttons: [{ k: "discard", label: L("No guardar", "Don't save"), cls: "spacer" }, { k: "cancel", label: L("Cancelar", "Cancel") }, { k: "save", label: L("Guardar", "Save"), cls: "primary" }],
+  });
+  if (r.k === "save") return await saveFile();
+  return r.k === "discard";
+}
+
+// Pide una ruta al sistema. Devuelve {path} | {cancelled} | {unavailable}
+async function pickPath(mode) {
+  const title = mode === "save" ? L("Guardar archivo de Tidal", "Save Tidal file") : L("Abrir un archivo de Tidal", "Open a Tidal file");
+  const req = { mode, name: fileNameFor(), dir: lastDir(), title };
+  if (macPanels()) {
+    try { const p = await macPanels().postMessage(req); return p ? { path: p } : { cancelled: true }; } catch { /* sigue con lo siguiente */ }
+  }
+  try { const r = await api("/api/file/dialog", req); if (r.path || r.cancelled) return r; } catch { /* sin diálogo del sistema */ }
+  return { unavailable: true };
+}
+
+async function openFile() {
+  if (fileBusy) return; fileBusy = true;
+  try {
+    if (!(await guardUnsaved())) return;
+    const r = await pickPath("open");
+    if (r.cancelled) return;
+    if (r.path) return await openPath(r.path);
+    if (window.showOpenFilePicker) {
+      try {
+        const [h] = await window.showOpenFilePicker({ types: [{ description: "Tidal", accept: { "text/plain": [".tidal", ".hs", ".txt"] } }] });
+        const f = await h.getFile();
+        return loadFileText(await f.text(), { name: f.name }, h);
+      } catch (e) { if (e.name !== "AbortError") toast(e.message); return; }
+    }
+    $("#file-input").click();
+  } finally { fileBusy = false; }
+}
+async function openPath(path) {
+  try {
+    const r = await api("/api/file/read", { path });
+    loadFileText(r.content, { path: r.path, name: r.name });
+  } catch (e) {
+    dropRecent(path);
+    toast(L(`No se pudo abrir ${baseName(path)}: `, `Couldn't open ${baseName(path)}: `) + e.message);
+  }
+}
+function loadFileText(text, file, handle = null) {
+  const meta = readMeta(text);
+  const p = parseCode(text, meta && meta.master);
+  if (!p.tracks.length && !p.extra) return toast(L(`«${file.name}» no tiene código de Tidal que pueda leer.`, `«${file.name}» has no Tidal code I can read.`));
+  save();
+  evalCode("hush");
+  // Si ya habías abierto este archivo, seguimos con ese proyecto (su chat y su historia)
+  const prev = file.path && listProjects().find((x) => x.data && x.data.file && x.data.file.path === file.path);
+  const base = prev ? { ...FRESH(), ...prev.data, projectId: prev.id } : FRESH();
+  state = { ...base, trying: null, selected: null,
+    name: (meta && meta.name) || file.name.replace(/\.(tidal|hs|txt)$/i, ""),
+    bpm: Math.max(40, Math.min(220, Math.round(p.bpm || (meta && meta.bpm) || 120))),
+    style: meta && STYLES[meta.style] ? meta.style : (prev ? base.style : ""),
+    master: (meta && meta.master) || undefined, tracks: p.tracks, extra: p.extra, step: "libre" };
+  fileHandle = handle;
+  state.file = { path: file.path || "", name: file.name, hash: "" };
+  state.file.hash = hashText(fileText());
+  addRecent(file.path, file.name);
+  resetHistory(state);
+  const n = p.tracks.length;
+  say(L(`He abierto «${file.name}»: ${n} ${n === 1 ? "pista" : "pistas"} a ${state.bpm} BPM.`, `I opened «${file.name}»: ${n} ${n === 1 ? "track" : "tracks"} at ${state.bpm} BPM.`)
+    + (p.extra ? L(" El código que no es una pista (definiciones, let, once…) está intacto en «Código extra», arriba de las pistas.", " Code that isn't a track (definitions, let, once…) is kept intact in «Extra code», above the tracks.") : "")
+    + (p.skipped.length ? L(` He quitado ${p.skipped.join(", ")}: aquí se para con el botón Silencio.`, ` I left out ${p.skipped.join(", ")}: here you stop with the Hush button.`) : ""),
+    [L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()]);
+  renderAll(); renderHistoryButtons(); renderFileStatus();
+  if (live() && n) playAll(true);
+}
+
+// Escribe el archivo. Devuelve true si se ha guardado.
+async function writeTo(target) {
+  const content = fileText();
+  if (target.handle) {
+    const w = await target.handle.createWritable(); await w.write(content); await w.close();
+    return { name: target.handle.name, path: "" };
+  }
+  const r = await api("/api/file/write", { path: target.path, content, overwrite: target.overwrite !== false });
+  return r;
+}
+function savedAs(r, handle = null) {
+  fileHandle = handle;
+  state.file = { path: r.path || "", name: r.name, hash: hashText(fileText()) };
+  if (!state.name) { state.name = r.name.replace(/\.(tidal|hs|txt)$/i, ""); $("#proj-name").value = state.name; }
+  state.file.hash = hashText(fileText());
+  addRecent(r.path, r.name);
+  save();
+  toastSoft(L(`Guardado: ${r.name}`, `Saved: ${r.name}`));
+  return true;
+}
+async function saveFile() {
+  if (!state.file || (!state.file.path && !fileHandle)) return saveFileAs();
+  try {
+    const r = await writeTo(fileHandle ? { handle: fileHandle } : { path: state.file.path });
+    return savedAs({ ...r, name: r.name || state.file.name, path: r.path || state.file.path }, fileHandle);
+  } catch (e) {
+    toast(L("No se pudo guardar: ", "Couldn't save: ") + e.message + L(" Prueba con Guardar como.", " Try Save as."));
+    return false;
+  }
+}
+async function saveFileAs() {
+  if (fileBusy) return false; fileBusy = true;
+  try {
+    const r = await pickPath("save");
+    if (r.cancelled) return false;
+    if (r.path) {
+      try { return savedAs(await writeTo({ path: r.path })); }
+      catch (e) { toast(L("No se pudo guardar: ", "Couldn't save: ") + e.message); return false; }
+    }
+    if (window.showSaveFilePicker) {
+      try {
+        const h = await window.showSaveFilePicker({ suggestedName: fileNameFor(), types: [{ description: "Tidal", accept: { "text/plain": [".tidal"] } }] });
+        return savedAs(await writeTo({ handle: h }), h);
+      } catch (e) { if (e.name !== "AbortError") toast(e.message); return false; }
+    }
+    // Sin diálogo: escribir la ruta (el estudio guarda en este ordenador)
+    if (!fileInfo) fileInfo = await api("/api/file/info", {}).catch(() => null);
+    let path = shortPath((lastDir() ? lastDir() + ((fileInfo && fileInfo.sep) || "/") : "") + fileNameFor());
+    for (;;) {
+      const a = await ask({ title: L("Guardar como", "Save as"), text: L("¿Dónde lo guardo? Escribe la ruta completa del archivo (.tidal).", "Where should I save it? Type the full path of the file (.tidal)."), input: path,
+        buttons: [{ k: "download", label: L("Descargar en su lugar", "Download instead"), cls: "spacer" }, { k: "cancel", label: L("Cancelar", "Cancel") }, { k: "ok", label: L("Guardar", "Save"), cls: "primary" }] });
+      if (a.k === "download") { downloadTidal(); return false; }
+      if (a.k !== "ok" || !a.value) return false;
+      path = a.value;
+      try {
+        let w = await writeTo({ path, overwrite: false });
+        if (w.exists) {
+          const c = await ask({ title: L(`«${w.name}» ya existe`, `«${w.name}» already exists`), text: L("¿Quieres reemplazarlo?", "Do you want to replace it?"),
+            buttons: [{ k: "cancel", label: L("Cancelar", "Cancel") }, { k: "ok", label: L("Reemplazar", "Replace"), cls: "primary" }] });
+          if (c.k !== "ok") continue;
+          w = await writeTo({ path, overwrite: true });
+        }
+        return savedAs(w);
+      } catch (e) { toast(L("No se pudo guardar: ", "Couldn't save: ") + e.message); }
+    }
+  } finally { fileBusy = false; }
+}
+function downloadTidal() {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([fileText()], { type: "text/plain" }));
+  a.download = fileNameFor(); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// Menú Archivo
+function renderFilePop() {
+  const pop = $("#file-pop");
+  const rec = recentFiles();
+  const k = (x) => `<kbd>${KEY_MOD}${x}</kbd>`;
+  pop.innerHTML = `<button data-f="new" role="menuitem">${icon("plus", 16)} ${L("Nuevo proyecto…", "New project…")}</button>
+    <button data-f="open" role="menuitem">${icon("folder", 16)} ${L("Abrir archivo…", "Open file…")} ${k("O")}</button>
+    <hr>
+    <button data-f="save" role="menuitem">${icon("save", 16)} ${L("Guardar", "Save")} ${k("S")}</button>
+    <button data-f="saveas" role="menuitem">${icon("save", 16)} ${L("Guardar como…", "Save as…")} ${k(KEY_MOD === "⌘" ? "⇧S" : "Shift+S")}</button>
+    <button data-f="download" role="menuitem">${icon("download", 16)} ${L("Descargar .tidal", "Download .tidal")}</button>
+    <hr>
+    <div class="fp-title">${L("Recientes", "Recent")}</div>
+    ${rec.length ? rec.map((r, i) => `<button data-f="recent" data-i="${i}" class="fp-recent" role="menuitem"><span>${esc(r.name)}</span><small>${esc(shortPath(dirOf(r.path)))}</small></button>`).join("")
+      + `<button data-f="clear-recent" role="menuitem">${icon("broom", 16)} ${L("Vaciar la lista", "Clear the list")}</button>`
+      : `<div class="fp-empty">${L("Los archivos que abras o guardes aparecerán aquí.", "Files you open or save will show up here.")}</div>`}
+    <hr>
+    <button data-f="projects" role="menuitem">${icon("folder", 16)} ${L("Mis proyectos…", "My projects…")}</button>`;
+}
+function toggleFilePop(open) {
+  const pop = $("#file-pop"), btn = $("#btn-file");
+  const show = open ?? pop.hidden;
+  if (show) renderFilePop();
+  pop.hidden = !show; btn.setAttribute("aria-expanded", String(show));
+}
+const FILE_CMDS = { new: () => openNewProject(), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects() };
+function wireFiles() {
+  $("#btn-file").onclick = (e) => { e.stopPropagation(); toggleFilePop(); };
+  document.addEventListener("click", (e) => { if (!e.target.closest(".file-menu")) toggleFilePop(false); });
+  $("#file-pop").onclick = async (e) => {
+    const b = e.target.closest("button[data-f]"); if (!b) return;
+    const f = b.dataset.f;
+    toggleFilePop(false);
+    if (f === "recent") {
+      const r = recentFiles()[+b.dataset.i];
+      if (r && !fileBusy && (await guardUnsaved())) openPath(r.path);
+      return;
+    }
+    if (f === "clear-recent") { try { localStorage.removeItem(RECENT_KEY); } catch { /* nada */ } return; }
+    FILE_CMDS[f] && FILE_CMDS[f]();
+  };
+  $("#file-input").onchange = async (e) => {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (f) loadFileText(await f.text(), { name: f.name });
+  };
+  // Atajos: Ctrl/Cmd+O abrir, Ctrl/Cmd+S guardar, Ctrl/Cmd+Shift+S guardar como (también dentro del código)
+  document.addEventListener("keydown", (e) => {
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    const key = e.key.toLowerCase();
+    if (key === "o") { e.preventDefault(); openFile(); }
+    if (key === "s") { e.preventDefault(); if (e.shiftKey) saveFileAs(); else saveFile(); }
+  });
+  // La app de Mac llama aquí desde su menú Archivo
+  window.tsFileCommand = (cmd) => { if (FILE_CMDS[cmd]) FILE_CMDS[cmd](); };
+  window.addEventListener("beforeunload", (e) => { if (isDirty()) { e.preventDefault(); e.returnValue = ""; } });
+  api("/api/file/info", {}).then((r) => { fileInfo = r; renderFileStatus(); }).catch(() => {});
+  renderFileStatus();
+}
+
 // ------------------------------------------------------------------ cursos por género
 // Construir una canción completa desde cero en un estilo, paso a paso (ritmo → bajo → armonía → melodía → arreglo → mezcla).
 // El curso vive en el panel izquierdo (state.course = { id, i, done }) y Maestro explica cada paso en el chat.
@@ -3175,7 +3465,7 @@ function init() {
     const removed = state.tracks.filter((t) => !keep.has(t.id)).map((t) => t.id);
     const before = Object.fromEntries(state.tracks.map((t) => [t.id, t.code]));
     parsed.tracks.forEach((t) => { if (before[t.id] !== t.code) t.edited = true; });
-    state.bpm = parsed.bpm; $("#bpm").value = state.bpm; state.tracks = parsed.tracks;
+    state.bpm = parsed.bpm; $("#bpm").value = state.bpm; state.tracks = parsed.tracks; state.extra = parsed.extra;
     changed();
     for (const id of removed) await silenceId(id);
     const r = await playAll();
@@ -3193,9 +3483,7 @@ function init() {
     if (e.key === "Tab") { e.preventDefault(); document.execCommand("insertText", false, "  "); }
   });
   $("#btn-download-code").onclick = () => {
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(new Blob([buildCode()], { type: "text/plain" }));
-    a.download = `${slugify(state.name || "cancion")}.tidal`; a.click(); URL.revokeObjectURL(a.href);
+    downloadTidal();
     $("#code-msg").textContent = L("Descargado: ábrelo en cualquier editor de TidalCycles (Pulsar, VS Code, Vim…).", "Downloaded: open it in any TidalCycles editor (Pulsar, VS Code, Vim…).");
   };
   $("#btn-share").onclick = async () => {
@@ -3212,6 +3500,7 @@ function init() {
   $("#btn-settings").onclick = openSettings;
   $("#btn-new").onclick = openNewProject;
   $("#btn-projects").onclick = () => openProjects();
+  wireFiles();
   document.querySelectorAll("[data-close]").forEach((b) => b.onclick = () => b.closest("dialog").close());
   $("#bd-close").onclick = () => $("#builder").close();
   $("#builder").addEventListener("close", () => {

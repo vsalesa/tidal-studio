@@ -35,6 +35,7 @@ import net  # noqa: E402
 import llm as llmmod  # noqa: E402
 import llmdiag  # noqa: E402
 import shellenv  # noqa: E402
+import files as tfiles  # noqa: E402
 import ccdetect  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
@@ -317,6 +318,16 @@ class Handler(SimpleHTTPRequestHandler):
             self._json({"error": "Solo se permite acceso local"}, 403)
             return False
         return True
+
+    def _same_origin(self):
+        # Leer y escribir archivos del ordenador: solo desde la propia web del estudio (ninguna otra
+        # página abierta en el navegador puede pedirlo) y con JSON (que obliga al navegador a preguntar antes)
+        origin = self.headers.get("Origin")
+        if origin and urlparse(origin).hostname not in ("127.0.0.1", "localhost", "::1"):
+            return False
+        if origin and urlparse(origin).port != self.server.server_address[1]:
+            return False
+        return "application/json" in (self.headers.get("Content-Type") or "")
 
     # ---------- rutas ----------
     def do_GET(self):
@@ -691,6 +702,23 @@ class Handler(SimpleHTTPRequestHandler):
             if path == "/api/engine/stop":
                 ENGINE.stop()
                 return self._json(ENGINE.status())
+            if path.startswith("/api/file/"):
+                if not self._same_origin():
+                    return self._json({"error": "forbidden"}, 403)
+                lang = data.get("lang")
+                try:
+                    if path == "/api/file/info":
+                        return self._json(tfiles.info())
+                    if path == "/api/file/dialog":
+                        return self._json(tfiles.dialog(data.get("mode", "open"), data.get("name", ""), data.get("dir", ""), data.get("title", "")))
+                    if path == "/api/file/read":
+                        return self._json(tfiles.read(data.get("path")))
+                    if path == "/api/file/write":
+                        return self._json(tfiles.write(data.get("path"), data.get("content", ""), bool(data.get("overwrite", True))))
+                except (tfiles.FileError, OSError) as e:
+                    msg = str(e) if isinstance(e, tfiles.FileError) else f"{e.strerror or e}|{e.strerror or e}"
+                    es, _, en = msg.partition("|")
+                    return self._json({"error": en if lang == "en" and en else es}, 400)
             if path == "/api/eval":
                 return self._json(ENGINE.eval(data.get("code", "")))
             if path == "/api/timeline":
