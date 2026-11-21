@@ -280,6 +280,13 @@ por ejemplo `https://github.com/jtydhr88/music-composition-skills`. Tidal Studio
 Cada plugin se puede desactivar (desaparecen sus skills y comandos) o quitar. Mira su licencia y su `NOTICE` antes de
 compartir su contenido.
 
+**Viene por defecto: composición musical.** La primera vez que Tidal Studio arranca con internet descarga
+[vsalesa/music-composition-skills](https://github.com/vsalesa/music-composition-skills) (la traducción al inglés del
+plugin de composición de jtydhr88, 30 skills, MIT) en `my-plugins/`. Está marcado **Usar siempre**: Maestro carga su
+skill principal `music-composition` en cada mensaje y siempre reserva un hueco para la skill suya que mejor encaje
+(armonía, jazz, groove, forma…). Se descarga en vez de ir dentro del instalador porque sus referencias citan libros con
+copyright (ver su `NOTICE`). Si lo quitas, no vuelve; desmarca «Usar siempre» para que sea un plugin normal.
+
 ### Samples
 
 Tus sonidos viven en `samples/<nombre>/` (cada carpeta es un sonido de Tidal: `s "nombre"`, `s "nombre:1"` para el segundo

@@ -2467,7 +2467,7 @@ async function openSkills(focus = "") {
   let r = { skills: [], folder: "" };
   try { r = await api("/api/skills"); } catch (e) { toast(e.message); }
   skillList = r.skills || [];
-  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder });
+  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins });
   if (!$("#skills").open) $("#skills").showModal();
   const f = focus && ($(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`) || $(`#skills-body .pl-card[data-plugin="${CSS.escape(focus)}"]`));
   if (f) f.scrollIntoView({ block: "nearest" });
@@ -2478,8 +2478,8 @@ function wireSkills() {
   body.addEventListener("change", async (e) => {
     const card = e.target.closest(".sk-card"); const a = e.target.dataset.a;
     if (!card || !a) return;
-    if (a === "plugin-enable") {
-      try { await api("/api/plugins/enable", { name: card.dataset.plugin, on: e.target.checked }); } catch (err) { toast(err.message); }
+    if (a === "plugin-enable" || a === "plugin-prefer") {
+      try { await api(`/api/plugins/${a === "plugin-enable" ? "enable" : "prefer"}`, { name: card.dataset.plugin, on: e.target.checked }); } catch (err) { toast(err.message); }
       return openSkills(card.dataset.plugin);
     }
     try { await api(`/api/skills/${a}`, { name: card.dataset.name, on: e.target.checked }); } catch (err) { toast(err.message); }

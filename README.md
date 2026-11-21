@@ -278,6 +278,13 @@ this repository) and then:
 Each plugin can be turned off (its skills and commands disappear) or removed. Check its license and any `NOTICE` before
 sharing its content.
 
+**Included by default: music composition.** The first time Tidal Studio starts with internet, it downloads
+[vsalesa/music-composition-skills](https://github.com/vsalesa/music-composition-skills) (the English translation of
+jtydhr88's 30-skill composition plugin, MIT) into `my-plugins/`. It is marked **Always use**: Maestro loads its main
+`music-composition` skill with every message and always gives one slot to its best-matching skill (harmony, jazz,
+groove, form…). It is downloaded instead of shipped in the installer because its reference files quote copyrighted
+books (see its `NOTICE`). If you remove it, it doesn't come back; untick «Always use» to make it an ordinary plugin.
+
 ### Samples
 
 Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`, `s "name:1"` for the second file).
