@@ -1,4 +1,10 @@
-## What's new in 0.5.0 / Novedades
+## What's new in 0.6.0 / Novedades
+
+- **Maestro fetches missing sounds by itself**: when a sound your song uses isn't installed, Maestro finds it in the free sample packs and downloads it to your library, ready to play.
+
+**Español:** **Maestro descarga solo los sonidos que faltan**: si tu canción usa un sonido que no tienes, Maestro lo busca en los packs libres y lo descarga a tu biblioteca, listo para sonar.
+
+## 0.5.0
 
 - **Open and save Tidal files**: a File menu opens any `.tidal` / `.hs` file (each `d1…d12` or `p "name"` becomes a track; other code is kept intact as Extra code) and saves clean `.tidal` files that play in any Tidal editor, with recent files, an unsaved-changes indicator and `Ctrl/⌘+O / S / Shift+S`. Native dialogs on macOS (and a File menu in the Mac menu bar), Windows and Linux.
 
