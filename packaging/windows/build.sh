@@ -42,12 +42,12 @@ if ! ls "$RT"/SuperCollider/sclang.exe >/dev/null 2>&1; then
   rm -rf "$RT/SuperCollider" "$WORK/sc"
   mkdir -p "$WORK/sc"
   if [ -n "$ZIP" ]; then
-    curl -fL --retry 3 -o "$WORK/sc.zip" "$ZIP"
+    curl -fL --retry 6 --retry-delay 15 --retry-all-errors -o "$WORK/sc.zip" "$ZIP"
     unzip -q "$WORK/sc.zip" -d "$WORK/sc"
     SCDIR="$(dirname "$(find "$WORK/sc" -name sclang.exe | head -1)")"
     cp -a "$SCDIR" "$RT/SuperCollider"
   elif [ -n "$EXE" ]; then
-    curl -fL --retry 3 -o "$WORK/sc-setup.exe" "$EXE"
+    curl -fL --retry 6 --retry-delay 15 --retry-all-errors -o "$WORK/sc-setup.exe" "$EXE"
     # NSIS installer: /S silent, /D=<dir> must be last and unquoted
     cmd //c "$(cygpath -w "$WORK/sc-setup.exe") /S /D=C:\\TidalStudio\\SuperCollider"
     # the installer may add Start menu entries; we only keep the files
