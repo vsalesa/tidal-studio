@@ -3,6 +3,7 @@
 // diagnose(code, ctx) -> lista de problemas; fixLocal(code, wish, ctx) -> { diagnostico, explicacion[], codigo }
 import { L } from "./i18n.js";
 import { SOUNDS, FUNCS, PARAMS } from "./explain.js";
+import { fixNegatives } from "./controls.js";
 
 // Bancos de sonidos habituales de SuperDirt (Dirt-Samples) y sintes incluidos
 const BANKS = (
@@ -115,6 +116,15 @@ export function diagnose(code, ctx = {}) {
           : L("Si no existe en SuperDirt, esa nota no sonará. Mira la pestaña Registro: allí avisa de los sonidos que no encuentra.", "If it doesn't exist in SuperDirt, that note won't play. Check the Log tab: it reports sounds it can't find."),
         sug ? fixed.replace(m[0], m[0].replace(new RegExp(`\\b${w}\\b`, "g"), sug)) : null);
     }
+  }
+  // 5b. Números negativos sin paréntesis: «# speed -1» Haskell lo lee como «speed menos 1»
+  if (fixNegatives(code) !== code) {
+    const m = code.match(/#\s*([A-Za-z]\w*)\s+-(\d[\d.]*)/);
+    add("error", L(`El número negativo necesita paréntesis: «# ${m[1]} (-${m[2]})»`, `The negative number needs brackets: «# ${m[1]} (-${m[2]})»`),
+      L(`Sin paréntesis, Tidal lee «${m[1]} -${m[2]}» como «${m[1]} menos ${m[2]}» (una resta) y da un error que nombra «${m[1]}». Con «(-${m[2]})» entiende que es un número negativo.`,
+        `Without brackets, Tidal reads «${m[1]} -${m[2]}» as «${m[1]} minus ${m[2]}» (a subtraction) and gives an error that names «${m[1]}». With «(-${m[2]})» it knows it's a negative number.`),
+      fixNegatives(fixed));
+    fixed = fixNegatives(fixed);
   }
   // 6. Efectos (#) mal escritos
   for (const m of out0.matchAll(/#\s*([A-Za-z]\w*)/g)) {

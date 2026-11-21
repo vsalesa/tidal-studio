@@ -65,6 +65,7 @@ REGLAS DEL CÓDIGO TIDAL (muy importante, si fallan no suena nada):
   n (arp "updown" "<c'min7 g'min7>") # s "superpiano" # room 0.4
   every 4 (# speed 2) $ s "bd sn"
 - Efectos apagados: el alumno puede apagar un efecto sin borrarlo escribiéndolo como comentario, p. ej. s "bd*4" {- # room 0.5 -} # gain 1. Tidal lo ignora. Respétalo: no lo borres ni lo vuelvas a encender salvo que te lo pida; si quiere ese efecto, quita {- y -}.
+- Números negativos SIEMPRE entre paréntesis: # speed (-1), # eqlow (-3), (-0.25) ~>. Sin paréntesis («# speed -1») Haskell lo lee como una resta y da error.
 - No uses "# orbit": cada pista ya tiene su propio canal de efectos. Mantén el volumen total razonable (gain 0.8-1.2).
 - No inventes funciones. Si dudas, usa algo más sencillo.
 
@@ -92,6 +93,10 @@ def session_summary(session):
                      + " | ".join(descartadas))
     if session.get("lastError"):
         lines.append(f"ÚLTIMO ERROR DE TIDAL (arréglalo si es tuyo): {session['lastError']}")
+        if re.search(r"\b(amp|eqlow|eqmid|eqhigh)\b", session["lastError"]):
+            lines.append("OJO: al sonar, la app añade al final de cada pista su mezcla (# amp, # eqlow/eqmid/eqhigh) aunque NO aparezca en "
+                         "el código de la pista. Si el error nombra esos parámetros y la pista no los tiene, no culpes al alumno: viene de la "
+                         "mezcla; dile que lo ajuste en la pestaña Mezcla y busca el fallo real en el resto del código.")
     return "\n".join(lines)
 
 
@@ -152,6 +157,8 @@ def _clean_code(code, track_id):
     # Quitar "d1 $" si la IA lo ha puesto igualmente
     code = re.sub(r"^\s*" + re.escape(track_id) + r"\s*\$\s*", "", code)
     code = re.sub(r"^\s*d\d+\s*\$\s*", "", code)
+    # «# speed -1» Haskell lo lee como «speed menos 1»: los negativos van entre paréntesis
+    code = re.sub(r"(#\s*[A-Za-z]\w*\s+)-(\d+(?:\.\d+)?)(?![\w.(])", r"\1(-\2)", code)
     return code
 
 
@@ -326,6 +333,9 @@ def build_fix(data):
         parts.append(f"Última versión que funcionaba:\n{data['previous']}")
     if data.get("error"):
         parts.append(f"Error de Tidal:\n{str(data['error'])[:1500]}")
+        if re.search(r"\b(amp|eqlow|eqmid|eqhigh)\b", str(data["error"])) and not re.search(r"\b(amp|eqlow|eqmid|eqhigh)\b", str(data.get("code") or "")):
+            parts.append("Nota: al sonar, la app añade la mezcla de la pista (# amp, # eqlow/eqmid/eqhigh) al final, aunque no esté en su código. "
+                         "No le digas al alumno que lo tiene en su pista.")
     parts.append(f"Lo que quería el alumno: {data.get('wish') or '(no lo ha dicho)'}")
     if data.get("local"):
         parts.append(f"Revisión automática previa: {str(data['local'])[:1500]}")
