@@ -2366,6 +2366,7 @@ async function openSettings() {
   $("#oa-url").value = c.openai.base_url; $("#oa-model").value = c.openai.model;
   $("#oa-key").value = c.openai.api_key; $("#an-key").value = c.anthropic.api_key; $("#an-model").value = c.anthropic.model;
   $("#cc-path").value = c.claudecode?.path || ""; $("#cc-model").value = c.claudecode?.model || "";
+  $("#cc-sub").checked = c.claudecode?.use_subscription !== false; $("#diag").hidden = true;
   const preset = [...$("#oa-preset").options].find((o) => o.value.split("|")[0] === c.openai.base_url);
   $("#oa-preset").value = preset ? preset.value : "custom";
   const g = c.github || {};
@@ -2384,12 +2385,54 @@ async function saveSettings() {
     provider: document.querySelector("input[name=provider]:checked").value,
     openai: { base_url: $("#oa-url").value, api_key: $("#oa-key").value, model: $("#oa-model").value },
     anthropic: { api_key: $("#an-key").value, model: $("#an-model").value },
-    claudecode: { path: $("#cc-path").value, model: $("#cc-model").value },
+    claudecode: { path: $("#cc-path").value, model: $("#cc-model").value, use_subscription: $("#cc-sub").checked },
     github: { token: $("#gh-token").value, repo: $("#gh-repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""),
       branch: $("#gh-branch").value, folder: $("#gh-folder").value },
   });
   state.offline = false; save();
   await refreshStatus();
+}
+
+// ------------------------------------------------------------------ diagnóstico de la IA
+let lastDiag = null;
+async function runDiagnostics() {
+  $("#diag").hidden = false; $("#diag-steps").innerHTML = ""; $("#diag-hints").innerHTML = ""; $("#diag-models").innerHTML = "";
+  $("#diag-msg").textContent = L("Comprobando… (puede tardar unos 20 s)", "Checking… (may take about 20 s)");
+  try {
+    await saveSettings();
+    const r = await api("/api/llm/diagnose", { lang: LANG }); lastDiag = r;
+    $("#diag-msg").textContent = r.ok ? L("Todo bien: Maestro puede hablar con la IA.", "All good: Maestro can talk to the AI.")
+      : L("Algo falla: mira los pasos en rojo.", "Something fails: look at the red steps.");
+    $("#diag-hints").innerHTML = (r.hints || []).map((h) => `<li>${esc(h)}</li>`).join("");
+    $("#diag-steps").innerHTML = r.steps.map((s) => `<li class="${s.ok === false ? "bad" : s.ok ? "ok" : ""}">
+      <details><summary><b>${s.ok === false ? "✗" : s.ok ? "✓" : "·"} ${esc(s.name)}</b> <span>${esc(s.summary)}</span></summary>
+      <pre>${esc(JSON.stringify(s.detail, null, 2))}</pre></details></li>`).join("");
+    if (r.models?.length) renderDiagModels(r.models);
+  } catch (e) { $("#diag-msg").textContent = "Error: " + e.message; }
+}
+async function runModelTest() {
+  $("#diag").hidden = false; $("#diag-models").innerHTML = "";
+  $("#diag-msg").textContent = L("Probando modelos… (unos 20 s)", "Testing models… (about 20 s)");
+  try {
+    await saveSettings();
+    const r = await api("/api/llm/models", { lang: LANG });
+    if (r.steps) lastDiag = r;
+    renderDiagModels(r.models || []);
+    $("#diag-msg").textContent = L("Pulsa «Usar» en uno que funcione.", "Press «Use» on one that works.");
+  } catch (e) { $("#diag-msg").textContent = "Error: " + e.message; }
+}
+function renderDiagModels(models) {
+  const p = document.querySelector("input[name=provider]:checked").value;
+  const field = p === "claudecode" ? "#cc-model" : p === "anthropic" ? "#an-model" : "#oa-model";
+  $("#diag-models").innerHTML = `<table class="diag-models"><tr><th>${L("Modelo", "Model")}</th><th></th><th></th><th></th></tr>` +
+    models.map((m) => `<tr class="${m.ok === false ? "bad" : m.ok ? "ok" : ""}"><td><code>${esc(m.model)}</code></td>
+      <td>${m.ok === null || m.ok === undefined ? "" : m.ok ? "✓" : "✗"}</td>
+      <td class="hint">${esc(m.ok ? `${(m.used || []).join(", ")} · ${m.seconds} s` : (m.error || ""))}</td>
+      <td>${m.ok !== false ? `<button type="button" data-use-model="${esc(m.model)}">${L("Usar", "Use")}</button>` : ""}</td></tr>`).join("") + "</table>";
+  $("#diag-models").querySelectorAll("[data-use-model]").forEach((b) => b.onclick = async () => {
+    $(field).value = b.dataset.useModel; await saveSettings();
+    $("#diag-msg").textContent = L(`Guardado: ${b.dataset.useModel}`, `Saved: ${b.dataset.useModel}`);
+  });
 }
 
 // ------------------------------------------------------------------ arranque
@@ -2897,7 +2940,13 @@ function init() {
   $("#btn-test").onclick = async () => {
     $("#test-msg").textContent = L("Probando…", "Testing…");
     try { await saveSettings(); const r = await api("/api/llm/test", {}); $("#test-msg").textContent = L("Conectado: ", "Connected: ") + r.reply; }
-    catch (e) { $("#test-msg").textContent = "Error: " + e.message; }
+    catch (e) { $("#test-msg").textContent = "Error: " + e.message + " · " + L("Pulsa «Diagnóstico» para ver por qué.", "Press «Diagnostics» to see why."); }
+  };
+  $("#btn-diag").onclick = runDiagnostics;
+  $("#btn-diag-models").onclick = runModelTest;
+  $("#btn-diag-copy").onclick = async () => {
+    try { await navigator.clipboard.writeText(JSON.stringify(lastDiag, null, 2)); $("#diag-msg").textContent = L("Copiado", "Copied"); }
+    catch { $("#diag-msg").textContent = L("No se pudo copiar", "Couldn't copy"); }
   };
 
   refreshStatus();

@@ -267,7 +267,10 @@
       <fieldset id="fs-claudecode" hidden>
         <p class="hint"><span data-th="No API key: Maestro uses the <code>claude</code> command (Claude Code) on this computer, signed in with your Pro or Max plan. Install it from <a href=&quot;https://claude.com/claude-code&quot; target=&quot;_blank&quot;>claude.com/claude-code</a>, run <code>claude</code> once in a terminal and sign in. It counts towards your plan's usage limits and answers a bit slower than the API.">Sin clave de API: Maestro usa el comando <code>claude</code> (Claude Code) de este ordenador, con la sesión iniciada en tu plan Pro o Max. Instálalo desde <a href="https://claude.com/claude-code" target="_blank">claude.com/claude-code</a>, ejecuta <code>claude</code> una vez en una terminal e inicia sesión. Cuenta en los límites de uso de tu plan y responde algo más lento que la API.</span></p>
         <label><span data-t="Path to claude (optional)">Ruta de claude (opcional)</span> <input id="cc-path" placeholder="claude" data-tp="empty = search the PATH"></label>
-        <label><span data-t="Model (optional)">Modelo (opcional)</span> <input id="cc-model" placeholder="sonnet, opus…"></label>
+        <label><span data-t="Model (optional)">Modelo (opcional)</span> <input id="cc-model" list="cc-models" placeholder="sonnet, opus…"></label>
+        <datalist id="cc-models"><option value="opus"><option value="sonnet"><option value="haiku"><option value="fable"><option value="opus[1m]"></datalist>
+        <p class="hint"><span data-th="Use an alias (<code>opus</code>, <code>sonnet</code>, <code>haiku</code>, <code>fable</code>) or an id like <code>claude-opus-5-5</code>. Names as Claude Desktop shows them (&laquo;Opus 5.5&raquo;) are converted for you.">Usa un alias (<code>opus</code>, <code>sonnet</code>, <code>haiku</code>, <code>fable</code>) o un id como <code>claude-opus-5-5</code>. Los nombres como los muestra Claude Desktop («Opus 5.5») se convierten solos.</span></p>
+        <label class="check"><input type="checkbox" id="cc-sub" checked> <span data-t="Always use my subscription (ignore ANTHROPIC_API_KEY)">Usar siempre mi suscripción (ignorar ANTHROPIC_API_KEY)</span></label>
       </fieldset>
       <details id="gh-section">
         <summary><i data-icon="cloud" data-size="16"></i> <span data-t="GitHub: save your songs with version history">GitHub: guarda tus canciones con historial de versiones</span></summary>
@@ -286,7 +289,19 @@
       </details>
       <div class="row">
         <button type="button" id="btn-test"><span data-t="Test connection">Probar conexión</span></button>
+        <button type="button" id="btn-diag"><i data-icon="search" data-size="14"></i> <span data-t="Diagnostics">Diagnóstico</span></button>
         <span id="test-msg" class="hint"></span>
+      </div>
+      <div id="diag" hidden>
+        <div class="row">
+          <b data-t="Connection diagnostics">Diagnóstico de la conexión</b>
+          <span id="diag-msg" class="hint"></span>
+          <button type="button" id="btn-diag-models"><span data-t="Test models">Probar modelos</span></button>
+          <button type="button" id="btn-diag-copy"><span data-t="Copy report">Copiar informe</span></button>
+        </div>
+        <ul id="diag-hints"></ul>
+        <ol id="diag-steps"></ol>
+        <div id="diag-models"></div>
       </div>
       <div class="row end">
         <button value="cancel"><span data-t="Close">Cerrar</span></button>
