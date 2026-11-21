@@ -321,10 +321,12 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <h2 class="sec-title" data-i="t5">From zero to sound in three steps.</h2>
     <p class="sec-lead" data-i="l5">You don't need anything installed. The installer detects your system and sets up SuperCollider, SuperDirt and TidalCycles.</p>
     <div class="step solo reveal" style="margin-bottom:40px">
-      <h4 data-i="mach">Mac with Apple Silicon: one installer, everything inside</h4>
+      <h4 data-i="mach">Mac, Windows and Linux: one installer, everything inside</h4>
       <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. It opens as a real Mac app, in its own window and with no Terminal. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
-      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/latest"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
-      <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows, Linux or an Intel Mac? Follow the three steps below.</p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.3.0/TidalStudio-0.3.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.3.0/TidalStudio-0.3.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.3.0/tidal-studio_0.3.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
+      <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows and Linux have their own installers too, each opening the studio in its own window. Intel Mac, or prefer the source? Follow the three steps below.</p>
+      <p style="margin-top:4px;font-size:.9em"><a href="https://github.com/vsalesa/tidal-studio/releases/latest" data-i="allv">All versions</a></p>
     </div>
     <div class="steps">
       <div class="step reveal">
@@ -405,10 +407,13 @@ const ES = {
   jazzcap: "«swingBy (1/3) 4» retrasa un poco cada segunda nota: eso es el swing. Y los acordes ganan una nota más ('min9) para sonar más jazz.",
   k5: "Empezar", t5: "De cero a sonar en tres pasos.",
   l5: "No necesitas tener nada instalado. El instalador detecta tu sistema y prepara SuperCollider, SuperDirt y TidalCycles.",
-  mach: "Mac con Apple Silicon: un instalador con todo dentro",
+  mach: "Mac, Windows y Linux: un instalador con todo dentro",
   macp: "TidalCycles, SuperCollider, los sonidos y Python van dentro del paquete, así que no se descarga nada al instalar. Se abre como una app de Mac de verdad, en su propia ventana y sin Terminal. La primera vez, macOS te pedirá permitirlo en Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente.",
   macb: "Descargar para Mac (.pkg)",
-  maco: "¿Windows, Linux o un Mac Intel? Sigue los tres pasos de abajo.",
+  maco: "Windows y Linux también tienen su instalador, y cada uno abre el estudio en su propia ventana. ¿Mac Intel, o prefieres el código fuente? Sigue los tres pasos de abajo.",
+  winb: "Instalador para Windows (.exe)",
+  linb: "Paquete para Linux (.deb)",
+  allv: "Todas las versiones",
   s1h: "Descarga", s1p: "Baja el proyecto como zip y descomprímelo, o clónalo con git.", s1b: "Descargar zip",
   s2h: "Instala", s2p: "Una sola vez. Tarda un rato: descarga Haskell y los sonidos.",
   s3h: "Toca", s3p: "Se abre el navegador con el estudio. Pulsa «Nuevo proyecto» y deja que el maestro te guíe.",
