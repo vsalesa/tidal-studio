@@ -878,6 +878,37 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .diag-models tr.ok code { color: #2e7d32; }
 dialog label.check { display: flex; gap: 8px; align-items: center; }
 dialog label.check input { display: inline-block; width: auto; margin: 0; }
+
+/* «Cómo lo he decidido»: las skills detrás de cada decisión de Maestro */
+.decisions { margin: 10px 0 2px; border: 1px solid var(--teal); border-radius: 10px; background: var(--teal-soft); white-space: normal; }
+.decisions summary { cursor: pointer; padding: 7px 10px; font-weight: 600; font-size: 13px; color: #0e5148; display: flex; align-items: center; gap: 6px; }
+.decisions summary small { font-weight: 400; color: var(--ink-3); }
+.decisions ol { list-style: none; margin: 0; padding: 0 10px 8px; display: flex; flex-direction: column; gap: 8px; }
+.dec { display: flex; flex-direction: column; gap: 4px; padding-top: 8px; border-top: 1px dashed rgba(21, 122, 110, .3); }
+.dec-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dec-asp { display: inline-flex; align-items: flex-start; gap: 5px; font-size: 12px; font-weight: 600; color: var(--ink-2); }
+.dec-body { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.dec-body .sk-chip { cursor: pointer; }
+.dec-body blockquote { margin: 0; padding: 2px 0 2px 9px; border-left: 3px solid var(--teal); font-size: 12.5px; font-style: italic; color: var(--ink); }
+.dec-body p { margin: 0; font-size: 12.5px; color: var(--ink-2); display: flex; gap: 5px; align-items: baseline; }
+
+/* Razonamiento de Maestro (estilo harness): gris casi imperceptible, desplegable */
+.trace { margin: 6px 0 0; font-size: 11.5px; color: var(--ink-3); opacity: .55; white-space: normal; transition: opacity .15s; }
+.trace:hover, .trace[open] { opacity: .85; }
+.trace summary { cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.trace summary::-webkit-details-marker { display: none; }
+.trace summary::before { content: "▸"; font-size: 10px; }
+.trace[open] summary::before { content: "▾"; }
+.tr-title { white-space: nowrap; font-weight: 600; letter-spacing: .02em; }
+.tr-peek { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; font-style: italic; }
+.trace.live .tr-title::after { content: "…"; animation: tr-blink 1.2s infinite; }
+@keyframes tr-blink { 50% { opacity: .2; } }
+.tr-body { margin: 6px 0 2px 4px; padding-left: 10px; border-left: 1px solid var(--rule); max-height: 260px; overflow: auto; display: flex; flex-direction: column; gap: 4px; }
+.tr-step { font-family: var(--mono); font-size: 11px; }
+.tr-step span { display: inline-block; min-width: 38px; opacity: .7; }
+.tr-think { white-space: pre-wrap; font-style: italic; line-height: 1.45; }
+.tr-note { font-family: var(--sans); font-style: italic; }
+.msg.typing .trace { margin-top: 8px; }
 #cc-detect { margin: 10px 0; padding: 8px 10px; border-radius: 8px; background: var(--paper-2, #faf7f0); border: 1px dashed var(--line, #ddd); }
 #cc-detect .row { gap: 8px; align-items: center; flex-wrap: wrap; }
 #cc-detect-table { width: 100%; font-size: 12.5px; border-collapse: collapse; margin-top: 6px; }

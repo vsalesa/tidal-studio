@@ -300,6 +300,24 @@ music skills come included (Tidal live coding, Strudel recipes and general music
 or install another one by pasting its GitHub link. Under each of Maestro's answers you see which skills were loaded for
 that message and which it actually used. Details and sources: [skills/README.md](skills/README.md).
 
+### How Maestro decides, and its reasoning
+
+Every answer that relied on a skill opens with **How I decided**: one row per musical decision (style, rhythm,
+tempo, bass, harmony, melody, instruments, effects, mix, structure) with the skill it consulted, the rule or advice
+it took from it, and what it did with it (track, value, code). Only skills whose content was actually loaded for that
+message can appear there, so a rule can't be made up from a skill's name. Click a skill to open it.
+
+While **Maestro is thinking…**, a faint grey **Thinking** line shows what it is doing, like a typical coding harness:
+reading your song, which skills it picked and why, who it is asking, and Claude's own reasoning as it streams.
+Click it to unfold; after the answer it stays under the message as **Reasoning**. With an Anthropic API key it uses
+adaptive thinking with summarized display; with your Claude subscription it reads the `claude` CLI's `stream-json`
+output; OpenAI-compatible models show `reasoning_content` when they return it. Providers that don't share their
+reasoning show only the steps.
+
+| How I decided | Reasoning |
+|---|---|
+| ![How I decided](docs/screenshots/skills-decisions.png) | ![Reasoning](docs/screenshots/reasoning.png) |
+
 ### Plugins
 
 The same box also installs **Claude Code plugins** (a repo with `.claude-plugin/plugin.json`) and **marketplaces**

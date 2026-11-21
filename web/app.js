@@ -21,7 +21,7 @@ import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, 
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
-import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse } from "./skills.js";
+import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -1147,6 +1147,8 @@ function renderChat() {
     const el = document.createElement("div");
     el.className = "msg " + m.role;
     el.textContent = m.content;
+    // Cómo ha usado Maestro las skills para decidir (justo debajo del texto, para que se vea)
+    if (m.skills && m.skills.decisions && m.skills.decisions.length) el.insertAdjacentHTML("beforeend", decisionsHTML(m.skills.decisions, mi === state.chat.length - 1));
     if (m.explicacion && m.explicacion.length) {
       el.insertAdjacentHTML("beforeend", `<ul class="parts">${m.explicacion.map((p) =>
         `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("")}</ul>`);
@@ -1158,9 +1160,10 @@ function renderChat() {
       `<a href="${esc(a.href)}" target="_blank" rel="noopener">${icon("link", 14)} ${esc(a.label)}</a>`).join("")}</div>`);
     if (m.controles && m.controles.length) el.insertAdjacentHTML("beforeend", controlsHTML(m.controles, state, mi));
     if (m.skills) el.insertAdjacentHTML("beforeend", skillsLineHTML(m.skills));
+    if (m.trace && m.trace.events && m.trace.events.length) el.insertAdjacentHTML("beforeend", traceHTML(m.trace));
     box.appendChild(el);
   });
-  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}</div>`);
+  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
   box.scrollTop = box.scrollHeight;
   const chips = $("#chips");
   chips.innerHTML = "";
@@ -1215,8 +1218,45 @@ async function send(text) {
   offlineGuide(text);
 }
 
+// Razonamiento en directo: mientras la IA responde, preguntamos al servidor qué está haciendo
+let liveTrace = null;
+let traceOpen = false;
+function startTrace() {
+  const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  liveTrace = { events: [], seconds: 0 };
+  let stop = false;
+  const paint = () => {
+    const el = $("#chat .msg.typing"); if (!el) return;
+    const box = $("#chat");
+    const chatAtBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 30;
+    const old = el.querySelector(".trace");
+    const scroller = old && old.querySelector(".tr-body");
+    const atBottom = !scroller || scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8;
+    if (old) old.remove();
+    el.insertAdjacentHTML("beforeend", traceHTML(liveTrace, { live: true, open: traceOpen }));
+    const d = el.querySelector(".trace");
+    d.addEventListener("toggle", () => { traceOpen = d.open; if (d.open) box.scrollTop = box.scrollHeight; });
+    const b = d.querySelector(".tr-body"); if (b && atBottom) b.scrollTop = b.scrollHeight;
+    if (chatAtBottom) box.scrollTop = box.scrollHeight;
+  };
+  const tick = async () => {
+    if (stop) return;
+    try { const r = await api(`/api/trace?id=${encodeURIComponent(id)}`); if (!stop && r.events) { liveTrace = r; paint(); } } catch { /* sin servidor */ }
+    if (!stop) setTimeout(tick, 450);
+  };
+  setTimeout(tick, 250);
+  return { id, end: () => { stop = true; const t = liveTrace; liveTrace = null; return t; } };
+}
+function keepTrace(t) {
+  if (!t || !t.events) return undefined;
+  // Se guarda con el mensaje (recortado) para poder releerlo luego
+  const events = t.events.map((e) => ({ ...e, text: String(e.text).slice(-6000) }));
+  return { events, seconds: t.seconds, done: true };
+}
+
 async function askLLM() {
   busy = true; renderChat();
+  const trace = startTrace();
   try {
     const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
@@ -1227,7 +1267,8 @@ async function askLLM() {
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
     state.tracks.forEach((t) => delete t.edited);
-    const r = await api("/api/chat", { messages: history, session });
+    const r = await api("/api/chat", { messages: history, session, trace: trace.id });
+    const lastTrace = trace.end();
     busy = false;
     if (r.paso) state.step = r.paso;
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
@@ -1238,9 +1279,10 @@ async function askLLM() {
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
     if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
     countUse(r.skills);
-    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}) });
+    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
   } catch (e) {
+    trace.end();
     busy = false;
     say(L("Uy, no he podido hablar con la IA: ", "Oops, I couldn't reach the AI: ") + e.message + L("\n\nRevisa los Ajustes. Mientras tanto te sigo guiando sin IA.", "\n\nCheck Settings. Meanwhile I'll keep guiding you without AI."), [L("Seguir sin IA", "Continue without AI")]);
   }
