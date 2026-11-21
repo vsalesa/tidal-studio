@@ -20,6 +20,7 @@ import os
 import re
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import urllib.error
@@ -98,9 +99,23 @@ def _copy_text_tree(src, dst):
             shutil.copyfile(p, t)
 
 
+def _real_git(git):
+    """En macOS sin las Command Line Tools, /usr/bin/git es un «stub» que abre el diálogo
+    «¿Instalar las herramientas de desarrollo?» en vez de fallar. Solo lo usamos si están instaladas;
+    si no, descargamos el .tar.gz."""
+    if sys.platform != "darwin" or os.path.realpath(git) != "/usr/bin/git":
+        return True
+    try:
+        r = subprocess.run(["/usr/bin/xcode-select", "-p"], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    path = r.stdout.strip()
+    return r.returncode == 0 and bool(path) and os.path.isdir(path)
+
+
 def _git(owner, repo, ref, dest):
     git = shutil.which("git")
-    if not git:
+    if not git or not _real_git(git):
         return False
     cmd = [git, "clone", "--depth", "1", "--quiet"] + (["--branch", ref] if ref else []) + \
           [f"https://github.com/{owner}/{repo}.git", dest]
