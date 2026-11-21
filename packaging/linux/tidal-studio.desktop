@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Tidal Studio
+GenericName=Music studio
+GenericName[es]=Estudio de música
+Comment=Learn TidalCycles and make music with a friendly AI producer
+Comment[es]=Aprende TidalCycles y haz música con un productor IA
+Exec=tidal-studio
+Icon=tidal-studio
+Terminal=false
+Categories=AudioVideo;Audio;Music;Education;
+StartupWMClass=tidal-studio

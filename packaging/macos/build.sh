@@ -100,7 +100,7 @@ fi
 # ------------------------------------------------------------------ Tidal Studio itself
 log "Tidal Studio app files"
 rm -rf "$RT/app" && mkdir -p "$RT/app/samples"
-for d in server web tidal supercollider; do ditto "$REPO/$d" "$RT/app/$d"; done
+for d in server web tidal supercollider skills; do ditto "$REPO/$d" "$RT/app/$d"; done
 cp "$REPO/config.example.json" "$REPO/README.md" "$REPO/README.es.md" "$REPO/CREDITS.md" "$RT/app/"
 find "$RT/app" -name '__pycache__' -prune -exec rm -rf {} +
 echo "$VERSION" > "$RT/VERSION"

@@ -13,6 +13,7 @@ import tempfile
 
 ROOT = os.path.abspath(sys.argv[1])
 WIN = platform.system() == "Windows"
+MAC = platform.system() == "Darwin"
 failures = []
 
 
@@ -36,8 +37,11 @@ if WIN:
     python = os.path.join(ROOT, "python", "python.exe")
     app = os.path.join(ROOT, "app")
 else:
+    import shutil
     ghci = os.path.join(ROOT, "ghc", "bin", "ghci")
-    sclang = os.path.join(ROOT, "SuperCollider.app", "Contents", "MacOS", "sclang")
+    # Linux: SuperCollider comes from the distribution (a dependency of the .deb)
+    sclang = (os.path.join(ROOT, "SuperCollider.app", "Contents", "MacOS", "sclang") if MAC
+              else shutil.which("sclang") or "/usr/bin/sclang")
     python = os.path.join(ROOT, "python", "bin", "python3")
     app = os.path.join(ROOT, "app")
 
@@ -49,12 +53,12 @@ env.update({
     "GHC_ENVIRONMENT": os.path.join(ROOT, "tidal.env"),
     "TIDAL_STUDIO_LANG": "en",
 })
-if WIN:
+if not MAC:
     env["QT_QPA_PLATFORM"] = "offscreen"
 # Hide the build tools so we notice if anything still depends on them
 for k in ("GHCUP_INSTALL_BASE_PREFIX", "CABAL_DIR"):
     env.pop(k, None)
-if not WIN:
+if MAC:
     # same PATH the launcher sets (shims/ lets GHCi work without the Xcode Command Line Tools)
     env["PATH"] = os.path.join(ROOT, "shims") + ":/usr/bin:/bin:/usr/sbin:/sbin"
 
@@ -84,7 +88,7 @@ code, out = run([ghci, "-ghci-script", boot], env, stdin=script, timeout=600, cw
 if "SMOKE-OK" not in out or "error" in out.lower():
     failures.append("ghci + Tidal")
 
-if not WIN:
+if MAC:
     # Many Macs have no Xcode Command Line Tools: simulate that (xcrun can't find clang)
     section("ghci + Tidal without Xcode Command Line Tools")
     env2 = dict(env, DEVELOPER_DIR="/nonexistent-xcode")

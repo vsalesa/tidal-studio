@@ -347,6 +347,15 @@ class Handler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if not self._local_only():
             return
+        if path == "/api/shutdown":
+            # Lo usan los lanzadores de Windows y Linux al cerrar la ventana (con un token secreto,
+            # para que ninguna web pueda apagar el estudio).
+            token = os.environ.get("TIDAL_STUDIO_SHUTDOWN_TOKEN")
+            if not token or self.headers.get("X-Shutdown-Token") != token:
+                return self._json({"error": "forbidden"}, 403)
+            self._json({"ok": True})
+            threading.Thread(target=SERVER.shutdown, daemon=True).start()
+            return
         if path == "/api/samples/upload":
             q = parse_qs(urlparse(self.path).query)
             length = int(self.headers.get("Content-Length") or 0)
@@ -661,8 +670,11 @@ def _kill_group():
         pass
 
 
+SERVER = None
+
+
 def main():
-    global ARGS
+    global ARGS, SERVER
     ap = argparse.ArgumentParser(description="Tidal Studio")
     ap.add_argument("--port", type=int, default=int(os.environ.get("TIDAL_STUDIO_PORT", 8765)))
     ap.add_argument("--no-browser", action="store_true")
@@ -700,6 +712,7 @@ def main():
     if server is None:
         print(f"No hay puertos libres entre {ARGS.port} y {ARGS.port + 9} / no free port. Usa --port.")
         sys.exit(1)
+    SERVER = server
     url = f"http://localhost:{port}"
     print(f"\n🎛  Tidal Studio listo en {url}\n   (Ctrl+C para salir)\n")
     _graceful_signals()
