@@ -226,21 +226,40 @@ def claude_cli(cfg):
     return find_claude(cfg)[0]
 
 
-SUB_STRIP = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+SUB_STRIP = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL")
+AUTO = {}  # lo rellena ccdetect: {"mode": "subscription"|"terminal", "reason": "..."}
+
+
+def auth_mode(cfg):
+    """Cómo se conecta `claude`: subscription (tu plan, como Claude Desktop), api (clave/endpoint propio)
+    o terminal (igual que en tu terminal). «auto» decide con lo detectado."""
+    c = cfg.get("claudecode") or {}
+    m = c.get("auth_mode") or "auto"
+    if m == "auto" and c.get("use_subscription") is False:
+        m = "terminal"  # ajuste antiguo
+    if m == "auto":
+        m = AUTO.get("mode") or "terminal"
+    return m
 
 
 def cli_env(cfg, exe):
-    """Entorno para `claude`: su carpeta en el PATH (node de nvm vive ahí) y, si usas la suscripción,
-    sin claves de API (con ANTHROPIC_API_KEY Claude Code las usaría en vez de tu plan)."""
+    """Entorno para `claude`: su carpeta en el PATH (node de nvm vive ahí) y las credenciales según el modo."""
     c = cfg.get("claudecode") or {}
     env = dict(os.environ)
     if exe and os.path.dirname(exe):
         env["PATH"] = os.path.dirname(exe) + os.pathsep + env.get("PATH", "")
     removed = []
-    if c.get("use_subscription", True):
+    mode = auth_mode(cfg)
+    if mode == "subscription":
+        # con ANTHROPIC_API_KEY Claude Code la usaría en vez de tu plan
         for k in SUB_STRIP:
             if env.pop(k, None) is not None:
                 removed.append(k)
+    elif mode == "api":
+        if (c.get("base_url") or "").strip():
+            env["ANTHROPIC_BASE_URL"] = c["base_url"].strip()
+        if (c.get("api_key") or "").strip():
+            env["ANTHROPIC_API_KEY"] = c["api_key"].strip()
     env.pop("CLAUDECODE", None)  # si el estudio se abrió desde dentro de Claude Code
     return env, removed
 

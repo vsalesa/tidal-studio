@@ -270,7 +270,25 @@
         <label><span data-t="Model (optional)">Modelo (opcional)</span> <input id="cc-model" list="cc-models" placeholder="sonnet, opus…"></label>
         <datalist id="cc-models"><option value="opus"><option value="sonnet"><option value="haiku"><option value="fable"><option value="opus[1m]"></datalist>
         <p class="hint"><span data-th="Use an alias (<code>opus</code>, <code>sonnet</code>, <code>haiku</code>, <code>fable</code>) or an id like <code>claude-opus-5-5</code>. Names as Claude Desktop shows them (&laquo;Opus 5.5&raquo;) are converted for you.">Usa un alias (<code>opus</code>, <code>sonnet</code>, <code>haiku</code>, <code>fable</code>) o un id como <code>claude-opus-5-5</code>. Los nombres como los muestra Claude Desktop («Opus 5.5») se convierten solos.</span></p>
-        <label class="check"><input type="checkbox" id="cc-sub" checked> <span data-t="Always use my subscription (ignore ANTHROPIC_API_KEY)">Usar siempre mi suscripción (ignorar ANTHROPIC_API_KEY)</span></label>
+        <label><span data-t="Connection">Conexión</span>
+          <select id="cc-mode">
+            <option value="auto" data-t="Automatic (detected from your terminal)">Automática (detectada en tu terminal)</option>
+            <option value="subscription" data-t="My subscription (like Claude Desktop, ignores API keys)">Mi suscripción (como Claude Desktop, ignora claves de API)</option>
+            <option value="api" data-t="API key / own endpoint">Clave de API / endpoint propio</option>
+            <option value="terminal" data-t="Exactly as in my terminal">Exactamente como en mi terminal</option>
+          </select>
+        </label>
+        <div id="cc-api" hidden>
+          <label><span data-t="Endpoint (ANTHROPIC_BASE_URL, optional)">Endpoint (ANTHROPIC_BASE_URL, opcional)</span> <input id="cc-url" placeholder="https://api.anthropic.com"></label>
+          <label><span data-t="API key (optional)">Clave de API (opcional)</span> <input id="cc-key" type="password" autocomplete="off" placeholder="sk-ant-…"></label>
+        </div>
+        <div id="cc-detect">
+          <div class="row"><b data-t="Detected on this computer">Detectado en este ordenador</b>
+            <button type="button" id="btn-cc-detect"><span data-t="Detect again">Volver a detectar</span></button>
+            <span id="cc-detect-msg" class="hint"></span></div>
+          <table id="cc-detect-table"></table>
+          <p id="cc-auto" class="hint"></p>
+        </div>
       </fieldset>
       <details id="gh-section">
         <summary><i data-icon="cloud" data-size="16"></i> <span data-t="GitHub: save your songs with version history">GitHub: guarda tus canciones con historial de versiones</span></summary>

@@ -130,6 +130,15 @@ def diagnose_claudecode(cfg, lang):
         hints.append(t("Claude Code está usando una clave de API en vez de tu suscripción.",
                        "Claude Code is using an API key instead of your subscription."))
 
+    mode = llm.auth_mode(cfg)
+    chosen = (cfg.get("claudecode") or {}).get("auth_mode") or "auto"
+    steps.append({"name": t("Modo de conexión", "Connection mode"), "ok": True,
+                  "summary": {"subscription": t("tu suscripción (sin claves de API)", "your subscription (no API keys)"),
+                              "api": t("clave de API / endpoint propio", "API key / own endpoint"),
+                              "terminal": t("igual que en tu terminal", "same as your terminal")}.get(mode, mode)
+                  + (f" · auto ({llm.AUTO.get('reason', '?')})" if chosen == "auto" else ""),
+                  "detail": {"chosen": chosen, "effective": mode, "auto": dict(llm.AUTO), "env_removed": removed}})
+
     sf = _settings_file()
     if sf:
         steps.append({"name": t("Ajustes de Claude Code", "Claude Code settings"), "ok": True,
