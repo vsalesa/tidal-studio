@@ -26,6 +26,7 @@ from assistant import (build_messages, parse_reply, build_explain, parse_explain
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
 import github  # noqa: E402
 import skills as skillset  # noqa: E402
+import plugins as pluginset  # noqa: E402
 from assistant import _extract_json  # noqa: E402
 import net  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
@@ -66,6 +67,10 @@ DEFAULT_CONFIG = {
     "skills": {
         "disabled": [],
         "pinned": [],
+    },
+    # Plugins de Claude Code instalados en my-plugins/ (sus skills y comandos los usa Maestro)
+    "plugins": {
+        "disabled": [],
     },
     "temperature": 0.7,
     "language": "es",
@@ -149,6 +154,20 @@ def skills_report(sk, raw):
     active, loaded = sk
     data = _extract_json(raw) or {}
     return {"loaded": loaded, "used": skillset.used_from(data.get("skills"), active), "active": len(active)}
+
+
+def install_any(cfg, url, names=None):
+    """Un solo cuadro para instalar: enlace a una skill (carpeta con SKILL.md) o a un plugin / marketplace."""
+    url = (url or "").strip()
+    is_skill_link = bool(skillset.GH_RE.match(url) or skillset.RAW_RE.match(url))
+    if url.rstrip("/").endswith("SKILL.md") or skillset.RAW_RE.match(url):
+        return {"kind": "skill", **skillset.install(url, cfg["github"].get("token", ""))}
+    try:
+        return {"kind": "plugin", **pluginset.install(url, names)}
+    except pluginset.PluginError as e:
+        if is_skill_link and "no parece un plugin" in str(e):
+            return {"kind": "skill", **skillset.install(url, cfg["github"].get("token", ""))}
+        raise
 
 
 ENGINE = Engine(ROOT)
@@ -282,7 +301,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"log": ENGINE.log_tail(200)})
             if path == "/api/skills":
                 cfg = load_config()
-                return self._json({"skills": skillset.public(skillset.scan(cfg)), "folder": skillset.USER_DIR})
+                return self._json({"skills": skillset.public(skillset.scan(cfg)), "folder": skillset.USER_DIR,
+                                   "plugins": pluginset.public(pluginset.scan(cfg)), "plugin_folder": pluginset.PLUGIN_DIR})
             if path == "/api/skills/body":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -345,11 +365,20 @@ class Handler(SimpleHTTPRequestHandler):
                 cfg = load_config()
                 if not llm_configured(cfg):
                     return self._json({"error": "La IA no está configurada. Abre ⚙️ Ajustes."}, 400)
-                system, messages = build_messages(data.get("messages") or [], data.get("session") or {})
-                last = next((m.get("content", "") for m in reversed(data.get("messages") or []) if m.get("role") == "user"), "")
+                msgs = data.get("messages") or []
+                command = None
+                last_user = next((m for m in reversed(msgs) if isinstance(m, dict) and m.get("role") == "user"), None)
+                if last_user and str(last_user.get("content", "")).lstrip().startswith("/"):
+                    # /comando de un plugin: se cambia por su texto antes de enviarlo a la IA
+                    expanded, command = pluginset.expand_command(cfg, str(last_user.get("content", "")))
+                    if command:
+                        msgs = [dict(m, content=expanded) if m is last_user else m for m in msgs]
+                system, messages = build_messages(msgs, data.get("session") or {})
+                last = next((m.get("content", "") for m in reversed(msgs) if m.get("role") == "user"), "")
                 system, sk = with_skills(cfg, system, last, data.get("session") or {})
                 raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1800)
-                return self._json({**parse_reply(raw), "skills": skills_report(sk, raw)})
+                return self._json({**parse_reply(raw), "skills": skills_report(sk, raw),
+                                   **({"command": command} if command else {})})
 
             if path == "/api/explain":
                 cfg = load_config()
@@ -436,6 +465,30 @@ class Handler(SimpleHTTPRequestHandler):
                 if act == "history":
                     return self._json({"commits": github.history(cfg, github.slugify(data.get("slug")))})
                 return self._json({"error": "Ruta no encontrada"}, 404)
+
+            if path.startswith("/api/plugins/"):
+                act = path[len("/api/plugins/"):]
+                cfg = load_config()
+                pl = cfg.setdefault("plugins", {})
+                name = str(data.get("name") or "")
+                try:
+                    if act == "enable":
+                        cur = set(pl.get("disabled") or [])
+                        (cur.discard if data.get("on") else cur.add)(name)
+                        pl["disabled"] = sorted(cur)
+                        save_config(cfg)
+                    elif act == "install":
+                        r = install_any(cfg, data.get("url"), data.get("names"))
+                        return self._json({**r, "skills": skillset.public(skillset.scan(cfg)),
+                                           "plugins": pluginset.public(pluginset.scan(cfg))})
+                    elif act == "remove":
+                        pluginset.remove(name)
+                    else:
+                        return self._json({"error": "Ruta no encontrada"}, 404)
+                except (pluginset.PluginError, skillset.SkillError) as e:
+                    return self._json({"error": str(e)}, 400)
+                return self._json({"skills": skillset.public(skillset.scan(cfg)),
+                                   "plugins": pluginset.public(pluginset.scan(cfg))})
 
             if path.startswith("/api/skills/"):
                 act = path[len("/api/skills/"):]

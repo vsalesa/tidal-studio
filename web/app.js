@@ -21,7 +21,7 @@ import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, 
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
-import { skillsLineHTML, skillsDialogHTML, countUse } from "./skills.js";
+import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse } from "./skills.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -1211,6 +1211,7 @@ async function send(text) {
     return showControls(t, { bpm: /bpm|tempo|velocidad|speed/i.test(text), quiet: true });
   }
   if (server.llm && !state.offline) return askLLM();
+  if (/^\/[\w.-]+(:[\w.-]+)?(\s|$)/.test(text)) return say(L("Los comandos de los plugins (/nombre) necesitan la IA: configúrala en Ajustes y vuelve a escribirlo.", "Plugin commands (/name) need the AI: set it up in Settings and type it again."), state.options);
   offlineGuide(text);
 }
 
@@ -1237,7 +1238,7 @@ async function askLLM() {
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
     if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
     countUse(r.skills);
-    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: r.skills } : {}) });
+    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}) });
     renderIdeas();
   } catch (e) {
     busy = false;
@@ -2466,9 +2467,9 @@ async function openSkills(focus = "") {
   let r = { skills: [], folder: "" };
   try { r = await api("/api/skills"); } catch (e) { toast(e.message); }
   skillList = r.skills || [];
-  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder });
+  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder });
   if (!$("#skills").open) $("#skills").showModal();
-  const f = focus && $(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`);
+  const f = focus && ($(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`) || $(`#skills-body .pl-card[data-plugin="${CSS.escape(focus)}"]`));
   if (f) f.scrollIntoView({ block: "nearest" });
   refreshSkillCount();
 }
@@ -2477,12 +2478,47 @@ function wireSkills() {
   body.addEventListener("change", async (e) => {
     const card = e.target.closest(".sk-card"); const a = e.target.dataset.a;
     if (!card || !a) return;
+    if (a === "plugin-enable") {
+      try { await api("/api/plugins/enable", { name: card.dataset.plugin, on: e.target.checked }); } catch (err) { toast(err.message); }
+      return openSkills(card.dataset.plugin);
+    }
     try { await api(`/api/skills/${a}`, { name: card.dataset.name, on: e.target.checked }); } catch (err) { toast(err.message); }
     openSkills(card.dataset.name);
   });
+  const installMsg = (form, text) => { form.querySelector(".hint").textContent = text; };
+  const doInstall = async (form, url, names) => {
+    const btns = form.querySelectorAll("button"); btns.forEach((x) => { x.disabled = true; });
+    const btn = form.querySelector('button[type="submit"]'); btn.textContent = L("Instalando…", "Installing…");
+    try {
+      const r = await api("/api/plugins/install", { url, ...(names ? { names } : {}) });
+      if (r.choose) {
+        btns.forEach((x) => { x.disabled = false; }); btn.textContent = L("Instalar", "Install");
+        form.querySelector(".pl-choose-slot").innerHTML = chooseHTML(r, url);
+        return;
+      }
+      if (r.kind === "plugin") toast(L(`Plugin instalado: ${r.installed.join(", ")}`, `Plugin installed: ${r.installed.join(", ")}`));
+      await openSkills(r.kind === "plugin" ? r.installed[0] : r.name);
+    } catch (err) { btns.forEach((x) => { x.disabled = false; }); btn.textContent = L("Instalar", "Install"); installMsg(form, err.message); }
+  };
   body.addEventListener("click", async (e) => {
     const b = e.target.closest("button[data-a]"); if (!b) return;
-    const card = b.closest(".sk-card"); const name = card.dataset.name;
+    if (b.dataset.a === "install-chosen") {
+      const box = b.closest(".pl-choose");
+      const names = [...box.querySelectorAll("input:checked")].map((i) => i.value);
+      if (names.length) doInstall(b.closest("form"), box.dataset.url, names);
+      return;
+    }
+    if (b.dataset.a === "cmd") {
+      $("#skills").close();
+      const inp = $("#chat-input"); if (inp) { inp.value = b.dataset.cmd + " "; inp.focus(); }
+      return;
+    }
+    if (b.dataset.a === "plugin-remove") {
+      const pc = b.closest(".pl-card");
+      try { await api("/api/plugins/remove", { name: pc.dataset.plugin }); } catch (err) { toast(err.message); }
+      return openSkills();
+    }
+    const card = b.closest(".sk-card"); if (!card) return; const name = card.dataset.name;
     if (b.dataset.a === "view") {
       const pre = card.querySelector(".sk-body");
       if (!pre.hidden) { pre.hidden = true; return; }
@@ -2499,11 +2535,10 @@ function wireSkills() {
   });
   body.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const form = e.target; const btn = form.querySelector("button"); const url = form.url.value.trim();
+    const form = e.target; const url = form.url.value.trim();
     if (!url) return;
-    btn.disabled = true; btn.textContent = L("Instalando…", "Installing…");
-    try { const r = await api("/api/skills/install", { url }); await openSkills(r.name); }
-    catch (err) { btn.disabled = false; btn.textContent = L("Instalar", "Install"); form.querySelector(".hint").textContent = err.message; }
+    form.querySelector(".pl-choose-slot").innerHTML = "";
+    doInstall(form, url);
   });
 }
 
@@ -2819,7 +2854,7 @@ function init() {
   $("#btn-tour").onclick = runTour;
   $("#btn-courses").onclick = openCourses;
   $("#btn-skills").onclick = () => openSkills();
-  $("#chat").addEventListener("click", (e) => { const b = e.target.closest("[data-skill]"); if (b) openSkills(b.dataset.skill); });
+  $("#chat").addEventListener("click", (e) => { const b = e.target.closest("[data-skill],[data-plugin]"); if (b) openSkills(b.dataset.skill || b.dataset.plugin); });
   wireSkills();
   refreshSkillCount();
   wireInstrument();
