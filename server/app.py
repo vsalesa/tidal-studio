@@ -30,6 +30,9 @@ import skills as skillset  # noqa: E402
 import plugins as pluginset  # noqa: E402
 from assistant import _extract_json  # noqa: E402
 import net  # noqa: E402
+import llm as llmmod  # noqa: E402
+import llmdiag  # noqa: E402
+import shellenv  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -51,7 +54,8 @@ DEFAULT_CONFIG = {
     # Claude Code (comando «claude») con la suscripción Pro/Max: sin clave de API
     "claudecode": {
         "path": "",                # vacío = buscar «claude» en el PATH
-        "model": "",               # vacío = el modelo por defecto de tu plan
+        "model": "",               # vacío = el modelo por defecto de tu plan (alias: opus, sonnet, haiku, fable)
+        "use_subscription": True,  # no pasar ANTHROPIC_API_KEY a claude: así usa tu plan, como Claude Desktop
     },
     "github": {
         "token": "",
@@ -201,6 +205,7 @@ def install_default_plugins():
 
 
 ENGINE = Engine(ROOT)
+llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
 LIBRARY = Library(ROOT)
 
 
@@ -400,6 +405,15 @@ class Handler(SimpleHTTPRequestHandler):
                 text = chat_completion(cfg, "Responde solo con la palabra: listo", [
                     {"role": "user", "content": "¿Estás ahí?"}], max_tokens=20)
                 return self._json({"ok": True, "reply": text.strip()[:200]})
+
+            if path == "/api/llm/diagnose":
+                return self._json(llmdiag.diagnose(load_config(), data.get("lang", "es")))
+
+            if path == "/api/llm/models":
+                cfg = load_config()
+                if cfg["provider"] != "claudecode":
+                    return self._json(llmdiag.diagnose_api(cfg, data.get("lang", "es")))
+                return self._json(llmdiag.test_models(cfg, data.get("lang", "es")))
 
             if path == "/api/chat":
                 cfg = load_config()
@@ -688,7 +702,9 @@ def main():
     if ARGS.insecure_ssl:
         net.FORCE_INSECURE = True
 
+    shellenv.start()
     if ARGS.check:
+        shellenv.wait(12)
         check()
         return
 
