@@ -14,6 +14,7 @@ import os
 import platform
 import sys
 import threading
+import time
 import webbrowser
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -579,6 +580,52 @@ def _studio_running(port):
         return False
 
 
+def _write_port_file(port):
+    if ARGS.port_file:
+        tmp = ARGS.port_file + ".tmp"
+        with open(tmp, "w") as f:
+            f.write(str(port))
+        os.replace(tmp, ARGS.port_file)
+
+
+def _graceful_signals():
+    """SIGINT/SIGTERM apagan el estudio ordenadamente (la app de Mac los usa al salir).
+    Con TIDAL_STUDIO_WATCH_PARENT=1 (app de Mac) el servidor y todo lo que arranca (sclang, scsynth,
+    ghci) van en su propio grupo de procesos, y si la app muere sin avisar el servidor se apaga solo."""
+    import signal
+
+    def stop(*_):
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGINT, stop)
+    signal.signal(signal.SIGTERM, stop)
+    if os.environ.get("TIDAL_STUDIO_WATCH_PARENT") == "1" and hasattr(os, "setpgrp"):
+        try:
+            os.setpgrp()
+        except OSError:
+            pass
+        parent = os.getppid()
+
+        def watch():
+            while os.getppid() == parent:
+                time.sleep(2)
+            print("[server] La app se ha cerrado: apago el estudio / app closed, shutting down")
+            os.kill(os.getpid(), signal.SIGTERM)
+        threading.Thread(target=watch, daemon=True).start()
+
+
+def _kill_group():
+    """Al salir desde la app de Mac, no dejar vivo nada de lo que arrancamos (p. ej. scsynth)."""
+    if os.environ.get("TIDAL_STUDIO_WATCH_PARENT") != "1" or not hasattr(os, "killpg"):
+        return
+    import signal
+    try:
+        if os.getpgrp() == os.getpid():
+            signal.signal(signal.SIGTERM, signal.SIG_IGN)
+            os.killpg(os.getpid(), signal.SIGTERM)
+    except OSError:
+        pass
+
+
 def main():
     global ARGS
     ap = argparse.ArgumentParser(description="Tidal Studio")
@@ -589,6 +636,7 @@ def main():
     ap.add_argument("--no-engine", action="store_true", help="No arrancar SuperCollider/Tidal automáticamente")
     ap.add_argument("--allow-remote", action="store_true", help="Permitir acceso desde otros equipos (no recomendado)")
     ap.add_argument("--check", action="store_true", help="Comprobar la instalación y salir")
+    ap.add_argument("--port-file", help="Escribir aquí el puerto en uso (lo usa la app de Mac)")
     ARGS = ap.parse_args()
     if ARGS.insecure_ssl:
         net.FORCE_INSECURE = True
@@ -608,6 +656,7 @@ def main():
             # ¿Ya hay un Tidal Studio abierto en este puerto? Entonces solo abrimos el navegador.
             if _studio_running(port):
                 url = f"http://localhost:{port}"
+                _write_port_file(port)
                 print(f"\n🎛  Tidal Studio ya estaba abierto / is already running: {url}\n")
                 if not ARGS.no_browser:
                     webbrowser.open(url)
@@ -618,6 +667,8 @@ def main():
         sys.exit(1)
     url = f"http://localhost:{port}"
     print(f"\n🎛  Tidal Studio listo en {url}\n   (Ctrl+C para salir)\n")
+    _graceful_signals()
+    _write_port_file(port)
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
     if not ARGS.no_browser:
@@ -631,6 +682,7 @@ def main():
         print("\nApagando…")
         ENGINE.stop()
         server.server_close()
+        _kill_group()
 
 
 ARGS = None
