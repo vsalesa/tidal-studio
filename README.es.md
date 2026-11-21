@@ -300,11 +300,9 @@ guarda solo en `config.json`.
 
 ## Cómo funciona
 
-```
- Navegador (web/)  ──HTTP──▶  server/app.py  ──stdin──▶  GHCi + TidalCycles ──OSC──▶ SuperCollider + SuperDirt ──▶ altavoces
-     │                            │
-     └── chat ───────────────────▶ server/llm.py ──▶ OpenAI-compatible / Claude
-```
+[![Cómo funciona Tidal Studio](docs/diagrams/architecture.es.png)](docs/diagrams/architecture.es.svg)
+
+Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architecture.es.puml) (PlantUML), renderizado a [SVG](docs/diagrams/architecture.es.svg) y PNG con `docs/diagrams/render.sh`.
 
 - `server/app.py`: servidor local (solo biblioteca estándar de Python, sin `pip install`). Escucha solo en `127.0.0.1`.
 - `server/engine.py`: busca y arranca `sclang` (con `supercollider/start_superdirt.scd`) y `ghci` (con `tidal/BootTidal.hs`).

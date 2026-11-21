@@ -298,11 +298,9 @@ repositories). Then use the cloud button in the top bar to save a version with a
 
 ## How it works
 
-```
- Browser (web/)  ──HTTP──▶  server/app.py  ──stdin──▶  GHCi + TidalCycles ──OSC──▶ SuperCollider + SuperDirt ──▶ speakers
-     │                          │
-     └── chat ─────────────────▶ server/llm.py ──▶ OpenAI-compatible / Claude
-```
+[![How Tidal Studio works](docs/diagrams/architecture.png)](docs/diagrams/architecture.svg)
+
+Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.puml) (PlantUML), rendered to [SVG](docs/diagrams/architecture.svg) and PNG with `docs/diagrams/render.sh`.
 
 - `server/app.py`: local server (Python standard library only, no `pip install`). Listens only on `127.0.0.1`.
 - `server/engine.py`: finds and starts `sclang` (with `supercollider/start_superdirt.scd`) and `ghci` (with `tidal/BootTidal.hs`).
