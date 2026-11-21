@@ -18,7 +18,7 @@ import { mixerHTML, mixCodeHTML, mixSuffix, mixLine, parseMixLine, audible, setM
 import { cardCode, cardFromPos } from "./card.js";
 import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory } from "./history.js";
 import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
-import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
+import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fixNegatives, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
@@ -57,6 +57,8 @@ function load() {
   try {
     const s = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
     if (s && Array.isArray(s.tracks)) state = { ...state, ...s, trying: null };
+    // «# eqlow -3» daba error en Tidal (se lee como una resta): se guarda ya como «# eqlow (-3)»
+    state.tracks.forEach((t) => { t.code = fixNegatives(t.code); });
   } catch { /* sesión corrupta: empezamos de cero */ }
 }
 function save() {
@@ -1508,6 +1510,7 @@ function applyChanges(c) {
     if (state.tracks.find((t) => t.id === id)) { removeTrack(id); notes.push(L(`borrada ${id}`, `deleted ${id}`)); }
   }
   for (const p of c.pistas || []) {
+    p.codigo = fixNegatives(p.codigo);
     let t = state.tracks.find((x) => x.id === p.id);
     if (t) { t.code = p.codigo; t.name = p.nombre || t.name; t.kind = p.tipo || t.kind; t.muted = false; t.explain = null; notes.push(L(`cambiada ${p.id} ${t.name}`, `changed ${p.id} ${t.name}`)); }
     else { t = { id: p.id, name: p.nombre, kind: p.tipo, code: p.codigo, muted: false }; state.tracks.push(t); notes.push(L(`nueva ${p.id} ${t.name}`, `new ${p.id} ${t.name}`)); }

@@ -42,17 +42,22 @@ function topLevelMatches(code, re) {
   }
   return out;
 }
-const paramRe = (p) => new RegExp(`^#\\s*${p}\\s+(-?[\\d.]+|"[^"]*")(?![\\w(])`);
+const paramRe = (p) => new RegExp(`^#\\s*${p}\\s+(-?[\\d.]+|\\(\\s*-[\\d.]+\\s*\\)|"[^"]*")(?![\\w(])`);
 export function getParam(code, p) {
   const ms = topLevelMatches(code, paramRe(p));
   if (!ms.length) return null;
   const v = ms[ms.length - 1].m[1];
-  return v.startsWith('"') ? v.slice(1, -1) : parseFloat(v);
+  return v.startsWith('"') ? v.slice(1, -1) : parseFloat(v.replace(/[()\s]/g, ""));
 }
 export function setParam(code, p, v) {
-  return setParamRaw(code, p, typeof v === "number" ? fmt(v) : `"${v}"`);
+  return setParamRaw(code, p, typeof v === "number" ? codeNum(v) : `"${v}"`);
 }
 export const fmt = (v) => (Math.abs(v) >= 100 ? String(Math.round(v)) : String(Math.round(v * 1000) / 1000));
+// Un número negativo en el código de Tidal va entre paréntesis: «# eqlow -3» Haskell lo lee como «eqlow menos 3»
+// y da un error que nombra eqlow; «# eqlow (-3)» es lo correcto.
+export const codeNum = (v) => (v < 0 ? `(${fmt(v)})` : fmt(v));
+// Arregla «# param -3» → «# param (-3)» en código ya escrito (por la IA, el alumno o versiones anteriores)
+export const fixNegatives = (code) => String(code || "").replace(/(#\s*[A-Za-z]\w*\s+)-(\d+(?:\.\d+)?)(?![\w.(])/g, "$1(-$2)");
 
 // ------------------------------------------------------------------ secuenciador: patrón de s "…" ↔ rejilla
 function topTokens(pat) {
