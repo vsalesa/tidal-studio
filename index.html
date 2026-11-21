@@ -127,6 +127,8 @@ section { padding: 80px 0; }
 .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; counter-reset: s; }
 .step { background: var(--card); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; position: relative; }
 .step::before { counter-increment: s; content: counter(s); position: absolute; top: -18px; left: 22px; width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font: 700 17px var(--serif); }
+.step.solo::before { display: none; }
+.step.solo { border-color: var(--accent); }
 .step h4 { font: 700 20px var(--serif); margin: 8px 0 8px; }
 .step p { margin: 0 0 12px; color: var(--ink-2); font-size: 15.5px; }
 .os { display: flex; gap: 6px; margin-bottom: 10px; }
@@ -252,6 +254,9 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
       <div><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/></svg><h4 data-i="f4h">Code always visible</h4><p data-i="f4p">Every track is real TidalCycles code you can edit. No black boxes.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg><h4 data-i="f5h">Your progress</h4><p data-i="f5p">See which code and music concepts you have used, and which are left to discover.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><h4 data-i="f6h">English and Spanish</h4><p data-i="f6p">Switch language with one button. Maestro answers in the language you choose.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h3M12 10h5M7 14h6"/><rect x="11.5" y="8.5" width="6" height="3" rx="1" fill="currentColor" stroke="none" opacity=".35"/></svg><h4 data-i="f7h">See what's sounding</h4><p data-i="f7p">While it plays, the step that is sounding lights up in the code, the tracks and the blocks.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M6 3v18M12 3v18M18 3v18"/><rect x="4" y="13" width="4" height="3" rx="1" fill="currentColor" stroke="none"/><rect x="10" y="7" width="4" height="3" rx="1" fill="currentColor" stroke="none"/><rect x="16" y="10" width="4" height="3" rx="1" fill="currentColor" stroke="none"/></svg><h4 data-i="f8h">Mixing desk</h4><p data-i="f8p">Volume, 3-band EQ, mute and solo for every track, plus a Master. Your code stays clean.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><h4 data-i="f9h">Skills and plugins</h4><p data-i="f9p">Maestro loads expert music skills and shows which ones it used. Add more, or whole Claude plugins, from a GitHub link.</p></div>
     </div>
   </div>
 </section>
@@ -281,6 +286,16 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   </div>
 </section>
 
+<section id="courses" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker" data-i="kc">Genre courses</div>
+    <h2 class="sec-title" data-i="tc">Build a merengue from scratch.</h2>
+    <p class="sec-lead" data-i="lc">Eleven courses, one genre each: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum &amp; bass and lo-fi. Like a production class: the signature rhythm first, then bass, harmony, melody, arrangement and mix. Every step adds a piece that already sounds good, and Maestro explains why it sounds like that style.</p>
+    <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="course-img" alt="" width="3000" height="1880"></div>
+    <div class="styles"><span>Merengue</span><span>Salsa</span><span>Cumbia</span><span>Reggaeton</span><span>Bossa nova</span><span>Jazz</span><span>Funk</span><span>House</span><span>Techno</span><span>Drum &amp; bass</span><span>Lo-fi</span></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap">
     <div class="kicker" data-i="k4">Style recipes</div>
@@ -302,6 +317,12 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="kicker" data-i="k5">Get started</div>
     <h2 class="sec-title" data-i="t5">From zero to sound in three steps.</h2>
     <p class="sec-lead" data-i="l5">You don't need anything installed. The installer detects your system and sets up SuperCollider, SuperDirt and TidalCycles.</p>
+    <div class="step solo reveal" style="margin-bottom:40px">
+      <h4 data-i="mach">Mac with Apple Silicon: one installer, everything inside</h4>
+      <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/latest"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows, Linux or an Intel Mac? Follow the three steps below.</p>
+    </div>
     <div class="steps">
       <div class="step reveal">
         <h4 data-i="s1h">Download</h4>
@@ -364,15 +385,24 @@ const ES = {
   f4h: "Código siempre visible", f4p: "Cada pista es código TidalCycles real que puedes editar. Nada de cajas negras.",
   f5h: "Tu progreso", f5p: "Ve qué conceptos de código y de música ya has usado, y cuáles te quedan por descubrir.",
   f6h: "Español e inglés", f6p: "Cambia de idioma con un botón. Maestro responde en el idioma que elijas.",
+  f7h: "Ver lo que suena", f7p: "Mientras suena, el paso que está sonando se ilumina en el código, las pistas y los bloques.",
+  f8h: "Mesa de mezcla", f8p: "Volumen, ecualizador de 3 bandas, silencio y solo en cada pista, y un Master. Tu código queda limpio.",
+  f9h: "Skills y plugins", f9p: "Maestro carga skills musicales expertas y te enseña cuáles ha usado. Añade más, o plugins de Claude enteros, desde un enlace de GitHub.",
   k2: "Wizard de proyecto base", t2: "Tu primera canción en siete clics.",
   l2: "Pulsa opciones y escucha el resultado en vivo. Las que encajan con tu estilo vienen marcadas, y el último paso te enseña todo el código explicado.",
   k3: "Así se ve", t3: "Un estudio claro, como una partitura.",
+  kc: "Cursos por género", tc: "Construye un merengue desde cero.",
+  lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo.",
   k4: "Recetas de estilo", t4: "«¿Quieres que suene tipo jazz?»",
   l4: "Pulsa un estilo y tu canción se transforma. Verás el antes y el después con lo nuevo resaltado, y una explicación de cada cambio para que mañana lo hagas tú.",
   before: "Antes", after: "Después: jazz", latin: "Latino (bossa)",
   jazzcap: "«swingBy (1/3) 4» retrasa un poco cada segunda nota: eso es el swing. Y los acordes ganan una nota más ('min9) para sonar más jazz.",
   k5: "Empezar", t5: "De cero a sonar en tres pasos.",
   l5: "No necesitas tener nada instalado. El instalador detecta tu sistema y prepara SuperCollider, SuperDirt y TidalCycles.",
+  mach: "Mac con Apple Silicon: un instalador con todo dentro",
+  macp: "TidalCycles, SuperCollider, los sonidos y Python van dentro del paquete, así que no se descarga nada al instalar. La primera vez, macOS te pedirá permitirlo en Ajustes del Sistema → Privacidad y seguridad → Abrir igualmente.",
+  macb: "Descargar para Mac (.pkg)",
+  maco: "¿Windows, Linux o un Mac Intel? Sigue los tres pasos de abajo.",
   s1h: "Descarga", s1p: "Baja el proyecto como zip y descomprímelo, o clónalo con git.", s1b: "Descargar zip",
   s2h: "Instala", s2p: "Una sola vez. Tarda un rato: descarga Haskell y los sonidos.",
   s3h: "Toca", s3p: "Se abre el navegador con el estudio. Pulsa «Nuevo proyecto» y deja que el maestro te guíe.",
@@ -463,6 +493,10 @@ wzList.addEventListener("click", (e) => { const b = e.target.closest("button"); 
 // ---------- Galería ----------
 const SHOTS = [
   { en: ["The studio", "studio", "Your tracks with their code, «Explain» on each one and Maestro's ideas with pre-listen."], es: ["El estudio", "estudio", "Tus pistas con su código, «Explícame» en cada una y las ideas del maestro con pre-escucha."] },
+  { en: ["See what's sounding", "live-highlight-tracks", "While the music plays, the step that is sounding lights up in every track (also in Blocks and Code)."], es: ["Ver lo que suena", "resaltado-pistas", "Mientras suena la música, el paso que está sonando se ilumina en cada pista (también en Bloques y Código)."] },
+  { en: ["Mix", "mixer", "A mixing desk: volume, 3-band EQ, mute and solo per track, and a Master for the whole song."], es: ["Mezcla", "mezcla", "Una mesa de mezcla: volumen, ecualizador de 3 bandas, silencio y solo por pista, y un Master para toda la canción."] },
+  { en: ["Skills", "skills-panel", "Maestro's skills: turn them on, always load one, read it or install another from GitHub."], es: ["Skills", "panel-skills", "Las skills de Maestro: actívalas, carga una siempre, léela o instala otra desde GitHub."] },
+  { en: ["Plugins", "plugins-panel", "Install a Claude Code plugin or marketplace from GitHub: its skills join Maestro's and its commands work in the chat."], es: ["Plugins", "panel-plugins", "Instala un plugin o marketplace de Claude Code desde GitHub: sus skills se suman a las de Maestro y sus comandos funcionan en el chat."] },
   { en: ["Code help", "code-help", "Edited a track and it doesn't work? Maestro finds the problem, shows the fix and lets you listen first."], es: ["Ayuda con el código", "ayuda-codigo", "¿Has editado una pista y no va? Maestro encuentra el problema, te enseña el arreglo y te deja escucharlo antes."] },
   { en: ["Code palette", "code-palette", "Tidal blocks organized by goal and level. Click one and Maestro applies and explains it."], es: ["Paleta de código", "paleta-codigo", "Bloques de Tidal organizados por objetivo y nivel. Pulsas uno y Maestro lo aplica y te lo explica."] },
   { en: ["Tutorial", "tutorial", "An interactive tour: Maestro lights up each part and waits for you to try it."], es: ["Tutorial", "tutorial", "Un recorrido interactivo: Maestro ilumina cada parte y espera a que la pruebes."] },
@@ -518,6 +552,7 @@ function applyLang() {
 }
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
+{ const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-paso" : "course-step"); ci.alt = lang === "es" ? "Curso de merengue paso a paso" : "Merengue course, step by step"; }
 [...SHOTS, ...WZ].forEach((s) => { const p = new Image(); p.src = shotPath((lang === "es" ? s.es : s.en)[1]); });
 
 // ---------- Onda decorativa y aparición ----------
