@@ -53,8 +53,10 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
   for every track, mute and solo, and a **Master** strip for the whole song. It doesn't touch your track code: when
   playing it adds `# amp` and `# eqlow / eqmid / eqhigh` (shown as a `-- mix` line in the Code tab).
 - **Undo, redo and history (rollback)**: every change to the song is saved. Undo/redo buttons (Ctrl/Cmd+Z,
-  Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version. The «Clear chat» button clears Maestro's chat
-  (your song stays; you can bring the chat back).
+  Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version.
+- **A tidy chat**: the «Clear chat» button (top right of Maestro's panel) empties the conversation without touching your
+  song, and a «Bring the chat back» chip restores it. «Hide» folds Maestro's ideas away to give the chat more room
+  (the browser remembers your choice; «Show» brings them back).
 - **See what is sounding**: while the music plays, the part of each track's code that is sounding right now lights up,
   step by step, in the Tracks, Blocks and Code views (like Strudel). SuperDirt tells the app every note it plays.
 - **Sample library**: sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths).
@@ -62,7 +64,8 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
   (WAV, AIFF, FLAC, OGG) or **search Freesound** (free API key) filtering by license; downloads are ready for Tidal and
   credits for CC BY sounds are written to `samples/CREDITS.md`. The **Packs** tab browses community packs on GitHub
   (about 70 drum machines, Uzu drumkit, VCSL, a grand piano, SP-12, mridangam, or any `github:user/repo` with a
-  `strudel.json`): listen, install one sound or a whole drum machine. Maestro knows your library and can use it.
+  `strudel.json`): listen, install one sound or a whole drum machine. **Installed packs and Freesound sounds load into
+  SuperDirt right away**, without restarting the engine. Maestro knows your library and can use it.
 - **Controls in the chat (agentic UI)**: Maestro puts sliders, a tempo control, a sound selector and a step sequencer
   right inside its messages. Moving them writes the Tidal code live, so you see which word changes. Use the sliders button
   on any track, the «Tweak with controls» chip, or just ask for controls.
@@ -86,6 +89,20 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **macOS, Windows and Linux**: the installer detects your system.
 
 ## Screenshots
+
+### What's new
+
+| See what is sounding: the playing step lights up in every track | …and in the Blocks view, step by step |
+|---|---|
+| ![Live highlighting in Tracks](docs/screenshots/live-highlight-tracks.png) | ![Live highlighting in Blocks](docs/screenshots/live-highlight-blocks.png) |
+
+| …and in the Code tab | Mix tab: volume, 3-band EQ, mute and solo per track, plus Master |
+|---|---|
+| ![Live highlighting in Code](docs/screenshots/live-highlight-code.png) | ![Mixer](docs/screenshots/mixer.png) |
+
+| «Hide» Maestro's ideas for a bigger chat | «Clear chat»: the song stays, the chat can come back |
+|---|---|
+| ![Hide ideas](docs/screenshots/hide-ideas.png) | ![Clear chat](docs/screenshots/clear-chat.png) |
 
 ### Maestro's skills
 
@@ -133,9 +150,9 @@ Click options and hear the result live. The ones recommended for your style are 
 |---|---|
 | ![Editing a block](docs/screenshots/blocks-edit.png) | ![Configurator card](docs/screenshots/configurator-card.png) |
 
-| Mix tab: volume and EQ per track and master | Song history (rollback) |
+| Song history (rollback) | |
 |---|---|
-| ![Mixer](docs/screenshots/mixer.png) | ![History](docs/screenshots/history.png) |
+| ![History](docs/screenshots/history.png) | |
 
 ### Blocks view and sample library
 
