@@ -38,6 +38,7 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 - Blocks view: the song as nested blocks (tracks, transforms, steps of the cycle, settings), click to explain.
 - Blocks view editing: tooltip on the selected block to change steps, mini-notation, settings, transformation numbers, tempo.
 - Configurator card in Maestro's chat (any track or the whole song), always on the current version.
+- Open and save Tidal files (.tidal / .hs) from anywhere: File menu, recent files, unsaved-changes prompt, native dialogs.
 - Mix tab: volume in dB and 3-band EQ per track and master (`# amp`, `# eqlow/eqmid/eqhigh`, studio_eq SuperDirt module), mute, solo.
 - Undo/redo and song history (rollback); clear Maestro's chat.
 - Sample library: built-in sounds by type, your own uploads, Freesound search with license filter and automatic credits, packs.

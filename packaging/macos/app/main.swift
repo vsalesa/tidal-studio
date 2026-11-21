@@ -206,6 +206,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         config.mediaTypesRequiringUserActionForPlayback = []
         config.websiteDataStore = .default()  // keeps "My projects" (localStorage) between launches
         config.preferences.javaScriptCanOpenWindowsAutomatically = true
+        // Archivo › Abrir / Guardar como: la web pide aquí los paneles nativos de macOS
+        config.userContentController.addScriptMessageHandler(FilePanels(owner: self), contentWorld: .page, name: "tsFile")
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -298,6 +300,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     @objc func openInBrowser(_ sender: Any?) {
         if let u = studioURL { NSWorkspace.shared.open(u) }
     }
+
+    func fileCommand(_ cmd: String) {
+        webView.evaluateJavaScript("window.tsFileCommand && window.tsFileCommand('\(cmd)')", completionHandler: nil)
+    }
+    @objc func fileNew(_ sender: Any?) { fileCommand("new") }
+    @objc func fileOpen(_ sender: Any?) { fileCommand("open") }
+    @objc func fileSave(_ sender: Any?) { fileCommand("save") }
+    @objc func fileSaveAs(_ sender: Any?) { fileCommand("saveas") }
 
     @objc func reloadPage(_ sender: Any?) {
         if studioURL != nil { webView.reload() }
@@ -471,6 +481,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             m.addItem(.separator())
             item(m, T("Quit Tidal Studio", "Salir de Tidal Studio"), #selector(NSApplication.terminate(_:)), "q")
         }
+        _ = add(T("File", "Archivo")) { m in
+            item(m, T("New Project…", "Nuevo proyecto…"), #selector(fileNew(_:)), "", [], target: self)
+            item(m, T("Open…", "Abrir…"), #selector(fileOpen(_:)), "o", target: self)
+            m.addItem(.separator())
+            item(m, T("Save", "Guardar"), #selector(fileSave(_:)), "s", target: self)
+            item(m, T("Save As…", "Guardar como…"), #selector(fileSaveAs(_:)), "s", [.command, .shift], target: self)
+        }
         _ = add(T("Edit", "Edición")) { m in
             item(m, T("Undo", "Deshacer"), Selector(("undo:")), "z")
             item(m, T("Redo", "Rehacer"), Selector(("redo:")), "z", [.command, .shift])
@@ -519,3 +536,38 @@ let delegate = AppDelegate()
 app.delegate = delegate
 app.setActivationPolicy(.regular)
 app.run()
+
+
+// Paneles nativos para abrir y guardar archivos de Tidal. La web llama
+//   await window.webkit.messageHandlers.tsFile.postMessage({mode: "open" | "save", name, dir})
+// y recibe la ruta elegida (o null si se cancela).
+final class FilePanels: NSObject, WKScriptMessageHandlerWithReply {
+    weak var owner: AppDelegate?
+    init(owner: AppDelegate) { self.owner = owner }
+
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage,
+                               replyHandler: @escaping (Any?, String?) -> Void) {
+        guard let body = message.body as? [String: Any], let window = owner?.window else {
+            replyHandler(nil, "bad request"); return
+        }
+        let mode = body["mode"] as? String ?? "open"
+        let dir = body["dir"] as? String ?? ""
+        let panel: NSSavePanel
+        if mode == "save" {
+            panel = NSSavePanel()
+            panel.nameFieldStringValue = body["name"] as? String ?? "song.tidal"
+            panel.canCreateDirectories = true
+        } else {
+            let open = NSOpenPanel()
+            open.canChooseFiles = true
+            open.canChooseDirectories = false
+            open.allowsMultipleSelection = false
+            panel = open
+        }
+        if let t = body["title"] as? String, !t.isEmpty { panel.message = t }
+        if !dir.isEmpty { panel.directoryURL = URL(fileURLWithPath: dir, isDirectory: true) }
+        panel.beginSheetModal(for: window) { r in
+            replyHandler(r == .OK ? panel.url?.path : nil, nil)
+        }
+    }
+}

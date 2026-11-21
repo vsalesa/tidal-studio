@@ -335,6 +335,32 @@ repetirlo desde el botón del birrete.
 
 ![Tutorial](docs/screenshots/es/tutorial.png)
 
+### Abrir y guardar archivos de Tidal
+
+El menú **Archivo** abre y guarda archivos normales de TidalCycles (`.tidal`, `.hs`) estén donde estén en tu ordenador,
+así puedes llevar canciones de Tidal Studio a cualquier editor de Tidal (Pulsar, VS Code, Vim…) y al revés.
+
+- **Abrir…** (`Ctrl/⌘+O`) lee el archivo y convierte cada `d1 $ …` … `d12 $ …` y cada `p "nombre" $ …` en una pista. Un
+  comentario corto justo encima de un patrón se usa como nombre de la pista, `setcps` se convierte en el BPM y los
+  patrones dentro de un bloque `do` también se separan en pistas. Lo que no es una pista (definiciones con `let`,
+  `once`, imports, comentarios de bloque…) se guarda **intacto** en la tarjeta **Código extra**, encima de las pistas,
+  y se evalúa antes que ellas al pulsar Tocar todo. Las líneas `hush` se quitan (aquí eso lo hace el botón Silencio).
+- **Guardar** (`Ctrl/⌘+S`) y **Guardar como…** (`Ctrl/⌘+Shift+S`) escriben un `.tidal` limpio que suena en cualquier
+  editor de Tidal: la mezcla va como líneas `# amp … # eqlow …`, las pistas silenciadas van comentadas y una línea de
+  comentario (`-- tidal-studio: {…}`) recuerda el nombre, el tipo de cada pista, el solo y el master, para que al
+  volver a abrirlo no se pierda nada.
+- **Archivos recientes**, un indicador de **guardado / cambios sin guardar** encima del nombre de la canción (y un
+  punto en el botón Archivo) y un aviso **¿Guardar los cambios?** antes de abrir otro archivo o proyecto.
+- Usa los diálogos de tu sistema: los paneles nativos en la app de Mac, el diálogo de archivos de Windows y
+  zenity/kdialog en Linux. En un navegador normal usa el selector de archivos del navegador, o te deja escribir la
+  ruta donde guardar.
+
+| Menú Archivo con recientes | ¿Cambios sin guardar? |
+|---|---|
+| ![Menú Archivo](docs/screenshots/es/archivo-menu.png) | ![Aviso de guardar cambios](docs/screenshots/es/archivo-sin-guardar.png) |
+
+![Un archivo de Pulsar abierto como pistas, con su definición let en Código extra](docs/screenshots/es/archivo-abierto.png)
+
 ### Guardar, exportar y compartir
 
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,

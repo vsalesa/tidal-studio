@@ -50,6 +50,8 @@ const P = {
   search: `<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/>`,
   sliders: `<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>`,
   rec: `<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4" fill="currentColor"/>`,
+  file: `<path d="M6 3h8l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M14 3v4h4"/><path d="M8.5 12.5h7M8.5 16h5"/>`,
+  save: `<path d="M5 4h11l3 3v12a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v4.5h7V4"/><rect x="8" y="13" width="8" height="7" rx=".6"/>`,
   download: `<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>`,
   share: `<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/>`,
   cloud: `<path d="M7 18a4.5 4.5 0 0 1-.5-9 6 6 0 0 1 11.4-1.2A4.6 4.6 0 0 1 17.5 18z"/><path d="M12 15.5v-5M9.8 12.6L12 10.4l2.2 2.2"/>`,

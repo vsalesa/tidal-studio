@@ -1,4 +1,10 @@
-## What's new in 0.4.1 / Novedades
+## What's new in 0.5.0 / Novedades
+
+- **Open and save Tidal files**: a File menu opens any `.tidal` / `.hs` file (each `d1…d12` or `p "name"` becomes a track; other code is kept intact as Extra code) and saves clean `.tidal` files that play in any Tidal editor, with recent files, an unsaved-changes indicator and `Ctrl/⌘+O / S / Shift+S`. Native dialogs on macOS (and a File menu in the Mac menu bar), Windows and Linux.
+
+**Español:** **abrir y guardar archivos de Tidal**: menú Archivo que abre cualquier `.tidal` / `.hs` (cada `d1…d12` o `p "nombre"` es una pista; el resto se guarda intacto como Código extra) y guarda `.tidal` limpios que suenan en cualquier editor de Tidal, con archivos recientes, aviso de cambios sin guardar y `Ctrl/⌘+O / S / Shift+S`. Diálogos nativos en macOS (y menú Archivo en la barra de menús), Windows y Linux.
+
+## 0.4.1
 
 - **Each track shows its mix** (volume and EQ) in Tracks and Blocks, so you always see what is changing the sound.
 

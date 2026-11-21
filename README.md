@@ -329,6 +329,30 @@ can repeat it from the cap button.
 
 ![Tutorial](docs/screenshots/tutorial.png)
 
+### Open and save Tidal files
+
+The **File** menu opens and saves ordinary TidalCycles files (`.tidal`, `.hs`), wherever they are on your computer, so
+you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, Vim…).
+
+- **Open…** (`Ctrl/⌘+O`) reads the file and turns every `d1 $ …` … `d12 $ …` and every `p "name" $ …` into a track. A
+  short comment just above a pattern becomes the track's name, `setcps` becomes the BPM, and patterns inside a `do` block
+  are split into tracks too. Anything that isn't a track (`let` definitions, `once`, imports, block comments…) is kept
+  **intact** in an **Extra code** card above the tracks, which is evaluated before the tracks when you press Play all.
+  `hush` lines are left out (here the Hush button does that).
+- **Save** (`Ctrl/⌘+S`) and **Save as…** (`Ctrl/⌘+Shift+S`) write a clean `.tidal` that plays in any Tidal editor: the
+  mix is written as `# amp … # eqlow …` lines, muted tracks are commented out, and one comment line
+  (`-- tidal-studio: {…}`) remembers the name, track types, solo and master, so reopening the file loses nothing.
+- **Recent files**, a **saved / unsaved changes** indicator above the song name (and a dot on the File button), and a
+  **Save changes?** prompt before you open another file or project.
+- It uses your system's own dialogs: the native panels in the Mac app, the Windows file dialog, and zenity/kdialog on
+  Linux. In a plain browser it falls back to the browser's file picker, or lets you type the path to save to.
+
+| File menu with recent files | Unsaved changes? |
+|---|---|
+| ![File menu](docs/screenshots/file-menu.png) | ![Save changes prompt](docs/screenshots/file-unsaved.png) |
+
+![A Pulsar file opened as tracks, with its let definition kept in Extra code](docs/screenshots/file-open.png)
+
 ### Save, export and share
 
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`,

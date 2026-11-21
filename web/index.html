@@ -18,6 +18,10 @@
         <span class="sub"><span data-t="Learn music and TidalCycles with your teacher">Aprende música y TidalCycles con tu maestro</span></span>
       </div>
     </div>
+    <div class="file-menu">
+      <button id="btn-file" class="file-btn" aria-haspopup="menu" aria-expanded="false" title="Abrir y guardar archivos de Tidal (.tidal)" data-tt="Open and save Tidal files (.tidal)"><i data-icon="file" data-size="16"></i> <span data-t="File">Archivo</span></button>
+      <div id="file-pop" class="file-pop" role="menu" hidden></div>
+    </div>
     <button id="btn-new" class="wizard-btn" title="Empezar un proyecto nuevo" data-tt="Start a new project"><i data-icon="plus" data-size="16"></i> <span data-t="New project">Nuevo proyecto</span></button>
     <button id="btn-courses" class="course-btn" title="Cursos por género: construye una canción completa desde cero" data-tt="Genre courses: build a complete song from scratch"><i data-icon="course" data-size="16"></i> <span data-t="Genre courses">Cursos por género</span></button>
     <button id="btn-projects" class="icon-btn" title="Mis proyectos" data-tt="My projects"><i data-icon="folder" data-size="20"></i></button>
@@ -82,6 +86,7 @@
 
     <!-- Columna 2: pistas + código -->
     <section class="panel center">
+      <div class="file-chip" id="file-chip" hidden></div>
       <input id="proj-name" class="proj-name" title="Nombre del proyecto" data-tt="Project name" placeholder="Proyecto sin título" data-tp="Untitled project">
       <div class="tabs">
         <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> <span data-t="Tracks">Pistas</span></button>
@@ -170,6 +175,8 @@
   </main>
 
   <!-- Historial de la canción (rollback) -->
+  <dialog id="askdlg" class="ask-dlg"></dialog>
+  <input type="file" id="file-input" accept=".tidal,.hs,.txt,text/plain" hidden>
   <dialog id="history" class="history-dlg">
     <div class="hist-head"><h3><i data-icon="history" data-size="18"></i> <span data-t="Song history">Historial de la canción</span></h3><button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button></div>
     <p class="hint"><span data-t="Every change is saved here. Go back to any version: nothing is lost, you can come forward again with Redo.">Cada cambio queda guardado aquí. Vuelve a cualquier versión: no se pierde nada, puedes volver hacia delante con Rehacer.</span></p>
