@@ -75,6 +75,18 @@ code, out = run([python, os.path.join(app, "server", "app.py"), "--check"], env,
 if code != 0 or "NOT found" in out:
     failures.append("server --check")
 
+section("bundled python can create a venv (song import audio tools)")
+import tempfile
+venv_dir = os.path.join(tempfile.mkdtemp(prefix="ts-venv-"), "v")
+code, out = run([python, "-m", "venv", venv_dir], env, timeout=180)
+vpy = os.path.join(venv_dir, "Scripts", "python.exe") if WIN else os.path.join(venv_dir, "bin", "python")
+if code != 0 or not os.path.exists(vpy):
+    failures.append("python -m venv")
+else:
+    code, out = run([vpy, "-m", "pip", "--version"], env, timeout=60)
+    if code != 0:
+        failures.append("pip in venv")
+
 section("ghci + Tidal")
 script = (
     'd1 $ s "bd*2 [sn cp]" # speed 1.5\n'

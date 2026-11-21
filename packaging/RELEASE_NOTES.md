@@ -1,4 +1,10 @@
-## What's new in 0.6.0 / Novedades
+## What's new in 0.7.0 / Novedades
+
+- **Import a song**: import a song (MIDI, or audio through optional Demucs/basic-pitch tools installed on first use) as the starting point for a new song, from New project → From a song or File → Import a song.
+
+**Español:** **Importar una canción**: importa una canción (MIDI, o audio con las herramientas opcionales Demucs/basic-pitch, que se instalan la primera vez) como punto de partida de una canción nueva, desde Nuevo proyecto → Desde una canción o Archivo → Importar una canción.
+
+## 0.6.0
 
 - **Maestro fetches missing sounds by itself**: when a sound your song uses isn't installed, Maestro finds it in the free sample packs and downloads it to your library, ready to play.
 
