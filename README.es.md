@@ -9,17 +9,59 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
-- **Tutorial interactivo**: la primera vez que abres el estudio, Maestro te enseña todo en 22 pasos cortos (tocar la
-  batería, añadir pistas, efectos, controles en el chat, ideas, recetas, bloques, arreglo, código, biblioteca…). Cada paso
-  espera a que lo hagas, y puedes repetirlo desde el botón del birrete.
-- **Cursos por género: construye una canción desde cero.** Once cursos (merengue, salsa, cumbia, reggaeton, bossa nova,
-  jazz, funk, house, techno, drum & bass, lo-fi), cada uno una clase de producción completa: el ritmo característico
-  (güira y tambora, clave y tumbao, dembow, two-step…), luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade
-  pistas que ya suenan bien, Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un reto.
-  Lista completa y fuentes en [docs/COURSES.md](docs/COURSES.md).
-- **Fotos reales de instrumentos** (con licencia libre, de Wikimedia Commons, ver [CREDITS.md](CREDITS.md)): una batería en la que pulsas cada pieza (bd, sn, hh, ho, toms, crash, aro) para oírla y
-  aprender su nombre en Tidal, eliges sus pasos y la añades; piano, bajo, guitarra, saxo, trompeta, marimba y kalimba con
-  un teclado en pantalla que escribe tu melodía como código. Cada componente tiene además su propio icono.
+**Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) ·
+[Ayuda con tu código](#ayuda-con-tu-código-y-paleta-de-código) · [Bloques y resaltado en directo](#vista-de-bloques-y-resaltado-en-directo) ·
+[Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Arreglo](#arreglo) ·
+[Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) ·
+[Skills y plugins](#skills-y-plugins) · [Tutorial](#tutorial-interactivo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
+[Instalación](#instalación-una-sola-vez)
+
+## Qué puedes hacer
+
+### Empezar una canción
+
+**Nuevo proyecto en blanco, con wizard o con lluvia de ideas.** Tu proyecto actual se guarda solo en Mis proyectos.
+
+![Nuevo proyecto](docs/screenshots/es/nuevo-proyecto.png)
+
+En el **wizard** eliges estilo, tempo, ritmo, bajo, acordes, melodía, textura, efectos y estructura pulsando opciones (las
+recomendadas para tu estilo vienen marcadas «encaja») y lo oyes en vivo mientras eliges. Termina con un resumen donde
+cada línea de código está explicada.
+
+| 1. Estilo | 2. Tempo |
+|---|---|
+| ![Elegir estilo](docs/screenshots/es/wizard-1-estilo.png) | ![Elegir tempo](docs/screenshots/es/wizard-2-tempo.png) |
+| **3. Ritmo (hasta 3 capas)** | **4. Bajo, acordes, melodía y textura** |
+| ![Elegir ritmo](docs/screenshots/es/wizard-3-ritmo.png) | ![Elegir acordes](docs/screenshots/es/wizard-4-acordes.png) |
+| **5. Efectos** | **6. Estructura en el tiempo** |
+| ![Elegir efectos](docs/screenshots/es/wizard-5-efectos.png) | ![Elegir estructura](docs/screenshots/es/wizard-6-estructura.png) |
+| **7. Resumen con todo el código explicado** | |
+| ![Resumen](docs/screenshots/es/wizard-7-resumen.png) | |
+
+La **lluvia de ideas** te hace preguntas abiertas (¿qué quieres sentir?, ¿qué lugar imaginas?, ¿cómo cambia la
+energía?…) con ejemplos para pulsar, y al final te da el **plan de tu canción**: estilo, tempo, partes y cambios concretos
+para probar.
+
+| Preguntas con ejemplos | El plan de tu canción |
+|---|---|
+| ![Pregunta de la lluvia de ideas](docs/screenshots/es/lluvia-pregunta.png) | ![Plan de canción](docs/screenshots/es/lluvia-plan.png) |
+
+### Cursos por género
+
+**Construye una canción desde cero.** Once cursos (merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house,
+techno, drum & bass, lo-fi), cada uno una clase de producción completa: el ritmo característico (güira y tambora, clave y
+tumbao, dembow, two-step…), luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade pistas que ya suenan bien,
+Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un reto. Lista completa y fuentes en
+[docs/COURSES.md](docs/COURSES.md).
+
+| Elige un género | Cada paso: por qué suena así, el código y Maestro explicándolo |
+|---|---|
+| ![Cursos por género](docs/screenshots/es/cursos.png) | ![Paso de curso](docs/screenshots/es/curso-paso.png) |
+| **Paso de arreglo: intro, merengue y mambo** | **Paso de mezcla y curso completado** |
+| ![Arreglo del curso](docs/screenshots/es/curso-arreglo.png) | ![Curso completado](docs/screenshots/es/curso-completado.png) |
+
+### Maestro, tu profesor
+
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.
 - **Te explica el código**: botón «Explícame» en cada pista y «Explícame todo el código»; cada cambio llega con su
   explicación trozo a trozo y, a veces, un pequeño **reto** para que edites tú.
@@ -27,173 +69,163 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
   Cada idea enseña un concepto musical (backbeat, contraste, pregunta y respuesta, mayor y menor…). Pulsas **Probar**,
   escuchas y decides: **Me lo quedo** o **Deshacer**.
 - **Pre-escucha**: botón «Escuchar» en cada idea o receta: suena unos compases y vuelve sola a tu versión.
-- **Nuevo proyecto en blanco, con wizard o con lluvia de ideas**. En el wizard eliges estilo, tempo, ritmo, bajo, acordes,
-  melodía, textura, efectos y estructura pulsando opciones (las recomendadas vienen marcadas) y lo oyes en vivo mientras eliges.
-- **Lluvia de ideas**: preguntas abiertas (¿qué quieres sentir?, ¿qué lugar imaginas?, ¿cómo cambia la energía?…) con
-  ejemplos para pulsar, y al final el **plan de tu canción**: estilo, tempo, partes y cambios concretos para probar.
 - **Recetas de estilo**: «¿Quieres que suene tipo jazz?» (también latino, techno, lo-fi, ambient). Transforma tu canción y
   te enseña **cómo lo ha hecho**: el código de antes y de después con lo nuevo resaltado y explicado.
-- **Ayuda con tu propio código**: ¿has editado una pista y da error o no suena como querías? Pulsa **Ayuda** (se abre
-  sola si Tidal da error). Elige qué querías (no suena, más fuerte, más lento, más oscuro…) o cuéntalo, y Maestro encuentra
-  el problema (falta el `$`, comillas o paréntesis sin cerrar, sonidos o efectos mal escritos, cosas que la dejan en
-  silencio), te propone el arreglo con el antes y el después, te deja **Escuchar** antes de aplicarlo y puede **volver a la
-  versión que funcionaba**.
-- **Paleta de código**: 39 bloques de Tidal organizados por lo que quieres conseguir (ritmo, sonido, notas y armonía,
-  efectos, tiempo y estructura, azar) y por nivel (primeros pasos, intermedio, avanzado). Pulsas uno y se aplica a la pista
-  seleccionada; Maestro te enseña y explica el cambio, y puedes deshacerlo.
-- **Vista de bloques**: tu canción en bloques visuales anidados. Cada pista muestra lo que la transforma (antes del `$`),
-  lo que suena (cada paso del ciclo es una casilla, con grupos `[ ]`, alternancias `< >`, silencios `~` y repeticiones `*`)
-  y sus ajustes (`#`). Pulsas cualquier bloque y un **tooltip** te dice qué hace y te deja **editarlo ahí mismo**: cambiar
-  un paso (silencio, ×2, partir, a veces, añadir, borrar), la mini-notación, el valor de un ajuste con un deslizador, los
-  números de una transformación (`every 4 (fast 2)`), añadir ajustes o transformaciones, o cambiar el tempo. Suena al editar.
-- **Tarjeta configuradora**: pide a Maestro «una tarjeta del bajo» (o pulsa el botón de tarjeta en una pista, un bloque o
-  un canal de la mesa) y aparece en el chat una tarjeta con **todos los valores** de ese elemento: lo que suena, las
-  transformaciones y sus números, cada ajuste `#`, y el volumen y ecualizador de la pista. La «tarjeta de la canción»
-  tiene tempo, master y el volumen de cada pista. Las tarjetas trabajan siempre sobre la versión **actual** de la canción
-  y se actualizan solas cuando cambias algo en otro sitio.
-- **Pestaña Mezcla**: mesa con fader de volumen (dB) y **ecualizador** de 3 bandas (graves 200 Hz, medios 1 kHz, agudos
-  4 kHz) en cada pista, silencio y solo, y un canal **Master** para toda la canción. No toca el código de tus pistas: al
-  sonar añade `# amp` y `# eqlow / eqmid / eqhigh` (lo verás como una línea `-- mezcla` en la pestaña Código).
-- **Deshacer, rehacer e historial (rollback)**: cada cambio de la canción queda guardado. Botones deshacer/rehacer
-  (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior.
-- **Un chat ordenado**: el botón «Limpiar chat» (arriba a la derecha del panel de Maestro) vacía la conversación sin tocar
-  tu canción, y el botón «Recuperar el chat» la devuelve. «Ocultar» pliega las ideas de Maestro para dejar más sitio al
-  chat (el navegador recuerda tu elección; «Mostrar» las vuelve a enseñar).
-- **Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
-  sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.
-- **Biblioteca de samples**: sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX,
-  sintes). Escúchalos, úsalos en una pista nueva o ponlos en la pista seleccionada manteniendo el ritmo. Sube tus archivos
-  (WAV, AIFF, FLAC, OGG) o **busca en Freesound** (clave API gratuita) filtrando por licencia; lo descargado queda listo para
-  Tidal y los créditos de los sonidos CC BY se apuntan en `samples/CREDITS.md`. La pestaña **Packs** explora packs de la
-  comunidad en GitHub (unas 70 cajas de ritmos, Uzu drumkit, VCSL, un piano de cola, SP-12, mridangam, o cualquier
-  `github:usuario/repo` con un `strudel.json`): escucha, instala un sonido o una caja de ritmos entera. **Los packs instalados y
-  los sonidos de Freesound se cargan en SuperDirt al momento**, sin reiniciar el motor. Maestro conoce tu biblioteca y puede usarla.
-- **Controles en el chat (agentic UI)**: Maestro pone deslizadores, control de tempo, selector de sonido y un secuenciador
-  por pasos dentro de sus mensajes. Al moverlos se escribe el código Tidal en directo, así ves qué palabra cambia. Usa el
-  botón de deslizadores de cada pista, el botón «Ajustar con controles» o pídeselo.
-- **Más controles en el chat**: `every` (hacer algo cada N ciclos), azar (`degradeBy`, `sometimesBy`), swing, ritmos
-  euclídeos (`bd(3,8)`), filtro en movimiento (`# lpf (range … $ slow n sine)`), escala y octava, acordes y una **mesa
-  de mezcla** con volumen, panorama y silencio de todas las pistas a la vez. Cada uno enseña el código que escribe.
-- **Arreglo**: la pestaña Arreglo muestra todas las pistas a lo largo de 8, 16 o 32 compases. Pinta en qué compases suena
-  cada pista (escribe `mask "<…>"`) o parte de un preset: entrar por capas, drop, break, pregunta y respuesta.
-- **Exportar**: descarga la canción como archivo `.tidal`, copia un **enlace para compartir** (toda la canción va en la
-  URL; al abrirlo se carga como proyecto nuevo) o **graba** lo que suena a un WAV en `recordings/` con el botón de grabar.
-- **Forma de onda y recorte**: en la biblioteca ves la onda de cualquier sonido, arrastras para elegir un trozo, lo
-  escuchas y lo usas (`# begin … # end …`).
-- **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
-  `README.md`), mira el historial y abre cualquier versión antigua desde Mis proyectos → GitHub.
-- **Tu progreso**: conceptos de código y de música que ya has usado.
-- **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
-- **Componentes para añadir** y **código siempre visible y editable**.
-- **Español e inglés**: cambia con el botón EN/ES de la barra superior. Maestro responde en el idioma elegido.
-- **Skills y plugins de Claude**: Maestro carga **skills** de música (`SKILL.md`) y debajo de cada respuesta muestra
-  cuáles cargó y cuáles usó. Instala más skills, o **plugins y marketplaces de Claude Code** enteros, pegando un enlace de
-  GitHub en el panel de Skills: sus skills se suman a las de Maestro y sus comandos funcionan en el chat como `/nombre`. Ver [Skills](#skills).
-- **Cualquier IA**: endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
-  o Claude (Anthropic). Sin IA también funciona: guía con botones, explicaciones e ideas locales.
-- **macOS, Windows y Linux**: el instalador detecta tu sistema.
 
-## Capturas
-
-### Novedades
-
-| Ver lo que suena: el paso que está sonando se ilumina en cada pista | …y en la vista de Bloques, paso a paso |
-|---|---|
-| ![Resaltado en directo en Pistas](docs/screenshots/es/resaltado-pistas.png) | ![Resaltado en directo en Bloques](docs/screenshots/es/resaltado-bloques.png) |
-
-| …y en la pestaña Código | Pestaña Mezcla: volumen, ecualizador de 3 bandas, silencio y solo por pista, y Master |
-|---|---|
-| ![Resaltado en directo en Código](docs/screenshots/es/resaltado-codigo.png) | ![Mezcla](docs/screenshots/es/mezcla.png) |
-
-| «Ocultar» las ideas de Maestro para tener más chat | «Limpiar chat»: la canción se queda y el chat puede volver |
-|---|---|
-| ![Ocultar ideas](docs/screenshots/es/ocultar-ideas.png) | ![Limpiar chat](docs/screenshots/es/limpiar-chat.png) |
-
-### Skills de Maestro
-
-| Debajo de cada respuesta: qué skills se cargaron y cuáles usó Maestro | El panel de Skills: activar, cargar siempre, ver, instalar desde GitHub |
-|---|---|
-| ![Skills en el chat](docs/screenshots/skills-in-chat.png) | ![Panel de skills](docs/screenshots/es/panel-skills.png) |
-
-**Plugins**: instala un plugin o marketplace de Claude Code pegando su enlace de GitHub; sus skills se suman a las de Maestro y sus comandos funcionan en el chat (`/nombre`).
-
-![Panel de plugins](docs/screenshots/es/panel-plugins.png)
-
-### Cursos por género
-
-| Elige un género | Cada paso: por qué suena así, el código y Maestro explicándolo |
-|---|---|
-| ![Cursos por género](docs/screenshots/es/cursos.png) | ![Paso del curso](docs/screenshots/es/curso-paso.png) |
-
-| Paso de arreglo: intro, grupo, mambo | Paso de mezcla y curso completado |
-|---|---|
-| ![Arreglo del curso](docs/screenshots/es/curso-arreglo.png) | ![Curso completado](docs/screenshots/es/curso-completado.png) |
-
-| Nuevo proyecto: en blanco, con wizard o lluvia de ideas | Receta «tipo jazz»: antes y después, explicado |
-|---|---|
-| ![Nuevo proyecto](docs/screenshots/es/nuevo-proyecto.png) | ![Receta jazz](docs/screenshots/es/receta-jazz.png) |
-
-### Wizard de proyecto base, paso a paso
-
-Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen marcadas con «encaja».
-
-| 1. Estilo | 2. Velocidad |
-|---|---|
-| ![Elige estilo](docs/screenshots/es/wizard-1-estilo.png) | ![Elige tempo](docs/screenshots/es/wizard-2-tempo.png) |
-| **3. Ritmo (hasta 3 capas)** | **4. Bajo, acordes, melodía y textura** |
-| ![Elige ritmo](docs/screenshots/es/wizard-3-ritmo.png) | ![Elige acordes](docs/screenshots/es/wizard-4-acordes.png) |
-| **5. Efectos** | **6. Estructura en el tiempo** |
-| ![Elige efectos](docs/screenshots/es/wizard-5-efectos.png) | ![Elige estructura](docs/screenshots/es/wizard-6-estructura.png) |
-| **7. Resumen con todo el código explicado** | |
-| ![Resumen](docs/screenshots/es/wizard-7-resumen.png) | |
+![Receta jazz: antes y después, explicado](docs/screenshots/es/receta-jazz.png)
 
 ### Ayuda con tu código y paleta de código
+
+**Ayuda**: ¿has editado una pista y da error o no suena como querías? Pulsa **Ayuda** (se abre sola si Tidal da error).
+Elige qué querías (no suena, más fuerte, más lento, más oscuro…) o cuéntalo, y Maestro encuentra el problema (falta el
+`$`, comillas o paréntesis sin cerrar, sonidos o efectos mal escritos, cosas que la dejan en silencio), te propone el
+arreglo con el antes y el después, te deja **Escuchar** antes de aplicarlo y puede **volver a la versión que funcionaba**.
+
+**Paleta de código**: 39 bloques de Tidal organizados por lo que quieres conseguir (ritmo, sonido, notas y armonía,
+efectos, tiempo y estructura, azar) y por nivel (primeros pasos, intermedio, avanzado). Pulsas uno y se aplica a la pista
+seleccionada; Maestro te enseña y explica el cambio, y puedes deshacerlo.
 
 | Ayuda: Maestro encuentra el problema y propone el arreglo | Paleta de código por objetivo y nivel |
 |---|---|
 | ![Ayuda con el código](docs/screenshots/es/ayuda-codigo.png) | ![Paleta de código](docs/screenshots/es/paleta-codigo.png) |
 
-### Editar desde los bloques, tarjeta configuradora, mezcla e historial
+### Vista de bloques y resaltado en directo
 
-| Pulsa un bloque: tooltip para editarlo | Tarjeta configuradora en el chat de Maestro |
+**Vista de bloques**: tu canción en bloques visuales anidados. Cada pista muestra lo que la transforma (antes del `$`),
+lo que suena (cada paso del ciclo es una casilla, con grupos `[ ]`, alternancias `< >`, silencios `~` y repeticiones `*`)
+y sus ajustes (`#`). Pulsas cualquier bloque y un **tooltip** te dice qué hace y te deja **editarlo ahí mismo**: cambiar
+un paso (silencio, ×2, partir, a veces, añadir, borrar), la mini-notación, el valor de un ajuste con un deslizador, los
+números de una transformación (`every 4 (fast 2)`), añadir ajustes o transformaciones, o cambiar el tempo. Suena al editar.
+
+| Tu canción en bloques anidados | Pulsa un bloque: tooltip para editarlo |
 |---|---|
-| ![Editar un bloque](docs/screenshots/es/bloques-editar.png) | ![Tarjeta configuradora](docs/screenshots/es/tarjeta-configuradora.png) |
+| ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Editar un bloque](docs/screenshots/es/bloques-editar.png) |
 
-| Historial de la canción (rollback) | |
+**Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
+sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.
+
+| En la vista Pistas | En la vista Bloques |
 |---|---|
-| ![Historial](docs/screenshots/es/historial.png) | |
+| ![Resaltado en Pistas](docs/screenshots/es/resaltado-pistas.png) | ![Resaltado en Bloques](docs/screenshots/es/resaltado-bloques.png) |
+| **En la pestaña Código** | |
+| ![Resaltado en Código](docs/screenshots/es/resaltado-codigo.png) | |
 
-### Vista de bloques y biblioteca de samples
+### Controles y tarjetas en el chat
 
-| Tu canción en bloques anidados | Biblioteca de samples por tipo |
+**Controles en el chat (agentic UI)**: Maestro pone deslizadores, control de tempo, selector de sonido y un secuenciador
+por pasos dentro de sus mensajes. Al moverlos se escribe el código Tidal en directo, así ves qué palabra cambia. Usa el
+botón de deslizadores de cada pista, el botón «Ajustar con controles» o pídeselo. Hay más: `every` (hacer algo cada N
+ciclos), azar (`degradeBy`, `sometimesBy`), swing, ritmos euclídeos (`bd(3,8)`), filtro en movimiento
+(`# lpf (range … $ slow n sine)`), escala y octava, acordes y una **mesa de mezcla** con volumen, panorama y silencio de
+todas las pistas a la vez. Cada uno enseña el código que escribe.
+
+**Tarjeta configuradora**: pide a Maestro «una tarjeta del bajo» (o pulsa el botón de tarjeta en una pista, un bloque o
+un canal de la mesa) y aparece en el chat una tarjeta con **todos los valores** de ese elemento: lo que suena, las
+transformaciones y sus números, cada ajuste `#`, y el volumen y ecualizador de la pista. La «tarjeta de la canción» tiene
+tempo, master y el volumen de cada pista. Las tarjetas trabajan siempre sobre la versión **actual** de la canción y se
+actualizan solas cuando cambias algo en otro sitio.
+
+| Controles en el chat | Tarjeta configuradora del bajo |
 |---|---|
-| ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Biblioteca de samples](docs/screenshots/es/biblioteca-samples.png) |
+| ![Controles en el chat](docs/screenshots/es/controles-chat.png) | ![Tarjeta configuradora](docs/screenshots/es/tarjeta-configuradora.png) |
 
-| Controles en el chat | Packs online: cajas de ritmos enteras |
+### Pestaña Mezcla
+
+Mesa con fader de volumen (dB) y **ecualizador** de 3 bandas (graves 200 Hz, medios 1 kHz, agudos 4 kHz) en cada pista,
+silencio y solo, y un canal **Master** para toda la canción. No toca el código de tus pistas: al sonar añade `# amp` y
+`# eqlow / eqmid / eqhigh` (lo verás como una línea `-- mezcla` en la pestaña Código).
+
+![Mezcla](docs/screenshots/es/mezcla.png)
+
+### Arreglo
+
+La pestaña Arreglo muestra todas las pistas a lo largo de 8, 16 o 32 compases. Pinta en qué compases suena cada pista
+(escribe `mask "<…>"`) o parte de un preset: entrar por capas, drop, break, pregunta y respuesta.
+
+![Arreglo](docs/screenshots/es/arreglo.png)
+
+### Deshacer, historial y un chat ordenado
+
+**Deshacer, rehacer e historial (rollback)**: cada cambio de la canción queda guardado. Botones deshacer/rehacer
+(Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior.
+
+![Historial de la canción](docs/screenshots/es/historial.png)
+
+**Un chat ordenado**: el botón «Limpiar chat» (arriba a la derecha del panel de Maestro) vacía la conversación sin tocar
+tu canción, y el botón «Recuperar el chat» la devuelve. «Ocultar» pliega las ideas de Maestro para dejar más sitio al chat
+(el navegador recuerda tu elección; «Mostrar» las vuelve a enseñar).
+
+| «Ocultar» las ideas de Maestro para tener más chat | «Limpiar chat»: la canción se queda y el chat puede volver |
 |---|---|
-| ![Controles en el chat](docs/screenshots/es/controles-chat.png) | ![Packs online](docs/screenshots/es/packs-online.png) |
+| ![Ocultar ideas](docs/screenshots/es/ocultar-ideas.png) | ![Limpiar chat](docs/screenshots/es/limpiar-chat.png) |
+
+### Instrumentos
+
+**Fotos reales de instrumentos** (con licencia libre, de Wikimedia Commons, ver [CREDITS.md](CREDITS.md)): una batería en
+la que pulsas cada pieza (bd, sn, hh, ho, toms, crash, aro) para oírla y aprender su nombre en Tidal, eliges sus pasos y
+la añades; piano, bajo, guitarra, saxo, trompeta, marimba y kalimba con un teclado en pantalla que escribe tu melodía como
+código. Cada componente del catálogo tiene además su propio icono.
 
 | Batería: pulsa una pieza y aprende su nombre | Instrumentos con teclado |
 |---|---|
 | ![Batería](docs/screenshots/es/instrumentos-bateria.png) | ![Saxo](docs/screenshots/es/instrumentos-saxo.png) |
 
-| Tutorial interactivo | |
-|---|---|
-| ![Tutorial](docs/screenshots/es/tutorial.png) | |
+### Biblioteca de samples
 
-| Arreglo: pinta los compases o usa un preset | Forma de onda y recorte |
-|---|---|
-| ![Arreglo](docs/screenshots/es/arreglo.png) | ![Recorte](docs/screenshots/es/recorte-samples.png) |
+Sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX, sintes). Escúchalos,
+úsalos en una pista nueva o ponlos en la pista seleccionada manteniendo el ritmo. Sube tus archivos (WAV, AIFF, FLAC, OGG)
+o **busca en Freesound** (clave API gratuita) filtrando por licencia; lo descargado queda listo para Tidal y los créditos
+de los sonidos CC BY se apuntan en `samples/CREDITS.md`. La pestaña **Packs** explora packs de la comunidad en GitHub
+(unas 70 cajas de ritmos, Uzu drumkit, VCSL, un piano de cola, SP-12, mridangam, o cualquier `github:usuario/repo` con un
+`strudel.json`): escucha, instala un sonido o una caja de ritmos entera. **Los packs instalados y los sonidos de Freesound
+se cargan en SuperDirt al momento**, sin reiniciar el motor. En tus samples ves la **forma de onda**, arrastras para elegir
+un trozo, lo escuchas y lo usas (`# begin … # end …`). Maestro conoce tu biblioteca y puede usarla.
 
-| Buscar en Freesound por licencia | GitHub: cada guardado es una versión |
+| Sonidos incluidos por tipo | Packs online: cajas de ritmos enteras |
 |---|---|
-| ![Buscar online](docs/screenshots/es/samples-online.png) | ![Versiones en GitHub](docs/screenshots/es/github-versiones.png) |
+| ![Biblioteca de samples](docs/screenshots/es/biblioteca-samples.png) | ![Packs online](docs/screenshots/es/packs-online.png) |
+| **Buscar en Freesound por licencia** | **Forma de onda y recorte** |
+| ![Buscar online](docs/screenshots/es/samples-online.png) | ![Recorte](docs/screenshots/es/recorte-samples.png) |
 
-### Lluvia de ideas
+### Skills y plugins
 
-| Preguntas con ejemplos | El plan de tu canción |
+Maestro carga **skills** de música (`SKILL.md`, el mismo formato que las Agent Skills de Claude) y debajo de cada
+respuesta muestra cuáles cargó y cuáles usó. Instala más skills, o **plugins y marketplaces de Claude Code** enteros,
+pegando un enlace de GitHub en el panel de Skills: sus skills se suman a las de Maestro y sus comandos funcionan en el chat
+como `/nombre`. Detalles en [Skills](#skills) y [Plugins](#plugins) más abajo.
+
+| Debajo de cada respuesta: qué skills se cargaron y cuáles se usaron | El panel de Skills: activar, cargar siempre, ver, instalar |
 |---|---|
-| ![Lluvia de ideas](docs/screenshots/es/lluvia-pregunta.png) | ![Plan de la canción](docs/screenshots/es/lluvia-plan.png) |
+| ![Skills en el chat](docs/screenshots/es/skills-en-chat.png) | ![Panel de skills](docs/screenshots/es/panel-skills.png) |
+| **Plugins: un plugin de Claude Code entero desde un enlace de GitHub** | |
+| ![Panel de plugins](docs/screenshots/es/panel-plugins.png) | |
+
+### Tutorial interactivo
+
+La primera vez que abres el estudio, Maestro te enseña todo en 22 pasos cortos (tocar la batería, añadir pistas, efectos,
+controles en el chat, ideas, recetas, bloques, arreglo, código, biblioteca…). Cada paso espera a que lo hagas, y puedes
+repetirlo desde el botón del birrete.
+
+![Tutorial](docs/screenshots/es/tutorial.png)
+
+### Guardar, exportar y compartir
+
+- **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
+  `README.md`), mira el historial y abre cualquier versión antigua desde Mis proyectos → GitHub.
+- **Exportar**: descarga la canción como archivo `.tidal`, copia un **enlace para compartir** (toda la canción va en la
+  URL; al abrirlo se carga como proyecto nuevo) o **graba** lo que suena a un WAV en `recordings/` con el botón de grabar.
+- **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
+
+![GitHub: cada guardado es una versión](docs/screenshots/es/github-versiones.png)
+
+### Y además
+
+- **Tu progreso**: conceptos de código y de música que ya has usado.
+- **Componentes para añadir** y **código siempre visible y editable**.
+- **Español e inglés**: cambia con el botón EN/ES de la barra superior. Maestro responde en el idioma elegido.
+- **Cualquier IA**: endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
+  o Claude (Anthropic). Sin IA también funciona: guía con botones, explicaciones e ideas locales.
+- **macOS, Windows y Linux**: el instalador detecta tu sistema.
 
 ## Instalación (una sola vez)
 

@@ -9,131 +9,24 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
-- **Interactive tutorial**: the first time you open the studio, Maestro walks you through everything in 22 short steps
-  (play the drums, add tracks, effects, chat controls, ideas, recipes, blocks, arrangement, code, library…). Each step
-  waits for you to do it, and you can repeat it from the cap button.
-- **Genre courses: build a song from scratch.** Eleven courses (merengue, salsa, cumbia, reggaeton, bossa nova, jazz,
-  funk, house, techno, drum & bass, lo-fi), each one a full production class: the signature rhythm (güira and tambora,
-  clave and tumbao, dembow, two-step…), then bass, harmony, melody, arrangement and mix. Every step adds tracks that
-  already sound good, Maestro explains the musical *why* and the code piece by piece, and gives you a challenge.
-  See [docs/COURSES.md](docs/COURSES.md) for the full list and sources.
-- **Real instrument photos** (openly licensed, from Wikimedia Commons, see [CREDITS.md](CREDITS.md)): a drum kit where you press each piece (bd, sn, hh, ho, toms, crash, rimshot) to hear it
-  and learn its Tidal name, then choose its steps and add it; piano, bass, guitar, sax, trumpet, marimba and kalimba
-  with an on-screen keyboard that writes your melody as code. Every component also has its own icon.
-- **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.
-- **It explains the code**: an «Explain» button on every track and «Explain all the code». Every change comes with a
-  piece-by-piece explanation and, sometimes, a small **challenge** so you edit it yourself.
-- **It suggests ideas like a producer**: «I'd add claps on 2 and 4… try it and see what you think». Each idea teaches a
-  musical concept (backbeat, contrast, call and response, major and minor…). Press **Try**, listen and decide:
-  **Keep it** or **Undo**.
-- **Pre-listen**: a «Listen» button on every idea and recipe plays it for a few bars and then returns to your version.
-- **New project: blank, with a wizard or with a brainstorm.** The wizard lets you pick style, tempo, beat, bass, chords,
-  melody, texture, effects and structure by clicking options (recommended ones are marked) and you hear it live while you choose.
-- **Brainstorm**: open questions (what do you want to feel? what place do you imagine? how does the energy change?…)
-  with clickable examples, ending in a **plan for your song**: style, tempo, sections and concrete changes to try.
-- **Style recipes**: «Want it to sound like jazz?» (also Latin, techno, lo-fi, ambient). It transforms your song and
-  shows you **how it did it**: the code before and after, with what's new highlighted and explained.
-- **Help with your own code**: edited a track and it errors or doesn't sound how you wanted? Press **Help** (it also
-  opens by itself when Tidal returns an error). Pick what you wanted (no sound, louder, slower, darker…) or describe it,
-  and Maestro finds the problem (missing `$`, unclosed quotes or brackets, misspelled sounds or effects, things that make it
-  silent), proposes the fix with before/after, lets you **Listen** before applying, and can go **back to the version that worked**.
-- **Code palette**: 39 Tidal blocks organized by what you want to do (rhythm, sound, notes and harmony, effects, time and
-  structure, chance) and by level (first steps, intermediate, advanced). Click one to apply it to the selected track;
-  Maestro shows and explains the change, and you can undo it.
-- **Blocks view**: your song as nested visual blocks. Each track shows what transforms it (before the `$`), what it plays
-  (every step of the cycle as a box, with groups `[ ]`, alternations `< >`, rests `~` and repeats `*`) and its settings
-  (`#`). Click any block and a **tooltip** tells you what it does and lets you **edit it right there**: change a step
-  (rest, ×2, split, sometimes, add, delete), the mini-notation, a setting's value with a slider, the numbers of a
-  transformation (`every 4 (fast 2)`), add settings or transformations, or change the tempo. It plays as you edit.
-- **Configurator card**: ask Maestro for «a card for the bass» (or press the card button on a track, a block or a mixer
-  strip) and you get a card in the chat with **every value** of that element: what plays, transformations and their
-  numbers, each `#` setting, plus the track's volume and EQ. The «song card» has tempo, master and every track's volume.
-  Cards always act on the **current** version of the song and refresh themselves when you change things elsewhere.
-- **Mix tab**: a mixing desk with a volume fader (dB) and a 3-band **equalizer** (lows 200 Hz, mids 1 kHz, highs 4 kHz)
-  for every track, mute and solo, and a **Master** strip for the whole song. It doesn't touch your track code: when
-  playing it adds `# amp` and `# eqlow / eqmid / eqhigh` (shown as a `-- mix` line in the Code tab).
-- **Undo, redo and history (rollback)**: every change to the song is saved. Undo/redo buttons (Ctrl/Cmd+Z,
-  Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version.
-- **A tidy chat**: the «Clear chat» button (top right of Maestro's panel) empties the conversation without touching your
-  song, and a «Bring the chat back» chip restores it. «Hide» folds Maestro's ideas away to give the chat more room
-  (the browser remembers your choice; «Show» brings them back).
-- **See what is sounding**: while the music plays, the part of each track's code that is sounding right now lights up,
-  step by step, in the Tracks, Blocks and Code views (like Strudel). SuperDirt tells the app every note it plays.
-- **Sample library**: sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths).
-  Listen to them, use one on a new track, or put it on the selected track keeping the same rhythm. Upload your own files
-  (WAV, AIFF, FLAC, OGG) or **search Freesound** (free API key) filtering by license; downloads are ready for Tidal and
-  credits for CC BY sounds are written to `samples/CREDITS.md`. The **Packs** tab browses community packs on GitHub
-  (about 70 drum machines, Uzu drumkit, VCSL, a grand piano, SP-12, mridangam, or any `github:user/repo` with a
-  `strudel.json`): listen, install one sound or a whole drum machine. **Installed packs and Freesound sounds load into
-  SuperDirt right away**, without restarting the engine. Maestro knows your library and can use it.
-- **Controls in the chat (agentic UI)**: Maestro puts sliders, a tempo control, a sound selector and a step sequencer
-  right inside its messages. Moving them writes the Tidal code live, so you see which word changes. Use the sliders button
-  on any track, the «Tweak with controls» chip, or just ask for controls.
-- **More controls in the chat**: `every` (do something every N cycles), chance (`degradeBy`, `sometimesBy`), swing,
-  Euclidean rhythms (`bd(3,8)`), a moving filter (`# lpf (range … $ slow n sine)`), scale and octave, chords, and a
-  **mix desk** with volume, pan and mute for every track at once. Each one shows the code it writes.
-- **Arrangement**: the Arrangement tab shows every track across 8, 16 or 32 bars. Paint which bars each track plays
-  (it writes `mask "<…>"`) or start from a preset: build up in layers, drop, break, call and response.
-- **Export**: download the song as a `.tidal` file, copy a **share link** (the whole song in the URL; opening it loads
-  it as a new project), or **record** what you hear to a WAV file in `recordings/` with the record button.
-- **Waveform and trimming**: in the library, see the waveform of any sound, drag to choose a piece, listen to it and
-  use it (`# begin … # end …`).
-- **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`, `README.md`),
-  browse the history and open any old version from My projects → GitHub.
-- **Your progress**: the code and music concepts you have already used.
-- **My projects**: your songs are saved automatically; open or delete them from the folder button.
-- **Components to add** and **code always visible and editable**.
-- **English and Spanish**: switch with the EN/ES button in the top bar. Maestro answers in the chosen language.
-- **Skills and Claude plugins**: Maestro loads music **skills** (`SKILL.md`) and shows under each answer which ones it
-  loaded and used. Install more skills, or whole **Claude Code plugins and marketplaces**, by pasting a GitHub link in the
-  Skills panel: their skills join Maestro's and their commands work in the chat as `/name`. See [Skills](#skills).
-- **Any AI**: an OpenAI-compatible endpoint (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
-  or Claude (Anthropic). It also works without AI: button-guided flow, explanations and local ideas.
-- **macOS, Windows and Linux**: the installer detects your system.
+**Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) ·
+[Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
+[Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Arrangement](#arrangement) ·
+[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) ·
+[Skills and plugins](#skills-and-plugins) · [Tutorial](#interactive-tutorial) · [Save and share](#save-export-and-share) ·
+[Installation](#installation-once)
 
-## Screenshots
+## What you can do
 
-### What's new
+### Start a song
 
-| See what is sounding: the playing step lights up in every track | …and in the Blocks view, step by step |
-|---|---|
-| ![Live highlighting in Tracks](docs/screenshots/live-highlight-tracks.png) | ![Live highlighting in Blocks](docs/screenshots/live-highlight-blocks.png) |
+**New project: blank, with a wizard or with a brainstorm.** Your current project is saved automatically in My projects.
 
-| …and in the Code tab | Mix tab: volume, 3-band EQ, mute and solo per track, plus Master |
-|---|---|
-| ![Live highlighting in Code](docs/screenshots/live-highlight-code.png) | ![Mixer](docs/screenshots/mixer.png) |
+![New project](docs/screenshots/new-project.png)
 
-| «Hide» Maestro's ideas for a bigger chat | «Clear chat»: the song stays, the chat can come back |
-|---|---|
-| ![Hide ideas](docs/screenshots/hide-ideas.png) | ![Clear chat](docs/screenshots/clear-chat.png) |
-
-### Maestro's skills
-
-| Under every answer: which skills were loaded and which Maestro used | The Skills panel: turn on, always load, view, install from GitHub |
-|---|---|
-| ![Skills in the chat](docs/screenshots/skills-in-chat.png) | ![Skills panel](docs/screenshots/skills-panel.png) |
-
-**Plugins**: install a Claude Code plugin or marketplace by pasting its GitHub link; its skills join Maestro's and its commands work in the chat (`/name`).
-
-![Plugins panel](docs/screenshots/plugins-panel.png)
-
-### Genre courses
-
-| Pick a genre | Each step: why it sounds like that, the code, and Maestro explaining |
-|---|---|
-| ![Genre courses](docs/screenshots/courses.png) | ![Course step](docs/screenshots/course-step.png) |
-
-| Arrangement step: intro, band, mambo | Mix step and course complete |
-|---|---|
-| ![Course arrangement](docs/screenshots/course-arrangement.png) | ![Course complete](docs/screenshots/course-complete.png) |
-
-| New project: blank, wizard or brainstorm | Style recipe «like jazz»: before and after, explained |
-|---|---|
-| ![New project](docs/screenshots/new-project.png) | ![Jazz recipe](docs/screenshots/recipe-jazz.png) |
-
-### Base-project wizard, step by step
-
-Click options and hear the result live. The ones recommended for your style are marked «fits».
+The **wizard** lets you pick style, tempo, beat, bass, chords, melody, texture, effects and structure by clicking options
+(the ones recommended for your style are marked «fits») and you hear it live while you choose. It ends with a summary
+where every line of code is explained.
 
 | 1. Style | 2. Tempo |
 |---|---|
@@ -145,53 +38,192 @@ Click options and hear the result live. The ones recommended for your style are 
 | **7. Summary with all the code explained** | |
 | ![Summary](docs/screenshots/wizard-7-summary.png) | |
 
+The **brainstorm** asks open questions (what do you want to feel? what place do you imagine? how does the energy
+change?…) with clickable examples, and ends in a **plan for your song**: style, tempo, sections and concrete changes to try.
+
+| Questions with examples | Your song plan |
+|---|---|
+| ![Brainstorm question](docs/screenshots/brainstorm-question.png) | ![Song plan](docs/screenshots/brainstorm-plan.png) |
+
+### Genre courses
+
+**Build a song from scratch.** Eleven courses (merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno,
+drum & bass, lo-fi), each one a full production class: the signature rhythm (güira and tambora, clave and tumbao, dembow,
+two-step…), then bass, harmony, melody, arrangement and mix. Every step adds tracks that already sound good, Maestro
+explains the musical *why* and the code piece by piece, and gives you a challenge. See [docs/COURSES.md](docs/COURSES.md)
+for the full list and sources.
+
+| Pick a genre | Each step: why it sounds like that, the code, and Maestro explaining |
+|---|---|
+| ![Genre courses](docs/screenshots/courses.png) | ![Course step](docs/screenshots/course-step.png) |
+| **Arrangement step: intro, band, mambo** | **Mix step and course complete** |
+| ![Course arrangement](docs/screenshots/course-arrangement.png) | ![Course complete](docs/screenshots/course-complete.png) |
+
+### Maestro, your teacher
+
+- **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.
+- **It explains the code**: an «Explain» button on every track and «Explain all the code». Every change comes with a
+  piece-by-piece explanation and, sometimes, a small **challenge** so you edit it yourself.
+- **It suggests ideas like a producer**: «I'd add claps on 2 and 4… try it and see what you think». Each idea teaches a
+  musical concept (backbeat, contrast, call and response, major and minor…). Press **Try**, listen and decide:
+  **Keep it** or **Undo**.
+- **Pre-listen**: a «Listen» button on every idea and recipe plays it for a few bars and then returns to your version.
+- **Style recipes**: «Want it to sound like jazz?» (also Latin, techno, lo-fi, ambient). It transforms your song and
+  shows you **how it did it**: the code before and after, with what's new highlighted and explained.
+
+![Jazz recipe: before and after, explained](docs/screenshots/recipe-jazz.png)
+
 ### Help with your code and code palette
+
+**Help**: edited a track and it errors or doesn't sound how you wanted? Press **Help** (it also opens by itself when Tidal
+returns an error). Pick what you wanted (no sound, louder, slower, darker…) or describe it, and Maestro finds the problem
+(missing `$`, unclosed quotes or brackets, misspelled sounds or effects, things that make it silent), proposes the fix with
+before/after, lets you **Listen** before applying, and can go **back to the version that worked**.
+
+**Code palette**: 39 Tidal blocks organized by what you want to do (rhythm, sound, notes and harmony, effects, time and
+structure, chance) and by level (first steps, intermediate, advanced). Click one to apply it to the selected track;
+Maestro shows and explains the change, and you can undo it.
 
 | Help: Maestro finds the problem and proposes the fix | Code palette by goal and level |
 |---|---|
 | ![Code help](docs/screenshots/code-help.png) | ![Code palette](docs/screenshots/code-palette.png) |
 
-### Edit from the blocks, configurator card, mixer and history
+### Blocks view and live highlighting
 
-| Click a block: tooltip to edit it | Configurator card in Maestro's chat |
+**Blocks view**: your song as nested visual blocks. Each track shows what transforms it (before the `$`), what it plays
+(every step of the cycle as a box, with groups `[ ]`, alternations `< >`, rests `~` and repeats `*`) and its settings
+(`#`). Click any block and a **tooltip** tells you what it does and lets you **edit it right there**: change a step (rest,
+×2, split, sometimes, add, delete), the mini-notation, a setting's value with a slider, the numbers of a transformation
+(`every 4 (fast 2)`), add settings or transformations, or change the tempo. It plays as you edit.
+
+| Your song as nested blocks | Click a block: tooltip to edit it |
 |---|---|
-| ![Editing a block](docs/screenshots/blocks-edit.png) | ![Configurator card](docs/screenshots/configurator-card.png) |
+| ![Blocks view](docs/screenshots/blocks.png) | ![Editing a block](docs/screenshots/blocks-edit.png) |
 
-| Song history (rollback) | |
+**See what is sounding**: while the music plays, the part of each track's code that is sounding right now lights up, step
+by step, in the Tracks, Blocks and Code views (like Strudel). SuperDirt tells the app every note it plays.
+
+| In the Tracks view | In the Blocks view |
 |---|---|
-| ![History](docs/screenshots/history.png) | |
+| ![Live highlighting in Tracks](docs/screenshots/live-highlight-tracks.png) | ![Live highlighting in Blocks](docs/screenshots/live-highlight-blocks.png) |
+| **In the Code tab** | |
+| ![Live highlighting in Code](docs/screenshots/live-highlight-code.png) | |
 
-### Blocks view and sample library
+### Controls and cards in the chat
 
-| Your song as nested blocks | Sample library by type |
+**Controls in the chat (agentic UI)**: Maestro puts sliders, a tempo control, a sound selector and a step sequencer right
+inside its messages. Moving them writes the Tidal code live, so you see which word changes. Use the sliders button on any
+track, the «Tweak with controls» chip, or just ask for controls. There are more: `every` (do something every N cycles),
+chance (`degradeBy`, `sometimesBy`), swing, Euclidean rhythms (`bd(3,8)`), a moving filter
+(`# lpf (range … $ slow n sine)`), scale and octave, chords, and a **mix desk** with volume, pan and mute for every track
+at once. Each one shows the code it writes.
+
+**Configurator card**: ask Maestro for «a card for the bass» (or press the card button on a track, a block or a mixer
+strip) and you get a card in the chat with **every value** of that element: what plays, transformations and their numbers,
+each `#` setting, plus the track's volume and EQ. The «song card» has tempo, master and every track's volume. Cards always
+act on the **current** version of the song and refresh themselves when you change things elsewhere.
+
+| Controls in the chat | Configurator card for the bass |
 |---|---|
-| ![Blocks view](docs/screenshots/blocks.png) | ![Sample library](docs/screenshots/sample-library.png) |
+| ![Chat controls](docs/screenshots/chat-controls.png) | ![Configurator card](docs/screenshots/configurator-card.png) |
 
-| Controls in the chat | Online packs: whole drum machines |
+### Mix tab
+
+A mixing desk with a volume fader (dB) and a 3-band **equalizer** (lows 200 Hz, mids 1 kHz, highs 4 kHz) for every track,
+mute and solo, and a **Master** strip for the whole song. It doesn't touch your track code: when playing it adds `# amp`
+and `# eqlow / eqmid / eqhigh` (shown as a `-- mix` line in the Code tab).
+
+![Mixer](docs/screenshots/mixer.png)
+
+### Arrangement
+
+The Arrangement tab shows every track across 8, 16 or 32 bars. Paint which bars each track plays (it writes
+`mask "<…>"`) or start from a preset: build up in layers, drop, break, call and response.
+
+![Arrangement](docs/screenshots/arrangement.png)
+
+### Undo, history and a tidy chat
+
+**Undo, redo and history (rollback)**: every change to the song is saved. Undo/redo buttons (Ctrl/Cmd+Z,
+Ctrl/Cmd+Shift+Z) and a **History** list to go back to any earlier version.
+
+![Song history](docs/screenshots/history.png)
+
+**A tidy chat**: the «Clear chat» button (top right of Maestro's panel) empties the conversation without touching your
+song, and a «Bring the chat back» chip restores it. «Hide» folds Maestro's ideas away to give the chat more room (the
+browser remembers your choice; «Show» brings them back).
+
+| «Hide» Maestro's ideas for a bigger chat | «Clear chat»: the song stays, the chat can come back |
 |---|---|
-| ![Chat controls](docs/screenshots/chat-controls.png) | ![Online packs](docs/screenshots/online-packs.png) |
+| ![Hide ideas](docs/screenshots/hide-ideas.png) | ![Clear chat](docs/screenshots/clear-chat.png) |
+
+### Instruments
+
+**Real instrument photos** (openly licensed, from Wikimedia Commons, see [CREDITS.md](CREDITS.md)): a drum kit where you
+press each piece (bd, sn, hh, ho, toms, crash, rimshot) to hear it and learn its Tidal name, then choose its steps and add
+it; piano, bass, guitar, sax, trumpet, marimba and kalimba with an on-screen keyboard that writes your melody as code.
+Every component in the catalog also has its own icon.
 
 | Drum kit: press a piece, learn its name | Instruments with a keyboard |
 |---|---|
 | ![Drum kit](docs/screenshots/instruments-drums.png) | ![Sax](docs/screenshots/instruments-sax.png) |
 
-| Interactive tutorial | |
-|---|---|
-| ![Tutorial](docs/screenshots/tutorial.png) | |
+### Sample library
 
-| Arrangement: paint the bars, or use a preset | Waveform and trimming |
-|---|---|
-| ![Arrangement](docs/screenshots/arrangement.png) | ![Trim](docs/screenshots/sample-trim.png) |
+Sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths). Listen to them, use
+one on a new track, or put it on the selected track keeping the same rhythm. Upload your own files (WAV, AIFF, FLAC, OGG)
+or **search Freesound** (free API key) filtering by license; downloads are ready for Tidal and credits for CC BY sounds are
+written to `samples/CREDITS.md`. The **Packs** tab browses community packs on GitHub (about 70 drum machines, Uzu drumkit,
+VCSL, a grand piano, SP-12, mridangam, or any `github:user/repo` with a `strudel.json`): listen, install one sound or a
+whole drum machine. **Installed packs and Freesound sounds load into SuperDirt right away**, without restarting the
+engine. In your own samples you see the **waveform**, drag to choose a piece, listen to it and use it
+(`# begin … # end …`). Maestro knows your library and can use it.
 
-| Search Freesound by license | GitHub: every save is a version |
+| Built-in sounds by type | Online packs: whole drum machines |
 |---|---|
-| ![Search online](docs/screenshots/samples-online.png) | ![GitHub versions](docs/screenshots/github-versions.png) |
+| ![Sample library](docs/screenshots/sample-library.png) | ![Online packs](docs/screenshots/online-packs.png) |
+| **Search Freesound by license** | **Waveform and trimming** |
+| ![Search online](docs/screenshots/samples-online.png) | ![Trim](docs/screenshots/sample-trim.png) |
 
-### Brainstorm
+### Skills and plugins
 
-| Questions with examples | Your song plan |
+Maestro loads music **skills** (`SKILL.md`, the same format as Claude's Agent Skills) and shows under each answer which
+ones it loaded and used. Install more skills, or whole **Claude Code plugins and marketplaces**, by pasting a GitHub link
+in the Skills panel: their skills join Maestro's and their commands work in the chat as `/name`. Details in
+[Skills](#skills) and [Plugins](#plugins) below.
+
+| Under every answer: which skills were loaded and used | The Skills panel: turn on, always load, view, install |
 |---|---|
-| ![Brainstorm question](docs/screenshots/brainstorm-question.png) | ![Song plan](docs/screenshots/brainstorm-plan.png) |
+| ![Skills in the chat](docs/screenshots/skills-in-chat.png) | ![Skills panel](docs/screenshots/skills-panel.png) |
+| **Plugins: a whole Claude Code plugin from a GitHub link** | |
+| ![Plugins panel](docs/screenshots/plugins-panel.png) | |
+
+### Interactive tutorial
+
+The first time you open the studio, Maestro walks you through everything in 22 short steps (play the drums, add tracks,
+effects, chat controls, ideas, recipes, blocks, arrangement, code, library…). Each step waits for you to do it, and you
+can repeat it from the cap button.
+
+![Tutorial](docs/screenshots/tutorial.png)
+
+### Save, export and share
+
+- **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`,
+  `README.md`), browse the history and open any old version from My projects → GitHub.
+- **Export**: download the song as a `.tidal` file, copy a **share link** (the whole song in the URL; opening it loads it
+  as a new project), or **record** what you hear to a WAV file in `recordings/` with the record button.
+- **My projects**: your songs are saved automatically; open or delete them from the folder button.
+
+![GitHub: every save is a version](docs/screenshots/github-versions.png)
+
+### And also
+
+- **Your progress**: the code and music concepts you have already used.
+- **Components to add** and **code always visible and editable**.
+- **English and Spanish**: switch with the EN/ES button in the top bar. Maestro answers in the chosen language.
+- **Any AI**: an OpenAI-compatible endpoint (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
+  or Claude (Anthropic). It also works without AI: button-guided flow, explanations and local ideas.
+- **macOS, Windows and Linux**: the installer detects your system.
 
 ## Installation (once)
 
