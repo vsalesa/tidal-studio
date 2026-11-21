@@ -60,8 +60,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         pollTimer?.invalidate()
         showStatus(T("Closing the studio…", "Cerrando el estudio…"),
                    T("Stopping SuperCollider and Tidal.", "Parando SuperCollider y Tidal."), spinner: true)
+        say("quitting: stopping the server")
         DispatchQueue.global().async {
             AppDelegate.stop(p)
+            say("server stopped; quitting")
+            if selfTest {
+                if let s = try? String(contentsOf: FileManager.default.homeDirectoryForCurrentUser
+                    .appendingPathComponent("Library/Logs/Tidal Studio/studio.log"), encoding: .utf8) {
+                    print(s.suffix(3000))
+                }
+                exit(0)
+            }
             DispatchQueue.main.async { sender.reply(toApplicationShouldTerminate: true) }
         }
         return .terminateLater
@@ -171,11 +180,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     static func stop(_ p: Process) {
         let pid = p.processIdentifier
         if p.isRunning {
+            say("sending SIGINT to \(pid)")
             p.interrupt()  // SIGINT: the server stops ghci and sclang and exits
             let deadline = Date().addingTimeInterval(10)
             while p.isRunning && Date() < deadline { usleep(100_000) }
-            if p.isRunning { p.terminate(); usleep(1_500_000) }
-            if p.isRunning { kill(pid, SIGKILL) }
+            if p.isRunning { say("still running: SIGTERM"); p.terminate(); usleep(1_500_000) }
+            if p.isRunning { say("still running: SIGKILL"); kill(pid, SIGKILL) }
         }
         killGroup(pid)
     }
@@ -355,7 +365,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
             say("self-test: page loaded: \(String(describing: res)) \(String(describing: err))")
             guard res != nil else { return }
             self.selfTestDone = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { NSApp.terminate(nil) }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { say("self-test: quitting"); NSApp.terminate(nil) }
         }
     }
 

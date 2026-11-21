@@ -728,10 +728,13 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        print("\nApagando…")
+        print("\nApagando…", flush=True)
+        import faulthandler
+        faulthandler.dump_traceback_later(8, exit=True)  # never hang on the way out (prints where it was stuck)
         ENGINE.stop()
         server.server_close()
         _kill_group()
+        print("[server] stopped / parado", flush=True)
 
 
 ARGS = None
