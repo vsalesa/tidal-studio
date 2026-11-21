@@ -33,6 +33,7 @@ import net  # noqa: E402
 import llm as llmmod  # noqa: E402
 import llmdiag  # noqa: E402
 import shellenv  # noqa: E402
+import ccdetect  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,7 +56,11 @@ DEFAULT_CONFIG = {
     "claudecode": {
         "path": "",                # vacío = buscar «claude» en el PATH
         "model": "",               # vacío = el modelo por defecto de tu plan (alias: opus, sonnet, haiku, fable)
-        "use_subscription": True,  # no pasar ANTHROPIC_API_KEY a claude: así usa tu plan, como Claude Desktop
+        # auto = lo detectado en tu terminal · subscription = tu plan (como Claude Desktop, sin claves)
+        # api = clave/endpoint propio (abajo, o los de tu terminal) · terminal = exactamente como en tu terminal
+        "auth_mode": "auto",
+        "base_url": "",            # solo modo api: ANTHROPIC_BASE_URL (vacío = el de tu terminal)
+        "api_key": "",             # solo modo api: ANTHROPIC_API_KEY (vacío = la de tu terminal)
     },
     "github": {
         "token": "",
@@ -124,7 +129,7 @@ def mask(key):
 
 def public_config(cfg):
     out = json.loads(json.dumps(cfg))
-    for p in ("openai", "anthropic"):
+    for p in ("openai", "anthropic", "claudecode"):
         out[p]["api_key_set"] = bool(cfg[p]["api_key"])
         out[p]["api_key"] = mask(cfg[p]["api_key"])
     out["github"]["token_set"] = bool(cfg["github"]["token"])
@@ -405,6 +410,9 @@ class Handler(SimpleHTTPRequestHandler):
                 text = chat_completion(cfg, "Responde solo con la palabra: listo", [
                     {"role": "user", "content": "¿Estás ahí?"}], max_tokens=20)
                 return self._json({"ok": True, "reply": text.strip()[:200]})
+
+            if path == "/api/llm/detect":
+                return self._json(ccdetect.get(load_config(), bool(data.get("refresh"))))
 
             if path == "/api/llm/diagnose":
                 return self._json(llmdiag.diagnose(load_config(), data.get("lang", "es")))
@@ -703,6 +711,8 @@ def main():
         net.FORCE_INSECURE = True
 
     shellenv.start()
+    if not ARGS.check:
+        ccdetect.start(load_config)
     if ARGS.check:
         shellenv.wait(12)
         check()
