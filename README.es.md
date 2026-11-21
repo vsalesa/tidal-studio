@@ -13,7 +13,8 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 [Ayuda con tu código](#ayuda-con-tu-código-y-paleta-de-código) · [Bloques y resaltado en directo](#vista-de-bloques-y-resaltado-en-directo) ·
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Arreglo](#arreglo) ·
 [Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) ·
-[Skills y plugins](#skills-y-plugins) · [Tutorial](#tutorial-interactivo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
+[Skills y plugins](#skills-y-plugins) · [Cómo decide Maestro](#cómo-decide-maestro-y-su-razonamiento) ·
+[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
 [Instalación](#instalación-una-sola-vez)
 
 ## Qué puedes hacer
@@ -200,6 +201,47 @@ como `/nombre`. Detalles en [Skills](#skills) y [Plugins](#plugins) más abajo.
 | **Plugins: un plugin de Claude Code entero desde un enlace de GitHub** | |
 | ![Panel de plugins](docs/screenshots/es/panel-plugins.png) | |
 
+### Cómo decide Maestro, y su razonamiento
+
+Cada respuesta que se ha apoyado en una skill empieza con **Cómo lo he decidido**: una fila por decisión musical
+(estilo, ritmo, tempo, bajo, armonía, melodía, instrumentos, efectos, mezcla, estructura) con la skill que consultó,
+la regla o el consejo que sacó de ella y lo que hizo con él (pista, valor, código). Solo pueden salir skills cuyo
+contenido se cargó de verdad para ese mensaje, así que no puede inventarse una regla a partir del nombre. Pulsa una
+skill para abrirla.
+
+Mientras sale **Maestro está pensando…**, una línea gris muy tenue, **Pensando**, enseña qué está haciendo, como en un
+harness de programación: lee tu canción, qué skills ha elegido y por qué, a quién pregunta y el razonamiento de Claude
+según llega. Púlsala para desplegarla; después de la respuesta se queda debajo del mensaje como **Razonamiento**. Con
+clave de API de Anthropic usa el thinking adaptativo en modo resumido; con tu suscripción de Claude lee la salida
+`stream-json` del comando `claude`; los modelos compatibles con OpenAI enseñan su `reasoning_content` si lo devuelven.
+Los proveedores que no comparten su razonamiento solo muestran los pasos.
+
+| Cómo lo he decidido | Razonamiento |
+|---|---|
+| ![Cómo lo he decidido](docs/screenshots/es/decisiones-skills.png) | ![Razonamiento](docs/screenshots/es/razonamiento.png) |
+
+### Conecta tu IA, con detección automática y Diagnóstico
+
+En **Ajustes** eliges un endpoint compatible con OpenAI, una clave de API de Anthropic o **Claude con tu suscripción**. Con
+tu suscripción, el estudio encuentra el comando `claude` que usa tu terminal y te enseña lo que ha detectado: ruta,
+versión, si tienes la sesión iniciada, modelo por defecto, endpoint y clave de API. **Automática** elige la conexión
+adecuada por ti (tu plan si tienes sesión iniciada; si no, lo mismo que tu terminal). Si Maestro no responde, pulsa
+**Diagnóstico**: revisa paso a paso el entorno de tu terminal, el comando `claude`, la sesión, el modo de conexión, el
+modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelos** prueba cada modelo para que pulses
+**Usar** en uno que funcione. **Copiar informe** te da un resumen en texto con las claves ocultas. Detalles en
+[Configurar la IA](#configurar-la-ia).
+
+| Detectado en este ordenador | Diagnóstico y Probar modelos |
+|---|---|
+| ![Detección de Claude](docs/screenshots/es/deteccion-claude.png) | ![Diagnóstico](docs/screenshots/es/diagnostico.png) |
+
+### Una app de verdad en tu ordenador
+
+Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
+su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
+instalador para tu sistema desde la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest); los pasos
+están en [Instalación](#instalación-una-sola-vez).
+
 ### Tutorial interactivo
 
 La primera vez que abres el estudio, Maestro te enseña todo en 22 pasos cortos (tocar la batería, añadir pistas, efectos,
@@ -295,6 +337,8 @@ lento que la API (unos 10–20 s).
 Las claves se guardan solo en `config.json`, en tu ordenador (no se sube a git). También puedes usar las variables
 de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
 
+Si no conecta, abre **Ajustes → Diagnóstico** ([qué revisa](#conecta-tu-ia-con-detección-automática-y-diagnóstico)).
+
 ### Skills
 
 Maestro puede cargar **skills** (carpetas con un `SKILL.md`, el mismo formato que las Agent Skills de Claude). Vienen tres
@@ -302,24 +346,6 @@ skills de música con licencia abierta (live coding con Tidal, recetas de Strude
 marcar una como «Cargar siempre», leerla o instalar otra pegando su enlace de GitHub. Debajo de cada respuesta de Maestro
 ves qué skills se cargaron para ese mensaje y cuáles usó de verdad. Detalles y fuentes: [skills/README.md](skills/README.md).
 
-### Cómo decide Maestro, y su razonamiento
-
-Cada respuesta que se ha apoyado en una skill empieza con **Cómo lo he decidido**: una fila por decisión musical
-(estilo, ritmo, tempo, bajo, armonía, melodía, instrumentos, efectos, mezcla, estructura) con la skill que consultó,
-la regla o el consejo que sacó de ella y lo que hizo con él (pista, valor, código). Solo pueden salir skills cuyo
-contenido se cargó de verdad para ese mensaje, así que no puede inventarse una regla a partir del nombre. Pulsa una
-skill para abrirla.
-
-Mientras sale **Maestro está pensando…**, una línea gris muy tenue, **Pensando**, enseña qué está haciendo, como en un
-harness de programación: lee tu canción, qué skills ha elegido y por qué, a quién pregunta y el razonamiento de Claude
-según llega. Púlsala para desplegarla; después de la respuesta se queda debajo del mensaje como **Razonamiento**. Con
-clave de API de Anthropic usa el thinking adaptativo en modo resumido; con tu suscripción de Claude lee la salida
-`stream-json` del comando `claude`; los modelos compatibles con OpenAI enseñan su `reasoning_content` si lo devuelven.
-Los proveedores que no comparten su razonamiento solo muestran los pasos.
-
-| Cómo lo he decidido | Razonamiento |
-|---|---|
-| ![Cómo lo he decidido](docs/screenshots/es/decisiones-skills.png) | ![Razonamiento](docs/screenshots/es/razonamiento.png) |
 
 ### Plugins
 
@@ -385,6 +411,8 @@ Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit)
 - **Linux sin sonido**: SuperCollider usa JACK. Con PipeWire se arranca solo con `pw-jack`; si usas JACK clásico, arráncalo antes.
 - **macOS pide permiso de micrófono** a SuperCollider: acéptalo (lo necesita para abrir el audio).
 - **Windows: "Haskell se está terminando de instalar en otra ventana"**: espera a que acabe y vuelve a ejecutar `install.bat`.
+- **Maestro no responde con Claude**: abre **Ajustes → Diagnóstico**. Te dice qué paso falla (no encuentra el comando,
+  sin sesión iniciada, modelo no aceptado…) y cómo arreglarlo; **Probar modelos** enseña qué modelos funcionan.
 - **Puerto ocupado**: `./start.sh --port 9000`.
 
 ## Opciones del servidor

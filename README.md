@@ -13,7 +13,8 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Arrangement](#arrangement) ·
 [Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) ·
-[Skills and plugins](#skills-and-plugins) · [Tutorial](#interactive-tutorial) · [Save and share](#save-export-and-share) ·
+[Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
+[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Save and share](#save-export-and-share) ·
 [Installation](#installation-once)
 
 ## What you can do
@@ -198,6 +199,45 @@ in the Skills panel: their skills join Maestro's and their commands work in the 
 | **Plugins: a whole Claude Code plugin from a GitHub link** | |
 | ![Plugins panel](docs/screenshots/plugins-panel.png) | |
 
+### How Maestro decides, and its reasoning
+
+Every answer that relied on a skill opens with **How I decided**: one row per musical decision (style, rhythm,
+tempo, bass, harmony, melody, instruments, effects, mix, structure) with the skill it consulted, the rule or advice
+it took from it, and what it did with it (track, value, code). Only skills whose content was actually loaded for that
+message can appear there, so a rule can't be made up from a skill's name. Click a skill to open it.
+
+While **Maestro is thinking…**, a faint grey **Thinking** line shows what it is doing, like a typical coding harness:
+reading your song, which skills it picked and why, who it is asking, and Claude's own reasoning as it streams.
+Click it to unfold; after the answer it stays under the message as **Reasoning**. With an Anthropic API key it uses
+adaptive thinking with summarized display; with your Claude subscription it reads the `claude` CLI's `stream-json`
+output; OpenAI-compatible models show `reasoning_content` when they return it. Providers that don't share their
+reasoning show only the steps.
+
+| How I decided | Reasoning |
+|---|---|
+| ![How I decided](docs/screenshots/skills-decisions.png) | ![Reasoning](docs/screenshots/reasoning.png) |
+
+### Connect your AI, with automatic detection and Diagnostics
+
+Choose an OpenAI-compatible endpoint, an Anthropic API key or **Claude with your subscription** in **Settings**. With your
+subscription, the studio finds the `claude` command your terminal uses and shows what it detected: path, version, whether
+you are signed in, default model, endpoint and API key. **Automatic** picks the right connection for you (your plan if you
+are signed in, otherwise the same setup as your terminal). If Maestro doesn't answer, press **Diagnostics**: it checks
+your terminal environment, the `claude` command, sign-in, connection mode, model and a live test step by step, tells you
+how to fix what fails, and **Test models** tries each model so you can **Use** one that works. **Copy report** gives you
+a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-ai).
+
+| Detected on this computer | Diagnostics and Test models |
+|---|---|
+| ![Claude detection](docs/screenshots/claude-detect.png) | ![Diagnostics](docs/screenshots/diagnostics.png) |
+
+### A real app on your computer
+
+Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
+opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
+Download the installer for your system from the
+[latest release](https://github.com/vsalesa/tidal-studio/releases/latest); steps in [Installation](#installation-once).
+
 ### Interactive tutorial
 
 The first time you open the studio, Maestro walks you through everything in 22 short steps (play the drums, add tracks,
@@ -293,6 +333,8 @@ slower than the API (about 10–20 s).
 Keys are stored only in `config.json`, on your computer (it is not committed to git). You can also use the
 `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variables.
 
+If it doesn't connect, open **Settings → Diagnostics** ([what it checks](#connect-your-ai-with-automatic-detection-and-diagnostics)).
+
 ### Skills
 
 Maestro can load **skills** (folders with a `SKILL.md`, the same format as Claude's Agent Skills). Three open-license
@@ -300,23 +342,6 @@ music skills come included (Tidal live coding, Strudel recipes and general music
 or install another one by pasting its GitHub link. Under each of Maestro's answers you see which skills were loaded for
 that message and which it actually used. Details and sources: [skills/README.md](skills/README.md).
 
-### How Maestro decides, and its reasoning
-
-Every answer that relied on a skill opens with **How I decided**: one row per musical decision (style, rhythm,
-tempo, bass, harmony, melody, instruments, effects, mix, structure) with the skill it consulted, the rule or advice
-it took from it, and what it did with it (track, value, code). Only skills whose content was actually loaded for that
-message can appear there, so a rule can't be made up from a skill's name. Click a skill to open it.
-
-While **Maestro is thinking…**, a faint grey **Thinking** line shows what it is doing, like a typical coding harness:
-reading your song, which skills it picked and why, who it is asking, and Claude's own reasoning as it streams.
-Click it to unfold; after the answer it stays under the message as **Reasoning**. With an Anthropic API key it uses
-adaptive thinking with summarized display; with your Claude subscription it reads the `claude` CLI's `stream-json`
-output; OpenAI-compatible models show `reasoning_content` when they return it. Providers that don't share their
-reasoning show only the steps.
-
-| How I decided | Reasoning |
-|---|---|
-| ![How I decided](docs/screenshots/skills-decisions.png) | ![Reasoning](docs/screenshots/reasoning.png) |
 
 ### Plugins
 
@@ -386,6 +411,8 @@ Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).
 - **Linux without sound**: SuperCollider uses JACK. With PipeWire it starts with `pw-jack`; with classic JACK, start it first.
 - **macOS asks for microphone permission** for SuperCollider: accept it (it needs it to open audio).
 - **Windows: "Haskell se está terminando de instalar en otra ventana"** (Haskell is finishing installing in another window): wait until it finishes and run `install.bat` again.
+- **Maestro doesn't answer with Claude**: open **Settings → Diagnostics**. It tells you which step fails (command not found,
+  not signed in, model not accepted…) and how to fix it; **Test models** shows which models work.
 - **Port in use**: `./start.sh --port 9000`.
 
 ## Server options
