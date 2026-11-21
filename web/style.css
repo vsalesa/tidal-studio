@@ -878,3 +878,9 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .diag-models tr.ok code { color: #2e7d32; }
 dialog label.check { display: flex; gap: 8px; align-items: center; }
 dialog label.check input { display: inline-block; width: auto; margin: 0; }
+#cc-detect { margin: 10px 0; padding: 8px 10px; border-radius: 8px; background: var(--paper-2, #faf7f0); border: 1px dashed var(--line, #ddd); }
+#cc-detect .row { gap: 8px; align-items: center; flex-wrap: wrap; }
+#cc-detect-table { width: 100%; font-size: 12.5px; border-collapse: collapse; margin-top: 6px; }
+#cc-detect-table th { text-align: left; font-weight: 500; padding: 2px 8px 2px 0; white-space: nowrap; vertical-align: top; }
+#cc-detect-table td { padding: 2px 6px; overflow-wrap: anywhere; vertical-align: top; }
+#cc-auto { margin: 6px 0 0; }
