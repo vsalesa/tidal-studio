@@ -37,7 +37,7 @@ if ! ls "$RT"/SuperCollider/sclang.exe >/dev/null 2>&1; then
   log "SuperCollider"
   ASSETS="$(gh api repos/supercollider/supercollider/releases/latest --jq '.assets[].browser_download_url')"
   echo "$ASSETS"
-  ZIP="$(echo "$ASSETS" | grep -iE 'x64.*\.zip$' | grep -viE 'legacy|xp' | head -1 || true)"
+  ZIP="$(echo "$ASSETS" | grep -iE '(win64|x64).*\.zip$' | grep -viE 'legacy|xp' | head -1 || true)"
   EXE="$(echo "$ASSETS" | grep -iE 'x64.*\.exe$' | grep -viE 'legacy|xp' | head -1 || true)"
   rm -rf "$RT/SuperCollider" "$WORK/sc"
   mkdir -p "$WORK/sc"

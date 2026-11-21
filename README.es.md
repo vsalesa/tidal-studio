@@ -288,6 +288,22 @@ Aún no está firmado por Apple, así que la primera vez macOS lo bloquea: ve a
 Instala el motor en `/Users/Shared/TidalStudio` (unos 3 GB) y no toca el SuperCollider, Haskell o Python que ya tengas.
 Cómo se construye: [packaging/README.md](packaging/README.md).
 
+### Windows: el instalador con todo dentro
+
+Descarga `TidalStudio-…-Windows-x64-Setup.exe` de la
+[última versión](https://github.com/vsalesa/tidal-studio/releases/latest) y ejecútalo. También lleva todo dentro y se
+instala en `C:\TidalStudio`. Abre **Tidal Studio** desde el menú Inicio o el escritorio: el estudio se abre en su propia
+ventana (Microsoft Edge en modo app, sin pestañas ni barra de direcciones) y **sin consola**, y al cerrar esa ventana
+se paran SuperCollider y Tidal. Aún no está firmado, así que SmartScreen puede decir «Windows protegió su PC»: pulsa
+**Más información → Ejecutar de todas formas**. Registro: `%LOCALAPPDATA%\Tidal Studio\logs\studio.log`.
+
+### Linux (Ubuntu 22.04+, Debian 12+): el paquete .deb
+
+Descarga `tidal-studio_…_amd64.deb` de la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest) e
+instálalo con `sudo apt install ./tidal-studio_*_amd64.deb` (apt instala también el SuperCollider de tu distribución).
+Abre **Tidal Studio** desde el menú de aplicaciones: se abre en su propia ventana GTK y al cerrarla se para todo. Con
+PipeWire, instala `pipewire-jack` para que SuperCollider suene. Registro: `~/.local/share/tidal-studio/logs/studio.log`.
+
 ### Desde la carpeta del código (Windows, Linux o Mac)
 
 Descarga o clona esta carpeta y:

@@ -27,11 +27,29 @@ The installers built here contain **everything** Tidal Studio needs, so installi
   script in Terminal and opens your browser, for troubleshooting only.
 - The `.pkg` marks its bundles as non-relocatable, so an existing SuperCollider.app on the Mac is never touched.
 
+## Windows (Setup.exe)
+
+`packaging/windows/build.sh` (Git Bash on a Windows runner) builds the runtime in `C:\TidalStudio`: Python
+(python-build-standalone), SuperCollider (official win64 zip), GHC (official MinGW bindist, which brings its own C
+toolchain) + Tidal via cabal, SuperDirt + sounds. Inno Setup (`TidalStudio.iss`) packs it; the installer always installs
+to `C:\TidalStudio` because GHC stores absolute paths. The shortcuts run `pythonw.exe bin\launcher.py`
+(`packaging/common/launcher.py`): no console, server in the background, the studio in Microsoft Edge's app mode with
+its own profile (so the window is its own process), and when that window closes the server is stopped through
+`/api/shutdown`; a Windows job object kills anything left. User data: `%LOCALAPPDATA%\Tidal Studio`.
+
+## Linux (.deb)
+
+`packaging/linux/build.sh` builds the runtime in `/opt/tidal-studio` (Python, GHC + Tidal, SuperDirt + sounds) and
+packs a `.deb`. SuperCollider comes from the distribution (`Depends: supercollider-language, supercollider-server`),
+because it links against the system's Qt and audio. The menu entry runs the same launcher, which opens a GTK + WebKit
+window (`tidal-studio-window.py`, run with the system Python and `python3-gi`), or Chromium in app mode, or a small
+control window plus the browser. User data: `~/.local/share/tidal-studio`.
+
 ## GitHub Action
 
 `.github/workflows/installers.yml` ("Offline installers"):
 
-1. builds the `.pkg` (Apple Silicon always; Intel on tags or when asked),
+1. builds the `.pkg` (Apple Silicon always; Intel on tags or when asked), the Windows `Setup.exe` and the Linux `.deb`,
 2. moves the build folder away, **installs the `.pkg`** and runs `packaging/common/smoke_test.py`, which boots
    Tidal in GHCi and evaluates patterns, and loads SuperDirt in sclang, all from the installed copy,
 3. opens the installed app with `--self-test` (it starts the studio, loads it in its window and quits) and checks
