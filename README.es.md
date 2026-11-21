@@ -302,6 +302,25 @@ skills de música con licencia abierta (live coding con Tidal, recetas de Strude
 marcar una como «Cargar siempre», leerla o instalar otra pegando su enlace de GitHub. Debajo de cada respuesta de Maestro
 ves qué skills se cargaron para ese mensaje y cuáles usó de verdad. Detalles y fuentes: [skills/README.md](skills/README.md).
 
+### Cómo decide Maestro, y su razonamiento
+
+Cada respuesta que se ha apoyado en una skill empieza con **Cómo lo he decidido**: una fila por decisión musical
+(estilo, ritmo, tempo, bajo, armonía, melodía, instrumentos, efectos, mezcla, estructura) con la skill que consultó,
+la regla o el consejo que sacó de ella y lo que hizo con él (pista, valor, código). Solo pueden salir skills cuyo
+contenido se cargó de verdad para ese mensaje, así que no puede inventarse una regla a partir del nombre. Pulsa una
+skill para abrirla.
+
+Mientras sale **Maestro está pensando…**, una línea gris muy tenue, **Pensando**, enseña qué está haciendo, como en un
+harness de programación: lee tu canción, qué skills ha elegido y por qué, a quién pregunta y el razonamiento de Claude
+según llega. Púlsala para desplegarla; después de la respuesta se queda debajo del mensaje como **Razonamiento**. Con
+clave de API de Anthropic usa el thinking adaptativo en modo resumido; con tu suscripción de Claude lee la salida
+`stream-json` del comando `claude`; los modelos compatibles con OpenAI enseñan su `reasoning_content` si lo devuelven.
+Los proveedores que no comparten su razonamiento solo muestran los pasos.
+
+| Cómo lo he decidido | Razonamiento |
+|---|---|
+| ![Cómo lo he decidido](docs/screenshots/es/decisiones-skills.png) | ![Razonamiento](docs/screenshots/es/razonamiento.png) |
+
 ### Plugins
 
 El mismo cuadro instala también **plugins de Claude Code** (un repositorio con `.claude-plugin/plugin.json`) y
