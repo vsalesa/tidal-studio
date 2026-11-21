@@ -90,6 +90,10 @@ def session_summary(session):
     if samples:
         lines.append("Samples propios del alumno en su biblioteca (puedes usarlos con s \"nombre\" o s \"nombre:n\"; propónselos cuando encajen): "
                      + ", ".join(f'{x.get("name")} ({x.get("type")}, {x.get("n")} variantes)' for x in samples[:40] if isinstance(x, dict)))
+    loops_lines = [str(x)[:400] for x in (session.get("loops_lines") or [])][:30]
+    if loops_lines:
+        from loops import LOOPS_PROMPT
+        lines.append(LOOPS_PROMPT.format(lista="\n".join(loops_lines)))
     descartadas = [str(x)[:160] for x in (session.get("ideas_descartadas") or []) if x][:25]
     if descartadas:
         lines.append("Ideas que el alumno DESCARTÓ porque no le gustaron (no vuelvas a proponerlas ni otras casi iguales; busca otro camino): "
@@ -124,6 +128,7 @@ SAMPLES DE INTERNET (activado): si a la canción le vendría bien un sonido que 
 - "nombre": cómo se llamará en Tidal (minúsculas, letras, números y _; distinto de los nombres de Dirt-Samples). Úsalo tal cual en tu código: s "cencerro*2", n "0 3" # s "cencerro".
 - "busqueda": 1-3 palabras EN INGLÉS para buscar (cowbell, vinyl crackle, rain loop, marimba, tubular bells).
 - "duracion": "golpe" (un golpe corto) o "loop" (textura o bucle largo).
+- Para un LOOP (una base de batería, un bajo, una melodía grabada) añade "bpm" (el tempo de la canción) y, si es melódico, "tonalidad" ("A minor"): la app busca uno a ese tempo, lo analiza al descargarlo (BPM, compases, trozos) y ajusta tu código con loopAt. Escríbelo ya como loop: «loopAt 2 $ chop 16 $ s "base" # cut 1».
 - "alternativa": un sonido de Dirt-Samples parecido; la app lo usa si no encuentra nada, para que no quede en silencio.
 - Pide como mucho 2 sonidos por respuesta y solo cuando aporten algo que no se consigue con lo que hay. Vale también dentro de "variantes" (una opción puede usar un sonido descargado). En el mensaje, cuéntale que lo vas a buscar en internet.
 - Si el alumno ya tiene un sonido con ese nombre en su biblioteca, úsalo sin pedirlo otra vez."""

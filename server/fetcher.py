@@ -132,15 +132,38 @@ def search_packs(query, limit=3):
     return out
 
 
-def search_freesound(lib, key, api, query, loop=False, limit=3):
+def _loop_rank(r, bpm, key):
+    """Para loops: mejor cuanto más cerca del tempo (y la tonalidad) de la canción, según nombre y etiquetas."""
+    from loops import name_hints
+    h = name_hints(f'{r.get("name", "")} {" ".join(r.get("tags") or [])}')
+    score = 0.0
+    if bpm and h.get("bpm"):
+        b = h["bpm"]
+        ratio = min(abs(b - bpm), abs(b * 2 - bpm), abs(b / 2 - bpm)) / bpm  # medio o doble tempo también encaja
+        score += max(0.0, 1 - ratio * 8)
+    if key and h.get("key"):
+        score += 0.5 if h["key"].lower() == str(key).lower() else 0
+    return score
+
+
+def search_freesound(lib, key, api, query, loop=False, limit=3, bpm=None, tonality=None):
     if not key:
         return []
+    if loop and "loop" not in query.lower():
+        query = f"{query} loop"
     try:
         res = lib.freesound_search(key, query, "libre", not loop, 1, api)
     except SampleError:
         return []
+    results = res.get("results", [])
+    if loop and (bpm or tonality):
+        try:
+            bpm = float(bpm) if bpm else None
+        except (TypeError, ValueError):
+            bpm = None
+        results = sorted(results, key=lambda r: -_loop_rank(r, bpm, tonality))
     out = []
-    for r in res.get("results", [])[:limit]:
+    for r in results[:limit]:
         if r.get("license_name") not in ("CC0", "CC BY") or not r.get("preview_ogg"):
             continue
         out.append({"source": "freesound", "title": r["name"], "author": r["author"], "license": r["license"],
@@ -169,7 +192,8 @@ def candidates(lib, cfg, req):
     loop = str(req.get("duracion") or "").lower() in ("loop", "largo", "long", "textura", "ambiente")
     sc = cfg.get("samples") or {}
     packs = search_packs(q)
-    fs = search_freesound(lib, sc.get("freesound_key"), sc.get("freesound_api") or "https://freesound.org/apiv2", q, loop)
+    fs = search_freesound(lib, sc.get("freesound_key"), sc.get("freesound_api") or "https://freesound.org/apiv2", q, loop,
+                          bpm=req.get("bpm"), tonality=req.get("tonalidad"))
     strong = [p for p in packs if p["score"] >= 2.4 * max(1, len(_tokens(q)))]
     # Packs que encajan de lleno primero (instrumentos y baterías bien grabados), luego Freesound, luego el resto
     order = strong + fs + [p for p in packs if p not in strong]

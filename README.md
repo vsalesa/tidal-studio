@@ -282,6 +282,37 @@ options to audition. Turn it off with **Web samples** above the chat. Without AI
 |---|---|
 | ![Maestro downloaded a cowbell and a vinyl crackle](docs/screenshots/web-samples.png) | ![Asking before downloading a grand piano](docs/screenshots/web-samples-ask.png) |
 
+### Long loops: a library that knows what to do with them
+
+Downloaded full loops (a 4-bar reggaeton beat, a bassline, a piano riff) are not hits: in Tidal they have to be stretched
+to your tempo or they drift and overlap. Open the library on **Long loops** and **drop your loops anywhere in the studio**:
+single files, **whole folders** or a **.zip** with a pack (WAV, AIFF, FLAC, OGG, MP3), with a progress bar. Each loop
+becomes its own sound, is loaded into SuperDirt right away and is **analysed**: tempo (from the file name, «95BPM», or by
+listening to the beats), number of bars, key (for tonal loops), type (drums, bass, melody, chords, vocals, texture) and
+where each hit lands (kick, snare or hats). If something is detected wrong, fix the BPM, bars, key or type by hand.
+
+Every loop shows its waveform, its tags and how it fits your song («already at your tempo», «+6% speed, +0.9 semitones»
+or «half-time»), and is sorted by how close it is to your tempo. **Listen** plays it in the browser at your song's tempo.
+**Add as track** writes the right code for you, and the scissors open four ways to use it, each with its explanation:
+
+- **At tempo**: `loopAt 4 $ chop 32 $ s "dembow" # cut 1`. `loopAt` makes it last exactly 4 cycles (bars) of your song,
+  `chop` keeps it in sync even if you start halfway, and `# cut 1` stops one pass from overlapping the next.
+- **Variations** so it doesn't repeat: `splice 16 "<[0 1 … 15]!2 [… [12 12] [13 13] …] […]>"` plays the original twice,
+  then a fill and a version with swapped slices.
+- **A section**: pick bars and get `# begin 0.25 # end 0.5`.
+- **Slices**: click the slices (coloured by what they hold: kick, snare, hats) to hear them and build your own order.
+
+**Maestro knows your loops** with their tempo, bars, key and hits, and gets the code ready to use. If it ever writes a loop
+«bare» (`s "dembow"`), the studio adds `loopAt` and `# cut 1` for it. When it downloads a loop from the internet it asks
+for one at your song's tempo (and key), analyses it as soon as it lands and fits it to the tempo. «Find loops in my
+library» analyses long sounds you already had. Without ffmpeg, MP3/OGG files are decoded by the browser for the analysis.
+
+| Drop loops, files, folders or a zip | Variations so it doesn't repeat |
+|---|---|
+| ![Long loops loaded and analysed](docs/screenshots/loops-loader.png) | ![Variations with splice](docs/screenshots/loops-variations.png) |
+| **Build your own order with the slices** | **In the song, at your tempo** |
+| ![Slices view](docs/screenshots/loops-slices.png) | ![Loops as tracks](docs/screenshots/loops-track.png) |
+
 ### Skills and plugins
 
 Maestro loads music **skills** (`SKILL.md`, the same format as Claude's Agent Skills) and shows under each answer which
@@ -544,6 +575,10 @@ Studio downloads Freesound's high-quality OGG preview, which SuperCollider reads
 
 Maestro can also download sounds by itself while you chat ([see above](#maestro-downloads-the-sounds-it-needs)). Small ones
 download straight away; packs over 16 files or about 8 MB wait for your OK. Turn it off with **Web samples** above the chat.
+
+Long loops ([see above](#long-loops-a-library-that-knows-what-to-do-with-them)) are analysed when they arrive and their
+tempo, bars, key, type and hits are saved in `samples/library.json`. Analysis uses only Python's standard library for WAV
+and AIFF; MP3, OGG, FLAC and M4A use `ffmpeg` if it is installed, otherwise the browser decodes them.
 
 Optional drum machines: `git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines`
 (loaded automatically on the next start).

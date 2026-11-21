@@ -287,6 +287,38 @@ escribe «descarga un sample de marimba».
 |---|---|
 | ![Maestro descargó un cencerro y crujido de vinilo](docs/screenshots/es/samples-web.png) | ![Pregunta antes de descargar un piano de cola](docs/screenshots/es/samples-web-permiso.png) |
 
+### Loops largos: una biblioteca que sabe qué hacer con ellos
+
+Los loops completos que descargas (una base de reggaetón de 4 compases, un bajo, un riff de piano) no son golpes: en Tidal
+hay que estirarlos a tu tempo o se desfasan y se pisan. Abre la biblioteca en **Loops largos** y **suelta tus loops en
+cualquier parte del estudio**: archivos sueltos, **carpetas enteras** o un **.zip** con un pack (WAV, AIFF, FLAC, OGG,
+MP3), con barra de progreso. Cada loop pasa a ser un sonido, se carga en SuperDirt al momento y se **analiza**: tempo (del
+nombre del archivo, «95BPM», o escuchando los golpes), número de compases, tonalidad (si es melódico), tipo (batería,
+bajo, melodía, acordes, voz, textura) y dónde cae cada golpe (bombo, caja o platos). Si algo sale mal detectado, corriges
+a mano el BPM, los compases, la tonalidad o el tipo.
+
+Cada loop enseña su forma de onda, sus etiquetas y cómo encaja en tu canción («ya va a tu tempo», «+6% de velocidad,
++0.9 semitonos» o «a medio tempo»), ordenados por cercanía a tu tempo. **Escuchar** lo toca en el navegador al tempo de tu
+canción. **Añadir como pista** escribe el código correcto, y las tijeras abren cuatro formas de usarlo, cada una explicada:
+
+- **Al tempo**: `loopAt 4 $ chop 32 $ s "dembow" # cut 1`. `loopAt` hace que dure justo 4 ciclos (compases) de tu
+  canción, `chop` lo mantiene sincronizado aunque empieces a mitad y `# cut 1` evita que una vuelta se pise con la siguiente.
+- **Variaciones** para no repetir: `splice 16 "<[0 1 … 15]!2 [… [12 12] [13 13] …] […]>"` toca dos veces el original,
+  luego un relleno y una versión con trozos cambiados.
+- **Un trozo**: eliges compases y sale `# begin 0.25 # end 0.5`.
+- **Trozos**: pulsas los trozos (con color según lo que tienen: bombo, caja, platos) para oírlos y montar tu propio orden.
+
+**Maestro conoce tus loops** con su tempo, compases, tonalidad y golpes, y recibe el código listo. Si alguna vez escribe
+un loop «a pelo» (`s "dembow"`), el estudio le añade `loopAt` y `# cut 1`. Cuando descarga un loop de internet lo pide al
+tempo (y la tonalidad) de tu canción, lo analiza en cuanto llega y lo ajusta al tempo. «Buscar loops en mi biblioteca»
+analiza los sonidos largos que ya tenías. Sin ffmpeg, los MP3/OGG los decodifica el navegador para el análisis.
+
+| Suelta loops: archivos, carpetas o un zip | Variaciones para no repetir |
+|---|---|
+| ![Loops largos cargados y analizados](docs/screenshots/es/loops-cargador.png) | ![Variaciones con splice](docs/screenshots/es/loops-variaciones.png) |
+| **Monta tu propio orden con los trozos** | **En la canción, a tu tempo** |
+| ![Vista de trozos](docs/screenshots/es/loops-trozos.png) | ![Loops como pistas](docs/screenshots/es/loops-pista.png) |
+
 ### Skills y plugins
 
 Maestro carga **skills** de música (`SKILL.md`, el mismo formato que las Agent Skills de Claude) y debajo de cada
@@ -553,6 +585,10 @@ online). Tidal Studio descarga la vista previa OGG de alta calidad de Freesound,
 
 Maestro también puede descargar sonidos él solo mientras chateas ([ver arriba](#maestro-descarga-los-sonidos-que-necesita)). Los
 pequeños se bajan al momento; los packs de más de 16 archivos o unos 8 MB esperan a que digas que sí. Se apaga con **Samples web** encima del chat.
+
+Los loops largos ([ver arriba](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos)) se analizan al llegar y su
+tempo, compases, tonalidad, tipo y golpes se guardan en `samples/library.json`. El análisis usa solo la biblioteca estándar
+de Python para WAV y AIFF; MP3, OGG, FLAC y M4A usan `ffmpeg` si está instalado y, si no, los decodifica el navegador.
 
 Cajas de ritmos opcionales: `git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines`
 (se cargan solas en el siguiente arranque).

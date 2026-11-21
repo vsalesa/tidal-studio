@@ -61,6 +61,7 @@ def guess_type(name):
 
 class Library:
     def __init__(self, root):
+        self.on_add = None  # se llama tras añadir cada archivo (el análisis de loops, ver loops.py)
         self.dir = os.path.join(root, "samples")
         self.meta_path = os.path.join(self.dir, "library.json")
 
@@ -121,15 +122,15 @@ class Library:
         return os.path.join(p, files[index])
 
     # -------------------------------------------------------------- cambios
-    def add_file(self, name, filename, data, stype=None, info=None):
+    def add_file(self, name, filename, data, stype=None, info=None, max_bytes=30 * 1024 * 1024):
         name = safe_name(name)
         if not name:
             raise SampleError("Pon un nombre al sonido (letras y números)")
         base, ext = os.path.splitext(os.path.basename(filename or "sample.wav"))
         if ext.lower() not in AUDIO_EXT:
             raise SampleError("Formato no soportado: usa WAV, AIFF, FLAC u OGG")
-        if len(data) > 30 * 1024 * 1024:
-            raise SampleError("El archivo es demasiado grande (máx. 30 MB)")
+        if len(data) > max_bytes:
+            raise SampleError(f"El archivo es demasiado grande (máx. {max_bytes // (1024 * 1024)} MB)")
         fname = (re.sub(r"[^A-Za-z0-9_.-]+", "-", base).strip("-") or "sample")[:60] + ext.lower()
         with _lock:
             d = os.path.join(self.dir, name)
@@ -144,14 +145,21 @@ class Library:
                 s["source"] = info.get("source", s.get("source"))
                 s["files_meta"] = [x for x in s.get("files_meta", []) if x.get("file") != fname] + [{"file": fname, **info}]
             self._save_meta(meta)
-        return {"name": name, "file": fname}
+        out = {"name": name, "file": fname}
+        if self.on_add:
+            try:
+                out["loop"] = self.on_add(name, fname, info or {})
+            except Exception as e:  # noqa: BLE001  un análisis fallido no impide añadir el sonido
+                print(f"[loops] {fname}: {e}")
+        return out
 
     def set_type(self, name, stype):
         if stype not in TYPES:
             raise SampleError("Tipo desconocido")
         with _lock:
             meta = self._meta()
-            meta["sounds"].setdefault(safe_name(name), {"files_meta": []})["type"] = stype
+            snd = meta["sounds"].setdefault(safe_name(name), {"files_meta": []})
+            snd["type"], snd["type_user"] = stype, True
             self._save_meta(meta)
 
     def delete(self, name, index=None):
@@ -208,6 +216,7 @@ class Library:
         fname = os.path.splitext(fname)[0] + ".ogg"
         return self.add_file(name, fname, data, stype, {
             "source": "freesound", "title": title, "author": item.get("author"), "license": item.get("license"),
+            "tags": " ".join(str(t) for t in item.get("tags") or [])[:200], "duration": item.get("duration"),
             "license_name": item.get("license_name") or license_name(item.get("license", "")), "url": item.get("url")})
 
 
