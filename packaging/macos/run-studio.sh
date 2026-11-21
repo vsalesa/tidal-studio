@@ -9,7 +9,7 @@ RT="/Users/Shared/TidalStudio"
 DATA="$HOME/Library/Application Support/Tidal Studio"
 mkdir -p "$DATA/app/samples"
 # refresh the program files, never touching your settings, samples or recordings
-rsync -a --exclude config.json --exclude samples --exclude recordings "$RT/app/" "$DATA/app/"
+rsync -a --exclude config.json --exclude samples --exclude recordings --exclude my-plugins --exclude my-skills "$RT/app/" "$DATA/app/"
 chmod -R u+w "$DATA/app" 2>/dev/null
 
 export TIDAL_GHCI="$RT/ghc/bin/ghci"
