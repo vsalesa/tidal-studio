@@ -12,7 +12,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 **Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) · [Maestro's options](#hear-maestros-options-and-pick-one) ·
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
-[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) ·
+[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
 [AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Save and share](#save-export-and-share) ·
 [Installation](#installation-once)
@@ -264,6 +264,24 @@ engine. In your own samples you see the **waveform**, drag to choose a piece, li
 | **Search Freesound by license** | **Waveform and trimming** |
 | ![Search online](docs/screenshots/samples-online.png) | ![Trim](docs/screenshots/sample-trim.png) |
 
+### Maestro downloads the sounds it needs
+
+If your song would sound better with something you don't have yet (a real cowbell, a vinyl crackle, a marimba, a grand
+piano…), **Maestro looks it up on the internet by itself**. It only picks sounds with free licenses: community packs
+(VCSL CC0, Uzu drumkit public domain, Salamander piano CC BY, mridangam CC BY-SA, no key needed) and, if you added a free
+key, Freesound (CC0 and CC BY). It downloads the sound, writes the credits to `samples/CREDITS.md`, loads it into
+SuperDirt and uses it in the code, all before the answer reaches you. The chat shows what it downloaded: its name in
+Tidal, where it comes from, the license, a **Listen** button and **Another sound** to swap it for the next result.
+
+Big packs (many files or several MB, like a whole piano) are not downloaded without asking: press **Download** or just
+answer «download it». If nothing with a free license turns up, Maestro uses a similar sound you already have so the song
+keeps playing. It works with every AI provider (it is part of Maestro's answer, not a feature of one AI) and inside the
+options to audition. Turn it off with **Web samples** above the chat. Without AI, write «download a marimba sample».
+
+| Downloaded and already playing | Big pack: Maestro asks first |
+|---|---|
+| ![Maestro downloaded a cowbell and a vinyl crackle](docs/screenshots/web-samples.png) | ![Asking before downloading a grand piano](docs/screenshots/web-samples-ask.png) |
+
 ### Skills and plugins
 
 Maestro loads music **skills** (`SKILL.md`, the same format as Claude's Agent Skills) and shows under each answer which
@@ -313,13 +331,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.5.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.6.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.5.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.5.0/TidalStudio-0.5.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.5.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.5.0/TidalStudio-0.5.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.5.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.5.0/tidal-studio_0.5.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.6.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.6.0/TidalStudio-0.6.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.6.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.6.0/TidalStudio-0.6.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.6.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.6.0/tidal-studio_0.6.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Interactive tutorial
 
@@ -523,6 +541,9 @@ Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`,
 SuperDirt loads them on start and reloads them when you add or delete something. For Freesound, get a free API key at
 [freesound.org/apiv2/apply](https://freesound.org/apiv2/apply) and paste it in the library (Search online tab). Tidal
 Studio downloads Freesound's high-quality OGG preview, which SuperCollider reads directly.
+
+Maestro can also download sounds by itself while you chat ([see above](#maestro-downloads-the-sounds-it-needs)). Small ones
+download straight away; packs over 16 files or about 8 MB wait for your OK. Turn it off with **Web samples** above the chat.
 
 Optional drum machines: `git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines`
 (loaded automatically on the next start).

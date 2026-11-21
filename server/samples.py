@@ -282,7 +282,7 @@ def pack_index(url):
     return out
 
 
-def _install_pack_sound(lib, url, sound, name, stype):
+def _install_pack_sound(lib, url, sound, name, stype, extra=None):
     idx = pack_index(url)
     snd = next((x for x in idx["sounds"] if x["name"] == sound), None)
     if not snd:
@@ -296,11 +296,11 @@ def _install_pack_sound(lib, url, sound, name, stype):
         if total > 80 * 1024 * 1024:
             break
         fname = urllib.parse.unquote(f.rsplit("/", 1)[-1])
-        out = lib.add_file(name or sound, fname, data, stype, {"source": "pack", "title": sound, "url": f, "pack": idx["url"]})
+        out = lib.add_file(name or sound, fname, data, stype, {"source": "pack", "title": sound, "url": f, "pack": idx["url"], **(extra or {})})
     return {"name": out["name"], "files": len(files)}
 
 
-Library.pack_install = lambda self, url, sound, name, stype: _install_pack_sound(self, url, sound, name, stype)
+Library.pack_install = lambda self, url, sound, name, stype, extra=None: _install_pack_sound(self, url, sound, name, stype, extra)
 
 
 def license_name(url):

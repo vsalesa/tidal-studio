@@ -12,7 +12,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 **Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) · [Opciones de Maestro](#escucha-las-opciones-de-maestro-y-elige-una) ·
 [Ayuda con tu código](#ayuda-con-tu-código-y-paleta-de-código) · [Bloques y resaltado en directo](#vista-de-bloques-y-resaltado-en-directo) ·
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) · [Arreglo](#arreglo) ·
-[Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) ·
+[Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) · [Maestro descarga sonidos](#maestro-descarga-los-sonidos-que-necesita) ·
 [Skills y plugins](#skills-y-plugins) · [Cómo decide Maestro](#cómo-decide-maestro-y-su-razonamiento) ·
 [Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
 [Instalación](#instalación-una-sola-vez)
@@ -268,6 +268,25 @@ un trozo, lo escuchas y lo usas (`# begin … # end …`). Maestro conoce tu bib
 | **Buscar en Freesound por licencia** | **Forma de onda y recorte** |
 | ![Buscar online](docs/screenshots/es/samples-online.png) | ![Recorte](docs/screenshots/es/recorte-samples.png) |
 
+### Maestro descarga los sonidos que necesita
+
+Si tu canción sonaría mejor con algo que aún no tienes (un cencerro de verdad, crujido de vinilo, una marimba, un piano
+de cola…), **Maestro lo busca en internet él solo**. Solo elige sonidos con licencia libre: packs de la comunidad (VCSL
+CC0, Uzu drumkit de dominio público, piano Salamander CC BY, mridangam CC BY-SA, sin clave) y, si has puesto una clave
+gratuita, Freesound (CC0 y CC BY). Descarga el sonido, apunta los créditos en `samples/CREDITS.md`, lo carga en SuperDirt
+y lo usa en el código, todo antes de que te llegue la respuesta. En el chat ves qué ha descargado: su nombre en Tidal, de
+dónde viene, la licencia, un botón **Escuchar** y **Otro sonido** para cambiarlo por el siguiente resultado.
+
+Los paquetes grandes (muchos archivos o varios MB, como un piano entero) no se bajan sin preguntarte: pulsa
+**Descargar** o contesta «descárgalo». Si no aparece nada con licencia libre, Maestro usa un sonido parecido que ya
+tienes para que la canción siga sonando. Funciona con cualquier proveedor de IA (va dentro de la respuesta de Maestro, no
+depende de una IA concreta) y también en las opciones para escuchar. Se apaga con **Samples web**, encima del chat. Sin IA,
+escribe «descarga un sample de marimba».
+
+| Descargado y ya sonando | Paquete grande: Maestro pregunta antes |
+|---|---|
+| ![Maestro descargó un cencerro y crujido de vinilo](docs/screenshots/es/samples-web.png) | ![Pregunta antes de descargar un piano de cola](docs/screenshots/es/samples-web-permiso.png) |
+
 ### Skills y plugins
 
 Maestro carga **skills** de música (`SKILL.md`, el mismo formato que las Agent Skills de Claude) y debajo de cada
@@ -319,13 +338,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.5.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.6.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.5.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.5.0/TidalStudio-0.5.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.5.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.5.0/TidalStudio-0.5.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.5.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.5.0/tidal-studio_0.5.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.6.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.6.0/TidalStudio-0.6.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.6.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.6.0/TidalStudio-0.6.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.6.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.6.0/tidal-studio_0.6.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tutorial interactivo
 
@@ -531,6 +550,9 @@ Tus sonidos viven en `samples/<nombre>/` (cada carpeta es un sonido de Tidal: `s
 archivo). SuperDirt los carga al arrancar y los recarga cuando añades o borras algo. Para Freesound, pide una clave API
 gratuita en [freesound.org/apiv2/apply](https://freesound.org/apiv2/apply) y pégala en la biblioteca (pestaña Buscar
 online). Tidal Studio descarga la vista previa OGG de alta calidad de Freesound, que SuperCollider lee directamente.
+
+Maestro también puede descargar sonidos él solo mientras chateas ([ver arriba](#maestro-descarga-los-sonidos-que-necesita)). Los
+pequeños se bajan al momento; los packs de más de 16 archivos o unos 8 MB esperan a que digas que sí. Se apaga con **Samples web** encima del chat.
 
 Cajas de ritmos opcionales: `git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines`
 (se cargan solas en el siguiente arranque).

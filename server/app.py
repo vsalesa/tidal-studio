@@ -26,7 +26,8 @@ from timeline import TimelineQuery  # noqa: E402
 from llm import chat_completion, LLMError, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix,
-                       variants_on)  # noqa: E402
+                       variants_on, fetch_on)  # noqa: E402
+import fetcher  # noqa: E402
 import github  # noqa: E402
 import skills as skillset  # noqa: E402
 import plugins as pluginset  # noqa: E402
@@ -206,6 +207,26 @@ DEFAULT_PLUGINS = {"state": "idle", "installed": []}
 # pasos (skills cargadas, a quién pregunta…) y el razonamiento de la IA, si el proveedor lo da.
 TRACES = {}
 _traces_lock = threading.Lock()
+
+
+def fetch_samples(cfg, reply, sess, tr):
+    """Maestro ha pedido sonidos de internet: se buscan y, si son pequeños, se descargan ya."""
+    def log(name, q):
+        tr.add("step", tr.L(f"Busco en internet un sonido para «{name}»: {q}", f"Searching the internet for a «{name}» sound: {q}"))
+    auto = sess.get("descargas", True) != "preguntar"
+    items = fetcher.resolve(LIBRARY, ENGINE, cfg, reply["descargar"], auto=auto, log=log)
+    for it in items:
+        c = (it.get("candidatos") or [{}])[0]
+        msg = {"descargado": tr.L(f"Descargado «{it['nombre']}» de {c.get('pack_name') or 'Freesound'} ({c.get('license_name')}) y cargado en SuperDirt",
+                                  f"Downloaded «{it['nombre']}» from {c.get('pack_name') or 'Freesound'} ({c.get('license_name')}) and loaded it into SuperDirt"),
+               "permiso": tr.L(f"«{it['nombre']}» es grande ({c.get('files')} archivos): te pido permiso antes de descargarlo",
+                               f"«{it['nombre']}» is big ({c.get('files')} files): asking you before downloading it"),
+               "nada": tr.L(f"No encuentro «{it['busqueda']}» con licencia libre", f"Couldn't find «{it['busqueda']}» with a free license"),
+               "ya": tr.L(f"«{it['nombre']}» ya está en tu biblioteca", f"«{it['nombre']}» is already in your library"),
+               "error": tr.L(f"No he podido descargar «{it['nombre']}»: {it.get('error')}", f"Couldn't download «{it['nombre']}»: {it.get('error')}")}
+        tr.add("step", msg.get(it.get("estado"), ""))
+    fetcher.apply_fallbacks(reply, items)
+    return items
 
 
 class Trace:
@@ -591,9 +612,12 @@ class Handler(SimpleHTTPRequestHandler):
                                           max_tokens=3500 if variants_on(sess) else 1800,
                                           on_event=tr.add if tr.id else None)
                     tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
+                    reply = parse_reply(raw)
+                    if reply.get("descargar") and fetch_on(sess):
+                        reply["descargas"] = fetch_samples(cfg, reply, sess, tr)
                 finally:
                     tr.finish()
-                return self._json({**parse_reply(raw), "skills": skills_report(sk, raw),
+                return self._json({**reply, "skills": skills_report(sk, raw),
                                    **({"command": command} if command else {}),
                                    **({"trace": tr.public()} if tr.id else {})})
 
@@ -652,6 +676,11 @@ class Handler(SimpleHTTPRequestHandler):
                                                  data.get("type") if data.get("type") in SAMPLE_TYPES else None)
                         r["loaded"] = ENGINE.reload_sample(os.path.join(LIBRARY.dir, safe_name(r["name"])), safe_name(r["name"]))
                         return self._json(r)
+                    if act == "find":
+                        # Buscar sin descargar (la guía sin IA y «buscar otro»)
+                        return self._json({"descargas": fetcher.resolve(LIBRARY, ENGINE, cfg, [data], auto=bool(data.get("auto")))})
+                    if act == "fetch":
+                        return self._json(fetcher.install_choice(LIBRARY, ENGINE, cfg, data.get("name"), data.get("choice"), bool(data.get("replace"))))
                     if act == "search":
                         return self._json(LIBRARY.freesound_search(sc["freesound_key"], data.get("query", ""), data.get("license", "libre"),
                                                                    data.get("oneshot", True), int(data.get("page") or 1), sc["freesound_api"]))
