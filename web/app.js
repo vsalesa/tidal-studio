@@ -14,7 +14,7 @@ import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
 import { songBlocksHTML, blockInfo } from "./blocks.js";
 import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf } from "./edit.js";
-import { mixerHTML, mixCodeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
+import { mixerHTML, mixCodeHTML, mixBadgeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
 import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory } from "./history.js";
 import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
@@ -296,7 +296,7 @@ function wireArrange() {
 }
 function renderBlocks() {
   if (!$("#tab-blocks").classList.contains("active")) return;
-  $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n), uiIcon: icon,
+  $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n), uiIcon: icon, mixBadge: (t) => mixBadgeHTML(t, state, icon("mixer", 13)),
     kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)", kindName: (k) => CATEGORIES.find((c) => c.id === k)?.nombre || k });
   if (bkSel) { const el = bkFind(bkSel); if (el) { el.classList.add("on"); if (!bkSel.keep) bkOpen(el); else bkPlace(el); } else bkClose(); }
 }
@@ -435,6 +435,13 @@ function toggleFx(id, key) {
   tourFlag("fx-toggle");
 }
 // Repinta todo menos el tooltip (tras arrastrar un deslizador)
+// Abre la pestaña Mezcla y resalta la tira de esa pista
+function openMixFor(id) {
+  document.querySelector('.tab[data-tab="mixer"]')?.click();
+  renderMixer(true);
+  const strip = document.querySelector(`#mixer .mx-strip[data-id="${CSS.escape(id)}"]`);
+  if (strip) { strip.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" }); strip.classList.add("flash"); setTimeout(() => strip.classList.remove("flash"), 1600); }
+}
 function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); renderTimeline(); refreshCards(); if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode(); }
 function wireBlocks() {
   $("#blocks").addEventListener("click", (e) => {
@@ -449,6 +456,7 @@ function wireBlocks() {
       return;
     }
     if (a === "card") return openCard(tr.dataset.id);
+    if (a === "mix") { e.stopPropagation(); return openMixFor(tr.dataset.id); }
     const el = e.target.closest(".bk-step, .bk-param, .bk-src, .bk-wrap[data-key], .bk-tag, [data-key='|root']");
     if (!el) return bkClose();
     e.stopPropagation();
@@ -648,6 +656,7 @@ function renderTracks() {
       </div>
       <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="${L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")}"></textarea>
       ${fxRowHTML(t)}
+      ${mixBadgeHTML(t, state, icon("mixer", 13))}
       ${t.error ? `<div class="err ${t.errorCode && t.errorCode !== t.code ? "stale" : ""}"><button class="err-x" data-a="clear-err" title="${L("Borrar este error (ya no aplica)", "Clear this error (no longer applies)")}" aria-label="${L("Borrar error", "Clear error")}">${icon("close", 14)}</button>${t.errorCode && t.errorCode !== t.code ? `<span class="err-stale">${L("Error de una versión anterior del código. Pulsa ▶ para comprobarlo o × para borrarlo.", "Error from an earlier version of the code. Press ▶ to check it or × to clear it.")}</span>` : ""}<span class="err-txt"></span></div>` : ""}
       ${t.help && t.help.open ? `<div class="explain-box help-box">${helpHTML(t)}</div>` : ""}
       ${t.explain ? `<div class="explain-box">${t.explain.loading ? L('<span class="typing">Maestro está leyendo el código…</span>', '<span class="typing">Maestro is reading the code…</span>') : explainHTML(t.explain, true)}</div>` : ""}`;
@@ -671,6 +680,7 @@ function renderTracks() {
         save(); renderTracks(); return;
       }
       if (btn && btn.dataset.fx) return toggleFx(t.id, btn.dataset.fx);
+      if (a === "mix") return openMixFor(t.id);
       if (a === "controls") return showControls(t);
       if (a === "card") return openCard(t.id);
       if (a === "help") { t.help = t.help && t.help.open ? null : { open: true }; save(); renderTracks(); }

@@ -1046,3 +1046,15 @@ dialog label.check input { display: inline-block; width: auto; margin: 0; }
 .track .err.stale { background: var(--paper); color: var(--ink-3); border: 1px dashed var(--rule-strong); }
 .track .err.stale .err-x { color: var(--ink-3); }
 .err-stale { display: block; font-family: var(--sans, inherit); font-size: 11.5px; font-style: italic; margin-bottom: 4px; color: var(--ink-2); }
+
+/* Etiqueta de mezcla bajo cada pista (lo que añade la pestaña Mezcla al sonar) */
+.mix-badge { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; padding: 3px 10px; font-size: 12px; font-weight: 500;
+  color: var(--ink-2); background: var(--paper); border: 1px dashed var(--rule-strong); border-radius: 99px; }
+.mix-badge b { font-weight: 600; color: var(--ink); }
+.mix-badge:hover { border-style: solid; border-color: var(--teal); color: var(--teal); }
+.mix-badge .mb-m { color: var(--ink-3); }
+.mix-badge .mb-s { color: #fff; background: var(--teal); border-radius: 99px; padding: 0 7px; font-weight: 600; }
+.bk-track > .mix-badge { margin: 8px 0 0; }
+.mx-strip.flash { animation: mx-flash 1.6s ease-out; }
+@keyframes mx-flash { 0%, 40% { box-shadow: 0 0 0 3px var(--teal); } 100% { box-shadow: 0 0 0 0 transparent; } }
+.mix-badge .mb-h { color: var(--ink-3); font-size: 11px; font-style: italic; }

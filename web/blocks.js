@@ -171,7 +171,7 @@ function nodeHTML(node, path = []) {
   </div>`;
 }
 
-export function songBlocksHTML(state, { icon, uiIcon = icon, kindColor, kindName }) {
+export function songBlocksHTML(state, { icon, uiIcon = icon, kindColor, kindName, mixBadge = () => "" }) {
   const tracks = state.tracks || [];
   if (!tracks.length) return `<p class="hint">${L("Cuando añadas pistas, aquí verás tu canción montada en bloques.", "Once you add tracks, you'll see your song built out of blocks here.")}</p>`;
   const kinds = {};
@@ -193,6 +193,7 @@ export function songBlocksHTML(state, { icon, uiIcon = icon, kindColor, kindName
             <button class="icon-btn" data-a="card" title="${esc(L("Abrir su tarjeta configuradora en Maestro", "Open its configurator card in Maestro"))}">${uiIcon("sliders", 15)}</button>
             <button class="icon-btn" data-a="edit" title="${esc(L("Editar esta pista como código", "Edit this track as code"))}">${uiIcon("code", 15)}</button></span></header>
         ${nodeHTML(tree)}
+        ${mixBadge(t)}
       </section>`;
     }).join("")}</div>
   </div>`;

@@ -177,6 +177,15 @@ silencio y solo, y un canal **Master** para toda la canción. No toca el código
 
 ![Mezcla](docs/screenshots/es/mezcla.png)
 
+Para que no te pierdas, cada pista con mezcla enseña una etiqueta **Mezcla** en **Pistas** y en **Bloques** (por
+ejemplo «Mezcla · Graves −3 dB», y Master o Solo cuando aplican). Te recuerda que eso se añade al sonar y no está en su
+código; púlsala para ir a la tira de esa pista en la pestaña Mezcla. Los valores negativos se escriben entre paréntesis,
+`# eqlow (-3)`, porque Tidal lee `eqlow -3` como una resta.
+
+![Etiqueta de mezcla en cada pista en Pistas](docs/screenshots/es/etiqueta-mezcla-pistas.png)
+
+![Etiqueta de mezcla en Bloques](docs/screenshots/es/etiqueta-mezcla-bloques.png)
+
 ### Línea de tiempo: cuándo suena cada sonido
 
 Tidal te dice *cada cuánto* pasan las cosas (`"bd*2 [~ sn]"`, `every 4 (fast 2)`, `(3,8)`…), y eso cuesta imaginarlo.
