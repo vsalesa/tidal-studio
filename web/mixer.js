@@ -80,3 +80,24 @@ export function setMix(state, id, band, v) {
   t.mix = { ...mixOf(t), [band]: v };
   return t;
 }
+
+// ------------------------------------------------------------------ la mezcla, a la vista en Pistas y Bloques
+// Una etiqueta pequeña bajo cada pista con lo que la Mezcla le añade al sonar (no está en su código).
+// Al pulsarla se abre la pestaña Mezcla con esa pista resaltada.
+const sgn = (v) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v)}`;
+export function mixBadgeHTML(t, state, mixIcon = "") {
+  const m = mixOf(t), M = masterOf(state);
+  const B = BAND_LABEL();
+  const parts = [];
+  if (m.vol) parts.push(`${L("Vol", "Vol")} ${dbText(m.vol)}`);
+  for (const b of ["low", "mid", "high"]) if (m[b]) parts.push(`${B[b]} ${sgn(m[b])} dB`);
+  const solo = t.solo, others = !t.solo && state.tracks.some((x) => x.solo);
+  const master = !isFlat(M);
+  if (!parts.length && !master && !solo && !others) return "";
+  const suf = mixSuffix(t, state);
+  const tip = L(`Lo pone la pestaña Mezcla, no está en el código de la pista. Al sonar se añade: ${suf || "(nada)"}. Pulsa para abrir la Mezcla.`,
+    `Set in the Mix tab, not in the track's code. When it plays it adds: ${suf || "(nothing)"}. Click to open Mix.`);
+  return `<button class="mix-badge" data-a="mix" data-id="${esc(t.id)}" title="${esc(tip)}">${mixIcon}<b>${L("Mezcla", "Mix")}</b>
+    ${parts.length ? `<span>${esc(parts.join(" · "))}</span>` : ""}
+    ${master ? `<span class="mb-m">+ Master</span>` : ""}${solo ? `<span class="mb-s">Solo</span>` : ""}${others ? `<span class="mb-m">${L("no suena: otra pista en solo", "silent: another track is soloed")}</span>` : ""}<span class="mb-h">${L("se añade al sonar, no está en tu código", "added when it plays, not in your code")}</span></button>`;
+}

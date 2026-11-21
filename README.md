@@ -173,6 +173,15 @@ and `# eqlow / eqmid / eqhigh` (shown as a `-- mix` line in the Code tab).
 
 ![Mixer](docs/screenshots/mixer.png)
 
+So you never lose track of it, every track with a mix shows a small **Mix** tag in **Tracks** and **Blocks** (for
+example «Mix · Lows −3 dB», plus Master or Solo when they apply). It reminds you that this is added when the track plays
+and isn't in its code; click it to jump to that track's strip in the Mix tab. Negative values are written with brackets,
+`# eqlow (-3)`, because Tidal reads `eqlow -3` as a subtraction.
+
+![Mix tag on each track in Tracks](docs/screenshots/mix-badge-tracks.png)
+
+![Mix tag in Blocks](docs/screenshots/mix-badge-blocks.png)
+
 ### Timeline: when each sound plays
 
 Tidal tells you *how often* things happen (`"bd*2 [~ sn]"`, `every 4 (fast 2)`, `(3,8)`…), which is hard to picture.
