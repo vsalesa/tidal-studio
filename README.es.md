@@ -236,6 +236,11 @@ Descarga `TidalStudio-…-macOS-AppleSilicon.pkg` de la
 (TidalCycles con su propio Haskell, SuperCollider, SuperDirt y sus sonidos, Python) y **no descarga nada** al instalar.
 Después abre **Tidal Studio** desde Aplicaciones.
 
+Tidal Studio es una app de Mac de verdad: se abre en su propia ventana (con su icono en el Dock y su barra de menús),
+arranca SuperCollider, SuperDirt y Tidal en segundo plano **sin ninguna ventana de Terminal**, y los para todos al salir
+(⌘Q o cerrando la ventana). Si algo falla, te enseña el registro, que también está en
+`~/Library/Logs/Tidal Studio/studio.log`. **Visualización → Abrir en el navegador** abre el mismo estudio en tu navegador.
+
 Aún no está firmado por Apple, así que la primera vez macOS lo bloquea: ve a
 **Ajustes del Sistema → Privacidad y seguridad**, pulsa **Abrir igualmente** y vuelve a abrir el `.pkg`.
 Instala el motor en `/Users/Shared/TidalStudio` (unos 3 GB) y no toca el SuperCollider, Haskell o Python que ya tengas.

@@ -29,6 +29,11 @@ on:
 permissions:
   contents: write
 
+# a newer push to the same branch cancels the older build (never on main, where releases happen)
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 env:
   GHC_VERSION: "9.8.4"
   TIDAL_VERSION: "1.10.1"
@@ -100,6 +105,18 @@ jobs:
           test -x "/Applications/Tidal Studio.app/Contents/MacOS/TidalStudio"
           test -x "/Users/Shared/TidalStudio/SuperCollider.app/Contents/MacOS/sclang"
           /Users/Shared/TidalStudio/python/bin/python3 packaging/common/smoke_test.py /Users/Shared/TidalStudio
+
+      - name: Open the app, let it load the studio, quit, and check nothing is left running
+        if: steps.gate.outputs.skip != 'true'
+        run: |
+          "/Applications/Tidal Studio.app/Contents/MacOS/TidalStudio" --self-test & APP=$!
+          ( sleep 240; echo "app still running after 240 s: killing it"; kill -9 $APP ) & WD=$!
+          CODE=0; wait $APP || CODE=$?; kill $WD 2>/dev/null || true
+          echo "--- studio log ---"; tail -n 60 "$HOME/Library/Logs/Tidal Studio/studio.log" || true
+          [ "$CODE" = 0 ] || { echo "self-test exit code $CODE"; exit 1; }
+          sleep 3
+          if pgrep -fl "/Users/Shared/TidalStudio/|scsynth|sclang|ghc-9"; then echo "processes left running after quit"; exit 1; fi
+          echo "clean shutdown"
 
       - uses: actions/upload-artifact@v4
         if: steps.gate.outputs.skip != 'true'

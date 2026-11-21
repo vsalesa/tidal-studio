@@ -28,6 +28,12 @@ esac
 mkdir -p "$RT" "$WORK" "$DIST"
 log() { echo -e "\n\033[1;32m==> $*\033[0m"; }
 
+# ------------------------------------------------------------------ native app (first: fails fast)
+log "Native app (Swift + WKWebView)"
+swiftc --version
+swiftc -O -target "$(uname -m)-apple-macos12.0" -framework Cocoa -framework WebKit \
+  "$REPO/packaging/macos/app/main.swift" -o "$WORK/TidalStudio"
+
 # ------------------------------------------------------------------ Python (standalone build)
 if [ ! -x "$RT/python/bin/python3" ]; then
   log "Python $PY_SERIES (python-build-standalone)"
@@ -94,10 +100,12 @@ fi
 # ------------------------------------------------------------------ Tidal Studio itself
 log "Tidal Studio app files"
 rm -rf "$RT/app" && mkdir -p "$RT/app/samples"
-for d in server web tidal supercollider; do ditto "$REPO/$d" "$RT/app/$d"; done
+for d in server web tidal supercollider skills; do ditto "$REPO/$d" "$RT/app/$d"; done
 cp "$REPO/config.example.json" "$REPO/README.md" "$REPO/README.es.md" "$REPO/CREDITS.md" "$RT/app/"
 find "$RT/app" -name '__pycache__' -prune -exec rm -rf {} +
 echo "$VERSION" > "$RT/VERSION"
+mkdir -p "$RT/bin"
+install -m 755 "$REPO/packaging/macos/run-studio.sh" "$RT/bin/run-studio.sh"
 install -m 755 "$REPO/packaging/macos/TidalStudio.command" "$RT/Tidal Studio.command"
 mkdir -p "$RT/shims"
 for n in gcc cc clang; do install -m 755 "$REPO/packaging/macos/shims/gcc" "$RT/shims/$n"; done
@@ -114,7 +122,7 @@ log "App bundle"
 APPSTAGE="$WORK/appstage"
 rm -rf "$APPSTAGE" && mkdir -p "$APPSTAGE/Tidal Studio.app/Contents/MacOS" "$APPSTAGE/Tidal Studio.app/Contents/Resources"
 sed "s/@VERSION@/$VERSION/g" "$REPO/packaging/macos/Info.plist" > "$APPSTAGE/Tidal Studio.app/Contents/Info.plist"
-install -m 755 "$REPO/packaging/macos/launcher.sh" "$APPSTAGE/Tidal Studio.app/Contents/MacOS/TidalStudio"
+install -m 755 "$WORK/TidalStudio" "$APPSTAGE/Tidal Studio.app/Contents/MacOS/TidalStudio"
 if [ -f "$REPO/packaging/macos/AppIcon.png" ]; then
   ICONSET="$WORK/AppIcon.iconset"; rm -rf "$ICONSET"; mkdir -p "$ICONSET"
   for s in 16 32 128 256 512; do
@@ -123,6 +131,9 @@ if [ -f "$REPO/packaging/macos/AppIcon.png" ]; then
   done
   iconutil -c icns "$ICONSET" -o "$APPSTAGE/Tidal Studio.app/Contents/Resources/AppIcon.icns"
 fi
+# ad-hoc signature (not a Developer ID; Apple Silicon needs every binary signed)
+codesign --force --sign - "$APPSTAGE/Tidal Studio.app"
+codesign --verify --verbose "$APPSTAGE/Tidal Studio.app"
 
 # ------------------------------------------------------------------ .pkg
 log "Building the installer package"
