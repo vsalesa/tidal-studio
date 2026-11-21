@@ -97,7 +97,7 @@ const cache = new Map();
 export function patternsOf(code) {
   if (cache.has(code)) return cache.get(code);
   const strs = [];
-  const clean = code.replace(/--.*$/gm, (m) => " ".repeat(m.length));
+  const clean = code.replace(/\{-[\s\S]*?-\}/g, (m) => " ".repeat(m.length)).replace(/--.*$/gm, (m) => " ".repeat(m.length)); // efectos apagados {- … -} no suenan
   for (const q of clean.matchAll(/"([^"]*)"/g)) {
     // el nombre de la escala o del acorde no es un patrón de tiempo
     if (/\b(scale|toScale)\s*$/.test(clean.slice(0, q.index))) continue;

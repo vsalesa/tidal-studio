@@ -76,10 +76,11 @@ const RULES = [
 ];
 
 let rotation = 0;
-export function localSuggestions(state, count = 2, next = false) {
+// skip(idea) → true para saltarse una idea (las que el alumno ha descartado)
+export function localSuggestions(state, count = 2, next = false, skip = () => false) {
   if (next) rotation++;
   const s = { tracks: state.tracks, style: state.style || "house" };
-  const all = RULES.map((r) => r(s)).filter((x) => x && x.cambios);
+  const all = RULES.map((r) => r(s)).filter((x) => x && x.cambios && !skip(x));
   if (!all.length) return [];
   const out = [];
   for (let i = 0; i < Math.min(count, all.length); i++) out.push(all[(rotation + i) % all.length]);

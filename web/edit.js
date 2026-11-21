@@ -1,5 +1,5 @@
 import { L } from "./i18n.js";
-import { parsePattern, miniSteps } from "./blocks.js";
+import { parsePattern, miniSteps, canBypass } from "./blocks.js";
 import { PARAMS as CP, fmt } from "./controls.js";
 // Edición estructurada de una pista: la usan la vista de Bloques (tooltip al pulsar un bloque)
 // y la «tarjeta configuradora» de Maestro. Cada parte editable tiene una clave estable:
@@ -17,9 +17,14 @@ export function serialize(node) {
   if (node.type === "stack") return `stack [${node.children.map(serialize).join(", ")}]`;
   let src = node.complex ? node.raw : `${node.fn} "${node.pattern}"`;
   if (node.complex && node.pattern != null && node.patStart != null) src = node.raw.slice(0, node.patStart) + `"${node.pattern}"` + node.raw.slice(node.patEnd);
-  return [src, ...node.params.map((p) => `${p.op} ${p.name}${p.value !== "" ? " " + p.value : ""}`)].join(" ");
+  return [src, ...node.params.map((p) => { const t = `${p.op} ${p.name}${p.value !== "" ? " " + p.value : ""}`; return p.off ? `{- ${t} -}` : t; })].join(" ");
 }
 export const tidy = (code) => code.replace(/--.*$/gm, "").replace(/\s+/g, " ").trim();
+
+// Efectos de una pista (para los interruptores de Pistas): [{ key, name, op, value, off }]
+export function effectsOf(code) {
+  return elementsOf(code).filter((e) => e.kind === "param" && canBypass(e.name));
+}
 
 export function nodeAt(tree, path) {
   let n = tree;
@@ -110,7 +115,7 @@ export function elementsOf(code) {
     else out.push({ key: `${P}|src`, kind: "raw", text: n.raw });
     n.params.forEach((p, i) => {
       const num = /^-?\d+(\.\d+)?$/.test(p.value) ? +p.value : null;
-      out.push({ key: `${P}|p${i}`, kind: "param", name: p.name, op: p.op, text: p.value, value: num, range: num != null ? paramRange(p.name, num) : null });
+      out.push({ key: `${P}|p${i}`, kind: "param", name: p.name, op: p.op, off: !!p.off, text: p.value, value: num, range: num != null ? paramRange(p.name, num) : null });
     });
   };
   walk(tree, []);
@@ -118,7 +123,7 @@ export function elementsOf(code) {
 }
 
 // ------------------------------------------------------------------ aplicar un cambio
-// action: set | del | after | num | addParam | addWrap | addStep
+// action: set | del | after | num | addParam | addWrap | addStep | toggle (encender/apagar un efecto #)
 export function applyEdit(code, key, action, value, extra) {
   let tree = parsePattern(code || "");
   const { path, target } = splitKey(key);
@@ -145,6 +150,7 @@ export function applyEdit(code, key, action, value, extra) {
   } else if (target.startsWith("p")) {
     const i = +target.slice(1);
     if (action === "del") n.params.splice(i, 1);
+    if (action === "toggle") n.params[i].off = value === undefined ? !n.params[i].off : !value; // value: true = encendido
     if (action === "set") n.params[i].value = typeof value === "number" ? fmt(value) : String(value).trim();
   } else if (target.startsWith("st")) {
     const sp = target.slice(2);
@@ -166,7 +172,7 @@ export function partOf(code, key) {
   if (!n) return null;
   if (target === "w") return { kind: "wrap", text: n.code, fn: n.fn, nums: wrapNums(n.code, n.fn, path.join(".")) };
   if (target === "src") return n.pattern != null ? { kind: "src", text: n.pattern, fn: n.fn, params: n.params.map((p) => p.name) } : { kind: "raw", text: n.raw, params: n.params.map((p) => p.name) };
-  if (target.startsWith("p")) { const p = n.params[+target.slice(1)]; if (!p) return null; const num = /^-?\d+(\.\d+)?$/.test(p.value) ? +p.value : null; return { kind: "param", name: p.name, text: p.value, value: num, range: num != null ? paramRange(p.name, num) : null }; }
+  if (target.startsWith("p")) { const p = n.params[+target.slice(1)]; if (!p) return null; const num = /^-?\d+(\.\d+)?$/.test(p.value) ? +p.value : null; return { kind: "param", name: p.name, op: p.op, off: !!p.off, text: p.value, value: num, range: num != null ? paramRange(p.name, num) : null }; }
   if (target.startsWith("st")) { const tok = stepAt(n.pattern || "", target.slice(2)); return tok == null ? null : { kind: "step", text: tok }; }
   return null;
 }
