@@ -244,6 +244,23 @@ It is not signed with an Apple Developer ID yet, so the first time macOS blocks 
 It installs the engine in `/Users/Shared/TidalStudio` (about 3 GB) and leaves any SuperCollider, Haskell or Python you
 already have untouched. How it is built: [packaging/README.md](packaging/README.md).
 
+### Windows: the all-in-one installer
+
+Download `TidalStudio-…-Windows-x64-Setup.exe` from the
+[latest release](https://github.com/vsalesa/tidal-studio/releases/latest) and run it. It also has everything inside and
+installs to `C:\TidalStudio`. Open **Tidal Studio** from the Start menu or the desktop: the studio opens in its own
+window (Microsoft Edge in app mode, with no tabs or address bar) and **no console**, and closing that window stops
+SuperCollider and Tidal. It is not signed yet, so SmartScreen may say "Windows protected your PC": press
+**More info → Run anyway**. Log: `%LOCALAPPDATA%\Tidal Studio\logs\studio.log`.
+
+### Linux (Ubuntu 22.04+, Debian 12+): the .deb package
+
+Download `tidal-studio_…_amd64.deb` from the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)
+and install it with `sudo apt install ./tidal-studio_*_amd64.deb` (apt also installs SuperCollider from your
+distribution). Open **Tidal Studio** from your applications menu: it opens in its own GTK window, and closing it stops
+everything. With PipeWire, install `pipewire-jack` so SuperCollider can play sound. Log:
+`~/.local/share/tidal-studio/logs/studio.log`.
+
 ### From the source folder (Windows, Linux, or Mac)
 
 Download or clone this folder and:
