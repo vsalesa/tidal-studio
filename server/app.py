@@ -40,6 +40,7 @@ import files as tfiles  # noqa: E402
 import ccdetect  # noqa: E402
 import songimport  # noqa: E402
 import audioimport  # noqa: E402
+import loops  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -298,6 +299,7 @@ ENGINE = Engine(ROOT)
 TIMELINE = TimelineQuery(ROOT)
 llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
 LIBRARY = Library(ROOT)
+LIBRARY.on_add = lambda name, fname, info: loops.maybe_analyse(LIBRARY, name, fname, info)
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -392,6 +394,45 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(audioimport.install())
         return self._json({"error": "not found"}, 404)
 
+    def _loops(self, path):
+        """Loops largos: cargador (archivos sueltos o zip), análisis y correcciones."""
+        if not self._origin_ok():
+            return self._json({"error": "forbidden"}, 403)
+        q = parse_qs(urlparse(self.path).query)
+        arg = lambda k, d="": q.get(k, [d])[0]  # noqa: E731
+        lang = arg("lang", "es")
+        try:
+            bpm = float(arg("bpm", "120") or 120)
+        except ValueError:
+            bpm = 120
+        try:
+            if path in ("/api/loops/upload", "/api/loops/zip", "/api/loops/pcm"):
+                length = int(self.headers.get("Content-Length") or 0)
+                if length > loops.MAX_UPLOAD:
+                    return self._err("El archivo es demasiado grande|The file is too big", lang, 413)
+                raw = self.rfile.read(length)
+                if path == "/api/loops/pcm":
+                    meta = loops.analyse_pcm(LIBRARY, safe_name(arg("name")), int(arg("i", "0") or 0), raw,
+                                             float(arg("sr", str(loops.SR))), float(arg("dur", "0") or 0))
+                    return self._json({"meta": {k: v for k, v in meta.items() if k != "wave"}})
+                if path == "/api/loops/upload":
+                    added = [loops.import_file(LIBRARY, arg("filename", "loop.wav"), raw, arg("name"), arg("folder"))]
+                else:
+                    added = loops.import_zip(LIBRARY, raw, arg("folder"))
+                for nm in {a["name"] for a in added if a.get("name")}:
+                    ENGINE.reload_sample(os.path.join(LIBRARY.dir, nm), nm)
+                return self._json({"added": added, **loops.listing(LIBRARY, bpm)})
+            data = self._body()
+            if path == "/api/loops/scan":
+                n = loops.scan(LIBRARY)
+                return self._json({"analysed": n, **loops.listing(LIBRARY, bpm)})
+            if path == "/api/loops/edit":
+                loops.edit(LIBRARY, safe_name(data.get("name")), int(data.get("index") or 0), data)
+                return self._json(loops.listing(LIBRARY, bpm))
+        except (SampleError, ValueError) as e:
+            return self._err(e, lang)
+        return self._json({"error": "not found"}, 404)
+
     # ---------- rutas ----------
     def do_GET(self):
         path = urlparse(self.path).path
@@ -422,6 +463,13 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(public_config(load_config()))
             if path == "/api/samples":
                 return self._json(LIBRARY.list())
+            if path == "/api/loops":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    bpm = float(q.get("bpm", ["120"])[0])
+                except ValueError:
+                    bpm = 120
+                return self._json(loops.listing(LIBRARY, bpm))
             if path == "/api/samples/file":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -520,6 +568,8 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if path.startswith("/api/import/"):
             return self._import(path)
+        if path.startswith("/api/loops/"):
+            return self._loops(path)
         if path == "/api/samples/upload":
             q = parse_qs(urlparse(self.path).query)
             length = int(self.headers.get("Content-Length") or 0)
@@ -597,6 +647,13 @@ class Handler(SimpleHTTPRequestHandler):
                 if command:
                     tr.add("step", tr.L(f"Comando /{command['plugin']}:{command['command']} → uso su texto como petición",
                                         f"Command /{command['plugin']}:{command['command']} → using its text as the request"))
+                try:
+                    sess["loops_lines"] = loops.for_maestro(LIBRARY, float(sess.get("bpm") or 120))
+                    if sess["loops_lines"]:
+                        tr.add("step", tr.L(f"Tienes {len(sess['loops_lines'])} loops largos analizados: se los paso con su tempo y su código",
+                                            f"You have {len(sess['loops_lines'])} analysed long loops: passing them on with their tempo and code"))
+                except Exception:  # noqa: BLE001
+                    sess["loops_lines"] = []
                 system, messages = build_messages(msgs, sess)
                 last = next((m.get("content", "") for m in reversed(msgs) if m.get("role") == "user"), "")
                 system, sk = with_skills(cfg, system, last, sess)
@@ -615,6 +672,7 @@ class Handler(SimpleHTTPRequestHandler):
                     reply = parse_reply(raw)
                     if reply.get("descargar") and fetch_on(sess):
                         reply["descargas"] = fetch_samples(cfg, reply, sess, tr)
+                    loops.fix_reply(LIBRARY, reply, float(sess.get("bpm") or 120))
                 finally:
                     tr.finish()
                 return self._json({**reply, "skills": skills_report(sk, raw),

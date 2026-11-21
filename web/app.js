@@ -27,6 +27,7 @@ import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LET
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { openImport, importedSummary, INSPIRE_PROMPT } from "./importsong.js";
+import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -2243,7 +2244,7 @@ function useButtons(name, type) {
 }
 async function renderSamples() {
   const body = $("#sm-body");
-  const tabs = [["builtin", "wave", L("Incluidos", "Built-in")], ["mine", "folder", L("Mis samples", "My samples")],
+  const tabs = [["builtin", "wave", L("Incluidos", "Built-in")], ["mine", "folder", L("Mis samples", "My samples")], ["loops", "loop", L("Loops largos", "Long loops")],
     ["online", "search", L("Buscar online", "Search online")], ["packs", "library", L("Packs", "Packs")]];
   let html = `<div class="np-tabs">${tabs.map(([id, ic, n]) => `<button data-tab="${id}" class="${sm.tab === id ? "active" : ""}">${icon(ic, 14)} ${n}</button>`).join("")}</div>`;
   if (sm.tab === "builtin") {
@@ -2337,7 +2338,9 @@ async function renderSamples() {
       }
     }
   }
+  if (sm.tab === "loops") html += `<div id="lp-root"></div>`;
   body.innerHTML = html;
+  if (sm.tab === "loops") mountLoops($("#lp-root"));
   if (sm.wave && sm.tab === "mine") paintWave();
 }
 function suggestName(r) {
@@ -2355,7 +2358,8 @@ function useSample(name, type, mode) {
     $("#samples").close();
     return say(L(`He cambiado el sonido de ${t.id} a «${name}» sin tocar el ritmo. Fíjate: solo cambian las palabras dentro de s "…"; los ~, * y [ ] siguen igual. Así pruebas sonidos sin reescribir nada.`, `I changed ${t.id}'s sound to «${name}» without touching the rhythm. Notice: only the words inside s "…" change; the ~, * and [ ] stay the same. That way you try sounds without rewriting anything.`), state.options);
   }
-  const t = addTrack(name, typeKind(type), starterCode(name, type));
+  const lc = loopCodeFor(name);
+  const t = addTrack(name, lc ? loopKindFor(name) : typeKind(type), lc || starterCode(name, type));
   if (!t) return;
   $("#samples").close();
   if (!(state.options || []).includes(CTL_CHIP())) state.options = [CTL_CHIP(), ...(state.options || [])].slice(0, 6);
@@ -2363,10 +2367,10 @@ function useSample(name, type, mode) {
 }
 function wireSamples() {
   const body = $("#sm-body");
-  $("#samples").addEventListener("close", smStop);
+  $("#samples").addEventListener("close", () => { smStop(); stopLoop(); });
   body.addEventListener("click", async (e) => {
     const b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.tab) { smStop(); sm.tab = b.dataset.tab; sm.type = ""; return renderSamples(); }
+    if (b.dataset.tab) { smStop(); stopLoop(); sm.tab = b.dataset.tab; sm.type = ""; return renderSamples(); }
     if (b.dataset.type !== undefined && b.closest(".sm-types")) { sm.type = b.dataset.type; return renderSamples(); }
     const a = b.dataset.a;
     if (a === "var") { const n = b.dataset.name; sm.variant[n] = Math.max(0, (sm.variant[n] || 0) + +b.dataset.d); renderSamples(); return server.engine && server.engine.simulation ? hearDirt(n, sm.variant[n]) : evalCode(`once $ s "${n}:${sm.variant[n]}"`); }
@@ -2462,6 +2466,38 @@ function wireSamples() {
       sm.mine = null; server.samples = null; await renderSamples();
       say(L(`Subido: «${last.name}» con ${files.length} archivo(s). Pruébalo con s "${last.name}" o s "${last.name}:1" para la segunda variante.`, `Uploaded: «${last.name}» with ${files.length} file(s). Try it with s "${last.name}" or s "${last.name}:1" for the second variant.`), state.options);
     }
+  });
+}
+// --- loops largos (web/loops.js): el cargador, el navegador y cómo entran en la canción
+function wireLoops() {
+  initLoops({
+    api, state, lang: LANG, toast, say: (text) => say(text, state.options),
+    onLibraryChanged: () => { server.samples = null; sm.mine = null; },
+    setBpm: (bpm) => { state.bpm = Math.max(40, Math.min(220, bpm)); $("#bpm").value = state.bpm; changed(); evalCode(cps(state.bpm)); toast(L(`Canción a ${state.bpm} BPM: así el loop suena a su velocidad y en su tono original.`, `Song set to ${state.bpm} BPM: now the loop plays at its own speed and in its original key.`)); },
+    addLoopTrack: (x, code, what, p) => {
+      const t = addTrack(x.name, loopKindFor(x.ref) || "percusion", code);
+      if (!t) return;
+      $("#samples").close();
+      const pct = Math.round((p.speed - 1) * 100);
+      say(L(`Nueva pista ${t.id} con el loop «${x.ref}»${what}. Lo he escuchado: ${x.bpm ? `${Math.round(x.bpm * 10) / 10} BPM` : "tempo sin detectar"}, ${p.bars} ${p.bars === 1 ? "compás" : "compases"}${x.key ? `, ${x.key}` : ""}. «loopAt ${p.n}» hace que dure ${p.n} ${p.n === 1 ? "ciclo" : "ciclos"} de tu canción (${state.bpm} BPM)${Math.abs(pct) >= 1 ? `, así que suena un ${Math.abs(pct)}% más ${pct > 0 ? "rápido" : "lento"}` : ""}, y «# cut 1» evita que una vuelta se pise con la siguiente.`,
+        `New track ${t.id} with the loop «${x.ref}»${what}. I listened to it: ${x.bpm ? `${Math.round(x.bpm * 10) / 10} BPM` : "tempo not detected"}, ${p.bars} ${p.bars === 1 ? "bar" : "bars"}${x.key ? `, ${x.key}` : ""}. «loopAt ${p.n}» makes it last ${p.n} ${p.n === 1 ? "cycle" : "cycles"} of your song (${state.bpm} BPM)${Math.abs(pct) >= 1 ? `, so it plays ${Math.abs(pct)}% ${pct > 0 ? "faster" : "slower"}` : ""}, and «# cut 1» stops one pass from overlapping the next.`),
+        state.options, { explicacion: explainLocal(t.code).partes });
+    },
+  });
+  loadLoops();
+  // Soltar loops en cualquier parte del estudio: se abre la biblioteca en «Loops largos» y se cargan
+  const audioish = (e) => isFileDrag(e) && !e.target.closest("dialog:not(#samples)");
+  window.addEventListener("dragover", (e) => { if (audioish(e)) { e.preventDefault(); document.body.classList.add("lp-dropping"); } });
+  window.addEventListener("dragleave", (e) => { if (!e.relatedTarget) document.body.classList.remove("lp-dropping"); });
+  window.addEventListener("drop", async (e) => {
+    document.body.classList.remove("lp-dropping");
+    if (!audioish(e)) return;
+    e.preventDefault();
+    const pending = filesFromDrop(e.dataTransfer);  // leer ya: después el navegador olvida las carpetas
+    const files = await pending;
+    if (!files.some((f) => /\.(wav|aif|aiff|flac|ogg|mp3|zip)$/i.test(f.file.name))) return;
+    await openSamples("loops");
+    loadFiles(files);
   });
 }
 function guessTypeFrom(t) {
@@ -3649,6 +3685,7 @@ function init() {
   refreshSkillCount();
   wireInstrument();
   wireSamples();
+  wireLoops();
   wireControls();
   wireArrange();
   initTimeline({

@@ -56,6 +56,8 @@ export const FUNCS = [
   [/^mask$/, L("es un interruptor por compás: donde pone t (verdadero) la pista suena, donde pone f (falso) se calla.", "works as a switch per bar: where it says t (true) the track plays, where it says f (false) it goes silent.")],
   [/^swingBy$/, L("da swing: retrasa un poco una de cada dos notas para que el ritmo 'cojee' con gracia.", "adds swing: delays every other note a little so the rhythm 'limps' gracefully.")],
   [/^striate$/, L("corta y entrelaza los sonidos.", "cuts and interleaves the sounds.")],
+  [/^loopAt$/, L("estira o encoge un loop largo para que dure justo ese número de ciclos (1 ciclo = 1 compás): así va al tempo de tu canción.", "stretches or squeezes a long loop so it lasts exactly that many cycles (1 cycle = 1 bar): that way it follows your song's tempo.")],
+  [/^splice$/, L("parte el sample en N trozos iguales y los toca en el orden de la lista, cada uno ajustado a su hueco (para reordenar un loop y hacer variaciones).", "cuts the sample into N equal slices and plays them in the order of the list, each one fitted to its slot (to rearrange a loop and make variations).")],
 ];
 
 export const PARAMS = {
@@ -68,7 +70,8 @@ export const PARAMS = {
   coarse: L("baja la calidad de muestreo: más robótico.", "lowers the sample rate: more robotic."), shape: L("distorsión (0 a 1).", "distortion (0 to 1)."),
   pan: L("posición izquierda-derecha (0 izquierda, 0.5 centro, 1 derecha).", "left-right position (0 left, 0.5 center, 1 right)."), speed: L("velocidad de reproducción del sample (2 = una octava más agudo y más corto).", "sample playback speed (2 = an octave higher and shorter)."),
   legato: L("cuánto dura cada nota respecto a su hueco (1 = hasta la siguiente).", "how long each note lasts relative to its slot (1 = until the next one)."), vowel: L("filtro que imita vocales (a, e, i, o, u).", "filter that imitates vowels (a, e, i, o, u)."),
-  orbit: L("canal de efectos.", "effects channel."), accelerate: L("cambia la afinación mientras suena.", "changes the pitch while it plays."),
+  orbit: L("canal de efectos.", "effects channel."), cut: L("grupo de corte: un sonido nuevo del mismo grupo corta al anterior (así un loop no se pisa consigo mismo).", "cut group: a new sound in the same group cuts off the previous one (so a loop never overlaps itself)."),
+  begin: L("desde dónde empieza a sonar el sample (0 = principio, 0.5 = la mitad).", "where the sample starts playing (0 = start, 0.5 = halfway)."), end: L("dónde deja de sonar el sample (1 = el final).", "where the sample stops playing (1 = the end)."), accelerate: L("cambia la afinación mientras suena.", "changes the pitch while it plays."),
 };
 
 function explainMini(str) {
@@ -123,7 +126,7 @@ export function explainLocal(code) {
     partes.push({ fragmento: frag.trim(), explicacion: cap(PARAMS[p] || L(`efecto «${p}».`, `${L("efecto", "effect")} «${p}».`)) + extra });
   }
   // 3. Funciones que transforman el patrón (antes de $ o entre paréntesis)
-  for (const m of code.matchAll(/\b(every|whenmod|fast|slow|jux|degradeBy|sometimesBy|sometimes|rarely|often|arp|echo|off|stack|segment|chop|striate|swingBy)\b[^$#"]*/g)) {
+  for (const m of code.matchAll(/\b(every|whenmod|fast|slow|jux|degradeBy|sometimesBy|sometimes|rarely|often|arp|echo|off|stack|segment|chop|striate|swingBy|loopAt|splice)\b[^$#"]*/g)) {
     const frag = m[0].trim().replace(/\s*\$$/, "");
     if (seen.has(m[1] + frag)) continue; seen.add(m[1] + frag);
     const f = FUNCS.find(([re]) => re.test(m[1]));

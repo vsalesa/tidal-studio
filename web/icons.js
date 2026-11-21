@@ -45,6 +45,8 @@ const P = {
   timeline: `<path d="M3 4v16"/><path d="M3 20h18" opacity=".45"/><rect x="5.5" y="5" width="4" height="3" rx="1" fill="currentColor"/><rect x="12.5" y="5" width="4" height="3" rx="1" fill="currentColor"/><rect x="8" y="10.5" width="7" height="3" rx="1" fill="currentColor"/><rect x="16" y="10.5" width="3" height="3" rx="1" fill="currentColor"/><path d="M14.5 3v15" stroke="currentColor" stroke-width="1.6"/>`,
   blocks: `<rect x="3" y="3" width="18" height="5" rx="1.2"/><rect x="6" y="10" width="15" height="4.5" rx="1.2"/><rect x="9" y="16.5" width="12" height="4.5" rx="1.2"/><path d="M4.5 8v10.5H9M4.5 12.2H6"/>`,
   library: `<path d="M4 4v16M8 4v16"/><path d="M12 5l3.5-1 4 15.5-3.5 1z"/><path d="M3 20h18" opacity=".45"/>`,
+  loop: `<path d="M17 2.5l3 3-3 3"/><path d="M4 11.5v-2a4 4 0 0 1 4-4h12"/><path d="M7 21.5l-3-3 3-3"/><path d="M20 12.5v2a4 4 0 0 1-4 4H4"/>`,
+  scissors: `<circle cx="6" cy="6" r="2.6"/><circle cx="6" cy="18" r="2.6"/><path d="M8.2 7.5L20 17M8.2 16.5L20 7"/>`,
   wave: `<path d="M3 12h2M7 8v8M11 5v14M15 9v6M19 7v10M21 12h0"/>`,
   upload: `<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/><path d="M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/>`,
   search: `<circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L20 20"/>`,
