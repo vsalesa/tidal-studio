@@ -1,4 +1,10 @@
-## What's new in 0.7.0 / Novedades
+## What's new in 0.8.0 / Novedades
+
+- **Long loops library**: drop loops, folders or a zip; tempo, bars, key and hits are detected, and you get code that fits your tempo, with variations.
+
+**Español:** **Biblioteca de loops largos**: arrastra loops, carpetas o un zip; detecta el tempo, los compases, la tonalidad y los golpes, y te da código que encaja con tu tempo, con variaciones.
+
+## 0.7.0
 
 - **Import a song**: import a song (MIDI, or audio through optional Demucs/basic-pitch tools installed on first use) as the starting point for a new song, from New project → From a song or File → Import a song.
 
