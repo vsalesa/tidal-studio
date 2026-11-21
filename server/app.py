@@ -37,6 +37,8 @@ import llmdiag  # noqa: E402
 import shellenv  # noqa: E402
 import files as tfiles  # noqa: E402
 import ccdetect  # noqa: E402
+import songimport  # noqa: E402
+import audioimport  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -329,12 +331,63 @@ class Handler(SimpleHTTPRequestHandler):
             return False
         return "application/json" in (self.headers.get("Content-Type") or "")
 
+    def _origin_ok(self):
+        origin = self.headers.get("Origin")
+        if not origin:
+            return True
+        u = urlparse(origin)
+        return u.hostname in ("127.0.0.1", "localhost", "::1") and u.port == self.server.server_address[1]
+
+    def _err(self, msg, lang, status=400):
+        es, _, en = str(msg).partition("|")
+        return self._json({"error": en if lang == "en" and en else es}, status)
+
+    def _import(self, path):
+        """Importar una canción: MIDI (al momento) o audio (en segundo plano, con herramientas opcionales)."""
+        q = parse_qs(urlparse(self.path).query)
+        arg = lambda k, d="": q.get(k, [d])[0]  # noqa: E731
+        lang = arg("lang", "es")
+        if path in ("/api/import/midi", "/api/import/audio"):
+            if not self._origin_ok():
+                return self._json({"error": "forbidden"}, 403)
+            length = int(self.headers.get("Content-Length") or 0)
+            if length > audioimport.MAX_AUDIO:
+                return self._err("El archivo es demasiado grande|The file is too big", lang, 413)
+            raw = self.rfile.read(length)
+            try:
+                if path == "/api/import/midi":
+                    start = arg("start")
+                    return self._json(songimport.analyse(raw, lang, int(start) if start.isdigit() else None,
+                                                         int(arg("bars", "4") or 4), arg("name")))
+                return self._json(audioimport.start_job(arg("filename", "song.mp3"), raw))
+            except (songimport.ImportError_, ValueError) as e:
+                return self._err(e, lang)
+            except Exception as e:  # noqa: BLE001  un MIDI raro no debe tumbar el estudio
+                return self._err(f"No he podido leer el archivo: {e}|Couldn't read the file: {e}", lang)
+        if path == "/api/import/audio/install":
+            if not self._same_origin():
+                return self._json({"error": "forbidden"}, 403)
+            self._body()
+            return self._json(audioimport.install())
+        return self._json({"error": "not found"}, 404)
+
     # ---------- rutas ----------
     def do_GET(self):
         path = urlparse(self.path).path
         if path.startswith("/api/"):
             if not self._local_only():
                 return
+            if path == "/api/import/audio/status":
+                return self._json(audioimport.status())
+            if path == "/api/import/audio/job":
+                job = audioimport.get_job(parse_qs(urlparse(self.path).query).get("id", [""])[0])
+                if not job:
+                    return self._json({"error": "not found"}, 404)
+                out = audioimport.job_public(job)
+                if job["state"] == "done" and job["midi"]:
+                    import base64
+                    out["midi"] = base64.b64encode(job["midi"]).decode()
+                return self._json(out)
             if path == "/api/status":
                 cfg = load_config()
                 return self._json({
@@ -444,6 +497,8 @@ class Handler(SimpleHTTPRequestHandler):
             self._json({"ok": True})
             threading.Thread(target=SERVER.shutdown, daemon=True).start()
             return
+        if path.startswith("/api/import/"):
+            return self._import(path)
         if path == "/api/samples/upload":
             q = parse_qs(urlparse(self.path).query)
             length = int(self.headers.get("Content-Length") or 0)

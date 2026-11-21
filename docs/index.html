@@ -302,6 +302,15 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   </div>
 </section>
 
+<section id="import" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker" data-i="ki">Import a song</div>
+    <h2 class="sec-title" data-i="ti">Start from a song you love. End with one of your own.</h2>
+    <p class="sec-lead" data-i="li">Drop in a MIDI file, or an mp3 or wav, and it becomes Tidal tracks plus its recipe: tempo, key, chords, structure and groove. Then Maestro helps you write something new inspired by it, keeping what works and changing the rest. Everything stays on your computer.</p>
+    <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="import-img" alt="" width="2880" height="1800"></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap">
     <div class="kicker" data-i="k4">Style recipes</div>
@@ -407,6 +416,8 @@ const ES = {
   k3: "Así se ve", t3: "Un estudio claro, como una partitura.",
   kc: "Cursos por género", tc: "Construye un merengue desde cero.",
   lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo.",
+  ki: "Importar canción", ti: "Empieza con una canción que te encanta. Termina con una tuya.",
+  li: "Suelta un MIDI, o un mp3 o wav, y se convierte en pistas de Tidal y en su receta: tempo, tonalidad, acordes, estructura y groove. Luego Maestro te ayuda a escribir algo nuevo inspirado en ella, conservando lo que funciona y cambiando el resto. Todo se queda en tu ordenador.",
   k4: "Recetas de estilo", t4: "«¿Quieres que suene tipo jazz?»",
   l4: "Pulsa un estilo y tu canción se transforma. Verás el antes y el después con lo nuevo resaltado, y una explicación de cada cambio para que mañana lo hagas tú.",
   before: "Antes", after: "Después: jazz", latin: "Latino (bossa)",
@@ -577,6 +588,7 @@ function applyLang() {
 }
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
+{ const ii = document.getElementById("import-img"); ii.src = shotPath(lang === "es" ? "importar-resultado" : "import-result"); ii.alt = lang === "es" ? "Canción importada: receta y pistas de Tidal" : "Imported song: recipe and Tidal tracks"; }
 { const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-paso" : "course-step"); ci.alt = lang === "es" ? "Curso de merengue paso a paso" : "Merengue course, step by step"; }
 [...SHOTS, ...WZ].forEach((s) => { const p = new Image(); p.src = shotPath((lang === "es" ? s.es : s.en)[1]); });
 

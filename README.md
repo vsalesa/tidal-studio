@@ -353,6 +353,34 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
 
 ![A Pulsar file opened as tracks, with its let definition kept in Extra code](docs/screenshots/file-open.png)
 
+### Import a song as a starting point
+
+**New project → From a song** (or **File → Import a song**) takes a song you like and turns it into a base for a
+**new** song of your own.
+
+- **MIDI (`.mid`)**, fast and exact: every MIDI track becomes a Tidal track. Drums (General MIDI channel 10) are split
+  into kick, snare & claps, hats & cymbals and toms; bass, chords and melody become `note "…" # s "…"` patterns with
+  real note names (`a3`, `[f5,a5,c6]`). Notes are snapped to the simplest grid that fits, so the code stays readable
+  (`s "bd*2"`, `s "[~ sn]*2"`), and each bar becomes one cycle (`<bar1 bar2 …>`).
+- **The song's recipe**: tempo, meter, key, chord progression with Roman numerals (`i bVI bIII bVII`), groove (straight
+  or swung, how many kicks) and structure (repeated 4-bar blocks: `A B A B`). Click a part of the structure, or pick a
+  start bar and 1-16 bars, to load another section.
+- **Create a new song inspired by it**: Maestro gets the recipe and is told to *transform, not copy*: keep the tempo,
+  groove, kind of progression and energy, write a new melody, change chords, instruments or key, and explain what it
+  borrowed and what it changed. Without AI you get a step-by-step list of ways to make it yours. **Study it as is**
+  just loads the tracks so you can press Explain on each one.
+- **Audio (mp3, wav, flac, ogg, m4a, aiff)**, approximate: the first time it offers to install free offline tools
+  (~1-2 GB, in `~/.tidal-studio/audio-tools`): **Demucs** separates drums, bass, vocals and the rest, **basic-pitch**
+  (Spotify) turns each one into notes and **librosa** finds the beat. The result is aligned to the bars, and chords are
+  written as Tidal chord names (`a4'minor f4'major`). It's a skeleton to study and reinvent, not an exact copy.
+- Everything stays on your computer. If the song isn't yours, use it to study and publish what you create, not the copy.
+
+| The song's recipe and its Tidal tracks | From an mp3 or wav |
+|---|---|
+| ![Imported MIDI: tempo, key, chords, structure and tracks](docs/screenshots/import-result.png) | ![Imported audio: chords and bass recovered](docs/screenshots/import-audio-result.png) |
+
+![The imported song as a new project, with Maestro's ideas to make it yours](docs/screenshots/import-studio.png)
+
 ### Save, export and share
 
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`,

@@ -83,6 +83,9 @@ def session_summary(session):
         lines.append(f'- {t.get("id")} · {t.get("name", "")} ({t.get("kind", "")}){estado}: {t.get("code", "")}')
     if session.get("step"):
         lines.append(f"Paso actual de la guía: {session['step']}")
+    ref = str(session.get("referencia") or "").strip()
+    if ref:
+        lines.append(ref[:3000])
     samples = session.get("samples") or []
     if samples:
         lines.append("Samples propios del alumno en su biblioteca (puedes usarlos con s \"nombre\" o s \"nombre:n\"; propónselos cuando encajen): "

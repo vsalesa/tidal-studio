@@ -361,6 +361,35 @@ así puedes llevar canciones de Tidal Studio a cualquier editor de Tidal (Pulsar
 
 ![Un archivo de Pulsar abierto como pistas, con su definición let en Código extra](docs/screenshots/es/archivo-abierto.png)
 
+### Importar una canción como punto de partida
+
+**Nuevo proyecto → Desde una canción** (o **Archivo → Importar canción**) coge una canción que te guste y la convierte
+en la base de una canción **nueva** tuya.
+
+- **MIDI (`.mid`)**, rápido y exacto: cada pista MIDI se convierte en una pista de Tidal. La batería (canal 10 de
+  General MIDI) se separa en bombo, caja y palmas, platillos y toms; bajo, acordes y melodía pasan a patrones
+  `note "…" # s "…"` con nombres de nota (`a3`, `[f5,a5,c6]`). Las notas se cuadran a la rejilla más sencilla que
+  encaja, para que el código se lea bien (`s "bd*2"`, `s "[~ sn]*2"`), y cada compás es un ciclo (`<compás1 compás2 …>`).
+- **La receta de la canción**: tempo, compás, tonalidad, progresión de acordes con grados (`i bVI bIII bVII`), groove
+  (recto o con swing, cuántos bombos) y estructura (bloques de 4 compases que se repiten: `A B A B`). Pulsa una parte de
+  la estructura, o elige el compás de inicio y de 1 a 16 compases, para cargar otro trozo.
+- **Crear una canción nueva inspirada en esta**: Maestro recibe la receta con la orden de *transformar, no copiar*:
+  conserva el tempo, el groove, el tipo de progresión y la energía, escribe una melodía nueva, cambia acordes,
+  instrumentos o tonalidad y te explica qué ha tomado prestado y qué ha cambiado. Sin IA te da una lista de pasos para
+  hacerla tuya. **Estudiarla tal cual** solo carga las pistas para que pulses Explícame en cada una.
+- **Audio (mp3, wav, flac, ogg, m4a, aiff)**, aproximado: la primera vez ofrece instalar herramientas libres que
+  funcionan sin internet (~1-2 GB, en `~/.tidal-studio/audio-tools`): **Demucs** separa batería, bajo, voz y el resto,
+  **basic-pitch** (Spotify) pasa cada parte a notas y **librosa** encuentra el pulso. El resultado se cuadra a los
+  compases y los acordes se escriben con nombres de acorde de Tidal (`a4'minor f4'major`). Es un esqueleto para estudiar
+  y reinventar, no una copia exacta.
+- Todo se queda en tu ordenador. Si la canción no es tuya, úsala para estudiar y publica lo que crees, no la copia.
+
+| La receta de la canción y sus pistas | Desde un mp3 o wav |
+|---|---|
+| ![MIDI importado: tempo, tonalidad, acordes, estructura y pistas](docs/screenshots/es/importar-resultado.png) | ![Audio importado: acordes y bajo recuperados](docs/screenshots/es/importar-audio.png) |
+
+![La canción importada como proyecto nuevo, con las ideas de Maestro para hacerla tuya](docs/screenshots/es/importar-estudio.png)
+
 ### Guardar, exportar y compartir
 
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,

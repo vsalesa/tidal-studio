@@ -25,6 +25,7 @@ import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
 import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS } from "./variants.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
+import { openImport, importedSummary, INSPIRE_PROMPT } from "./importsong.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -1427,6 +1428,7 @@ async function send(text) {
   if (text === COURSE_NEXT() && state.course) { const c = courseById(state.course.id); if (state.course.i < c.steps.length - 1) courseGo(state.course.i + 1); state.options = []; return renderChat(); }
   if (text === COURSE_ASK() && state.course) return courseAsk();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
+  if (text === INSPIRE_CHIP() && state.reference) text = INSPIRE_PROMPT();
   if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
   if (text === L("Recuperar el chat", "Bring the chat back") && clearedChat) { state.chat = clearedChat.chat; state.options = clearedChat.options; clearedChat = null; save(); return renderChat(); }
   if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
@@ -1494,6 +1496,7 @@ async function askLLM() {
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
       bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(),
+      referencia: state.reference || undefined,
       master: state.master || undefined,
       ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
@@ -1822,10 +1825,12 @@ async function openNewProject() {
       <button class="np-choice" data-m="blank">${icon("blank", 28)}<b>${L("En blanco", "Blank")}</b><span>${L("Un lienzo vacío. Tú añades cada pieza desde el catálogo o pidiéndosela a Maestro.", "An empty canvas. You add each piece from the catalog or by asking Maestro.")}</span></button>
       <button class="np-choice rec" data-m="wizard"><em>${L("Recomendado", "Recommended")}</em>${icon("steps", 28)}<b>${L("Con wizard", "With wizard")}</b><span>${L("Vas pulsando opciones paso a paso (estilo, ritmo, bajo, acordes…) y se crea tu proyecto base. Todo suena mientras eliges.", "Click options step by step (style, beat, bass, chords…) and your base project is built. Everything plays while you choose.")}</span></button>
       <button class="np-choice" data-m="ideas">${icon("wand", 28)}<b>${L("Lluvia de ideas", "Brainstorm")}</b><span>${L("Maestro te hace preguntas abiertas sobre lo que quieres sentir y diseña contigo un plan.", "Maestro asks you open questions about what you want to feel and designs a plan with you.")}</span></button>
+      <button class="np-choice" data-m="import">${icon("upload", 28)}<b>${L("Desde una canción", "From a song")}</b><span>${L("Importa un MIDI o un audio: lo convierto en pistas y Maestro te ayuda a crear algo nuevo inspirado en ella.", "Import a MIDI or audio file: I turn it into tracks and Maestro helps you create something new inspired by it.")}</span></button>
     </div>`;
   body.querySelector(".np-choices").onclick = (e) => {
     const m = e.target.closest("button")?.dataset.m;
     if (!m) return;
+    if (m === "import") return openImportSong(true);
     $("#newproj").close();
     if (m === "blank") startBlank();
     if (m === "wizard") openBuilder();
@@ -1833,6 +1838,42 @@ async function openNewProject() {
   };
   $("#newproj").showModal();
 }
+// Importar una canción (MIDI o audio) como punto de partida: ver web/importsong.js
+async function openImportSong(checked = false) {
+  if (!checked && !(await guardUnsaved())) return;
+  const dlg = $("#newproj");
+  let listening = false, adopted = false;
+  dlg.addEventListener("close", () => { if (listening && !adopted) evalCode("hush"); }, { once: true });
+  openImport({
+    body: $("#np-body"), kicker: $("#np-kicker"),
+    open: () => { if (!dlg.open) dlg.showModal(); }, close: () => { adopted = true; dlg.close(); }, isOpen: () => dlg.open,
+    hush: () => { listening = false; evalCode("hush"); },
+    listen: (tracks, bpm) => { listening = true; evalCode(["hush", cps(bpm), ...tracks.map((t, i) => `d${i + 1} $ ${t.codigo}`)].join("\n\n")); },
+    adopt: adoptImport,
+  });
+}
+function adoptImport(r) {
+  startFresh();
+  state.name = r.name;
+  state.bpm = Math.max(40, Math.min(220, Math.round(r.bpm || 120)));
+  state.tracks = r.tracks.slice(0, 12).map((t, i) => ({ id: "d" + (i + 1), name: t.nombre, kind: t.tipo, code: fixNegatives(t.codigo), muted: false }));
+  state.reference = r.reference; state.refSummary = r.summary;
+  state.step = "libre";
+  resetHistory(state);
+  const intro = importedSummary(r.summary, state.tracks.length);
+  renderAll(); renderHistoryButtons();
+  if (live()) playAll(true);
+  if (r.inspire && useLLM()) {
+    say(intro + L("\n\nAhora la uso de referencia para crear contigo algo nuevo…", "\n\nNow I'll use it as a reference to create something new with you…"));
+    return send(INSPIRE_PROMPT());
+  }
+  say(intro + (r.inspire
+    ? L("\n\nPara hacerla tuya sin copiarla, prueba esto (yo lo haría en este orden):\n• Cambia el sonido de la melodía o de los acordes (por ejemplo superpiano → superhammond).\n• Mantén el ritmo y el bajo, pero inventa una melodía nueva sobre los mismos acordes.\n• Sube o baja el tempo 10-20 BPM y mira cómo cambia la energía.\n• Cambia un acorde de la progresión por otro de la misma tonalidad.", "\n\nTo make it yours without copying it, try this (I'd do it in this order):\n• Change the sound of the melody or chords (for example superpiano → superhammond).\n• Keep the beat and the bass, but invent a new melody over the same chords.\n• Raise or lower the tempo by 10-20 BPM and notice how the energy changes.\n• Swap one chord of the progression for another one in the same key.")
+    : L("\n\nPulsa «Explícame» en cualquier pista para entender su código, o silencia pistas para escuchar cada parte por separado.", "\n\nPress «Explain» on any track to understand its code, or mute tracks to hear each part on its own.")),
+    [INSPIRE_CHIP(), L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()]);
+}
+const INSPIRE_CHIP = () => L("Crear algo nuevo inspirado en ella", "Create something new inspired by it");
+
 function startFresh() {
   save();
   evalCode("hush");
@@ -3058,6 +3099,7 @@ function renderFilePop() {
   const k = (x) => `<kbd>${KEY_MOD}${x}</kbd>`;
   pop.innerHTML = `<button data-f="new" role="menuitem">${icon("plus", 16)} ${L("Nuevo proyecto…", "New project…")}</button>
     <button data-f="open" role="menuitem">${icon("folder", 16)} ${L("Abrir archivo…", "Open file…")} ${k("O")}</button>
+    <button data-f="import" role="menuitem">${icon("upload", 16)} ${L("Importar canción (MIDI, audio)…", "Import a song (MIDI, audio)…")}</button>
     <hr>
     <button data-f="save" role="menuitem">${icon("save", 16)} ${L("Guardar", "Save")} ${k("S")}</button>
     <button data-f="saveas" role="menuitem">${icon("save", 16)} ${L("Guardar como…", "Save as…")} ${k(KEY_MOD === "⌘" ? "⇧S" : "Shift+S")}</button>
@@ -3076,7 +3118,7 @@ function toggleFilePop(open) {
   if (show) renderFilePop();
   pop.hidden = !show; btn.setAttribute("aria-expanded", String(show));
 }
-const FILE_CMDS = { new: () => openNewProject(), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects() };
+const FILE_CMDS = { new: () => openNewProject(), import: () => openImportSong(), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects() };
 function wireFiles() {
   $("#btn-file").onclick = (e) => { e.stopPropagation(); toggleFilePop(); };
   document.addEventListener("click", (e) => { if (!e.target.closest(".file-menu")) toggleFilePop(false); });
