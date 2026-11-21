@@ -32,7 +32,13 @@ The installers built here contain **everything** Tidal Studio needs, so installi
 3. keeps the installer as a workflow artifact, and publishes a GitHub Release when you push a `v*` tag or run the
    workflow by hand with **publish** ticked.
 
-To release: bump `packaging/VERSION`, then *Actions → Offline installers → Run workflow* with **publish**,
+To release: bump `packaging/VERSION` on `main` (see below), or run the workflow by hand with **publish**,
 or push a tag such as `v0.1.0`.
 
 The GHC + Tidal build (~15 min) is cached between runs.
+
+### Automatic releases
+
+Every push to `main` that touches `packaging/` builds and tests the installer. If there is no Release yet for
+`v<packaging/VERSION>`, it is published automatically. So **to publish a new version, bump `packaging/VERSION` on
+`main`** (for example `0.1.0` → `0.2.0`). Pushes that keep the same version only build and test.
