@@ -133,3 +133,40 @@ export function skillsDialogHTML(list, opts = {}) {
       <div class="pl-choose-slot"></div>
     </form>`;
 }
+
+// «Cómo lo he decidido»: cada decisión musical con la skill que consultó Maestro y la regla que aplicó
+const ASPECT = {
+  estilo: ["Estilo", "Style", "wand"], ritmo: ["Ritmo", "Rhythm", "percusion"], tempo: ["Tempo", "Tempo", "steps"],
+  bajo: ["Bajo", "Bass", "bajo"], armonia: ["Armonía", "Harmony", "armonia"], melodia: ["Melodía", "Melody", "melodia"],
+  instrumentos: ["Instrumentos", "Instruments", "speaker"], efectos: ["Efectos", "Effects", "fx"],
+  mezcla: ["Mezcla", "Mix", "mixer"], estructura: ["Estructura", "Structure", "estructura"], otro: ["Idea", "Idea", "skill"],
+};
+export function decisionsHTML(decisions, open = true) {
+  const rows = decisions.map((d) => {
+    const a = ASPECT[d.aspect] || ASPECT.otro;
+    return `<li class="dec">
+      <div class="dec-head"><span class="dec-asp">${icon(a[2], 14)} ${esc(L(a[0], a[1]))}</span>
+        <button class="sk-chip used" data-skill="${esc(d.skill)}" title="${esc(L("Abrir la skill", "Open the skill"))}">${icon("skill", 12)}${esc(d.skill)}</button></div>
+      <div class="dec-body">
+        ${d.rule ? `<blockquote>${esc(d.rule)}</blockquote>` : ""}
+        ${d.applied ? `<p>${icon("check", 12)} ${esc(d.applied)}</p>` : ""}
+      </div>
+    </li>`;
+  }).join("");
+  return `<details class="decisions" ${open ? "open" : ""}><summary>${icon("skill", 14)} ${L("Cómo lo he decidido", "How I decided")} <small>${esc(L(`${decisions.length} ${decisions.length === 1 ? "decisión" : "decisiones"} con skills`, `${decisions.length} ${decisions.length === 1 ? "decision" : "decisions"} from skills`))}</small></summary><ol>${rows}</ol></details>`;
+}
+
+// Razonamiento de Maestro, estilo harness: pasos y pensamiento en gris tenue, dentro de un desplegable
+export function traceHTML(trace, { live = false, open = false } = {}) {
+  const evs = (trace && trace.events) || [];
+  const last = evs.length ? evs[evs.length - 1] : null;
+  const peek = last ? (last.kind === "thinking" ? last.text.replace(/\s+/g, " ").slice(-110) : last.text) : L("empezando…", "starting…");
+  const secs = trace && trace.seconds ? `${Math.round(trace.seconds)} s` : "";
+  const thought = evs.some((e) => e.kind === "thinking");
+  const body = evs.map((e) => e.kind === "thinking"
+    ? `<div class="tr-think">${esc(e.text)}</div>`
+    : `<div class="tr-step"><span>${e.t != null ? `${e.t.toFixed ? e.t.toFixed(1) : e.t}s` : ""}</span>${esc(e.text)}</div>`).join("");
+  const title = live ? L("Pensando", "Thinking") : L("Razonamiento", "Reasoning");
+  const note = !live && !thought ? `<div class="tr-step tr-note">${esc(L("Este proveedor no comparte su razonamiento: solo se ven los pasos.", "This provider doesn't share its reasoning: only the steps are shown."))}</div>` : "";
+  return `<details class="trace ${live ? "live" : ""}" ${open ? "open" : ""}><summary><span class="tr-title">${title}${secs ? ` · ${secs}` : ""}</span>${live || !open ? `<span class="tr-peek">${esc(peek)}</span>` : ""}</summary><div class="tr-body">${body}${note}</div></details>`;
+}

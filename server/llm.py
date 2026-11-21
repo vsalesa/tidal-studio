@@ -44,7 +44,7 @@ def _post(url, headers, body, timeout=120):
         raise LLMError("La IA tardó demasiado en responder")
 
 
-def _openai(cfg, system, messages, max_tokens):
+def _openai(cfg, system, messages, max_tokens, on_event=None):
     c = cfg["openai"]
     base = c["base_url"].rstrip("/")
     url = base + "/chat/completions" if not base.endswith("/chat/completions") else base
@@ -59,12 +59,17 @@ def _openai(cfg, system, messages, max_tokens):
     }
     data = _post(url, headers, body)
     try:
-        return data["choices"][0]["message"]["content"] or ""
+        msg = data["choices"][0]["message"]
+        # Algunos modelos (DeepSeek, OpenRouter, Ollama…) devuelven su razonamiento aparte
+        why = msg.get("reasoning_content") or msg.get("reasoning") or ""
+        if on_event and isinstance(why, str) and why.strip():
+            on_event("thinking", why.strip())
+        return msg["content"] or ""
     except (KeyError, IndexError, TypeError):
         raise LLMError(f"Respuesta inesperada de la IA: {str(data)[:300]}")
 
 
-def _anthropic(cfg, system, messages, max_tokens):
+def _anthropic(cfg, system, messages, max_tokens, on_event=None):
     c = cfg["anthropic"]
     headers = {
         "x-api-key": c["api_key"],
@@ -90,13 +95,66 @@ def _anthropic(cfg, system, messages, max_tokens):
         "max_tokens": max(max_tokens, 8000),
         "output_config": {"effort": c.get("effort", "low")},
     }
-    data = _post("https://api.anthropic.com/v1/messages", headers, body)
+    if on_event and "haiku-4" not in str(c["model"]) and "3-" not in str(c["model"]):
+        # Con alguien mirando, pedimos el razonamiento resumido y lo vamos pasando según llega
+        body["thinking"] = {"type": "adaptive", "display": "summarized"}
+        data = _anthropic_stream(headers, body, on_event)
+    else:
+        data = _post("https://api.anthropic.com/v1/messages", headers, body)
     if data.get("stop_reason") == "refusal":
         raise LLMError("Claude no ha querido responder a esta petición. Prueba a reformularla.")
     try:
         return "".join(b.get("text", "") for b in data["content"] if b.get("type") == "text")
     except (KeyError, TypeError):
         raise LLMError(f"Respuesta inesperada de Claude: {str(data)[:300]}")
+
+
+def _anthropic_stream(headers, body, on_event, timeout=180):
+    """Messages API en streaming (SSE): pasa el razonamiento (thinking_delta) a on_event y devuelve el
+    mensaje completo con la misma forma que la respuesta normal."""
+    body = dict(body, stream=True)
+    req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=json.dumps(body).encode("utf-8"), method="POST")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("User-Agent", "tidal-studio/0.1")
+    for k, v in headers.items():
+        req.add_header(k, v)
+    blocks, stop = {}, None
+    try:
+        with net.urlopen(req, timeout=timeout) as resp:
+            for raw in resp:
+                line = raw.decode("utf-8", "replace").strip()
+                if not line.startswith("data:"):
+                    continue
+                try:
+                    ev = json.loads(line[5:].strip())
+                except ValueError:
+                    continue
+                t = ev.get("type")
+                if t == "content_block_start":
+                    cb = ev.get("content_block") or {}
+                    blocks[ev.get("index", 0)] = {"type": cb.get("type"), "text": cb.get("text", ""), "thinking": cb.get("thinking", "")}
+                elif t == "content_block_delta":
+                    d = ev.get("delta") or {}
+                    b = blocks.setdefault(ev.get("index", 0), {"type": "text", "text": "", "thinking": ""})
+                    if d.get("type") == "text_delta":
+                        b["text"] += d.get("text", "")
+                    elif d.get("type") == "thinking_delta":
+                        b["thinking"] += d.get("thinking", "")
+                        if d.get("thinking"):
+                            on_event("thinking", d["thinking"])
+                elif t == "message_delta":
+                    stop = (ev.get("delta") or {}).get("stop_reason") or stop
+                elif t == "error":
+                    raise LLMError(f"La IA respondió con error: {str(ev.get('error'))[:300]}")
+    except urllib.error.HTTPError as e:
+        detail = e.read().decode("utf-8", errors="replace")[:500]
+        raise LLMError(f"La IA respondió con error {e.code}: {detail}")
+    except urllib.error.URLError as e:
+        raise LLMError(f"No se pudo conectar con la IA: {e.reason}{net.ssl_hint(e.reason)}")
+    except TimeoutError:
+        raise LLMError("La IA tardó demasiado en responder")
+    content = [{"type": b["type"], "text": b["text"]} for _, b in sorted(blocks.items()) if b["type"] == "text"]
+    return {"content": content, "stop_reason": stop}
 
 
 # ---------------------------------------------------------------- Claude Code (suscripción)
@@ -168,26 +226,62 @@ def claude_cli(cfg):
     return find_claude(cfg)[0]
 
 
-SUB_STRIP = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN")
+SUB_STRIP = ("ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "ANTHROPIC_BASE_URL")
+AUTO = {}  # lo rellena ccdetect: {"mode": "subscription"|"terminal", "reason": "..."}
+
+
+def auth_mode(cfg):
+    """Cómo se conecta `claude`: subscription (tu plan, como Claude Desktop), api (clave/endpoint propio)
+    o terminal (igual que en tu terminal). «auto» decide con lo detectado."""
+    c = cfg.get("claudecode") or {}
+    m = c.get("auth_mode") or "auto"
+    if m == "auto" and c.get("use_subscription") is False:
+        m = "terminal"  # ajuste antiguo
+    if m == "auto":
+        m = AUTO.get("mode") or "terminal"
+    return m
 
 
 def cli_env(cfg, exe):
-    """Entorno para `claude`: su carpeta en el PATH (node de nvm vive ahí) y, si usas la suscripción,
-    sin claves de API (con ANTHROPIC_API_KEY Claude Code las usaría en vez de tu plan)."""
+    """Entorno para `claude`: su carpeta en el PATH (node de nvm vive ahí) y las credenciales según el modo."""
     c = cfg.get("claudecode") or {}
     env = dict(os.environ)
     if exe and os.path.dirname(exe):
         env["PATH"] = os.path.dirname(exe) + os.pathsep + env.get("PATH", "")
     removed = []
-    if c.get("use_subscription", True):
+    mode = auth_mode(cfg)
+    if mode == "subscription":
+        # con ANTHROPIC_API_KEY Claude Code la usaría en vez de tu plan
         for k in SUB_STRIP:
             if env.pop(k, None) is not None:
                 removed.append(k)
+    elif mode == "api":
+        if (c.get("base_url") or "").strip():
+            env["ANTHROPIC_BASE_URL"] = c["base_url"].strip()
+        if (c.get("api_key") or "").strip():
+            env["ANTHROPIC_API_KEY"] = c["api_key"].strip()
     env.pop("CLAUDECODE", None)  # si el estudio se abrió desde dentro de Claude Code
     return env, removed
 
 
-def claude_run(cfg, system, prompt, model=None, timeout=None):
+def _cli_event(line, on_event):
+    """Una línea de `claude -p --output-format stream-json`: pasa el razonamiento y los pasos."""
+    try:
+        d = json.loads(line)
+    except ValueError:
+        return
+    if not isinstance(d, dict):
+        return
+    if d.get("type") == "stream_event":
+        ev = d.get("event") or {}
+        delta = ev.get("delta") or {}
+        if ev.get("type") == "content_block_delta" and delta.get("type") == "thinking_delta" and delta.get("thinking"):
+            on_event("thinking", delta["thinking"])
+    elif d.get("type") == "system" and d.get("subtype") == "init":
+        on_event("step", f"Claude Code · {d.get('model') or ''}".strip(" ·"))
+
+
+def claude_run(cfg, system, prompt, model=None, timeout=None, on_event=None):
     """Ejecuta `claude -p` y devuelve todo lo necesario para depurar."""
     import time
     c = cfg.get("claudecode") or {}
@@ -205,16 +299,20 @@ def claude_run(cfg, system, prompt, model=None, timeout=None):
         sp = os.path.join(tmp, "system.txt")
         with open(sp, "w", encoding="utf-8") as f:
             f.write(system)
-        cmd = [exe, "-p", "--output-format", "json", "--tools", "", "--no-session-persistence",
-               "--strict-mcp-config", "--system-prompt-file", sp]
+        fmt = ["--output-format", "stream-json", "--verbose", "--include-partial-messages"] if on_event else ["--output-format", "json"]
+        cmd = [exe, "-p"] + fmt + ["--tools", "", "--no-session-persistence",
+                                   "--strict-mcp-config", "--system-prompt-file", sp]
         if resolved:
             cmd += ["--model", resolved]
         res["cmd"] = ["<system.txt>" if a == sp else a for a in cmd]
         try:
             # cwd temporal: así no lee CLAUDE.md ni ajustes de ninguna carpeta del usuario
-            r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                               timeout=int(timeout or c.get("timeout", 180)), cwd=tmp, env=env)
-            res.update(rc=r.returncode, stdout=r.stdout or "", stderr=r.stderr or "")
+            if on_event:  # línea a línea, para enseñar el razonamiento en directo
+                _run_streaming(cmd, prompt, tmp, env, int(timeout or c.get("timeout", 180)), on_event, res)
+            else:
+                r = subprocess.run(cmd, input=prompt, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                                   timeout=int(timeout or c.get("timeout", 180)), cwd=tmp, env=env)
+                res.update(rc=r.returncode, stdout=r.stdout or "", stderr=r.stderr or "")
         except subprocess.TimeoutExpired:
             res["error"] = "timeout"
         except OSError as e:
@@ -248,11 +346,45 @@ def claude_run(cfg, system, prompt, model=None, timeout=None):
     return res
 
 
+def _run_streaming(cmd, prompt, cwd, env, timeout, on_event, res):
+    """Como subprocess.run, pero leyendo la salida línea a línea para enseñar el razonamiento en directo."""
+    import threading
+    try:
+        p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                             encoding="utf-8", errors="replace", cwd=cwd, env=env)
+    except OSError as e:
+        res["error"] = f"oserror: {e}"
+        return
+    err = []
+    t_err = threading.Thread(target=lambda: err.append(p.stderr.read()), daemon=True)
+    t_err.start()
+    timer = threading.Timer(timeout, p.kill)
+    timer.start()
+    out = []
+    try:
+        try:
+            p.stdin.write(prompt)
+            p.stdin.close()
+        except OSError:
+            pass
+        for line in p.stdout:
+            out.append(line)
+            _cli_event(line, on_event)
+        p.wait()
+    finally:
+        timed_out = not timer.is_alive() and p.returncode not in (0, None)
+        timer.cancel()
+    t_err.join(timeout=2)
+    res.update(rc=p.returncode, stdout="".join(out), stderr="".join(err))
+    if timed_out:
+        res["error"] = "timeout"
+
+
 MODEL_HINT = (" · Usa un alias (opus, sonnet, haiku, fable) o un id como claude-opus-5-5, no el nombre que "
               "ves en Claude Desktop. Ajustes → Diagnóstico te dice cuáles funcionan.")
 
 
-def _claudecode(cfg, system, messages, max_tokens):
+def _claudecode(cfg, system, messages, max_tokens, on_event=None):
     # Claude Code recibe la conversación como texto; las instrucciones de Maestro van como system prompt
     turns = []
     for m in messages:
@@ -260,7 +392,7 @@ def _claudecode(cfg, system, messages, max_tokens):
         turns.append(f"[{who}]\n{m['content']}")
     prompt = ("Conversación hasta ahora (responde SOLO al último mensaje del alumno, como Maestro, "
               "con el formato JSON indicado y nada más):\n\n" + "\n\n".join(turns))
-    r = claude_run(cfg, system, prompt)
+    r = claude_run(cfg, system, prompt, on_event=on_event)
     d = r["data"]
     if r["error"] == "not_found":
         raise LLMError("No encuentro el comando «claude». Instala Claude Code (https://claude.com/claude-code), "
@@ -284,14 +416,16 @@ def _claudecode(cfg, system, messages, max_tokens):
     return d.get("result") or ""
 
 
-def chat_completion(cfg, system, messages, max_tokens=1500):
+def chat_completion(cfg, system, messages, max_tokens=1500, on_event=None):
+    """on_event(tipo, texto), opcional: recibe el razonamiento de la IA («thinking») y pasos («step»)
+    mientras responde, para enseñarlo en el chat."""
     p = cfg["provider"]
     try:
         if p == "claudecode":
-            return _claudecode(cfg, system, messages, max_tokens)
+            return _claudecode(cfg, system, messages, max_tokens, on_event)
         if p == "anthropic":
-            return _anthropic(cfg, system, messages, max_tokens)
-        return _openai(cfg, system, messages, max_tokens)
+            return _anthropic(cfg, system, messages, max_tokens, on_event)
+        return _openai(cfg, system, messages, max_tokens, on_event)
     except LLMError as e:
         if p != "claudecode":  # claude_run ya lo ha apuntado con más detalle
             log(f"{p} ({(cfg.get(p) or {}).get('model', '')}) -> {e}")

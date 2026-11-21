@@ -33,6 +33,7 @@ import net  # noqa: E402
 import llm as llmmod  # noqa: E402
 import llmdiag  # noqa: E402
 import shellenv  # noqa: E402
+import ccdetect  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -55,7 +56,11 @@ DEFAULT_CONFIG = {
     "claudecode": {
         "path": "",                # vacío = buscar «claude» en el PATH
         "model": "",               # vacío = el modelo por defecto de tu plan (alias: opus, sonnet, haiku, fable)
-        "use_subscription": True,  # no pasar ANTHROPIC_API_KEY a claude: así usa tu plan, como Claude Desktop
+        # auto = lo detectado en tu terminal · subscription = tu plan (como Claude Desktop, sin claves)
+        # api = clave/endpoint propio (abajo, o los de tu terminal) · terminal = exactamente como en tu terminal
+        "auth_mode": "auto",
+        "base_url": "",            # solo modo api: ANTHROPIC_BASE_URL (vacío = el de tu terminal)
+        "api_key": "",             # solo modo api: ANTHROPIC_API_KEY (vacío = la de tu terminal)
     },
     "github": {
         "token": "",
@@ -124,7 +129,7 @@ def mask(key):
 
 def public_config(cfg):
     out = json.loads(json.dumps(cfg))
-    for p in ("openai", "anthropic"):
+    for p in ("openai", "anthropic", "claudecode"):
         out[p]["api_key_set"] = bool(cfg[p]["api_key"])
         out[p]["api_key"] = mask(cfg[p]["api_key"])
     out["github"]["token_set"] = bool(cfg["github"]["token"])
@@ -163,7 +168,15 @@ def skills_report(sk, raw):
         return {"loaded": [], "used": [], "active": 0}
     active, loaded = sk
     data = _extract_json(raw) or {}
-    return {"loaded": loaded, "used": skillset.used_from(data.get("skills"), active), "active": len(active)}
+    # Solo cuentan las decisiones con skills cuyo contenido se cargó en este mensaje: si no, la regla sería inventada
+    loaded_names = {x["name"] for x in loaded}
+    decisions = skillset.decisions_from(data.get("decisiones") or data.get("decisions"),
+                                        [s for s in active if s["name"] in loaded_names])
+    used = skillset.used_from(data.get("skills"), active)
+    for d in decisions:  # si decidió algo con una skill, la ha usado
+        if d["skill"] not in used:
+            used.append(d["skill"])
+    return {"loaded": loaded, "used": used, "active": len(active), "decisions": decisions}
 
 
 def install_any(cfg, url, names=None):
@@ -181,6 +194,57 @@ def install_any(cfg, url, names=None):
 
 
 DEFAULT_PLUGINS = {"state": "idle", "installed": []}
+
+
+# ------------------------------------------------------------------ razonamiento en directo
+# Mientras Maestro piensa, el navegador pregunta cada medio segundo por /api/trace?id=… y enseña los
+# pasos (skills cargadas, a quién pregunta…) y el razonamiento de la IA, si el proveedor lo da.
+TRACES = {}
+_traces_lock = threading.Lock()
+
+
+class Trace:
+    def __init__(self, tid, lang):
+        import time as _t
+        self.id, self.es = tid, not str(lang or "es").startswith("en")
+        self.t0 = _t.time()
+        self.events = []  # [{"kind": "step"|"thinking", "text": …, "t": segundos}]
+        self.done = False
+        if tid:
+            with _traces_lock:
+                for k in [k for k, v in TRACES.items() if self.t0 - v.t0 > 900]:
+                    TRACES.pop(k, None)
+                TRACES[tid] = self
+
+    def L(self, es, en):
+        return es if self.es else en
+
+    def add(self, kind, text):
+        import time as _t
+        if not self.id or not text:
+            return
+        with _traces_lock:
+            if kind == "thinking" and self.events and self.events[-1]["kind"] == "thinking":
+                self.events[-1]["text"] = (self.events[-1]["text"] + text)[-20000:]
+            else:
+                self.events.append({"kind": kind, "text": str(text)[:20000], "t": round(_t.time() - self.t0, 1)})
+
+    def finish(self):
+        self.done = True
+
+    def public(self):
+        import time as _t
+        with _traces_lock:
+            return {"events": [dict(e) for e in self.events], "done": self.done, "seconds": round(_t.time() - self.t0, 1)}
+
+
+def provider_label(cfg):
+    p = cfg.get("provider")
+    if p == "claudecode":
+        return "Claude Code" + (f" ({(cfg.get('claudecode') or {}).get('model')})" if (cfg.get("claudecode") or {}).get("model") else "")
+    if p == "anthropic":
+        return f"Claude ({cfg['anthropic'].get('model', '')})"
+    return f"{cfg['openai'].get('model', '')} ({cfg['openai'].get('base_url', '')})"
 
 
 def install_default_plugins():
@@ -339,6 +403,11 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"skills": skillset.public(skillset.scan(cfg)), "folder": skillset.USER_DIR,
                                    "plugins": pluginset.public(pluginset.scan(cfg)), "plugin_folder": pluginset.PLUGIN_DIR,
                                    "default_plugins": DEFAULT_PLUGINS["state"]})
+            if path == "/api/trace":
+                q = parse_qs(urlparse(self.path).query)
+                with _traces_lock:
+                    tr = TRACES.get(q.get("id", [""])[0])
+                return self._json(tr.public() if tr else {"events": [], "done": False, "seconds": 0})
             if path == "/api/skills/body":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -406,6 +475,9 @@ class Handler(SimpleHTTPRequestHandler):
                     {"role": "user", "content": "¿Estás ahí?"}], max_tokens=20)
                 return self._json({"ok": True, "reply": text.strip()[:200]})
 
+            if path == "/api/llm/detect":
+                return self._json(ccdetect.get(load_config(), bool(data.get("refresh"))))
+
             if path == "/api/llm/diagnose":
                 return self._json(llmdiag.diagnose(load_config(), data.get("lang", "es")))
 
@@ -427,12 +499,33 @@ class Handler(SimpleHTTPRequestHandler):
                     expanded, command = pluginset.expand_command(cfg, str(last_user.get("content", "")))
                     if command:
                         msgs = [dict(m, content=expanded) if m is last_user else m for m in msgs]
-                system, messages = build_messages(msgs, data.get("session") or {})
+                tr = Trace(str(data.get("trace") or "")[:64], data.get("lang"))
+                sess = data.get("session") or {}
+                tracks = [t for t in sess.get("tracks") or [] if isinstance(t, dict)]
+                tr.add("step", tr.L(f"Leo tu mensaje y tu canción: {len(tracks)} pistas, {sess.get('bpm') or '?'} bpm",
+                                    f"Reading your message and your song: {len(tracks)} tracks, {sess.get('bpm') or '?'} bpm"))
+                if command:
+                    tr.add("step", tr.L(f"Comando /{command['plugin']}:{command['command']} → uso su texto como petición",
+                                        f"Command /{command['plugin']}:{command['command']} → using its text as the request"))
+                system, messages = build_messages(msgs, sess)
                 last = next((m.get("content", "") for m in reversed(msgs) if m.get("role") == "user"), "")
-                system, sk = with_skills(cfg, system, last, data.get("session") or {})
-                raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1800)
+                system, sk = with_skills(cfg, system, last, sess)
+                if sk:
+                    active, loaded = sk
+                    names = [x["name"] + (f" (+{', '.join(r.split('/')[-1] for r in x['refs'])})" if x["refs"] else "")
+                             + (tr.L(" · siempre", " · always") if x.get("pinned") else "") for x in loaded]
+                    tr.add("step", tr.L(f"Elijo skills entre {len(active)}: ", f"Picking skills out of {len(active)}: ")
+                           + (", ".join(names) if names else tr.L("ninguna encaja", "none match")))
+                tr.add("step", tr.L(f"Pregunto a {provider_label(cfg)}…", f"Asking {provider_label(cfg)}…"))
+                try:
+                    raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1800,
+                                          on_event=tr.add if tr.id else None)
+                    tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
+                finally:
+                    tr.finish()
                 return self._json({**parse_reply(raw), "skills": skills_report(sk, raw),
-                                   **({"command": command} if command else {})})
+                                   **({"command": command} if command else {}),
+                                   **({"trace": tr.public()} if tr.id else {})})
 
             if path == "/api/explain":
                 cfg = load_config()
@@ -703,6 +796,8 @@ def main():
         net.FORCE_INSECURE = True
 
     shellenv.start()
+    if not ARGS.check:
+        ccdetect.start(load_config)
     if ARGS.check:
         shellenv.wait(12)
         check()

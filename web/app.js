@@ -21,7 +21,7 @@ import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, 
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
-import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse } from "./skills.js";
+import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -1147,6 +1147,8 @@ function renderChat() {
     const el = document.createElement("div");
     el.className = "msg " + m.role;
     el.textContent = m.content;
+    // Cómo ha usado Maestro las skills para decidir (justo debajo del texto, para que se vea)
+    if (m.skills && m.skills.decisions && m.skills.decisions.length) el.insertAdjacentHTML("beforeend", decisionsHTML(m.skills.decisions, mi === state.chat.length - 1));
     if (m.explicacion && m.explicacion.length) {
       el.insertAdjacentHTML("beforeend", `<ul class="parts">${m.explicacion.map((p) =>
         `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("")}</ul>`);
@@ -1158,9 +1160,10 @@ function renderChat() {
       `<a href="${esc(a.href)}" target="_blank" rel="noopener">${icon("link", 14)} ${esc(a.label)}</a>`).join("")}</div>`);
     if (m.controles && m.controles.length) el.insertAdjacentHTML("beforeend", controlsHTML(m.controles, state, mi));
     if (m.skills) el.insertAdjacentHTML("beforeend", skillsLineHTML(m.skills));
+    if (m.trace && m.trace.events && m.trace.events.length) el.insertAdjacentHTML("beforeend", traceHTML(m.trace));
     box.appendChild(el);
   });
-  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}</div>`);
+  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
   box.scrollTop = box.scrollHeight;
   const chips = $("#chips");
   chips.innerHTML = "";
@@ -1215,8 +1218,45 @@ async function send(text) {
   offlineGuide(text);
 }
 
+// Razonamiento en directo: mientras la IA responde, preguntamos al servidor qué está haciendo
+let liveTrace = null;
+let traceOpen = false;
+function startTrace() {
+  const id = Math.random().toString(36).slice(2) + Date.now().toString(36);
+  liveTrace = { events: [], seconds: 0 };
+  let stop = false;
+  const paint = () => {
+    const el = $("#chat .msg.typing"); if (!el) return;
+    const box = $("#chat");
+    const chatAtBottom = box.scrollTop + box.clientHeight >= box.scrollHeight - 30;
+    const old = el.querySelector(".trace");
+    const scroller = old && old.querySelector(".tr-body");
+    const atBottom = !scroller || scroller.scrollTop + scroller.clientHeight >= scroller.scrollHeight - 8;
+    if (old) old.remove();
+    el.insertAdjacentHTML("beforeend", traceHTML(liveTrace, { live: true, open: traceOpen }));
+    const d = el.querySelector(".trace");
+    d.addEventListener("toggle", () => { traceOpen = d.open; if (d.open) box.scrollTop = box.scrollHeight; });
+    const b = d.querySelector(".tr-body"); if (b && atBottom) b.scrollTop = b.scrollHeight;
+    if (chatAtBottom) box.scrollTop = box.scrollHeight;
+  };
+  const tick = async () => {
+    if (stop) return;
+    try { const r = await api(`/api/trace?id=${encodeURIComponent(id)}`); if (!stop && r.events) { liveTrace = r; paint(); } } catch { /* sin servidor */ }
+    if (!stop) setTimeout(tick, 450);
+  };
+  setTimeout(tick, 250);
+  return { id, end: () => { stop = true; const t = liveTrace; liveTrace = null; return t; } };
+}
+function keepTrace(t) {
+  if (!t || !t.events) return undefined;
+  // Se guarda con el mensaje (recortado) para poder releerlo luego
+  const events = t.events.map((e) => ({ ...e, text: String(e.text).slice(-6000) }));
+  return { events, seconds: t.seconds, done: true };
+}
+
 async function askLLM() {
   busy = true; renderChat();
+  const trace = startTrace();
   try {
     const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
@@ -1227,7 +1267,8 @@ async function askLLM() {
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
     state.tracks.forEach((t) => delete t.edited);
-    const r = await api("/api/chat", { messages: history, session });
+    const r = await api("/api/chat", { messages: history, session, trace: trace.id });
+    const lastTrace = trace.end();
     busy = false;
     if (r.paso) state.step = r.paso;
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
@@ -1238,9 +1279,10 @@ async function askLLM() {
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
     if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
     countUse(r.skills);
-    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}) });
+    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
   } catch (e) {
+    trace.end();
     busy = false;
     say(L("Uy, no he podido hablar con la IA: ", "Oops, I couldn't reach the AI: ") + e.message + L("\n\nRevisa los Ajustes. Mientras tanto te sigo guiando sin IA.", "\n\nCheck Settings. Meanwhile I'll keep guiding you without AI."), [L("Seguir sin IA", "Continue without AI")]);
   }
@@ -2366,7 +2408,10 @@ async function openSettings() {
   $("#oa-url").value = c.openai.base_url; $("#oa-model").value = c.openai.model;
   $("#oa-key").value = c.openai.api_key; $("#an-key").value = c.anthropic.api_key; $("#an-model").value = c.anthropic.model;
   $("#cc-path").value = c.claudecode?.path || ""; $("#cc-model").value = c.claudecode?.model || "";
-  $("#cc-sub").checked = c.claudecode?.use_subscription !== false; $("#diag").hidden = true;
+  const cc = c.claudecode || {};
+  $("#cc-mode").value = cc.auth_mode || (cc.use_subscription === false ? "terminal" : "auto");
+  $("#cc-url").value = cc.base_url || ""; $("#cc-key").value = cc.api_key || ""; $("#diag").hidden = true;
+  toggleCcMode(); loadDetect(false);
   const preset = [...$("#oa-preset").options].find((o) => o.value.split("|")[0] === c.openai.base_url);
   $("#oa-preset").value = preset ? preset.value : "custom";
   const g = c.github || {};
@@ -2385,12 +2430,58 @@ async function saveSettings() {
     provider: document.querySelector("input[name=provider]:checked").value,
     openai: { base_url: $("#oa-url").value, api_key: $("#oa-key").value, model: $("#oa-model").value },
     anthropic: { api_key: $("#an-key").value, model: $("#an-model").value },
-    claudecode: { path: $("#cc-path").value, model: $("#cc-model").value, use_subscription: $("#cc-sub").checked },
+    claudecode: { path: $("#cc-path").value, model: $("#cc-model").value, auth_mode: $("#cc-mode").value,
+      base_url: $("#cc-url").value, api_key: $("#cc-key").value },
     github: { token: $("#gh-token").value, repo: $("#gh-repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""),
       branch: $("#gh-branch").value, folder: $("#gh-folder").value },
   });
   state.offline = false; save();
   await refreshStatus();
+}
+
+// ------------------------------------------------------------------ autodetección de Claude Code
+let detected = null;
+function toggleCcMode() { $("#cc-api").hidden = $("#cc-mode").value !== "api"; }
+function srcName(s) {
+  if (!s) return "";
+  if (s.startsWith("env:")) return L(`variable ${s.slice(4)} de tu terminal`, `${s.slice(4)} variable from your terminal`);
+  return ({ settings: L("tus Ajustes de Tidal Studio", "your Tidal Studio settings"), terminal_path: L("PATH de tu terminal", "your terminal's PATH"),
+    search: L("carpeta habitual de instalación", "usual install folder"), cli: L("el propio claude", "claude itself"),
+    plan_default: L("el de tu plan (no hay ninguno fijado)", "your plan's default (none set)"),
+    official: L("oficial de Anthropic", "Anthropic's official one"), none: L("ninguna", "none"), env: L("tu entorno", "your environment"),
+    missing: L("no encontrado", "not found") })[s] || s;
+}
+async function loadDetect(refresh) {
+  $("#cc-detect-msg").textContent = L("Detectando…", "Detecting…");
+  try { detected = await api("/api/llm/detect", { refresh }); $("#cc-detect-msg").textContent = ""; renderDetect(); }
+  catch (e) { $("#cc-detect-msg").textContent = "Error: " + e.message; }
+}
+function renderDetect() {
+  const d = detected; if (!d?.items) return;
+  const it = d.items;
+  const rows = [
+    [L("Comando claude", "claude command"), it.path], [L("Versión", "Version"), it.version],
+    [L("Sesión", "Sign-in"), it.login && { ...it.login, shown: (it.login.value ? L("iniciada", "signed in") : L("NO iniciada", "NOT signed in")) + " · " + it.login.shown }],
+    [L("Modelo por defecto", "Default model"), it.model && { ...it.model, shown: it.model.value || L("el de tu plan", "your plan's") }],
+    ["Endpoint", it.endpoint && { ...it.endpoint, shown: it.endpoint.value || "api.anthropic.com" }],
+    [L("Clave de API", "API key"), it.key && { ...it.key, shown: it.key.value ? `${it.key.value} ${it.key.shown}` : L("ninguna", "none") }],
+  ];
+  if (it.cloud?.value) rows.push(["Bedrock / Vertex", it.cloud]);
+  $("#cc-detect-table").innerHTML = rows.filter((r) => r[1]).map(([k, v]) =>
+    `<tr><th>${esc(k)}</th><td><code>${esc(v.shown ?? v.value)}</code></td><td class="hint">${esc(srcName(v.source))}</td></tr>`).join("");
+  // lo detectado aparece en los campos vacíos (si escribes algo, manda lo tuyo)
+  $("#cc-path").placeholder = it.path?.value ? L("auto: ", "auto: ") + it.path.value : "claude";
+  $("#cc-model").placeholder = it.model?.value && it.model.source !== "settings" ? L("auto: ", "auto: ") + it.model.value : L("auto: el de tu plan (opus, sonnet…)", "auto: your plan's (opus, sonnet…)");
+  $("#cc-url").placeholder = it.endpoint?.value ? L("auto: ", "auto: ") + it.endpoint.value : "https://api.anthropic.com";
+  $("#cc-key").placeholder = it.key?.value ? L("auto: ", "auto: ") + it.key.shown : "sk-ant-…";
+  const a = d.auto || {};
+  const why = { custom: L("Claude Code tiene un endpoint, Bedrock/Vertex o una clave en sus ajustes", "Claude Code has an endpoint, Bedrock/Vertex or a key in its settings"),
+    key_and_login: L("tienes una clave de API en tu terminal pero también sesión con tu plan: uso tu plan, como Claude Desktop", "you have an API key in your terminal but also a plan sign-in: using your plan, like Claude Desktop"),
+    key_only: L("solo hay una clave de API, sin sesión de plan", "there's only an API key, no plan sign-in"),
+    login: L("tienes sesión iniciada con tu plan", "you're signed in with your plan"),
+    no_login: L("no hay sesión: ejecuta «claude» en una terminal e inicia sesión", "not signed in: run «claude» in a terminal and sign in") }[a.why] || a.why || "";
+  const modeName = { subscription: L("tu suscripción", "your subscription"), terminal: L("igual que en tu terminal", "same as your terminal") }[a.mode] || a.mode;
+  $("#cc-auto").textContent = $("#cc-mode").value === "auto" ? L(`Automática usará ${modeName}: ${why}.`, `Automatic will use ${modeName}: ${why}.`) : "";
 }
 
 // ------------------------------------------------------------------ diagnóstico de la IA
@@ -2943,6 +3034,8 @@ function init() {
     catch (e) { $("#test-msg").textContent = "Error: " + e.message + " · " + L("Pulsa «Diagnóstico» para ver por qué.", "Press «Diagnostics» to see why."); }
   };
   $("#btn-diag").onclick = runDiagnostics;
+  $("#cc-mode").onchange = () => { toggleCcMode(); renderDetect(); };
+  $("#btn-cc-detect").onclick = async () => { await saveSettings(); loadDetect(true); };
   $("#btn-diag-models").onclick = runModelTest;
   $("#btn-diag-copy").onclick = async () => {
     try { await navigator.clipboard.writeText(JSON.stringify(lastDiag, null, 2)); $("#diag-msg").textContent = L("Copiado", "Copied"); }
