@@ -49,16 +49,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
                      "Despertando a SuperCollider y Tidal. Tarda unos segundos."), spinner: true)
         NSApp.activate(ignoringOtherApps: true)
         startServer()
-        if selfTest {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 240) {
-                if !self.selfTestDone {
-                    say("self-test: TIMEOUT")
-                    print(self.logTail())
-                    self.stopServer()
-                    exit(1)
-                }
-            }
-        }
+        say("launched; window ready")
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ app: NSApplication) -> Bool { true }
@@ -508,6 +499,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     }
 }
 
+if selfTest {
+    // watchdog on its own thread, so it fires even if the main thread is stuck
+    DispatchQueue.global().asyncAfter(deadline: .now() + 180) {
+        say("self-test: TIMEOUT")
+        if let s = try? String(contentsOf: FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library/Logs/Tidal Studio/studio.log"), encoding: .utf8) { print(s.suffix(6000)) }
+        exit(1)
+    }
+}
+say("starting (self-test: \(selfTest))")
 let app = NSApplication.shared
 let delegate = AppDelegate()
 app.delegate = delegate
