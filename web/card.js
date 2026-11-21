@@ -1,5 +1,6 @@
 import { L } from "./i18n.js";
 import { elementsOf, ADD_PARAMS, WRAPS } from "./edit.js";
+import { fxSwitch, canBypass } from "./blocks.js";
 import { PARAMS as CP, fmt } from "./controls.js";
 import { mixOf, masterOf, mixSuffix, dbText, VOL_MIN, VOL_MAX, EQ_MIN, EQ_MAX, BANDS } from "./mixer.js";
 // «Tarjeta configuradora» de Maestro: una tarjeta en el chat con TODOS los valores de una pista
@@ -44,7 +45,7 @@ export function cardHTML(c, t, state, ci) {
     const P = CP[e.name];
     const label = P ? L(P.es, P.en) : e.name;
     const body = e.range ? slider(`data-key="${esc(e.key)}"`, e.range, e.value, fmt(e.value)) : `<input type="text" data-key="${esc(e.key)}" value="${esc(e.text)}" spellcheck="false">`;
-    return `<div class="card-param${hot(e)}"><span title="${esc(e.op + " " + e.name)}"><code>${esc(e.op)} ${esc(e.name)}</code> ${esc(label)}</span>${body}<button class="card-del" data-del="${esc(e.key)}" title="${esc(L("Quitar", "Remove"))}">×</button></div>`;
+    return `<div class="card-param${hot(e)}${e.off ? " off" : ""}"><span title="${esc(e.op + " " + e.name)}">${canBypass(e.name) ? fxSwitch(e.key, e) : ""}<code>${esc(e.op)} ${esc(e.name)}</code> ${esc(label)}</span>${body}<button class="card-del" data-del="${esc(e.key)}" title="${esc(L("Quitar", "Remove"))}">×</button></div>`;
   }).join("");
   const have = new Set(els.filter((e) => e.kind === "param").map((e) => e.name));
   const srcKey = (els.find((e) => e.kind === "src" || e.kind === "raw") || {}).key;

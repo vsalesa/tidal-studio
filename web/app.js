@@ -12,7 +12,7 @@ import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
 import { songBlocksHTML, blockInfo } from "./blocks.js";
-import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange } from "./edit.js";
+import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf } from "./edit.js";
 import { mixerHTML, mixCodeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
 import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory } from "./history.js";
@@ -401,11 +401,24 @@ function bkApply(mutate, rerender = true) {
   clearTimeout(bkTimer);
   bkTimer = setTimeout(() => { if (live()) playTrack(t); if (!rerender) changedQuiet(); }, rerender ? 0 : 200);
 }
+// Enciende o apaga un efecto (# room, # delay…) de una pista sin perder su valor: queda como «{- # room 0.3 -}»
+function toggleFx(id, key) {
+  const t = state.tracks.find((x) => x.id === id); if (!t) return;
+  let code; try { code = applyEdit(t.code, key, "toggle"); } catch { return; }
+  if (!code || code === t.code) return;
+  t.code = code; t.explain = null; t.edited = true;
+  if (bkSel) bkSel.keep = true;
+  changed();
+  if (live()) playTrack(t);
+  tourFlag("fx-toggle");
+}
 // Repinta todo menos el tooltip (tras arrastrar un deslizador)
 function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); refreshCards(); if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode(); }
 function wireBlocks() {
   $("#blocks").addEventListener("click", (e) => {
     const tr = e.target.closest(".bk-track");
+    const sw = e.target.closest(".fx-sw");
+    if (sw && tr) { e.stopPropagation(); return toggleFx(tr.dataset.id, sw.dataset.fx); }
     const a = e.target.closest("[data-a]")?.dataset.a;
     if (a === "edit") {
       state.selected = tr.dataset.id; save(); renderTracks(); renderPalette();
@@ -580,6 +593,13 @@ function clearChat() {
   say(L("Chat limpio. Tu canción sigue igual; solo he borrado la conversación.", "Chat cleared. Your song is unchanged; I only removed the conversation."),
     [L("Recuperar el chat", "Bring the chat back"), CARD_CHIP(), L("Dame una idea", "Give me an idea")]);
 }
+// Fila de efectos bajo el código de una pista: un interruptor por cada # (room, delay, lpf…)
+function fxRowHTML(t) {
+  let fx = []; try { fx = effectsOf(t.code); } catch { /* código raro */ }
+  if (!fx.length) return "";
+  return `<div class="fx-row"><span class="fx-row-lbl">${L("Efectos", "Effects")}</span>${fx.map((e) =>
+    `<button type="button" class="fx-chip ${e.off ? "off" : "on"}" data-fx="${esc(e.key)}" role="switch" aria-checked="${!e.off}" title="${esc(e.off ? L(`Encender ${e.name} (ahora no suena)`, `Turn ${e.name} on (bypassed now)`) : L(`Apagar ${e.name} sin perder su valor`, `Turn ${e.name} off, keeping its value`))}"><span class="fx-led"></span><code>${esc(e.op === "#" ? e.name : e.op + " " + e.name)}</code> ${esc(e.text)}</button>`).join("")}</div>`;
+}
 function renderTracks() {
   const box = $("#tracks");
   box.innerHTML = "";
@@ -604,6 +624,7 @@ function renderTracks() {
         </span>
       </div>
       <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="${L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")}"></textarea>
+      ${fxRowHTML(t)}
       ${t.error ? `<div class="err"></div>` : ""}
       ${t.help && t.help.open ? `<div class="explain-box help-box">${helpHTML(t)}</div>` : ""}
       ${t.explain ? `<div class="explain-box">${t.explain.loading ? L('<span class="typing">Maestro está leyendo el código…</span>', '<span class="typing">Maestro is reading the code…</span>') : explainHTML(t.explain, true)}</div>` : ""}`;
@@ -626,6 +647,7 @@ function renderTracks() {
         if (btn.closest(".help-box")) t.help = null; else t.explain = null;
         save(); renderTracks(); return;
       }
+      if (btn && btn.dataset.fx) return toggleFx(t.id, btn.dataset.fx);
       if (a === "controls") return showControls(t);
       if (a === "card") return openCard(t.id);
       if (a === "help") { t.help = t.help && t.help.open ? null : { open: true }; save(); renderTracks(); }
@@ -798,13 +820,32 @@ function renderProgress() {
 
 // ------------------------------------------------------------------ ideas (sugerencias)
 let flavorTurn = 0;
+// Ideas descartadas («no me gusta»): se guardan en el navegador para todos los proyectos,
+// no se vuelven a mostrar y Maestro (la IA) recibe la lista para no proponerlas igual.
+const DISMISS_KEY = "tidal-studio-dismissed-ideas-v1";
+let dismissed = [];
+try { dismissed = JSON.parse(localStorage.getItem(DISMISS_KEY) || "[]").filter((x) => x && x.k); } catch { dismissed = []; }
+const ideaKey = (idea) => String(idea.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const isDismissed = (idea) => { const k = ideaKey(idea); return !!k && dismissed.some((d) => d.k === k); };
+function saveDismissed() { try { localStorage.setItem(DISMISS_KEY, JSON.stringify(dismissed.slice(-80))); } catch { /* sin almacenamiento */ } }
+function dismissIdea(idea) {
+  const k = ideaKey(idea); if (!k || isDismissed(idea)) return;
+  dismissed.push({ k, t: idea.titulo, c: idea.concepto || "" });
+  saveDismissed();
+  if (state.ideas) state.ideas = state.ideas.filter((x) => !isDismissed(x));
+  save(); renderIdeas();
+}
+function restoreDismissed() { dismissed = []; saveDismissed(); renderIdeas(); }
 function currentIdeas() {
-  if (state.ideas && state.ideas.length) return state.ideas;
-  const ideas = localSuggestions(state, 1);
+  const fromAI = (state.ideas || []).filter((x) => !isDismissed(x));
+  if (fromAI.length) return fromAI;
+  const ideas = localSuggestions(state, 1, false, isDismissed);
   if (state.tracks.length >= 2) {
     const keys = Object.keys(FLAVORS).filter((k) => k !== state.style);
-    const f = flavorIdea(keys[flavorTurn % keys.length], state.tracks);
-    if (f) ideas.push(f);
+    for (let i = 0; i < keys.length; i++) {
+      const f = flavorIdea(keys[(flavorTurn + i) % keys.length], state.tracks);
+      if (f && !isDismissed(f)) { ideas.push(f); break; }
+    }
   }
   return ideas;
 }
@@ -845,8 +886,16 @@ function wirePreHear(btn, cambios) {
 function renderIdeas() {
   const list = $("#idea-list");
   const ideas = state.trying ? state.trying.ideas : currentIdeas();
-  $("#ideas").style.display = ideas.length ? "block" : "none";
+  $("#ideas").style.display = ideas.length || dismissed.length ? "block" : "none";
   list.innerHTML = "";
+  if (!ideas.length) list.innerHTML = `<p class="hint">${L("Has descartado las ideas de ahora. Pulsa «Otra idea» o pídele algo distinto a Maestro.", "You dismissed the current ideas. Press «Another idea» or ask Maestro for something different.")}</p>`;
+  if (dismissed.length && !state.trying) {
+    const r = document.createElement("div");
+    r.className = "ideas-dismissed";
+    r.innerHTML = `<span>${L(`${dismissed.length} descartada${dismissed.length === 1 ? "" : "s"}: Maestro no te las vuelve a proponer.`, `${dismissed.length} dismissed: Maestro won't suggest ${dismissed.length === 1 ? "it" : "them"} again.`)}</span><button class="link" data-a="restore">${dismissed.length === 1 ? L("Recuperarla", "Bring it back") : L("Recuperarlas", "Bring them back")}</button>`;
+    r.querySelector("button").onclick = restoreDismissed;
+    list.appendChild(r);
+  }
   ideas.forEach((idea, i) => {
     const trying = state.trying && state.trying.index === i;
     const el = document.createElement("div");
@@ -855,12 +904,15 @@ function renderIdeas() {
       ${idea.concepto ? `<span class="tag"></span>` : ""}
       <div class="row">${trying
         ? `<button data-a="keep" class="primary">${L("Me gusta, me lo quedo", "I like it, keep it")}</button><button data-a="undo">${L("Deshacer", "Undo")}</button>`
-        : `<button class="prehear" title="${L("Escúchala unos compases sin cambiar tu proyecto", "Hear it for a few bars without changing your project")}" ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} ${L("Probar y ver el código", "Try it and see the code")}</button>`}</div>`;
+        : `<button class="prehear" title="${L("Escúchala unos compases sin cambiar tu proyecto", "Hear it for a few bars without changing your project")}" ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} ${L("Probar y ver el código", "Try it and see the code")}</button>`}</div>
+      ${state.trying ? "" : `<button data-a="dismiss" class="idea-dismiss" title="${L("No me gusta: descartar esta idea (Maestro no la vuelve a proponer)", "Not for me: dismiss this idea (Maestro won't suggest it again)")}" aria-label="${L("Descartar idea", "Dismiss idea")}">${icon("close", 14)}</button>`}`;
     el.querySelector(".t").textContent = idea.titulo;
     el.querySelector(".p").textContent = idea.porque;
     if (idea.concepto) el.querySelector(".tag").textContent = idea.concepto;
     const ph = el.querySelector(".prehear");
     if (ph) wirePreHear(ph, idea.cambios);
+    const dz = el.querySelector(".idea-dismiss");
+    if (dz) dz.onclick = (e) => { e.stopPropagation(); dismissIdea(idea); };
     el.querySelector(".row").onclick = (e) => {
       const a = e.target.closest("button")?.dataset.a;
       if (a === "try") tryIdea(ideas, i);
@@ -1263,6 +1315,7 @@ async function askLLM() {
     const session = {
       bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples,
       master: state.master || undefined,
+      ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
@@ -1274,7 +1327,7 @@ async function askLLM() {
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
     const summary = applyChanges(r.cambios || {});
     const diff = diffFor(before, r.cambios || {});
-    if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias;
+    if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias.filter((x) => !isDismissed(x));
     let controles = normalizeControls(r.controles, state.tracks);
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
     if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
@@ -1746,6 +1799,12 @@ function wireControls() {
     const k = cardOf(e.target); if (!k) return;
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.open) { e.stopPropagation(); return openCard(b.dataset.open); }
+    if (b.dataset.fx) {
+      e.stopPropagation();
+      const t = state.tracks.find((y) => y.id === k.id); if (!t) return;
+      ctlApply(k.mi, () => { t.code = applyEdit(t.code, b.dataset.fx, "toggle"); return t; });
+      return refreshPanel(k.mi);
+    }
     if (b.dataset.del) {
       e.stopPropagation();
       const t = state.tracks.find((y) => y.id === k.id); if (!t) return;

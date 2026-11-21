@@ -122,7 +122,7 @@ def find_sclang():
 
 
 # Líneas que continúan la instrucción anterior aunque empiecen sin sangría
-_CONTINUATION = ("#", "$", "|", "+", "-", "*", ".", ")", "]", ",", "}", "<~", "~>")
+_CONTINUATION = ("#", "$", "|", "+", "-", "*", ".", ")", "]", ",", "}", "<~", "~>", "{-")
 
 
 def split_blocks(code):

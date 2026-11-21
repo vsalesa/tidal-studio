@@ -64,6 +64,7 @@ REGLAS DEL CÓDIGO TIDAL (muy importante, si fallan no suena nada):
   n "0 ~ 0 3 ~ 5 ~ 3" # s "bass3" # lpf 800
   n (arp "updown" "<c'min7 g'min7>") # s "superpiano" # room 0.4
   every 4 (# speed 2) $ s "bd sn"
+- Efectos apagados: el alumno puede apagar un efecto sin borrarlo escribiéndolo como comentario, p. ej. s "bd*4" {- # room 0.5 -} # gain 1. Tidal lo ignora. Respétalo: no lo borres ni lo vuelvas a encender salvo que te lo pida; si quiere ese efecto, quita {- y -}.
 - No uses "# orbit": cada pista ya tiene su propio canal de efectos. Mantén el volumen total razonable (gain 0.8-1.2).
 - No inventes funciones. Si dudas, usa algo más sencillo.
 
@@ -85,6 +86,10 @@ def session_summary(session):
     if samples:
         lines.append("Samples propios del alumno en su biblioteca (puedes usarlos con s \"nombre\" o s \"nombre:n\"; propónselos cuando encajen): "
                      + ", ".join(f'{x.get("name")} ({x.get("type")}, {x.get("n")} variantes)' for x in samples[:40] if isinstance(x, dict)))
+    descartadas = [str(x)[:160] for x in (session.get("ideas_descartadas") or []) if x][:25]
+    if descartadas:
+        lines.append("Ideas que el alumno DESCARTÓ porque no le gustaron (no vuelvas a proponerlas ni otras casi iguales; busca otro camino): "
+                     + " | ".join(descartadas))
     if session.get("lastError"):
         lines.append(f"ÚLTIMO ERROR DE TIDAL (arréglalo si es tuyo): {session['lastError']}")
     return "\n".join(lines)

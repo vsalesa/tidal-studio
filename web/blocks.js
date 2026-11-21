@@ -7,10 +7,18 @@ import { FUNCS, PARAMS, SOUNDS } from "./explain.js";
 const OPEN = "([{<", CLOSE = ")]}>";
 
 // Recorre el texto a nivel superior (fuera de comillas y paréntesis) y llama a fn(i, ch)
+// Los comentarios de bloque {- … -} se saltan enteros (un efecto apagado es «{- # room 0.3 -}»);
+// a nivel superior se avisa de dónde empiezan con fn(i, "{").
 function scanTop(str, fn) {
   let depth = 0, q = false;
   for (let i = 0; i < str.length; i++) {
     const ch = str[i];
+    if (!q && ch === "{" && str[i + 1] === "-") {
+      if (depth === 0 && fn(i, "{") === false) return;
+      const e = str.indexOf("-}", i + 2);
+      i = e < 0 ? str.length : e + 1;
+      continue;
+    }
     if (ch === '"') { q = !q; continue; }
     if (q) continue;
     if (OPEN.includes(ch)) depth++;
@@ -25,11 +33,14 @@ function splitDollar(code) {
   return parts.map((p) => p.trim()).filter(Boolean);
 }
 const OP_RE = /^(#|\|[+\-*\/<>%]\|?|[+\-*\/<>%]\|)/;
+// Efecto apagado (bypass): el mismo ajuste dentro de un comentario de Haskell, «{- # room 0.3 -}».
+// Tidal lo ignora, pero el valor se queda en el código para volver a encenderlo.
+export const OFF_RE = /^\{-\s*(#|\|[+\-*\/<>%]\|?|[+\-*\/<>%]\|)\s*/;
 function splitOps(code) {
   const out = []; let last = 0, op = null;
   scanTop(code, (i) => {
-    const m = code.slice(i).match(OP_RE);
-    if (m && (i === 0 || /\s|\)|"/.test(code[i - 1]))) { out.push({ op, text: code.slice(last, i).trim() }); op = m[1]; last = i + m[1].length; }
+    const rest = code.slice(i), off = rest.match(OFF_RE), m = off || rest.match(OP_RE);
+    if (m && (i === 0 || /\s|\)|"|\}/.test(code[i - 1]))) { out.push({ op, text: code.slice(last, i).trim() }); op = off ? "!" + off[1] : m[1]; last = i + (off ? off[0].length : m[1].length); }
   });
   out.push({ op, text: code.slice(last).trim() });
   return out.filter((x) => x.text);
@@ -84,9 +95,13 @@ function parseSource(text) {
   return { fn, pattern: null, raw: text, complex: true };
 }
 function parseParam({ op, text }) {
+  const off = op.startsWith("!");
+  if (off) { op = op.slice(1); text = text.replace(/\s*-\}\s*$/, ""); }
   const m = text.match(/^([a-zA-Z]\w*)\s*(.*)$/);
-  return { op, name: m ? m[1] : text, value: m ? m[2].trim() : "", raw: `${op} ${text}` };
+  return { op, name: m ? m[1] : text, value: m ? m[2].trim() : "", raw: `${op} ${text}`, off };
 }
+// Ajustes que no se pueden apagar: sin ellos la pista no tiene sonido
+export const canBypass = (name) => !/^(s|sound|orbit)$/.test(name);
 
 // Mini-notación: pasos de nivel superior
 export function miniSteps(pat) {
@@ -125,6 +140,12 @@ function stepHTML(tok, P, sp) {
   return `<span class="bk-step" data-x="${esc(tok)}" ${k}><span class="nm">${esc(name)}</span>${mod ? `<b class="bk-badge">${esc(mod.replace(/^\*/, "×"))}</b>` : ""}</span>`;
 }
 
+// Interruptor de un efecto (encendido/apagado). Lo usan Bloques, Pistas y la tarjeta de Maestro.
+export function fxSwitch(key, p) {
+  const t = p.off ? L(`Encender ${p.name} (ahora no suena)`, `Turn ${p.name} on (bypassed now)`) : L(`Apagar ${p.name} sin perder su valor`, `Turn ${p.name} off, keeping its value`);
+  return `<button type="button" class="fx-sw ${p.off ? "" : "is-on"}" data-fx="${esc(key)}" role="switch" aria-checked="${!p.off}" title="${esc(t)}" aria-label="${esc(t)}"></button>`;
+}
+
 const SRC_LABEL = () => ({ s: L("sonido", "sound"), sound: L("sonido", "sound"), n: L("notas", "notes"), note: L("notas", "notes"), up: L("notas", "notes") });
 
 function nodeHTML(node, path = []) {
@@ -146,7 +167,7 @@ function nodeHTML(node, path = []) {
       ${steps.length ? `<div class="bk-steps" title="${esc(L("Cada casilla ocupa la misma parte del ciclo", "Each box takes the same share of the cycle"))}">${steps.map((t, i) => stepHTML(t, P, String(i))).join("")}</div>` : ""}
     </div>
     ${node.params.length ? `<div class="bk-params">${node.params.map((p, i) =>
-      `<span class="bk-param" data-x="${esc(p.raw)}" data-w="${esc(p.name)}" data-key="${esc(P)}|p${i}"><span class="op">${esc(p.op)}</span> ${esc(p.name)} <b>${esc(p.value)}</b></span>`).join("")}</div>` : ""}
+      `<span class="bk-param ${p.off ? "off" : ""}" data-x="${esc(p.raw)}" data-w="${esc(p.name)}" data-key="${esc(P)}|p${i}">${canBypass(p.name) ? fxSwitch(`${P}|p${i}`, p) : ""}<span class="op">${esc(p.op)}</span> ${esc(p.name)} <b>${esc(p.value)}</b></span>`).join("")}</div>` : ""}
   </div>`;
 }
 
