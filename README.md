@@ -89,6 +89,12 @@ Maestro shows and explains the change, and you can undo it.
 |---|---|
 | ![Code help](docs/screenshots/code-help.png) | ![Code palette](docs/screenshots/code-palette.png) |
 
+**Old errors go away**: a track's error clears by itself as soon as that track (or «Play all») plays without errors, and
+so does the help box Maestro opened for it. If you change the code after an error, the error turns grey and says it is
+from an earlier version; the × on the error box clears it at any time.
+
+![Clear old errors](docs/screenshots/clear-errors.png)
+
 ### Blocks view and live highlighting
 
 **Blocks view**: your song as nested visual blocks. Each track shows what transforms it (before the `$`), what it plays

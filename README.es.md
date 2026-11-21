@@ -90,6 +90,12 @@ seleccionada; Maestro te enseña y explica el cambio, y puedes deshacerlo.
 |---|---|
 | ![Ayuda con el código](docs/screenshots/es/ayuda-codigo.png) | ![Paleta de código](docs/screenshots/es/paleta-codigo.png) |
 
+**Los errores antiguos se van**: el error de una pista se borra solo en cuanto esa pista (o «Tocar todo») suena sin
+errores, y con él la ayuda que Maestro abrió por ese error. Si cambias el código después de un error, el error se pone gris
+y avisa de que es de una versión anterior; la × del recuadro lo borra cuando quieras.
+
+![Borrar errores antiguos](docs/screenshots/es/borrar-errores.png)
+
 ### Vista de bloques y resaltado en directo
 
 **Vista de bloques**: tu canción en bloques visuales anidados. Cada pista muestra lo que la transforma (antes del `$`),

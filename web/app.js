@@ -138,16 +138,25 @@ function parseCode(text) {
 }
 
 // ------------------------------------------------------------------ sonido
-async function evalCode(code, track) {
+// Quita el error de una pista (ya no aplica): también la ayuda que Maestro abrió solo por ese error
+function clearTrackError(t) {
+  if (!t) return;
+  t.error = ""; delete t.errorCode;
+  if (t.help && t.help.auto && !t.help.result && !t.help.loading) t.help = null;
+  if (!state.tracks.some((x) => x.error)) state.lastError = "";
+}
+// played: pistas que iban en este código; si Tidal no da error, sus errores antiguos ya no valen
+async function evalCode(code, track, played) {
   try {
     const r = await api("/api/eval", { code });
     const errs = r.errors && r.errors.length ? r.errors : [];
     if (track) {
-      track.error = errs.join("\n");
+      if (errs.length) { track.error = errs.join("\n"); track.errorCode = track.code; }
+      else clearTrackError(track);
       if (!errs.length && r.ok && !track.muted) track.lastGood = track.code;
       // Si una pista editada da error, Maestro se ofrece a ayudar sin que lo pidas
       if (errs.length && !track.help) track.help = { open: true, auto: true };
-    }
+    } else if (played && r.ok && !errs.length) played.forEach(clearTrackError);
     state.lastError = errs.slice(0, 6).join(" ");
     if (!r.ok && !track) toast(L("Tidal dio un error. Mira la pestaña Registro o pregunta a Maestro.", "Tidal returned an error. Check the Log tab or ask Maestro."));
     return r;
@@ -162,7 +171,7 @@ const trackLine = (t) => { if (!audible(t, state)) return `${t.id} silence`; con
 const playTrack = (t) => evalCode(trackLine(t), t);
 const silenceId = (id) => evalCode(`${id} silence`);
 // fromTop: vuelve al compás 1 (resetCycles) para que el arreglo (mask "<…>") empiece desde el principio
-const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...state.tracks.map(trackLine)].join("\n\n"));
+const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...state.tracks.map(trackLine)].join("\n\n"), null, state.tracks);
 const hasArrangement = () => state.tracks.some((t) => /\bmask\s+"</.test(t.code));
 const live = () => $("#autoplay").checked;
 // Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
@@ -625,12 +634,12 @@ function renderTracks() {
       </div>
       <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="${L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")}"></textarea>
       ${fxRowHTML(t)}
-      ${t.error ? `<div class="err"></div>` : ""}
+      ${t.error ? `<div class="err ${t.errorCode && t.errorCode !== t.code ? "stale" : ""}"><button class="err-x" data-a="clear-err" title="${L("Borrar este error (ya no aplica)", "Clear this error (no longer applies)")}" aria-label="${L("Borrar error", "Clear error")}">${icon("close", 14)}</button>${t.errorCode && t.errorCode !== t.code ? `<span class="err-stale">${L("Error de una versión anterior del código. Pulsa ▶ para comprobarlo o × para borrarlo.", "Error from an earlier version of the code. Press ▶ to check it or × to clear it.")}</span>` : ""}<span class="err-txt"></span></div>` : ""}
       ${t.help && t.help.open ? `<div class="explain-box help-box">${helpHTML(t)}</div>` : ""}
       ${t.explain ? `<div class="explain-box">${t.explain.loading ? L('<span class="typing">Maestro está leyendo el código…</span>', '<span class="typing">Maestro is reading the code…</span>') : explainHTML(t.explain, true)}</div>` : ""}`;
     el.querySelector(".tname").value = t.name;
     el.querySelector("textarea").value = t.code;
-    if (t.error) el.querySelector(".err").textContent = t.error;
+    if (t.error) el.querySelector(".err-txt").textContent = t.error;
     const hp = el.querySelector(".help-box .prehear");
     if (hp && t.help.result && t.help.result.codigo) wirePreHear(hp, { pistas: [{ id: t.id, codigo: t.help.result.codigo }] });
     const hf = el.querySelector(".help-free");
@@ -657,6 +666,7 @@ function renderTracks() {
       if (a === "help-again") { t.help = { open: true }; save(); renderTracks(); }
       if (a === "fix-revert") { t.code = t.lastGood; t.help = null; t.error = ""; changed(); playTrack(t);
         sysMsg(L(`${t.id} vuelve a la última versión que funcionaba.`, `${t.id} is back to the last version that worked.`)); }
+      if (a === "clear-err") { clearTrackError(t); save(); renderTracks(); return; }
       if (a === "explain") explainTrack(t);
       if (a === "play") playTrack(t);
       if (a === "mute") { t.muted = !t.muted; changed(); playTrack(t); }
