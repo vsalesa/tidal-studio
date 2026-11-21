@@ -1,5 +1,5 @@
 import { L } from "./i18n.js";
-import { fmt } from "./controls.js";
+import { fmt, codeNum } from "./controls.js";
 // Mesa de mezcla: volumen (en dB) y ecualizador de 3 bandas por pista, más un canal general (master).
 // No toca el código de la pista: al hacerla sonar se añade al final
 //   # amp 0.283 # eqlow 3 # eqmid -2 # eqhigh 1
@@ -24,7 +24,7 @@ export function mixSuffix(t, state) {
   const vol = Math.max(VOL_MIN, m.vol + M.vol);
   const out = [];
   if (vol) out.push(`# amp ${fmt(ampOf(vol))}`);
-  for (const [b, p] of [["low", "eqlow"], ["mid", "eqmid"], ["high", "eqhigh"]]) { const v = clampDb(m[b] + M[b], -24, 24); if (v) out.push(`# ${p} ${fmt(v)}`); }
+  for (const [b, p] of [["low", "eqlow"], ["mid", "eqmid"], ["high", "eqhigh"]]) { const v = clampDb(m[b] + M[b], -24, 24); if (v) out.push(`# ${p} ${codeNum(v)}`); }
   return out.join(" ");
 }
 // ¿Debe sonar? (silenciada o hay otra en solo)
@@ -40,7 +40,7 @@ export function parseMixLine(line, state) {
   const M = masterOf(state), mix = FLAT();
   const amp = m[1].match(/#\s*amp\s+([\d.]+)/);
   if (amp) mix.vol = clampDb(dbOf(+amp[1]) - M.vol, VOL_MIN, VOL_MAX);
-  for (const [b, p] of BANDS) { const x = m[1].match(new RegExp(`#\\s*${p}\\s+(-?[\\d.]+)`)); if (x) mix[b] = clampDb(+x[1] - M[b], EQ_MIN, EQ_MAX); }
+  for (const [b, p] of BANDS) { const x = m[1].match(new RegExp(`#\\s*${p}\\s+\\(?\\s*(-?[\\d.]+)`)); if (x) mix[b] = clampDb(+x[1] - M[b], EQ_MIN, EQ_MAX); }
   return mix;
 }
 

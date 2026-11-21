@@ -1,6 +1,6 @@
 import { L } from "./i18n.js";
 import { parsePattern, miniSteps, canBypass } from "./blocks.js";
-import { PARAMS as CP, fmt } from "./controls.js";
+import { PARAMS as CP, fmt, codeNum } from "./controls.js";
 // Edición estructurada de una pista: la usan la vista de Bloques (tooltip al pulsar un bloque)
 // y la «tarjeta configuradora» de Maestro. Cada parte editable tiene una clave estable:
 //   "<ruta>|w"        envoltura (lo que va antes de $)       ruta = "c.c.1" (c = dentro de la envoltura, n = hijo n de stack)
@@ -73,7 +73,10 @@ function numsIn(code) {
 }
 function setNum(code, k, v) {
   const n = numsIn(code)[k];
-  return n ? code.slice(0, n.index) + fmt(v) + code.slice(n.index + n.text.length) : code;
+  if (!n) return code;
+  // Negativo detrás de una palabra («fast -2») necesita paréntesis; detrás de «(» ya los tiene
+  const txt = v < 0 && code[n.index - 1] !== "(" ? codeNum(v) : fmt(v);
+  return code.slice(0, n.index) + txt + code.slice(n.index + n.text.length);
 }
 // Rango razonable para un número de una envoltura, según la función que tiene justo delante
 function numRange(fn, v) {
@@ -114,7 +117,8 @@ export function elementsOf(code) {
     if (n.pattern != null) out.push({ key: `${P}|src`, kind: "src", fn: n.fn, text: n.pattern, complex: !!n.complex, raw: n.raw });
     else out.push({ key: `${P}|src`, kind: "raw", text: n.raw });
     n.params.forEach((p, i) => {
-      const num = /^-?\d+(\.\d+)?$/.test(p.value) ? +p.value : null;
+      const pv = String(p.value).replace(/^\(\s*(-[\d.]+)\s*\)$/, "$1");
+      const num = /^-?\d+(\.\d+)?$/.test(pv) ? +pv : null;
       out.push({ key: `${P}|p${i}`, kind: "param", name: p.name, op: p.op, off: !!p.off, text: p.value, value: num, range: num != null ? paramRange(p.name, num) : null });
     });
   };
@@ -151,7 +155,7 @@ export function applyEdit(code, key, action, value, extra) {
     const i = +target.slice(1);
     if (action === "del") n.params.splice(i, 1);
     if (action === "toggle") n.params[i].off = value === undefined ? !n.params[i].off : !value; // value: true = encendido
-    if (action === "set") n.params[i].value = typeof value === "number" ? fmt(value) : String(value).trim();
+    if (action === "set") n.params[i].value = typeof value === "number" ? codeNum(value) : String(value).trim();
   } else if (target.startsWith("st")) {
     const sp = target.slice(2);
     n.pattern = editStep(n.pattern, sp, (list, i) => {
@@ -172,7 +176,7 @@ export function partOf(code, key) {
   if (!n) return null;
   if (target === "w") return { kind: "wrap", text: n.code, fn: n.fn, nums: wrapNums(n.code, n.fn, path.join(".")) };
   if (target === "src") return n.pattern != null ? { kind: "src", text: n.pattern, fn: n.fn, params: n.params.map((p) => p.name) } : { kind: "raw", text: n.raw, params: n.params.map((p) => p.name) };
-  if (target.startsWith("p")) { const p = n.params[+target.slice(1)]; if (!p) return null; const num = /^-?\d+(\.\d+)?$/.test(p.value) ? +p.value : null; return { kind: "param", name: p.name, op: p.op, off: !!p.off, text: p.value, value: num, range: num != null ? paramRange(p.name, num) : null }; }
+  if (target.startsWith("p")) { const p = n.params[+target.slice(1)]; if (!p) return null; const pv = String(p.value).replace(/^\(\s*(-[\d.]+)\s*\)$/, "$1"); const num = /^-?\d+(\.\d+)?$/.test(pv) ? +pv : null; return { kind: "param", name: p.name, op: p.op, off: !!p.off, text: p.value, value: num, range: num != null ? paramRange(p.name, num) : null }; }
   if (target.startsWith("st")) { const tok = stepAt(n.pattern || "", target.slice(2)); return tok == null ? null : { kind: "step", text: tok }; }
   return null;
 }
