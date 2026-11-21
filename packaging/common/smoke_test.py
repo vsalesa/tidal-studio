@@ -53,7 +53,8 @@ env.update({
     "GHC_ENVIRONMENT": os.path.join(ROOT, "tidal.env"),
     "TIDAL_STUDIO_LANG": "en",
 })
-if not MAC:
+if not MAC and not WIN:
+    # headless Linux CI; on Windows the "offscreen" Qt plugin may be missing and Qt then blocks on an error box
     env["QT_QPA_PLATFORM"] = "offscreen"
 # Hide the build tools so we notice if anything still depends on them
 for k in ("GHCUP_INSTALL_BASE_PREFIX", "CABAL_DIR"):
