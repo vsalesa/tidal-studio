@@ -86,6 +86,9 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
 - **Componentes para añadir** y **código siempre visible y editable**.
 - **Español e inglés**: cambia con el botón EN/ES de la barra superior. Maestro responde en el idioma elegido.
+- **Skills y plugins de Claude**: Maestro carga **skills** de música (`SKILL.md`) y debajo de cada respuesta muestra
+  cuáles cargó y cuáles usó. Instala más skills, o **plugins y marketplaces de Claude Code** enteros, pegando un enlace de
+  GitHub en el panel de Skills: sus skills se suman a las de Maestro y sus comandos funcionan en el chat como `/nombre`. Ver [Skills](#skills).
 - **Cualquier IA**: endpoint compatible con OpenAI (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
   o Claude (Anthropic). Sin IA también funciona: guía con botones, explicaciones e ideas locales.
 - **macOS, Windows y Linux**: el instalador detecta tu sistema.

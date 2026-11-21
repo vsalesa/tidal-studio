@@ -254,7 +254,7 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
       <div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><h4 data-i="f6h">English and Spanish</h4><p data-i="f6p">Switch language with one button. Maestro answers in the language you choose.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 10h3M12 10h5M7 14h6"/><rect x="11.5" y="8.5" width="6" height="3" rx="1" fill="currentColor" stroke="none" opacity=".35"/></svg><h4 data-i="f7h">See what's sounding</h4><p data-i="f7p">While it plays, the step that is sounding lights up in the code, the tracks and the blocks.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><path d="M6 3v18M12 3v18M18 3v18"/><rect x="4" y="13" width="4" height="3" rx="1" fill="currentColor" stroke="none"/><rect x="10" y="7" width="4" height="3" rx="1" fill="currentColor" stroke="none"/><rect x="16" y="10" width="4" height="3" rx="1" fill="currentColor" stroke="none"/></svg><h4 data-i="f8h">Mixing desk</h4><p data-i="f8p">Volume, 3-band EQ, mute and solo for every track, plus a Master. Your code stays clean.</p></div>
-      <div><svg class="i" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><h4 data-i="f9h">Maestro's skills</h4><p data-i="f9p">Maestro loads expert music skills (SKILL.md) and shows which ones it used in every answer.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h7M9 16h5"/></svg><h4 data-i="f9h">Skills and plugins</h4><p data-i="f9p">Maestro loads expert music skills and shows which ones it used. Add more, or whole Claude plugins, from a GitHub link.</p></div>
     </div>
   </div>
 </section>
@@ -379,7 +379,7 @@ const ES = {
   f6h: "Español e inglés", f6p: "Cambia de idioma con un botón. Maestro responde en el idioma que elijas.",
   f7h: "Ver lo que suena", f7p: "Mientras suena, el paso que está sonando se ilumina en el código, las pistas y los bloques.",
   f8h: "Mesa de mezcla", f8p: "Volumen, ecualizador de 3 bandas, silencio y solo en cada pista, y un Master. Tu código queda limpio.",
-  f9h: "Skills de Maestro", f9p: "Maestro carga skills musicales expertas (SKILL.md) y te enseña cuáles ha usado en cada respuesta.",
+  f9h: "Skills y plugins", f9p: "Maestro carga skills musicales expertas y te enseña cuáles ha usado. Añade más, o plugins de Claude enteros, desde un enlace de GitHub.",
   k2: "Wizard de proyecto base", t2: "Tu primera canción en siete clics.",
   l2: "Pulsa opciones y escucha el resultado en vivo. Las que encajan con tu estilo vienen marcadas, y el último paso te enseña todo el código explicado.",
   k3: "Así se ve", t3: "Un estudio claro, como una partitura.",
@@ -484,6 +484,7 @@ const SHOTS = [
   { en: ["See what's sounding", "live-highlight-tracks", "While the music plays, the step that is sounding lights up in every track (also in Blocks and Code)."], es: ["Ver lo que suena", "resaltado-pistas", "Mientras suena la música, el paso que está sonando se ilumina en cada pista (también en Bloques y Código)."] },
   { en: ["Mix", "mixer", "A mixing desk: volume, 3-band EQ, mute and solo per track, and a Master for the whole song."], es: ["Mezcla", "mezcla", "Una mesa de mezcla: volumen, ecualizador de 3 bandas, silencio y solo por pista, y un Master para toda la canción."] },
   { en: ["Skills", "skills-panel", "Maestro's skills: turn them on, always load one, read it or install another from GitHub."], es: ["Skills", "panel-skills", "Las skills de Maestro: actívalas, carga una siempre, léela o instala otra desde GitHub."] },
+  { en: ["Plugins", "plugins-panel", "Install a Claude Code plugin or marketplace from GitHub: its skills join Maestro's and its commands work in the chat."], es: ["Plugins", "panel-plugins", "Instala un plugin o marketplace de Claude Code desde GitHub: sus skills se suman a las de Maestro y sus comandos funcionan en el chat."] },
   { en: ["Code help", "code-help", "Edited a track and it doesn't work? Maestro finds the problem, shows the fix and lets you listen first."], es: ["Ayuda con el código", "ayuda-codigo", "¿Has editado una pista y no va? Maestro encuentra el problema, te enseña el arreglo y te deja escucharlo antes."] },
   { en: ["Code palette", "code-palette", "Tidal blocks organized by goal and level. Click one and Maestro applies and explains it."], es: ["Paleta de código", "paleta-codigo", "Bloques de Tidal organizados por objetivo y nivel. Pulsas uno y Maestro lo aplica y te lo explica."] },
   { en: ["Tutorial", "tutorial", "An interactive tour: Maestro lights up each part and waits for you to try it."], es: ["Tutorial", "tutorial", "Un recorrido interactivo: Maestro ilumina cada parte y espera a que la pruebes."] },

@@ -84,6 +84,9 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 - **My projects**: your songs are saved automatically; open or delete them from the folder button.
 - **Components to add** and **code always visible and editable**.
 - **English and Spanish**: switch with the EN/ES button in the top bar. Maestro answers in the chosen language.
+- **Skills and Claude plugins**: Maestro loads music **skills** (`SKILL.md`) and shows under each answer which ones it
+  loaded and used. Install more skills, or whole **Claude Code plugins and marketplaces**, by pasting a GitHub link in the
+  Skills panel: their skills join Maestro's and their commands work in the chat as `/name`. See [Skills](#skills).
 - **Any AI**: an OpenAI-compatible endpoint (OpenAI, OpenRouter, Groq, DeepSeek, Mistral, Ollama, LM Studio…)
   or Claude (Anthropic). It also works without AI: button-guided flow, explanations and local ideas.
 - **macOS, Windows and Linux**: the installer detects your system.
