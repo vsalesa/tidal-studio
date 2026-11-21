@@ -114,6 +114,22 @@ MODO OPCIONES PARA ESCUCHAR (activado; tiene prioridad sobre lo anterior cuando 
 - En este modo no hace falta "sugerencias"."""
 
 
+FETCH_PROMPT = """
+
+SAMPLES DE INTERNET (activado): si a la canción le vendría bien un sonido que NO está en Dirt-Samples ni en la biblioteca del alumno (un cencerro de verdad, crujido de vinilo, lluvia, marimba, kalimba, saxo real, campanas tubulares, un breakbeat, una voz…), pídelo y la app lo busca en internet con licencia libre (CC0 / CC BY), lo descarga, apunta los créditos y lo carga en SuperDirt antes de aplicar tus cambios:
+  "descargar": [{"nombre": "cencerro", "busqueda": "cowbell", "tipo": "percusion", "duracion": "golpe", "alternativa": "808:3", "por_que": "una frase para el alumno"}]
+- "nombre": cómo se llamará en Tidal (minúsculas, letras, números y _; distinto de los nombres de Dirt-Samples). Úsalo tal cual en tu código: s "cencerro*2", n "0 3" # s "cencerro".
+- "busqueda": 1-3 palabras EN INGLÉS para buscar (cowbell, vinyl crackle, rain loop, marimba, tubular bells).
+- "duracion": "golpe" (un golpe corto) o "loop" (textura o bucle largo).
+- "alternativa": un sonido de Dirt-Samples parecido; la app lo usa si no encuentra nada, para que no quede en silencio.
+- Pide como mucho 2 sonidos por respuesta y solo cuando aporten algo que no se consigue con lo que hay. Vale también dentro de "variantes" (una opción puede usar un sonido descargado). En el mensaje, cuéntale que lo vas a buscar en internet.
+- Si el alumno ya tiene un sonido con ese nombre en su biblioteca, úsalo sin pedirlo otra vez."""
+
+
+def fetch_on(session):
+    return (session or {}).get("descargas", True) is not False
+
+
 def build_messages(history, session):
     """Convierte el historial de la interfaz al formato de la API.
     La sesión actual se añade al último mensaje del usuario.
@@ -130,7 +146,7 @@ def build_messages(history, session):
         "role": "user",
         "content": f"{msgs[-1]['content']}\n\n---\nESTADO DE LA SESIÓN:\n{session_summary(session)}",
     }
-    system = SYSTEM_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "")
+    system = SYSTEM_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "") + (FETCH_PROMPT if fetch_on(session) else "")
     return system, msgs
 
 
@@ -230,7 +246,24 @@ def parse_reply(raw):
         "paso": data.get("paso"),
         "cambios": _parse_changes(data.get("cambios") or {}),
         "controles": [c for c in (data.get("controles") or []) if isinstance(c, dict)][:6],
+        "descargar": _parse_fetch(data),
     }
+
+
+def _parse_fetch(data):
+    """Sonidos que Maestro quiere descargar (también los que pide dentro de una opción)."""
+    reqs = list(data.get("descargar") or [])
+    for v in data.get("variantes") or []:
+        if isinstance(v, dict):
+            reqs += list(v.get("descargar") or [])
+    out, seen = [], set()
+    for r in reqs:
+        if isinstance(r, dict) and (r.get("nombre") or r.get("busqueda")):
+            k = str(r.get("nombre") or r.get("busqueda")).lower()
+            if k not in seen:
+                seen.add(k)
+                out.append({k2: str(r.get(k2) or "")[:200] for k2 in ("nombre", "busqueda", "tipo", "duracion", "alternativa", "por_que")})
+    return out[:3]
 
 
 EXPLAIN_PROMPT = """Eres "Maestro", profesor de TidalCycles para principiantes absolutos. Explica en español sencillo qué hace el código que te pasan, trozo a trozo, y qué se oirá.

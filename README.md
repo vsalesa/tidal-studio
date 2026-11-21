@@ -12,7 +12,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 **Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) · [Maestro's options](#hear-maestros-options-and-pick-one) ·
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
-[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) ·
+[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
 [AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Save and share](#save-export-and-share) ·
 [Installation](#installation-once)
@@ -264,6 +264,24 @@ engine. In your own samples you see the **waveform**, drag to choose a piece, li
 | **Search Freesound by license** | **Waveform and trimming** |
 | ![Search online](docs/screenshots/samples-online.png) | ![Trim](docs/screenshots/sample-trim.png) |
 
+### Maestro downloads the sounds it needs
+
+If your song would sound better with something you don't have yet (a real cowbell, a vinyl crackle, a marimba, a grand
+piano…), **Maestro looks it up on the internet by itself**. It only picks sounds with free licenses: community packs
+(VCSL CC0, Uzu drumkit public domain, Salamander piano CC BY, mridangam CC BY-SA, no key needed) and, if you added a free
+key, Freesound (CC0 and CC BY). It downloads the sound, writes the credits to `samples/CREDITS.md`, loads it into
+SuperDirt and uses it in the code, all before the answer reaches you. The chat shows what it downloaded: its name in
+Tidal, where it comes from, the license, a **Listen** button and **Another sound** to swap it for the next result.
+
+Big packs (many files or several MB, like a whole piano) are not downloaded without asking: press **Download** or just
+answer «download it». If nothing with a free license turns up, Maestro uses a similar sound you already have so the song
+keeps playing. It works with every AI provider (it is part of Maestro's answer, not a feature of one AI) and inside the
+options to audition. Turn it off with **Web samples** above the chat. Without AI, write «download a marimba sample».
+
+| Downloaded and already playing | Big pack: Maestro asks first |
+|---|---|
+| ![Maestro downloaded a cowbell and a vinyl crackle](docs/screenshots/web-samples.png) | ![Asking before downloading a grand piano](docs/screenshots/web-samples-ask.png) |
+
 ### Skills and plugins
 
 Maestro loads music **skills** (`SKILL.md`, the same format as Claude's Agent Skills) and shows under each answer which
@@ -495,6 +513,9 @@ Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`,
 SuperDirt loads them on start and reloads them when you add or delete something. For Freesound, get a free API key at
 [freesound.org/apiv2/apply](https://freesound.org/apiv2/apply) and paste it in the library (Search online tab). Tidal
 Studio downloads Freesound's high-quality OGG preview, which SuperCollider reads directly.
+
+Maestro can also download sounds by itself while you chat ([see above](#maestro-downloads-the-sounds-it-needs)). Small ones
+download straight away; packs over 16 files or about 8 MB wait for your OK. Turn it off with **Web samples** above the chat.
 
 Optional drum machines: `git clone https://github.com/geikha/tidal-drum-machines samples/packs/tidal-drum-machines`
 (loaded automatically on the next start).

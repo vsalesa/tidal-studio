@@ -152,7 +152,7 @@ export function guessType(t) {
   t = (t || "").toLowerCase();
   const rules = [["bombo", /kick|_bd\b|^bd|bassdrum/], ["caja", /snare|_sd\b|^sd|^sn|clap|_cp\b|rim|_rs\b/], ["platos", /hat|_hh\b|_oh\b|cymbal|crash|ride|_cr\b|_cy\b/],
     ["bajo", /bass/], ["voz", /vocal|voice|vox/], ["pad", /pad|drone|ambien|field/], ["loop", /loop|break/],
-    ["percusion", /perc|tom|_lt\b|_mt\b|_ht\b|conga|bongo|shaker|_sh\b|_cb\b|_tb\b|tabla|gumki|thom|clave|block/],
+    ["percusion", /perc|cowbell|tom|_lt\b|_mt\b|_ht\b|conga|bongo|shaker|_sh\b|_cb\b|_tb\b|tabla|gumki|thom|clave|block/],
     ["melodico", /piano|rhodes|chord|synth|guitar|pluck|key|marimba|vibra|xylo|bell|glock|string|harp|flute|sax|organ/], ["fx", /fx|noise|vinyl|glitch|riser/]];
   return (rules.find(([, re]) => re.test(t)) || ["otro"])[0];
 }
