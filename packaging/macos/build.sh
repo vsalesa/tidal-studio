@@ -54,7 +54,7 @@ if [ ! -x "$RT/SuperCollider.app/Contents/MacOS/sclang" ]; then
   [ -n "$URL" ] || URL="$(echo "$ASSETS" | grep -iE 'macos.*\.dmg$' | grep -m1 -viE 'legacy' || true)"
   [ -n "$URL" ] || { echo "No SuperCollider macOS dmg found in:"; echo "$ASSETS"; exit 1; }
   echo "$URL"
-  curl -fL --retry 3 -o "$WORK/sc.dmg" "$URL"
+  curl -fL --retry 6 --retry-delay 15 --retry-all-errors -o "$WORK/sc.dmg" "$URL"
   MNT="$(mktemp -d)"
   hdiutil attach -nobrowse -readonly -mountpoint "$MNT" "$WORK/sc.dmg"
   SCAPP="$(find "$MNT" -maxdepth 2 -name 'SuperCollider.app' -print 2>/dev/null | head -1 || true)"
