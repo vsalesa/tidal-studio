@@ -9,7 +9,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
-**Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) ·
+**Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) · [Opciones de Maestro](#escucha-las-opciones-de-maestro-y-elige-una) ·
 [Ayuda con tu código](#ayuda-con-tu-código-y-paleta-de-código) · [Bloques y resaltado en directo](#vista-de-bloques-y-resaltado-en-directo) ·
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Arreglo](#arreglo) ·
 [Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) ·
@@ -74,6 +74,29 @@ Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un
   te enseña **cómo lo ha hecho**: el código de antes y de después con lo nuevo resaltado y explicado.
 
 ![Receta jazz: antes y después, explicado](docs/screenshots/es/receta-jazz.png)
+
+### Escucha las opciones de Maestro y elige una
+
+Pide algo creativo a Maestro («añade un bajo», «más oscuro», «más energía», «sorpréndeme») y, como en una lluvia de
+ideas con un productor, no cambia tu canción sin más: te propone **3 o 4 opciones distintas hechas para tu petición y tu
+canción**, cada una con un título, la idea musical que enseña y su código. Si tu petición es muy vaga, primero te hace
+**una** pregunta con respuestas para pulsar.
+
+- **Escuchar** hace sonar una opción **en directo sobre tu canción**, todo el tiempo que quieras. Pulsa Escuchar en otra
+  (o las teclas **1-4**) y cambia al instante; **A/B** salta entre las dos últimas que has oído; **Parar** (o **Esc**)
+  vuelve a tu versión.
+- **Ver el código** enseña qué cambiaría cada opción, antes y después.
+- **Elegir esta** la añade a tu canción y te explica cómo ha cambiado el código; las demás se descartan.
+  **Deshacer la elección** recupera las opciones.
+- **Otras opciones**, **Afinar…** («la B pero más suave») o **Ninguna** piden otras nuevas a Maestro.
+
+![Opciones de Maestro: escucha cada una sobre tu canción](docs/screenshots/es/opciones-maestro.png)
+
+![Después de elegir: qué ha cambiado en el código](docs/screenshots/es/opciones-maestro-elegida.png)
+
+Funciona con todos los proveedores de IA, y también sin IA (escribe «dame opciones» y las crea con sus propias ideas y
+recetas de estilo). Apágalo con el interruptor **Opciones** arriba del chat si prefieres que Maestro aplique los cambios
+directamente.
 
 ### Ayuda con tu código y paleta de código
 

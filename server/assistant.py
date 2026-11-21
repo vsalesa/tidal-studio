@@ -90,9 +90,24 @@ def session_summary(session):
     return "\n".join(lines)
 
 
+VARIANTS_PROMPT = """
+
+MODO OPCIONES PARA ESCUCHAR (activado; tiene prioridad sobre lo anterior cuando choque): funcionas como una lluvia de ideas con un productor. Cuando el alumno pide algo CREATIVO sobre su música (añadir o cambiar una pista, «más oscuro», «más energía», «un bajo funky», «que suene a…», un efecto, un cambio de estructura, «sorpréndeme»…), NO lo apliques en "cambios": responde con "variantes", de 3 a 4 OPCIONES DISTINTAS hechas a medida de lo que ha pedido y de su canción actual. La app las hace sonar en directo sobre su canción, el alumno las compara una a una (A/B) y elige la que más le guste; las demás se descartan.
+  "variantes": [{"titulo": "Bajo saltarín", "descripcion": "1-2 frases: qué se oirá y en qué se diferencia de las otras", "concepto": "Síncopa", "cambios": {"bpm": 120, "pistas": [{"id": "d4", "nombre": "Bajo", "tipo": "bajo", "codigo": "..."}], "eliminar": []}}]
+- Que sean de verdad distintas entre sí (no cuatro versiones casi iguales): por ejemplo una sutil y fiel a lo que hay, una más atrevida, una que cambie el sonido o el instrumento y una sorpresa que enseñe algo nuevo. Cada una debe sonar bien por sí sola y respetar las reglas del código de abajo.
+- Cada opción toca solo lo necesario (normalmente 1-2 pistas). Usa el mismo id si modifica una pista existente y un id libre si añade una nueva.
+- "mensaje": 1-2 frases que presenten las opciones e inviten a escucharlas y elegir; sin "explicacion" ni "cambios" en esa respuesta.
+- "opciones" (respuestas rápidas): por ejemplo «Dame otras opciones», «Algo más suave», «Combina la A y la C».
+- Si la petición es demasiado vaga para proponer buenas opciones, haz ANTES UNA sola pregunta para aclarar (como en una lluvia de ideas: una pregunta cada vez), con 3-5 "opciones" concretas para responder con un clic, y sin "variantes". No encadenes más de dos preguntas: después, propone opciones.
+- Preguntas sobre cómo funciona algo, explicaciones de código y arreglos de errores: responde normal, sin "variantes". Si el alumno pide algo exacto y sin margen creativo («pon el tempo a 100», «silencia d2», «quita el bombo»), aplícalo directamente en "cambios".
+- Cuando el alumno elige una opción, la app ya la ha aplicado y te lo dice («Me quedo con la opción B…»). Si te pide explicarla o variarla, trabaja sobre lo que suena ahora.
+- En este modo no hace falta "sugerencias"."""
+
+
 def build_messages(history, session):
     """Convierte el historial de la interfaz al formato de la API.
-    La sesión actual se añade al último mensaje del usuario."""
+    La sesión actual se añade al último mensaje del usuario.
+    Con session["variantes"] (por defecto sí) Maestro propone opciones para escuchar y elegir."""
     msgs = []
     for m in history[-24:]:  # memoria corta para no gastar tokens
         role = "assistant" if m.get("role") == "assistant" else "user"
@@ -105,7 +120,12 @@ def build_messages(history, session):
         "role": "user",
         "content": f"{msgs[-1]['content']}\n\n---\nESTADO DE LA SESIÓN:\n{session_summary(session)}",
     }
-    return SYSTEM_PROMPT, msgs
+    system = SYSTEM_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "")
+    return system, msgs
+
+
+def variants_on(session):
+    return (session or {}).get("variantes", True) is not False
 
 
 def _extract_json(text):
@@ -179,8 +199,18 @@ def parse_reply(raw):
             sugerencias.append({"titulo": str(sug.get("titulo") or "Idea"),
                                 "porque": str(sug.get("porque") or ""),
                                 "concepto": str(sug.get("concepto") or ""), "cambios": c})
+    variantes = []
+    for v in (data.get("variantes") or [])[:4]:
+        if not isinstance(v, dict):
+            continue
+        c = _parse_changes(v.get("cambios") or {})
+        if c["pistas"] or c["bpm"] or c["eliminar"]:
+            variantes.append({"titulo": str(v.get("titulo") or "Opción"),
+                              "descripcion": str(v.get("descripcion") or v.get("porque") or ""),
+                              "concepto": str(v.get("concepto") or ""), "cambios": c})
     return {
         "mensaje": str(data.get("mensaje") or ""),
+        "variantes": variantes,
         "explicacion": _parse_explain(data.get("explicacion")),
         "reto": str(data.get("reto") or ""),
         "sugerencias": sugerencias,
