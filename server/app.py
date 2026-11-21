@@ -22,6 +22,7 @@ from urllib.parse import urlparse, parse_qs
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from engine import Engine, find_ghci, find_sclang  # noqa: E402
+from timeline import TimelineQuery  # noqa: E402
 from llm import chat_completion, LLMError, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix,
@@ -270,6 +271,7 @@ def install_default_plugins():
 
 
 ENGINE = Engine(ROOT)
+TIMELINE = TimelineQuery(ROOT)
 llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
 LIBRARY = Library(ROOT)
 
@@ -691,6 +693,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(ENGINE.status())
             if path == "/api/eval":
                 return self._json(ENGINE.eval(data.get("code", "")))
+            if path == "/api/timeline":
+                return self._json(TIMELINE.query(data.get("tracks") or [], data.get("from", 0), data.get("to", 4)))
             if path == "/api/hush":
                 return self._json(ENGINE.eval("hush"))
             return self._json({"error": "Ruta no encontrada"}, 404)
@@ -845,6 +849,7 @@ def main():
         import faulthandler
         faulthandler.dump_traceback_later(8, exit=True)  # never hang on the way out (prints where it was stuck)
         ENGINE.stop()
+        TIMELINE.close()
         server.server_close()
         _kill_group()
         print("[server] stopped / parado", flush=True)

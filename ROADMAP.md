@@ -19,7 +19,7 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 
 **Next:**
 
-- A small piano roll for melodies; `whenmod` and `fast`/`slow` controls.
+- Edit notes by dragging them in the Timeline (today it shows them, read-only); `whenmod` and `fast`/`slow` controls.
 
 ## Also planned
 
@@ -46,6 +46,7 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 - Agentic UI v1: sliders, tempo, sound selector and step sequencer inside Maestro's messages.
 - Agentic UI v2: every, chance, swing, Euclidean, moving filter, scale/octave, chords, mix desk.
 - Arrangement timeline: paint `mask` patterns across bars, with presets (layers, drop, break, call and response).
+- Timeline tab: every hit of every track on a bars-and-beats grid (piano roll for melodies), calculated by Tidal's `queryArc`, each hit linked to the code that makes it, with a moving playhead.
 - Export: `.tidal` download, shareable song links, recording to WAV.
 - Samples: waveform view and trimming (`# begin` / `# end`).
 - Bilingual installers (English/Spanish, by system language or `--lang`).

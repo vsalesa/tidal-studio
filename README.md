@@ -11,7 +11,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) · [Maestro's options](#hear-maestros-options-and-pick-one) ·
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
-[Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Arrangement](#arrangement) ·
+[Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
 [Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
 [AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Save and share](#save-export-and-share) ·
@@ -172,6 +172,32 @@ mute and solo, and a **Master** strip for the whole song. It doesn't touch your 
 and `# eqlow / eqmid / eqhigh` (shown as a `-- mix` line in the Code tab).
 
 ![Mixer](docs/screenshots/mixer.png)
+
+### Timeline: when each sound plays
+
+Tidal tells you *how often* things happen (`"bd*2 [~ sn]"`, `every 4 (fast 2)`, `(3,8)`…), which is hard to picture.
+The **Timeline** tab draws *where* every hit falls: time runs left to right (each big column is a cycle, one bar of
+4 beats, with lines for beats and sixteenths), one row per sound, and for melodic tracks one row per note, like a
+piano roll. Each block is one hit and its length is how long it lasts.
+
+- **Exact, calculated by Tidal itself.** The studio asks TidalCycles (`queryArc`, in a separate GHCi that makes no
+  sound) for the events of each track, so polymeters, `euclid`, `every`, `off`, `jux`, arrangement masks… are drawn
+  as they will really play. Tracks show a **Tidal** badge. Without the engine it uses an approximate calculator in the
+  browser (badge **≈ approx.**).
+- **Every hit points to its code.** Hover a block and the piece of the code that makes it lights up (in the track's
+  code and in a tooltip, with the bar and beat it falls on and how long it lasts), and the other hits made by the same
+  piece light up too. Hover a piece of the code and you see all its hits. Click to pin, and **Go to this piece in
+  Tracks** selects it so you can change it.
+- **Chance** (`sometimes`, `?`, `degradeBy`…) is marked: Tidal's dice are fixed per cycle, so what you see is what
+  will play in those bars.
+- Choose 1 to 16 cycles, zoom, move bar by bar, and **Follow the playhead**: while it plays, a line moves across and
+  the hits that are sounding glow.
+
+![Timeline](docs/screenshots/timeline.png)
+
+![Timeline: a hit and the code that makes it](docs/screenshots/timeline-event.png)
+
+![Timeline: a piece of code and all its hits](docs/screenshots/timeline-code.png)
 
 ### Arrangement
 
@@ -466,6 +492,7 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `web/controls.js`: controls in the chat (agentic UI). `web/blocks.js` + `web/edit.js`: blocks view and its editing. `web/card.js`: configurator card. `web/mixer.js`: mix tab. `web/history.js`: undo and history. `web/samples.js` + `server/samples.py`: sample library and Freesound. `server/github.py`: GitHub versions.
 - `server/plugins.py`: Claude Code plugins and marketplaces (`my-plugins/`): download, manifests, skills and `/commands`.
 - `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
+- `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: the Timeline tab. The server asks Tidal (`queryArc`) in its own GHCi; `web/tpat.js` is the approximate in-browser calculator used without the engine.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).

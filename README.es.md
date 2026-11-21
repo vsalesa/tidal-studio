@@ -11,7 +11,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) · [Opciones de Maestro](#escucha-las-opciones-de-maestro-y-elige-una) ·
 [Ayuda con tu código](#ayuda-con-tu-código-y-paleta-de-código) · [Bloques y resaltado en directo](#vista-de-bloques-y-resaltado-en-directo) ·
-[Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Arreglo](#arreglo) ·
+[Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) · [Arreglo](#arreglo) ·
 [Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) ·
 [Skills y plugins](#skills-y-plugins) · [Cómo decide Maestro](#cómo-decide-maestro-y-su-razonamiento) ·
 [Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
@@ -176,6 +176,32 @@ silencio y solo, y un canal **Master** para toda la canción. No toca el código
 `# eqlow / eqmid / eqhigh` (lo verás como una línea `-- mezcla` en la pestaña Código).
 
 ![Mezcla](docs/screenshots/es/mezcla.png)
+
+### Línea de tiempo: cuándo suena cada sonido
+
+Tidal te dice *cada cuánto* pasan las cosas (`"bd*2 [~ sn]"`, `every 4 (fast 2)`, `(3,8)`…), y eso cuesta imaginarlo.
+La pestaña **Línea de tiempo** dibuja *dónde* cae cada golpe: el tiempo va de izquierda a derecha (cada columna grande
+es un ciclo, un compás de 4 tiempos, con líneas para los tiempos y las semicorcheas), una fila por sonido y, en las
+pistas melódicas, una fila por nota, como un piano roll. Cada bloque es un golpe y su largo es lo que dura.
+
+- **Exacta, la calcula el propio Tidal.** El estudio le pide a TidalCycles (`queryArc`, en un GHCi aparte que no suena)
+  las notas de cada pista, así que los polímetros, `euclid`, `every`, `off`, `jux`, las máscaras del arreglo… se dibujan
+  tal y como van a sonar. Las pistas llevan la etiqueta **Tidal**. Sin motor usa una calculadora aproximada en el
+  navegador (etiqueta **≈ aprox.**).
+- **Cada golpe apunta a su código.** Pasa el ratón por un bloque y se ilumina el trozo del código que lo produce (en el
+  código de la pista y en una ficha con el compás y el tiempo en que cae y cuánto dura), y también los demás golpes de
+  ese mismo trozo. Pasa el ratón por un trozo del código y verás todos sus golpes. Pulsa para fijarlo, y **Ir a este
+  trozo en Pistas** lo selecciona para que lo cambies.
+- **El azar** (`sometimes`, `?`, `degradeBy`…) se marca: los dados de Tidal son fijos en cada ciclo, así que lo que ves
+  es lo que sonará en esos compases.
+- Elige de 1 a 16 ciclos, haz zoom, avanza compás a compás y activa **Seguir lo que suena**: mientras toca, una línea
+  avanza y los golpes que suenan se encienden.
+
+![Línea de tiempo](docs/screenshots/es/linea-de-tiempo.png)
+
+![Línea de tiempo: un golpe y el código que lo produce](docs/screenshots/es/linea-de-tiempo-nota.png)
+
+![Línea de tiempo: un trozo de código y todos sus golpes](docs/screenshots/es/linea-de-tiempo-codigo.png)
 
 ### Arreglo
 
@@ -467,6 +493,7 @@ Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architec
 - `web/explain.js`: explicador local del código (sin IA). `web/suggest.js`: ideas de productor sin IA y conceptos del progreso.
 - `web/builder.js`: wizard de proyecto base. `web/wizard.js`: preguntas de la lluvia de ideas y plan sin IA. `web/flavors.js`: recetas de estilo (jazz, latino, techno, lo-fi, ambient).
 - `web/doctor.js`: revisión y arreglos sin IA del panel Ayuda (`/api/fix` con IA). `web/palette.js`: bloques de la paleta.
+- `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: la pestaña Línea de tiempo. El servidor le pregunta a Tidal (`queryArc`) en su propio GHCi; `web/tpat.js` es la calculadora aproximada del navegador que se usa sin motor.
 - `web/i18n.js`: cambio de idioma. `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».
 
 Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit).

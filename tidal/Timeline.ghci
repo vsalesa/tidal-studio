@@ -1,0 +1,42 @@
+-- Tidal Studio - Timeline / Linea de tiempo  (ASCII only: GHCi stops reading a script it can't decode)
+-- Separate GHCi (makes no sound): asks Tidal which events each pattern gives in some cycles (queryArc)
+-- and prints one per line, with the position in the mini-notation that makes each one.
+:set -package containers
+:set -XOverloadedStrings
+:set prompt ""
+:set prompt-cont ""
+import Sound.Tidal.Context
+import qualified Data.Map.Strict as TSMap
+import Data.List (intercalate)
+import System.IO (hSetEncoding, stdout, utf8, hFlush)
+hSetEncoding stdout utf8
+
+:{
+let eqlow = pF "eqlow"
+    eqmid = pF "eqmid"
+    eqhigh = pF "eqhigh"
+    tsShowV v = case v of
+      VS x -> x
+      VF x -> show x
+      VN x -> show (unNote x)
+      VI x -> show x
+      VR x -> show (fromRational x :: Double)
+      VB x -> show x
+      _ -> "?"
+    tsD :: Rational -> String
+    tsD r = show (fromRational r :: Double)
+    tsLine tag e = intercalate "\t"
+      [ "TSEV", tag
+      , maybe "" (\w -> tsD (start w) ++ " " ++ tsD (stop w)) (whole e)
+      , tsD (start (part e)) ++ " " ++ tsD (stop (part e))
+      , unwords [show c1 ++ "," ++ show l1 ++ "," ++ show c2 ++ "," ++ show l2 | ((c1, l1), (c2, l2)) <- contextPosition (context e)]
+      , intercalate ";" [k ++ "=" ++ tsShowV v | (k, v) <- TSMap.toList (value e)]
+      ]
+    tsQuery :: String -> Rational -> Rational -> ControlPattern -> IO ()
+    tsQuery tag a b pat = do
+      mapM_ (putStrLn . tsLine tag) (take 6000 (queryArc pat (Arc a b)))
+      putStrLn ("TSEND\t" ++ tag)
+      hFlush stdout
+:}
+
+putStrLn "TS_TIMELINE_READY"

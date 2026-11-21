@@ -190,7 +190,7 @@ export function noteEval(code) {
 export const isPlaying = (id) => clock.playing.has(id);
 
 // Posición en ciclos de una pista ahora mismo (o null si no suena)
-function cycleOf(id) {
+export function cycleOf(id) {
   if (!clock.playing.has(id)) return null;
   const now = Date.now() / 1000 + clock.offset;
   if (clock.real && clock.got) {

@@ -5,7 +5,8 @@ import { startTour, stopTour, tourFlag, tourSeen } from "./tour.js";
 import { INSTRUMENTS, instById, instThumb, instArt, photoCredit, DRUM_PIECES, drumKitSVG, drumCode, melodyCode, keyboardHTML, noteName, beep, stopBeeps } from "./instruments.js";
 import { icon, hydrateIcons } from "./icons.js";
 import { attachHighlight, refreshHighlights, syncSounds, setPlayRanges } from "./code-hl.js";
-import { startPlayhead, noteEval, setTempo, rangesAt, blockKeysAt } from "./playhead.js";
+import { startPlayhead, noteEval, setTempo, rangesAt, blockKeysAt, cycleOf } from "./playhead.js";
+import { initTimeline, renderTimeline, paintTimeline } from "./timeline.js";
 import { explainLocal } from "./explain.js";
 import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./suggest.js";
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
@@ -240,6 +241,7 @@ function changed() {
   renderPalette();
   renderBlocks();
   renderArrange();
+  renderTimeline();
   renderMixer();
   refreshCards();
   if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
@@ -338,7 +340,14 @@ function paintCodeTab() {
 function startPlaying() {
   startPlayhead({
     api, isReal: () => !!(server.engine && server.engine.superdirt_ready && !server.engine.simulation),
-    tracks: () => { setTempo(state.bpm); paintCodeTab(); return state.tracks; },
+    tracks: () => {
+      setTempo(state.bpm); paintCodeTab();
+      // Línea de tiempo: el cursor va con la primera pista que suena
+      let c = null;
+      for (const t of state.tracks) { if (!audible(t, state)) continue; const x = cycleOf(t.id); if (x !== null) { c = x; break; } }
+      paintTimeline(c);
+      return state.tracks;
+    },
     paint: paintPlaying,
   });
 }
@@ -424,7 +433,7 @@ function toggleFx(id, key) {
   tourFlag("fx-toggle");
 }
 // Repinta todo menos el tooltip (tras arrastrar un deslizador)
-function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); refreshCards(); if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode(); }
+function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); renderTimeline(); refreshCards(); if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode(); }
 function wireBlocks() {
   $("#blocks").addEventListener("click", (e) => {
     const tr = e.target.closest(".bk-track");
@@ -1770,7 +1779,7 @@ const FRESH = () => ({ lang: LANG, bpm: 120, tracks: [], selected: null, style: 
 
 function renderAll() {
   $("#bpm").value = state.bpm; $("#proj-name").value = state.name || "";
-  renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); renderChat(); renderCourse();
+  renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); renderChat(); renderCourse(); renderTimeline();
   $("#code").value = buildCode();
 }
 function openNewProject() {
@@ -3143,6 +3152,7 @@ function init() {
     if (b.dataset.tab === "log") refreshLog();
     if (b.dataset.tab === "blocks") renderBlocks();
     if (b.dataset.tab === "arrange") renderArrange();
+    if (b.dataset.tab === "timeline") renderTimeline();
     if (b.dataset.tab === "mixer") renderMixer(true);
     if (b.dataset.tab !== "blocks") bkClose();
   });
@@ -3215,6 +3225,20 @@ function init() {
   wireSamples();
   wireControls();
   wireArrange();
+  initTimeline({
+    api, state: () => state, audible: (t) => audible(t, state),
+    icon: (k, n) => icon(k, n), kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)",
+    canQuery: () => !!(server.engine && server.engine.ghci_path),
+    noTidal: () => {},
+    // «Ir a este trozo»: abre Pistas y selecciona ese trozo en el código de la pista
+    goToCode: (id, a, b) => {
+      document.querySelector('.tab[data-tab="tracks"]')?.click();
+      const ta = document.querySelector(`#tracks .track[data-id="${id}"] textarea`);
+      if (!ta) return;
+      ta.scrollIntoView({ block: "center", behavior: "smooth" });
+      ta.focus(); ta.setSelectionRange(a, b);
+    },
+  });
   wireBlocks();
   wireMixer();
   initHistory(state); renderHistoryButtons();

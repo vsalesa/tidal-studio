@@ -87,6 +87,7 @@
         <button class="tab active" data-tab="tracks"><i data-icon="tracks" data-size="16"></i> <span data-t="Tracks">Pistas</span></button>
         <button class="tab" data-tab="blocks"><i data-icon="blocks" data-size="16"></i> <span data-t="Blocks">Bloques</span></button>
         <button class="tab" data-tab="mixer"><i data-icon="mixer" data-size="16"></i> <span data-t="Mix">Mezcla</span></button>
+        <button class="tab" data-tab="timeline"><i data-icon="timeline" data-size="16"></i> <span data-t="Timeline">Línea de tiempo</span></button>
         <button class="tab" data-tab="arrange"><i data-icon="estructura" data-size="16"></i> <span data-t="Arrangement">Arreglo</span></button>
         <button class="tab" data-tab="code"><i data-icon="code" data-size="16"></i> <span data-t="Code">Código</span></button>
         <button class="tab" data-tab="log"><i data-icon="log" data-size="16"></i> <span data-t="Log">Registro</span></button>
@@ -109,6 +110,10 @@
       <div id="tab-mixer" class="tabpane">
         <p class="hint"><span data-th="The mixing desk: each track's volume (in dB) and a 3-band equaliser (lows 200 Hz, mids 1 kHz, highs 4 kHz), plus the <b>Master</b> that moves the whole song. It doesn't change your track code: when playing it adds <code># amp</code> and <code># eqlow / eqmid / eqhigh</code> at the end. Double-click a slider to reset it to 0.">La mesa de mezcla: el volumen de cada pista (en dB) y un ecualizador de 3 bandas (graves 200 Hz, medios 1 kHz, agudos 4 kHz), más el <b>Master</b>, que mueve toda la canción. No cambia el código de tus pistas: al sonar añade <code># amp</code> y <code># eqlow / eqmid / eqhigh</code> al final. Doble clic en un deslizador lo devuelve a 0.</span></p>
         <div id="mixer"></div>
+      </div>
+      <div id="tab-timeline" class="tabpane">
+        <p class="hint"><span data-th="<b>When</b> each sound plays, instead of how often. Time runs left to right: each big column is a cycle (one bar of 4 beats). Each row is a sound (or a note, in melodic tracks) and each block is a hit. Hover a block to see which piece of code makes it, or hover the code to see its hits. Click to pin.">Dónde suena <b>cada</b> sonido en el tiempo, en vez de «cada cuánto». El tiempo va de izquierda a derecha: cada columna grande es un ciclo (un compás de 4 tiempos). Cada fila es un sonido (o una nota, en las pistas melódicas) y cada bloque es un golpe. Pasa el ratón por un bloque para ver qué trozo del código lo produce, o por el código para ver sus golpes. Pulsa para fijarlo.</span></p>
+        <div id="timeline"></div>
       </div>
       <div id="tab-arrange" class="tabpane">
         <p class="hint"><span data-th="When each track plays, bar by bar. Click or drag over the boxes: each row writes <code>mask &quot;&amp;lt;t!4 f!4&amp;gt;&quot; $</code> on its track (t = plays, f = silent; the list repeats when it ends). Tip: in electronic music things change every 4 or 8 bars.">Cuándo suena cada pista, compás a compás. Pulsa o arrastra sobre las casillas: cada fila escribe <code>mask "&lt;t!4 f!4&gt;" $</code> en su pista (t = suena, f = calla; la lista se repite al acabar). Truco: en la música electrónica las cosas cambian cada 4 u 8 compases.</span></p>
