@@ -13,7 +13,7 @@ import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
 import { songBlocksHTML, blockInfo } from "./blocks.js";
-import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange } from "./edit.js";
+import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf } from "./edit.js";
 import { mixerHTML, mixCodeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
 import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory } from "./history.js";
@@ -23,6 +23,7 @@ import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSo
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
+import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS } from "./variants.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
 const $ = (s) => document.querySelector(s);
@@ -139,16 +140,25 @@ function parseCode(text) {
 }
 
 // ------------------------------------------------------------------ sonido
-async function evalCode(code, track) {
+// Quita el error de una pista (ya no aplica): también la ayuda que Maestro abrió solo por ese error
+function clearTrackError(t) {
+  if (!t) return;
+  t.error = ""; delete t.errorCode;
+  if (t.help && t.help.auto && !t.help.result && !t.help.loading) t.help = null;
+  if (!state.tracks.some((x) => x.error)) state.lastError = "";
+}
+// played: pistas que iban en este código; si Tidal no da error, sus errores antiguos ya no valen
+async function evalCode(code, track, played) {
   try {
     const r = await api("/api/eval", { code });
     const errs = r.errors && r.errors.length ? r.errors : [];
     if (track) {
-      track.error = errs.join("\n");
+      if (errs.length) { track.error = errs.join("\n"); track.errorCode = track.code; }
+      else clearTrackError(track);
       if (!errs.length && r.ok && !track.muted) track.lastGood = track.code;
       // Si una pista editada da error, Maestro se ofrece a ayudar sin que lo pidas
       if (errs.length && !track.help) track.help = { open: true, auto: true };
-    }
+    } else if (played && r.ok && !errs.length) played.forEach(clearTrackError);
     state.lastError = errs.slice(0, 6).join(" ");
     if (!r.ok && !track) toast(L("Tidal dio un error. Mira la pestaña Registro o pregunta a Maestro.", "Tidal returned an error. Check the Log tab or ask Maestro."));
     return r;
@@ -163,13 +173,14 @@ const trackLine = (t) => { if (!audible(t, state)) return `${t.id} silence`; con
 const playTrack = (t) => evalCode(trackLine(t), t);
 const silenceId = (id) => evalCode(`${id} silence`);
 // fromTop: vuelve al compás 1 (resetCycles) para que el arreglo (mask "<…>") empiece desde el principio
-const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...state.tracks.map(trackLine)].join("\n\n"));
+const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...state.tracks.map(trackLine)].join("\n\n"), null, state.tracks);
 const hasArrangement = () => state.tracks.some((t) => /\bmask\s+"</.test(t.code));
 const live = () => $("#autoplay").checked;
 // Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
 // seguían sonando, y una pre-escucha en marcha volvía a poner la música al acabar su tiempo.
 // "panic" (BootTidal) además corta todo lo que suena en SuperDirt; y paramos el audio del navegador.
 function hushAll() {
+  audition = null; refreshVariants();
   if (preview) { clearTimeout(preview.timer); const { onEnd } = preview; preview = null; if (onEnd) onEnd(); }
   clearTimeout(ctlTimer);
   seqTimers.forEach(clearTimeout); seqTimers = [];
@@ -410,11 +421,24 @@ function bkApply(mutate, rerender = true) {
   clearTimeout(bkTimer);
   bkTimer = setTimeout(() => { if (live()) playTrack(t); if (!rerender) changedQuiet(); }, rerender ? 0 : 200);
 }
+// Enciende o apaga un efecto (# room, # delay…) de una pista sin perder su valor: queda como «{- # room 0.3 -}»
+function toggleFx(id, key) {
+  const t = state.tracks.find((x) => x.id === id); if (!t) return;
+  let code; try { code = applyEdit(t.code, key, "toggle"); } catch { return; }
+  if (!code || code === t.code) return;
+  t.code = code; t.explain = null; t.edited = true;
+  if (bkSel) bkSel.keep = true;
+  changed();
+  if (live()) playTrack(t);
+  tourFlag("fx-toggle");
+}
 // Repinta todo menos el tooltip (tras arrastrar un deslizador)
 function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); renderTimeline(); refreshCards(); if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode(); }
 function wireBlocks() {
   $("#blocks").addEventListener("click", (e) => {
     const tr = e.target.closest(".bk-track");
+    const sw = e.target.closest(".fx-sw");
+    if (sw && tr) { e.stopPropagation(); return toggleFx(tr.dataset.id, sw.dataset.fx); }
     const a = e.target.closest("[data-a]")?.dataset.a;
     if (a === "edit") {
       state.selected = tr.dataset.id; save(); renderTracks(); renderPalette();
@@ -584,10 +608,18 @@ function openCard(id, key) {
 let clearedChat = null;
 function clearChat() {
   if (!state.chat.length) return;
+  stopAudition();
   clearedChat = { chat: state.chat, options: state.options };
   state.chat = [];
   say(L("Chat limpio. Tu canción sigue igual; solo he borrado la conversación.", "Chat cleared. Your song is unchanged; I only removed the conversation."),
     [L("Recuperar el chat", "Bring the chat back"), CARD_CHIP(), L("Dame una idea", "Give me an idea")]);
+}
+// Fila de efectos bajo el código de una pista: un interruptor por cada # (room, delay, lpf…)
+function fxRowHTML(t) {
+  let fx = []; try { fx = effectsOf(t.code); } catch { /* código raro */ }
+  if (!fx.length) return "";
+  return `<div class="fx-row"><span class="fx-row-lbl">${L("Efectos", "Effects")}</span>${fx.map((e) =>
+    `<button type="button" class="fx-chip ${e.off ? "off" : "on"}" data-fx="${esc(e.key)}" role="switch" aria-checked="${!e.off}" title="${esc(e.off ? L(`Encender ${e.name} (ahora no suena)`, `Turn ${e.name} on (bypassed now)`) : L(`Apagar ${e.name} sin perder su valor`, `Turn ${e.name} off, keeping its value`))}"><span class="fx-led"></span><code>${esc(e.op === "#" ? e.name : e.op + " " + e.name)}</code> ${esc(e.text)}</button>`).join("")}</div>`;
 }
 function renderTracks() {
   const box = $("#tracks");
@@ -613,12 +645,13 @@ function renderTracks() {
         </span>
       </div>
       <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="${L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")}"></textarea>
-      ${t.error ? `<div class="err"></div>` : ""}
+      ${fxRowHTML(t)}
+      ${t.error ? `<div class="err ${t.errorCode && t.errorCode !== t.code ? "stale" : ""}"><button class="err-x" data-a="clear-err" title="${L("Borrar este error (ya no aplica)", "Clear this error (no longer applies)")}" aria-label="${L("Borrar error", "Clear error")}">${icon("close", 14)}</button>${t.errorCode && t.errorCode !== t.code ? `<span class="err-stale">${L("Error de una versión anterior del código. Pulsa ▶ para comprobarlo o × para borrarlo.", "Error from an earlier version of the code. Press ▶ to check it or × to clear it.")}</span>` : ""}<span class="err-txt"></span></div>` : ""}
       ${t.help && t.help.open ? `<div class="explain-box help-box">${helpHTML(t)}</div>` : ""}
       ${t.explain ? `<div class="explain-box">${t.explain.loading ? L('<span class="typing">Maestro está leyendo el código…</span>', '<span class="typing">Maestro is reading the code…</span>') : explainHTML(t.explain, true)}</div>` : ""}`;
     el.querySelector(".tname").value = t.name;
     el.querySelector("textarea").value = t.code;
-    if (t.error) el.querySelector(".err").textContent = t.error;
+    if (t.error) el.querySelector(".err-txt").textContent = t.error;
     const hp = el.querySelector(".help-box .prehear");
     if (hp && t.help.result && t.help.result.codigo) wirePreHear(hp, { pistas: [{ id: t.id, codigo: t.help.result.codigo }] });
     const hf = el.querySelector(".help-free");
@@ -635,6 +668,7 @@ function renderTracks() {
         if (btn.closest(".help-box")) t.help = null; else t.explain = null;
         save(); renderTracks(); return;
       }
+      if (btn && btn.dataset.fx) return toggleFx(t.id, btn.dataset.fx);
       if (a === "controls") return showControls(t);
       if (a === "card") return openCard(t.id);
       if (a === "help") { t.help = t.help && t.help.open ? null : { open: true }; save(); renderTracks(); }
@@ -644,6 +678,7 @@ function renderTracks() {
       if (a === "help-again") { t.help = { open: true }; save(); renderTracks(); }
       if (a === "fix-revert") { t.code = t.lastGood; t.help = null; t.error = ""; changed(); playTrack(t);
         sysMsg(L(`${t.id} vuelve a la última versión que funcionaba.`, `${t.id} is back to the last version that worked.`)); }
+      if (a === "clear-err") { clearTrackError(t); save(); renderTracks(); return; }
       if (a === "explain") explainTrack(t);
       if (a === "play") playTrack(t);
       if (a === "mute") { t.muted = !t.muted; changed(); playTrack(t); }
@@ -807,13 +842,32 @@ function renderProgress() {
 
 // ------------------------------------------------------------------ ideas (sugerencias)
 let flavorTurn = 0;
+// Ideas descartadas («no me gusta»): se guardan en el navegador para todos los proyectos,
+// no se vuelven a mostrar y Maestro (la IA) recibe la lista para no proponerlas igual.
+const DISMISS_KEY = "tidal-studio-dismissed-ideas-v1";
+let dismissed = [];
+try { dismissed = JSON.parse(localStorage.getItem(DISMISS_KEY) || "[]").filter((x) => x && x.k); } catch { dismissed = []; }
+const ideaKey = (idea) => String(idea.titulo || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+const isDismissed = (idea) => { const k = ideaKey(idea); return !!k && dismissed.some((d) => d.k === k); };
+function saveDismissed() { try { localStorage.setItem(DISMISS_KEY, JSON.stringify(dismissed.slice(-80))); } catch { /* sin almacenamiento */ } }
+function dismissIdea(idea) {
+  const k = ideaKey(idea); if (!k || isDismissed(idea)) return;
+  dismissed.push({ k, t: idea.titulo, c: idea.concepto || "" });
+  saveDismissed();
+  if (state.ideas) state.ideas = state.ideas.filter((x) => !isDismissed(x));
+  save(); renderIdeas();
+}
+function restoreDismissed() { dismissed = []; saveDismissed(); renderIdeas(); }
 function currentIdeas() {
-  if (state.ideas && state.ideas.length) return state.ideas;
-  const ideas = localSuggestions(state, 1);
+  const fromAI = (state.ideas || []).filter((x) => !isDismissed(x));
+  if (fromAI.length) return fromAI;
+  const ideas = localSuggestions(state, 1, false, isDismissed);
   if (state.tracks.length >= 2) {
     const keys = Object.keys(FLAVORS).filter((k) => k !== state.style);
-    const f = flavorIdea(keys[flavorTurn % keys.length], state.tracks);
-    if (f) ideas.push(f);
+    for (let i = 0; i < keys.length; i++) {
+      const f = flavorIdea(keys[(flavorTurn + i) % keys.length], state.tracks);
+      if (f && !isDismissed(f)) { ideas.push(f); break; }
+    }
   }
   return ideas;
 }
@@ -821,6 +875,7 @@ function currentIdeas() {
 let preview = null;
 function preHear(cambios, onEnd) {
   if (preview) stopPreHear();
+  if (audition) stopAudition();
   const bpm = cambios.bpm ? Math.round(cambios.bpm) : state.bpm;
   const lines = [cps(bpm), ...(cambios.pistas || []).map((p) => `${p.id} $ ${p.codigo}`)];
   const revert = [cps(state.bpm), ...(cambios.pistas || []).map((p) => {
@@ -851,11 +906,142 @@ function wirePreHear(btn, cambios) {
   };
 }
 
+// ------------------------------------------------------------------ opciones para escuchar
+// La opción suena en directo sobre la canción, sin límite de tiempo, hasta que paras, eliges o cambias a otra (A/B).
+let audition = null; // { mi, k, prev, wasLive, touched: Set }
+function variantLines(v, touched) {
+  const c = v.cambios, gone = new Set(c.eliminar || []), mine = new Map((c.pistas || []).map((p) => [p.id, p]));
+  const lines = [cps(c.bpm ? Math.round(c.bpm) : state.bpm)];
+  for (const t of state.tracks) {
+    if (gone.has(t.id)) { lines.push(`${t.id} silence`); continue; }
+    const p = mine.get(t.id);
+    lines.push(trackLine(p ? { ...t, code: p.codigo, muted: false } : t));
+  }
+  for (const p of mine.values()) if (!state.tracks.some((t) => t.id === p.id)) lines.push(`${p.id} $ ${p.codigo}`);
+  // Lo que añadió la opción anterior y esta no tiene, se calla
+  for (const id of touched) if (!mine.has(id) && !state.tracks.some((t) => t.id === id)) lines.push(`${id} silence`);
+  return lines;
+}
+function startAudition(mi, k) {
+  const m = state.chat[mi]; if (!m || !m.variantes || !m.variantes[k]) return;
+  if (preview) stopPreHear();
+  const prev = audition && audition.mi === mi ? (audition.k === k ? audition.prev : audition.k) : null;
+  const wasLive = audition && audition.mi === mi ? audition.wasLive : live();
+  const touched = audition && audition.mi === mi ? audition.touched : new Set();
+  const v = m.variantes[k];
+  api("/api/eval", { code: variantLines(v, touched).join("\n\n") }).catch(() => {});
+  (v.cambios.pistas || []).forEach((p) => touched.add(p.id));
+  audition = { mi, k, prev, wasLive, touched };
+  refreshVariants();
+}
+async function stopAudition(revert = true) {
+  if (!audition) return;
+  const { wasLive, touched } = audition;
+  audition = null;
+  refreshVariants();
+  if (!revert) return;
+  const extra = [...touched].filter((id) => !state.tracks.some((t) => t.id === id)).map((id) => `${id} silence`);
+  const code = wasLive ? [cps(state.bpm), ...state.tracks.map(trackLine), ...extra].join("\n\n") : "hush";
+  try { await api("/api/eval", { code }); } catch { /* sin motor */ }
+}
+// El código de cada opción comparado con lo que suena ahora (explicación corta para no llenar el chat)
+function variantDiff(v) {
+  const d = diffFor({ bpm: state.bpm, tracks: state.tracks }, v.cambios);
+  d.forEach((x) => { if (x.explicacion && x.explicacion.length > 160) x.explicacion = x.explicacion.slice(0, 157).replace(/\s+\S*$/, "") + "…"; });
+  return diffHTML(d);
+}
+function refreshVariants() {
+  // Solo repinta los bloques de opciones (no todo el chat) para no perder el scroll
+  document.querySelectorAll("#chat .variants").forEach((box) => {
+    const mi = +box.closest(".msg").dataset.mi;
+    const m = state.chat[mi]; if (!m) return;
+    const openCodes = [...box.querySelectorAll(".va-code")].map((d) => d.open);
+    box.outerHTML = variantsHTML(m, mi, audition, (k) => variantDiff(m.variantes[k]));
+    const nb = $(`#chat .msg[data-mi="${mi}"] .variants`);
+    if (nb) nb.querySelectorAll(".va-code").forEach((d, i) => { if (openCodes[i]) d.open = true; });
+  });
+}
+async function pickVariant(mi, k) {
+  const m = state.chat[mi]; const v = m.variantes[k];
+  if (audition && live()) {
+    // Sigue sonando sin cortes: solo callamos lo que añadieron las otras opciones
+    const mine = new Set((v.cambios.pistas || []).map((p) => p.id));
+    const extra = [...audition.touched].filter((id) => !mine.has(id) && !state.tracks.some((t) => t.id === id));
+    audition = null;
+    api("/api/eval", { code: [cps(state.bpm), ...extra.map((id) => `${id} silence`)].join("\n\n") }).catch(() => {});
+  } else await stopAudition(true);
+  const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
+  m.picked = k;
+  state.chat.push({ role: "user", content: L(`Me quedo con la opción ${LETTERS[k]}: «${v.titulo}».`, `I'll keep option ${LETTERS[k]}: «${v.titulo}».`) });
+  const summary = applyChanges(v.cambios);
+  if (v.concepto && !state.learnedMusic.includes(v.concepto)) state.learnedMusic.push(v.concepto);
+  say(L(`¡Buena elección! La ${LETTERS[k]}, «${v.titulo}», ya forma parte de tu canción. ${v.descripcion}\n\nAsí ha cambiado el código:`, `Good choice! ${LETTERS[k]}, «${v.titulo}», is now part of your song. ${v.descripcion}\n\nHere's how the code changed:`),
+    [L("Explícame el código", "Explain the code"), L("Dame variaciones de esta", "Give me variations of this one"), VA_UNDO()],
+    { changes: summary, diff: diffFor(before, v.cambios), pickSnap: JSON.stringify(before) });
+}
+const VA_UNDO = () => L("Deshacer la elección", "Undo the pick");
+function undoPick() {
+  const m = [...state.chat].reverse().find((x) => x.pickSnap);
+  if (!m) return false;
+  const before = JSON.parse(m.pickSnap);
+  const keep = new Set(before.tracks.map((t) => t.id));
+  const removed = state.tracks.filter((t) => !keep.has(t.id)).map((t) => t.id);
+  state.bpm = before.bpm; $("#bpm").value = state.bpm; state.tracks = before.tracks;
+  removed.forEach(silenceId);
+  if (live()) playAll();
+  delete m.pickSnap;
+  const offer = [...state.chat].reverse().find((x) => x.variantes && x.picked != null);
+  if (offer) { offer.picked = null; offer.dismissed = false; }
+  sysMsg(L("Deshecho: tu canción vuelve a como estaba. Las opciones siguen ahí para que escuches otra.", "Undone: your song is back as it was. The options are still there so you can try another."));
+  changed();
+  return true;
+}
+function wireVariants() {
+  $("#chat").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-va]"); if (!b) return;
+    const mi = +b.dataset.mi, k = +b.dataset.k, a = b.dataset.va;
+    const m = state.chat[mi]; if (!m || !m.variantes) return;
+    if (a === "play") return audition && audition.mi === mi && audition.k === k ? stopAudition() : startAudition(mi, k);
+    if (a === "stop") return stopAudition();
+    if (a === "ab" && audition && audition.prev != null) return startAudition(mi, audition.prev);
+    if (a === "pick") return pickVariant(mi, k);
+    if (a === "more") { stopAudition(); return send(L("Dame otras opciones distintas a estas.", "Give me other options, different from these.")); }
+    if (a === "none") { stopAudition(); m.dismissed = true; save(); renderChat(); return send(L("No me convence ninguna. Pregúntame qué busco y propón otras.", "None of them convinces me. Ask me what I'm after and suggest others.")); }
+    if (a === "refine") { const f = b.closest(".variants").querySelector(".va-refine"); f.hidden = !f.hidden; if (!f.hidden) f.querySelector("input").focus(); }
+  });
+  $("#chat").addEventListener("submit", (e) => {
+    const f = e.target.closest(".va-refine"); if (!f) return;
+    e.preventDefault();
+    const txt = f.querySelector("input").value.trim(); if (!txt) return;
+    const m = state.chat[+f.dataset.mi];
+    const ref = audition && audition.mi === +f.dataset.mi ? ` (${L("estaba escuchando la", "I was listening to")} ${LETTERS[audition.k]}: «${m.variantes[audition.k].titulo}»)` : "";
+    stopAudition();
+    send(L(`Afina las opciones${ref}: ${txt}`, `Refine the options${ref}: ${txt}`));
+  });
+  // Teclas 1-4 cambian de opción al vuelo; Esc para (si no estás escribiendo)
+  document.addEventListener("keydown", (e) => {
+    if (!audition || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "")) return;
+    const m = state.chat[audition.mi];
+    if (/^[1-4]$/.test(e.key) && m.variantes[+e.key - 1]) { e.preventDefault(); startAudition(audition.mi, +e.key - 1); }
+    if (e.key === "Escape") stopAudition();
+  });
+  const t = $("#variants-on");
+  if (t) { t.checked = variantsEnabled(); t.onchange = () => setVariantsEnabled(t.checked); }
+}
+
 function renderIdeas() {
   const list = $("#idea-list");
   const ideas = state.trying ? state.trying.ideas : currentIdeas();
-  $("#ideas").style.display = ideas.length ? "block" : "none";
+  $("#ideas").style.display = ideas.length || dismissed.length ? "block" : "none";
   list.innerHTML = "";
+  if (!ideas.length) list.innerHTML = `<p class="hint">${L("Has descartado las ideas de ahora. Pulsa «Otra idea» o pídele algo distinto a Maestro.", "You dismissed the current ideas. Press «Another idea» or ask Maestro for something different.")}</p>`;
+  if (dismissed.length && !state.trying) {
+    const r = document.createElement("div");
+    r.className = "ideas-dismissed";
+    r.innerHTML = `<span>${L(`${dismissed.length} descartada${dismissed.length === 1 ? "" : "s"}: Maestro no te las vuelve a proponer.`, `${dismissed.length} dismissed: Maestro won't suggest ${dismissed.length === 1 ? "it" : "them"} again.`)}</span><button class="link" data-a="restore">${dismissed.length === 1 ? L("Recuperarla", "Bring it back") : L("Recuperarlas", "Bring them back")}</button>`;
+    r.querySelector("button").onclick = restoreDismissed;
+    list.appendChild(r);
+  }
   ideas.forEach((idea, i) => {
     const trying = state.trying && state.trying.index === i;
     const el = document.createElement("div");
@@ -864,12 +1050,15 @@ function renderIdeas() {
       ${idea.concepto ? `<span class="tag"></span>` : ""}
       <div class="row">${trying
         ? `<button data-a="keep" class="primary">${L("Me gusta, me lo quedo", "I like it, keep it")}</button><button data-a="undo">${L("Deshacer", "Undo")}</button>`
-        : `<button class="prehear" title="${L("Escúchala unos compases sin cambiar tu proyecto", "Hear it for a few bars without changing your project")}" ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} ${L("Probar y ver el código", "Try it and see the code")}</button>`}</div>`;
+        : `<button class="prehear" title="${L("Escúchala unos compases sin cambiar tu proyecto", "Hear it for a few bars without changing your project")}" ${state.trying ? "disabled" : ""}>${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button><button data-a="try" ${state.trying ? "disabled" : ""}>${icon("play", 12)} ${L("Probar y ver el código", "Try it and see the code")}</button>`}</div>
+      ${state.trying ? "" : `<button data-a="dismiss" class="idea-dismiss" title="${L("No me gusta: descartar esta idea (Maestro no la vuelve a proponer)", "Not for me: dismiss this idea (Maestro won't suggest it again)")}" aria-label="${L("Descartar idea", "Dismiss idea")}">${icon("close", 14)}</button>`}`;
     el.querySelector(".t").textContent = idea.titulo;
     el.querySelector(".p").textContent = idea.porque;
     if (idea.concepto) el.querySelector(".tag").textContent = idea.concepto;
     const ph = el.querySelector(".prehear");
     if (ph) wirePreHear(ph, idea.cambios);
+    const dz = el.querySelector(".idea-dismiss");
+    if (dz) dz.onclick = (e) => { e.stopPropagation(); dismissIdea(idea); };
     el.querySelector(".row").onclick = (e) => {
       const a = e.target.closest("button")?.dataset.a;
       if (a === "try") tryIdea(ideas, i);
@@ -1155,6 +1344,7 @@ function renderChat() {
   state.chat.forEach((m, mi) => {
     const el = document.createElement("div");
     el.className = "msg " + m.role;
+    el.dataset.mi = mi;
     el.textContent = m.content;
     // Cómo ha usado Maestro las skills para decidir (justo debajo del texto, para que se vea)
     if (m.skills && m.skills.decisions && m.skills.decisions.length) el.insertAdjacentHTML("beforeend", decisionsHTML(m.skills.decisions, mi === state.chat.length - 1));
@@ -1163,6 +1353,7 @@ function renderChat() {
         `<li><code>${esc(p.fragmento)}</code><span>${esc(p.explicacion)}</span></li>`).join("")}</ul>`);
     }
     if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
+    if (m.variantes && m.variantes.length) el.insertAdjacentHTML("beforeend", variantsHTML(m, mi, audition, (k) => variantDiff(m.variantes[k])));
     if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
     if (m.links && m.links.length) el.insertAdjacentHTML("beforeend", `<div class="links">${m.links.map((a) =>
@@ -1172,6 +1363,9 @@ function renderChat() {
     if (m.trace && m.trace.events && m.trace.events.length) el.insertAdjacentHTML("beforeend", traceHTML(m.trace));
     box.appendChild(el);
   });
+  // Mientras hay opciones por elegir, ocupan el sitio de las Ideas de Maestro
+  const last = state.chat[state.chat.length - 1];
+  $(".panel.assistant").classList.toggle("va-open", !!(last && last.variantes && last.picked == null && !last.dismissed));
   if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
   box.scrollTop = box.scrollHeight;
   const chips = $("#chips");
@@ -1205,6 +1399,7 @@ async function send(text) {
   if (text === COURSE_NEXT() && state.course) { const c = courseById(state.course.id); if (state.course.i < c.steps.length - 1) courseGo(state.course.i + 1); state.options = []; return renderChat(); }
   if (text === COURSE_ASK() && state.course) return courseAsk();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
+  if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
   if (text === L("Recuperar el chat", "Bring the chat back") && clearedChat) { state.chat = clearedChat.chat; state.options = clearedChat.options; clearedChat = null; save(); return renderChat(); }
   if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
   state.chat.push({ role: "user", content: text });
@@ -1267,11 +1462,12 @@ async function askLLM() {
   busy = true; renderChat();
   const trace = startTrace();
   try {
-    const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content }));
+    const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples,
+      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(),
       master: state.master || undefined,
+      ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
@@ -1283,12 +1479,16 @@ async function askLLM() {
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
     const summary = applyChanges(r.cambios || {});
     const diff = diffFor(before, r.cambios || {});
-    if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias;
+    if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias.filter((x) => !isDismissed(x));
     let controles = normalizeControls(r.controles, state.tracks);
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
     if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
     countUse(r.skills);
-    say(r.mensaje || "…", r.opciones || [], { explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
+    if (r.variantes && r.variantes.length) {
+      stopAudition();
+      state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
+    }
+    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
   } catch (e) {
     trace.end();
@@ -1366,6 +1566,19 @@ async function offlineGuide(text) {
   if (low.includes("explícame") || low.includes("explicame") || low.includes("qué hace") || low.includes("que hace") || low.includes("explain") || low.includes("what does")) {
     const ex = explainLocal(state.tracks.map((t) => t.code).join("\n"));
     return say(L("Así funciona tu canción, trozo a trozo:", "This is how your song works, piece by piece:"), state.options, { explicacion: ex.partes.slice(0, 10) });
+  }
+  if (variantsEnabled() && state.tracks.length && /opcion|opción|options?\b|sorpr|surprise|variaci|variation/.test(low)) {
+    // Sin IA: opciones hechas con las ideas y recetas de estilo locales
+    const pool = localSuggestions(state, 3, true);
+    const keys = Object.keys(FLAVORS).filter((k) => k !== state.style);
+    for (let i = 0; pool.length < 4 && i < keys.length; i++) { const f = flavorIdea(keys[(flavorTurn + i) % keys.length], state.tracks); if (f) pool.push(f); }
+    flavorTurn++;
+    const variantes = pool.slice(0, 4).map((x) => ({ titulo: x.titulo, descripcion: x.porque, concepto: x.concepto, cambios: x.cambios }));
+    if (variantes.length) {
+      stopAudition();
+      state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
+      return say(L("Sin IA puedo proponerte estas opciones. Escúchalas sobre tu canción y elige la que más te guste.", "Without AI I can offer you these options. Listen to them over your song and pick the one you like best."), state.options, { variantes });
+    }
   }
   if (low.includes("otra idea") || low.includes("another idea")) { state.ideas = []; localSuggestions(state, 2, true); renderIdeas();
     return say(L("Te he dejado ideas nuevas abajo, en «Ideas de Maestro». Pruébalas y quédate con lo que te guste.", "I left you new ideas below, in «Maestro's ideas». Try them and keep what you like."), state.options); }
@@ -1755,6 +1968,12 @@ function wireControls() {
     const k = cardOf(e.target); if (!k) return;
     const b = e.target.closest("button"); if (!b) return;
     if (b.dataset.open) { e.stopPropagation(); return openCard(b.dataset.open); }
+    if (b.dataset.fx) {
+      e.stopPropagation();
+      const t = state.tracks.find((y) => y.id === k.id); if (!t) return;
+      ctlApply(k.mi, () => { t.code = applyEdit(t.code, b.dataset.fx, "toggle"); return t; });
+      return refreshPanel(k.mi);
+    }
     if (b.dataset.del) {
       e.stopPropagation();
       const t = state.tracks.find((y) => y.id === k.id); if (!t) return;
@@ -2907,6 +3126,7 @@ function init() {
   $("#btn-play").onclick = () => playAll(hasArrangement());
   $("#btn-hush").onclick = hushAll;
   $("#style-filter").onchange = (e) => { state.style = e.target.value; save(); renderCatalog(); renderIdeas(); };
+  wireVariants();
   $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
   $("#btn-more-ideas").onclick = () => {
     if (state.trying) return;

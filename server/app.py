@@ -25,7 +25,8 @@ from engine import Engine, find_ghci, find_sclang  # noqa: E402
 from timeline import TimelineQuery  # noqa: E402
 from llm import chat_completion, LLMError, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
-                       build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix)  # noqa: E402
+                       build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix,
+                       variants_on)  # noqa: E402
 import github  # noqa: E402
 import skills as skillset  # noqa: E402
 import plugins as pluginset  # noqa: E402
@@ -520,7 +521,8 @@ class Handler(SimpleHTTPRequestHandler):
                            + (", ".join(names) if names else tr.L("ninguna encaja", "none match")))
                 tr.add("step", tr.L(f"Pregunto a {provider_label(cfg)}…", f"Asking {provider_label(cfg)}…"))
                 try:
-                    raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages, max_tokens=1800,
+                    raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages,
+                                          max_tokens=3500 if variants_on(sess) else 1800,
                                           on_event=tr.add if tr.id else None)
                     tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
                 finally:

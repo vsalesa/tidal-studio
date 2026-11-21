@@ -9,7 +9,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
-**Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) ·
+**Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) · [Maestro's options](#hear-maestros-options-and-pick-one) ·
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
 [Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) ·
@@ -74,6 +74,28 @@ for the full list and sources.
 
 ![Jazz recipe: before and after, explained](docs/screenshots/recipe-jazz.png)
 
+### Hear Maestro's options and pick one
+
+Ask Maestro for something creative («add a bass», «darker», «more energy», «surprise me») and, like a brainstorming
+session with a producer, it doesn't just change your song: it offers **3 or 4 different options made for your request
+and your song**, each with a title, the musical idea it teaches and its code. If your request is too vague, it first
+asks you **one** question with answers to click.
+
+- **Listen** plays an option **live over your song**, for as long as you want. Press another option's Listen (or the
+  keys **1-4**) and it switches instantly; **A/B** jumps between the last two you heard; **Stop** (or **Esc**) goes back
+  to your version.
+- **See the code** shows what each option would change, before and after.
+- **Pick this one** adds it to your song and explains how the code changed; the others are discarded.
+  **Undo the pick** brings the options back.
+- **Other options**, **Refine…** («B but softer») or **None** ask Maestro for new ones.
+
+![Maestro's options: listen to each one over your song](docs/screenshots/maestro-options.png)
+
+![After picking: what changed in the code](docs/screenshots/maestro-options-picked.png)
+
+It works with every AI provider, and without AI too (type «give me options» and it builds them from its own ideas and
+style recipes). Turn it off with the **Options** switch at the top of the chat to have Maestro apply changes directly.
+
 ### Help with your code and code palette
 
 **Help**: edited a track and it errors or doesn't sound how you wanted? Press **Help** (it also opens by itself when Tidal
@@ -89,6 +111,12 @@ Maestro shows and explains the change, and you can undo it.
 |---|---|
 | ![Code help](docs/screenshots/code-help.png) | ![Code palette](docs/screenshots/code-palette.png) |
 
+**Old errors go away**: a track's error clears by itself as soon as that track (or «Play all») plays without errors, and
+so does the help box Maestro opened for it. If you change the code after an error, the error turns grey and says it is
+from an earlier version; the × on the error box clears it at any time.
+
+![Clear old errors](docs/screenshots/clear-errors.png)
+
 ### Blocks view and live highlighting
 
 **Blocks view**: your song as nested visual blocks. Each track shows what transforms it (before the `$`), what it plays
@@ -100,6 +128,15 @@ Maestro shows and explains the change, and you can undo it.
 | Your song as nested blocks | Click a block: tooltip to edit it |
 |---|---|
 | ![Blocks view](docs/screenshots/blocks.png) | ![Editing a block](docs/screenshots/blocks-edit.png) |
+
+**Turn each effect on and off**: every effect (`# room`, `# delay`, `# lpf`, `# crush`…) has its own switch, per track,
+in the Blocks view, under each track's code in the Tracks view, and on Maestro's configurator card. Switching one off
+bypasses just that effect and keeps its value, so switching it back on restores it exactly. In the code it becomes a
+Haskell comment, `{- # room 0.4 -}`, which Tidal ignores; it plays right away (with Live on) and Undo brings it back.
+
+| Blocks: one switch per effect | Tracks: the effects row under the code |
+|---|---|
+| ![Effect switches in Blocks](docs/screenshots/effects-toggle-blocks.png) | ![Effect switches in Tracks](docs/screenshots/effects-toggle-tracks.png) |
 
 **See what is sounding**: while the music plays, the part of each track's code that is sounding right now lights up, step
 by step, in the Tracks, Blocks and Code views (like Strudel). SuperDirt tells the app every note it plays.
@@ -183,6 +220,12 @@ browser remembers your choice; «Show» brings them back).
 | «Hide» Maestro's ideas for a bigger chat | «Clear chat»: the song stays, the chat can come back |
 |---|---|
 | ![Hide ideas](docs/screenshots/hide-ideas.png) | ![Clear chat](docs/screenshots/clear-chat.png) |
+
+**Dismiss ideas you don't like**: the × on each of Maestro's ideas removes it. The browser remembers it (also after a
+reload), the next idea takes its place, and Maestro is told which ideas you dismissed so it won't suggest them, or near
+copies, again. «Bring them back» undoes it.
+
+![Dismiss ideas](docs/screenshots/dismiss-ideas.png)
 
 ### Instruments
 

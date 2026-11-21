@@ -9,7 +9,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
-**Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) ·
+**Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) · [Opciones de Maestro](#escucha-las-opciones-de-maestro-y-elige-una) ·
 [Ayuda con tu código](#ayuda-con-tu-código-y-paleta-de-código) · [Bloques y resaltado en directo](#vista-de-bloques-y-resaltado-en-directo) ·
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) · [Arreglo](#arreglo) ·
 [Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) ·
@@ -75,6 +75,29 @@ Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un
 
 ![Receta jazz: antes y después, explicado](docs/screenshots/es/receta-jazz.png)
 
+### Escucha las opciones de Maestro y elige una
+
+Pide algo creativo a Maestro («añade un bajo», «más oscuro», «más energía», «sorpréndeme») y, como en una lluvia de
+ideas con un productor, no cambia tu canción sin más: te propone **3 o 4 opciones distintas hechas para tu petición y tu
+canción**, cada una con un título, la idea musical que enseña y su código. Si tu petición es muy vaga, primero te hace
+**una** pregunta con respuestas para pulsar.
+
+- **Escuchar** hace sonar una opción **en directo sobre tu canción**, todo el tiempo que quieras. Pulsa Escuchar en otra
+  (o las teclas **1-4**) y cambia al instante; **A/B** salta entre las dos últimas que has oído; **Parar** (o **Esc**)
+  vuelve a tu versión.
+- **Ver el código** enseña qué cambiaría cada opción, antes y después.
+- **Elegir esta** la añade a tu canción y te explica cómo ha cambiado el código; las demás se descartan.
+  **Deshacer la elección** recupera las opciones.
+- **Otras opciones**, **Afinar…** («la B pero más suave») o **Ninguna** piden otras nuevas a Maestro.
+
+![Opciones de Maestro: escucha cada una sobre tu canción](docs/screenshots/es/opciones-maestro.png)
+
+![Después de elegir: qué ha cambiado en el código](docs/screenshots/es/opciones-maestro-elegida.png)
+
+Funciona con todos los proveedores de IA, y también sin IA (escribe «dame opciones» y las crea con sus propias ideas y
+recetas de estilo). Apágalo con el interruptor **Opciones** arriba del chat si prefieres que Maestro aplique los cambios
+directamente.
+
 ### Ayuda con tu código y paleta de código
 
 **Ayuda**: ¿has editado una pista y da error o no suena como querías? Pulsa **Ayuda** (se abre sola si Tidal da error).
@@ -90,6 +113,12 @@ seleccionada; Maestro te enseña y explica el cambio, y puedes deshacerlo.
 |---|---|
 | ![Ayuda con el código](docs/screenshots/es/ayuda-codigo.png) | ![Paleta de código](docs/screenshots/es/paleta-codigo.png) |
 
+**Los errores antiguos se van**: el error de una pista se borra solo en cuanto esa pista (o «Tocar todo») suena sin
+errores, y con él la ayuda que Maestro abrió por ese error. Si cambias el código después de un error, el error se pone gris
+y avisa de que es de una versión anterior; la × del recuadro lo borra cuando quieras.
+
+![Borrar errores antiguos](docs/screenshots/es/borrar-errores.png)
+
 ### Vista de bloques y resaltado en directo
 
 **Vista de bloques**: tu canción en bloques visuales anidados. Cada pista muestra lo que la transforma (antes del `$`),
@@ -101,6 +130,16 @@ números de una transformación (`every 4 (fast 2)`), añadir ajustes o transfor
 | Tu canción en bloques anidados | Pulsa un bloque: tooltip para editarlo |
 |---|---|
 | ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Editar un bloque](docs/screenshots/es/bloques-editar.png) |
+
+**Enciende y apaga cada efecto**: cada efecto (`# room`, `# delay`, `# lpf`, `# crush`…) tiene su propio interruptor, por
+pista, en la vista de Bloques, debajo del código de cada pista en Pistas y en la tarjeta configuradora de Maestro. Al
+apagarlo deja de sonar solo ese efecto y se guarda su valor, así que al encenderlo vuelve tal cual. En el código queda
+como comentario de Haskell, `{- # room 0.4 -}`, que Tidal ignora; suena al momento (con En vivo activado) y Deshacer lo
+recupera.
+
+| Bloques: un interruptor por efecto | Pistas: la fila de efectos bajo el código |
+|---|---|
+| ![Interruptores en Bloques](docs/screenshots/es/efectos-bloques.png) | ![Interruptores en Pistas](docs/screenshots/es/efectos-pistas.png) |
 
 **Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
 sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.
@@ -185,6 +224,12 @@ tu canción, y el botón «Recuperar el chat» la devuelve. «Ocultar» pliega l
 | «Ocultar» las ideas de Maestro para tener más chat | «Limpiar chat»: la canción se queda y el chat puede volver |
 |---|---|
 | ![Ocultar ideas](docs/screenshots/es/ocultar-ideas.png) | ![Limpiar chat](docs/screenshots/es/limpiar-chat.png) |
+
+**Descarta las ideas que no te gusten**: la × de cada idea de Maestro la quita. El navegador lo recuerda (también al
+recargar), su hueco lo ocupa la siguiente idea y Maestro sabe cuáles has descartado para no volver a proponerlas, ni otras
+casi iguales. «Recuperarlas» lo deshace.
+
+![Descartar ideas](docs/screenshots/es/descartar-ideas.png)
 
 ### Instrumentos
 

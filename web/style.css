@@ -182,7 +182,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent-soft
 .idea .t { font-weight: 600; }
 .idea .p { color: var(--ink-2); font-size: 12.5px; margin: 2px 0 6px; }
 .idea .tag { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); background: var(--teal-soft); border-radius: 99px; padding: 1px 8px; }
-.idea .row { margin-top: 6px; }
+.idea .row { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .idea .row button { padding: 4px 10px; font-size: 12.5px; }
 .idea.trying { border-color: var(--gold); background: var(--gold-soft); }
 
@@ -981,3 +981,68 @@ dialog label.check input { display: inline-block; width: auto; margin: 0; }
 .tl-refinfo { font-size: 12px; color: var(--ink-2); min-height: 0; }
 .tl-refinfo:not(:empty) { margin-top: 3px; }
 .tl-refinfo code { font-size: 11.5px; }
+/* Opciones para escuchar (Maestro propone 3-4 y eliges) */
+.variants { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; white-space: normal; }
+.va-head { font-size: 12.5px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; }
+.va-card { border: 1px solid var(--rule); border-radius: var(--r-sm); padding: 8px 10px; background: var(--card); transition: border-color .15s, box-shadow .15s; }
+.va-card.playing { border-color: var(--teal); box-shadow: 0 0 0 2px var(--teal-soft); }
+.va-card.picked { border-color: var(--teal); background: var(--teal-soft); }
+.va-card.lost { opacity: .5; }
+.va-card.lost .va-code { display: none; }
+.va-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.va-letter { width: 22px; height: 22px; border-radius: 50%; display: inline-grid; place-items: center; font-weight: 700; font-size: 12px; background: var(--ink); color: var(--paper); flex: none; }
+.va-card.playing .va-letter { background: var(--teal); color: #fff; animation: va-pulse 1s ease-in-out infinite; }
+@keyframes va-pulse { 50% { transform: scale(1.12); } }
+.va-title { font-weight: 600; }
+.va-top .tag { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--teal); background: var(--teal-soft); border-radius: 99px; padding: 1px 8px; }
+.va-desc { color: var(--ink-2); font-size: 12.5px; margin: 4px 0 2px; }
+.va-meta { color: var(--ink-3); font-size: 11px; font-family: var(--mono, monospace); margin-left: auto; }
+.va-row { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+.va-row button, .va-foot button { padding: 4px 10px; font-size: 12.5px; }
+.va-play.on { background: var(--teal); border-color: var(--teal); color: #fff; }
+.va-badge { margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--teal); display: flex; align-items: center; gap: 4px; }
+.va-code { margin-top: 6px; font-size: 12.5px; }
+.va-code summary { cursor: pointer; color: var(--ink-2); }
+.va-code .diff { margin-top: 6px; }
+.va-foot { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.va-foot .va-sp { flex: 1; }
+.va-refine { display: flex; gap: 6px; }
+.va-refine input { flex: 1; min-width: 0; }
+.va-toggle { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; color: var(--ink-2); margin-left: auto; cursor: pointer; }
+.va-toggle input { margin: 0; accent-color: var(--teal); }
+.assistant h2 .va-toggle + .clear-chat { margin-left: 8px; }
+.panel.assistant.va-open #ideas { display: none !important; }
+.va-head { font-size: 11.5px; color: var(--ink-3); }
+/* ---- Efectos encendidos/apagados (bypass): el valor se guarda como {- # room 0.3 -} */
+.fx-sw { position: relative; display: inline-block; vertical-align: middle; width: 24px; height: 14px; padding: 0; margin: 0 6px 0 -4px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--paper); cursor: pointer; flex: none; }
+.fx-sw::after { content: ""; position: absolute; top: 1px; left: 1px; width: 10px; height: 10px; border-radius: 50%; background: var(--ink-3); transition: left .15s, background .15s; }
+.fx-sw.is-on { background: var(--ok); border-color: var(--ok); }
+.fx-sw.is-on::after { left: 11px; background: #fff; }
+.fx-sw:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.bk-param.off, .card-param.off > span code { opacity: .55; }
+.bk-param.off { border-style: dashed; background: transparent; }
+.bk-param.off .op, .bk-param.off b { text-decoration: line-through; color: var(--ink-3); }
+.card-param.off .ctl-row, .card-param.off input[type=text] { opacity: .45; }
+.card-param > span .fx-sw { margin: 0 6px 0 0; }
+.fx-row { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 6px; }
+.fx-row-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); margin-right: 2px; }
+.fx-chip { display: inline-flex; align-items: center; gap: 5px; font: 12px var(--mono); padding: 2px 9px 2px 7px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--card); color: var(--ink); cursor: pointer; }
+.fx-chip code { font-weight: 700; }
+.fx-chip .fx-led { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 2px #e1f0e6; }
+.fx-chip.off { border-style: dashed; background: transparent; color: var(--ink-3); text-decoration: line-through; }
+.fx-chip.off .fx-led { background: transparent; border: 1px solid var(--ink-3); box-shadow: none; }
+
+/* ---- Descartar ideas */
+.idea { position: relative; }
+.idea .t { padding-right: 26px; }
+.idea .idea-dismiss { position: absolute; top: 7px; right: 7px; width: 24px; height: 24px; padding: 0; display: grid; place-items: center; border-radius: 50%; color: var(--ink-3); background: transparent; border-color: transparent; }
+.idea .idea-dismiss:hover { color: var(--danger); border-color: var(--danger); }
+.ideas-dismissed { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: var(--ink-3); padding: 2px 2px 0; order: 99; }
+
+/* ---- Errores de una pista: × para borrarlos; «stale» si el código ha cambiado desde el error */
+.track .err { position: relative; padding: 6px 30px 6px 8px; border-radius: 6px; background: #fbe9e6; }
+.track .err .err-x { position: absolute; top: 3px; right: 3px; width: 22px; height: 22px; padding: 0; display: grid; place-items: center; border: none; background: transparent; color: var(--danger); border-radius: 50%; }
+.track .err .err-x:hover { background: #f5d3cd; }
+.track .err.stale { background: var(--paper); color: var(--ink-3); border: 1px dashed var(--rule-strong); }
+.track .err.stale .err-x { color: var(--ink-3); }
+.err-stale { display: block; font-family: var(--sans, inherit); font-size: 11.5px; font-style: italic; margin-bottom: 4px; color: var(--ink-2); }
