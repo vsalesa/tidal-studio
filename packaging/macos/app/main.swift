@@ -64,14 +64,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         DispatchQueue.global().async {
             AppDelegate.stop(p)
             say("server stopped; quitting")
-            if selfTest {
-                if let s = try? String(contentsOf: FileManager.default.homeDirectoryForCurrentUser
-                    .appendingPathComponent("Library/Logs/Tidal Studio/studio.log"), encoding: .utf8) {
-                    print(s.suffix(3000))
-                }
-                exit(0)
-            }
             DispatchQueue.main.async { sender.reply(toApplicationShouldTerminate: true) }
+            // safety net: never stay alive after the studio has stopped
+            DispatchQueue.global().asyncAfter(deadline: .now() + 3) { say("fallback exit"); exit(0) }
         }
         return .terminateLater
     }
