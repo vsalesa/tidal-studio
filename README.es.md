@@ -55,8 +55,10 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
   4 kHz) en cada pista, silencio y solo, y un canal **Master** para toda la canción. No toca el código de tus pistas: al
   sonar añade `# amp` y `# eqlow / eqmid / eqhigh` (lo verás como una línea `-- mezcla` en la pestaña Código).
 - **Deshacer, rehacer e historial (rollback)**: cada cambio de la canción queda guardado. Botones deshacer/rehacer
-  (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior. El botón «Limpiar chat» limpia el chat de
-  Maestro (la canción no cambia; puedes recuperar el chat).
+  (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z) y un **Historial** para volver a cualquier versión anterior.
+- **Un chat ordenado**: el botón «Limpiar chat» (arriba a la derecha del panel de Maestro) vacía la conversación sin tocar
+  tu canción, y el botón «Recuperar el chat» la devuelve. «Ocultar» pliega las ideas de Maestro para dejar más sitio al
+  chat (el navegador recuerda tu elección; «Mostrar» las vuelve a enseñar).
 - **Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
   sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.
 - **Biblioteca de samples**: sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX,
@@ -64,8 +66,8 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
   (WAV, AIFF, FLAC, OGG) o **busca en Freesound** (clave API gratuita) filtrando por licencia; lo descargado queda listo para
   Tidal y los créditos de los sonidos CC BY se apuntan en `samples/CREDITS.md`. La pestaña **Packs** explora packs de la
   comunidad en GitHub (unas 70 cajas de ritmos, Uzu drumkit, VCSL, un piano de cola, SP-12, mridangam, o cualquier
-  `github:usuario/repo` con un `strudel.json`): escucha, instala un sonido o una caja de ritmos entera. Maestro conoce tu
-  biblioteca y puede usarla.
+  `github:usuario/repo` con un `strudel.json`): escucha, instala un sonido o una caja de ritmos entera. **Los packs instalados y
+  los sonidos de Freesound se cargan en SuperDirt al momento**, sin reiniciar el motor. Maestro conoce tu biblioteca y puede usarla.
 - **Controles en el chat (agentic UI)**: Maestro pone deslizadores, control de tempo, selector de sonido y un secuenciador
   por pasos dentro de sus mensajes. Al moverlos se escribe el código Tidal en directo, así ves qué palabra cambia. Usa el
   botón de deslizadores de cada pista, el botón «Ajustar con controles» o pídeselo.
@@ -89,6 +91,20 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 - **macOS, Windows y Linux**: el instalador detecta tu sistema.
 
 ## Capturas
+
+### Novedades
+
+| Ver lo que suena: el paso que está sonando se ilumina en cada pista | …y en la vista de Bloques, paso a paso |
+|---|---|
+| ![Resaltado en directo en Pistas](docs/screenshots/es/resaltado-pistas.png) | ![Resaltado en directo en Bloques](docs/screenshots/es/resaltado-bloques.png) |
+
+| …y en la pestaña Código | Pestaña Mezcla: volumen, ecualizador de 3 bandas, silencio y solo por pista, y Master |
+|---|---|
+| ![Resaltado en directo en Código](docs/screenshots/es/resaltado-codigo.png) | ![Mezcla](docs/screenshots/es/mezcla.png) |
+
+| «Ocultar» las ideas de Maestro para tener más chat | «Limpiar chat»: la canción se queda y el chat puede volver |
+|---|---|
+| ![Ocultar ideas](docs/screenshots/es/ocultar-ideas.png) | ![Limpiar chat](docs/screenshots/es/limpiar-chat.png) |
 
 ### Skills de Maestro
 
@@ -136,9 +152,9 @@ Pulsas opciones y lo vas oyendo en vivo. Las recomendadas para tu estilo vienen 
 |---|---|
 | ![Editar un bloque](docs/screenshots/es/bloques-editar.png) | ![Tarjeta configuradora](docs/screenshots/es/tarjeta-configuradora.png) |
 
-| Pestaña Mezcla: volumen y ecualizador por pista y master | Historial de la canción (rollback) |
+| Historial de la canción (rollback) | |
 |---|---|
-| ![Mezcla](docs/screenshots/es/mezcla.png) | ![Historial](docs/screenshots/es/historial.png) |
+| ![Historial](docs/screenshots/es/historial.png) | |
 
 ### Vista de bloques y biblioteca de samples
 
