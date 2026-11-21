@@ -126,6 +126,113 @@ jobs:
           compression-level: 0
           retention-days: 30
 
+  linux:
+    name: Linux (.deb, preview)
+    runs-on: ubuntu-22.04
+    continue-on-error: true  # preview: not part of the Release until it passes
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgmp-dev libffi-dev libnuma-dev zlib1g-dev
+
+      - name: Restore GHC + Tidal cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            /opt/tidal-studio/ghc
+            /opt/tidal-studio/cabal-store
+            /opt/tidal-studio/tidal.env
+          key: haskell-linux-x64-ghc${{ env.GHC_VERSION }}-tidal${{ env.TIDAL_VERSION }}-v1
+
+      - name: Build the .deb
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash packaging/linux/build.sh
+
+      - name: Save GHC + Tidal cache
+        if: always() && steps.cache.outputs.cache-hit != 'true' && hashFiles('/opt/tidal-studio/tidal.env') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            /opt/tidal-studio/ghc
+            /opt/tidal-studio/cabal-store
+            /opt/tidal-studio/tidal.env
+          key: haskell-linux-x64-ghc${{ env.GHC_VERSION }}-tidal${{ env.TIDAL_VERSION }}-v1
+
+      - name: Install the .deb on a clean path and smoke-test it
+        run: |
+          sudo mv /opt/tidal-studio "$RUNNER_TEMP/build-runtime"
+          sudo apt-get install -y ./dist/*.deb
+          test -x /usr/bin/tidal-studio
+          /opt/tidal-studio/python/bin/python3 packaging/common/smoke_test.py /opt/tidal-studio
+          QT_QPA_PLATFORM=offscreen tidal-studio --self-test
+          sleep 3
+          if pgrep -fl "/opt/tidal-studio/|scsynth|sclang|ghc-9"; then echo "processes left running"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TidalStudio-Linux
+          path: dist/*.deb
+          compression-level: 0
+          retention-days: 30
+
+  windows:
+    name: Windows (Setup.exe, preview)
+    runs-on: windows-2022
+    continue-on-error: true  # preview: not part of the Release until it passes
+    timeout-minutes: 150
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore GHC + Tidal cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            C:/TidalStudio/ghc
+            C:/TidalStudio/cabal-store
+            C:/TidalStudio/tidal.env
+          key: haskell-windows-x64-ghc${{ env.GHC_VERSION }}-tidal${{ env.TIDAL_VERSION }}-v1
+
+      - name: Build the installer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: bash packaging/windows/build.sh
+
+      - name: Save GHC + Tidal cache
+        if: always() && steps.cache.outputs.cache-hit != 'true' && hashFiles('C:/TidalStudio/tidal.env') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            C:/TidalStudio/ghc
+            C:/TidalStudio/cabal-store
+            C:/TidalStudio/tidal.env
+          key: haskell-windows-x64-ghc${{ env.GHC_VERSION }}-tidal${{ env.TIDAL_VERSION }}-v1
+
+      - name: Install on a clean path and smoke-test it
+        run: |
+          mv /c/TidalStudio "$RUNNER_TEMP/build-runtime"
+          SETUP="$(ls dist/*Setup.exe | head -1)"
+          cmd //c "$(cygpath -w "$SETUP") /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /LOG=install.log" || { cat install.log; exit 1; }
+          test -f /c/TidalStudio/python/pythonw.exe
+          /c/TidalStudio/python/python.exe packaging/common/smoke_test.py 'C:\TidalStudio'
+          /c/TidalStudio/python/python.exe 'C:\TidalStudio\bin\launcher.py' --self-test
+          sleep 3
+          if tasklist | grep -iE "sclang|scsynth|ghc"; then echo "processes left running"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TidalStudio-Windows
+          path: dist/*Setup.exe
+          compression-level: 0
+          retention-days: 30
+
   release:
     needs: macos
     if: startsWith(github.ref, 'refs/tags/v') || inputs.publish || github.ref == 'refs/heads/main'
