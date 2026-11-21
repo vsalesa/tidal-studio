@@ -143,6 +143,9 @@ def scan(cfg=None):
     sk = (cfg or {}).get("skills") or {}
     disabled = set(sk.get("disabled") or [])
     pinned = set(sk.get("pinned") or [])
+    # Plugins «usar siempre»: su skill principal (la que se llama como el plugin) se carga en cada
+    # mensaje y el resto de sus skills tienen prioridad al elegir.
+    preferred = set(((cfg or {}).get("plugins") or {}).get("preferred") or [])
     out, seen = [], set()
     places = []
     for origin, d in (("builtin", BUILTIN_DIR), ("user", USER_DIR)):
@@ -160,6 +163,10 @@ def scan(cfg=None):
         text = _read(path)
         meta, body = _parse_frontmatter(text)
         name = re.sub(r"[^a-z0-9-]+", "-", str(meta.get("name") or entry).lower()).strip("-") or entry
+        orig = name
+        if name in seen and plugin:
+            # mismo nombre que una skill incluida: la del plugin lleva su apellido
+            name = f"{plugin}-plugin" if name == plugin else f"{plugin}-{name}"
         if name in seen:
             continue
         seen.add(name)
@@ -182,7 +189,8 @@ def scan(cfg=None):
             "url": src.get("url") or "",
             "author": src.get("author") or str(meta.get("author") or ""),
             "enabled": name not in disabled,
-            "pinned": name in pinned,
+            "pinned": name in pinned or (plugin in preferred and orig == plugin),
+            "preferred": plugin in preferred,
             "_path": path,
             "_folder": folder,
             "_body": body,
@@ -305,9 +313,15 @@ def select(cfg, query, extra_words=""):
         sc = 100 if s["pinned"] else _score(s, words, query + " " + extra_words)
         ranked.append((sc, s))
     ranked.sort(key=lambda x: -x[0])
+    # Un plugin «usar siempre» tiene garantizado un hueco: su mejor skill que encaje entra la primera
+    best_pref = next(((sc, s) for sc, s in ranked if s.get("preferred") and not s["pinned"] and sc >= 4), None)
+    if best_pref:
+        ranked.remove(best_pref)
+        pins = [x for x in ranked if x[1]["pinned"]]
+        ranked = pins + [best_pref] + [x for x in ranked if not x[1]["pinned"]]
     loaded, parts, used_chars = [], [], 0
     for sc, s in ranked:
-        if len(loaded) >= MAX_LOADED and not s["pinned"]:
+        if sum(1 for x in loaded if not x["pinned"]) >= MAX_LOADED and not s["pinned"]:  # las fijadas no cuentan
             break
         if sc < 4:
             break

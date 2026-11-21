@@ -50,6 +50,7 @@ function pluginCardHTML(p, focus) {
   return `<article class="sk-card pl-card ${p.enabled ? "" : "off"} ${focus === p.name ? "focus" : ""}" data-plugin="${esc(p.name)}">
       <header>
         ${icon("plugin", 16)}<b>${esc(p.title)}</b>
+        ${p.default ? `<span class="sk-tag lic">${L("Por defecto", "Default")}</span>` : ""}
         ${p.version ? `<span class="sk-tag">v${esc(p.version)}</span>` : ""}
         ${p.license ? `<span class="sk-tag lic">${esc(p.license)}</span>` : `<span class="sk-tag warn">${L("sin licencia", "no license")}</span>`}
       </header>
@@ -59,6 +60,7 @@ function pluginCardHTML(p, focus) {
       ${p.notice ? `<p class="pl-note">${L("Trae un aviso (NOTICE) con condiciones de uso: está en su carpeta, léelo antes de compartir su contenido.", "It ships a NOTICE with terms of use: it's in its folder, read it before sharing its content.")}</p>` : ""}
       <footer>
         <label class="toggle"><input type="checkbox" data-a="plugin-enable" ${p.enabled ? "checked" : ""}> ${L("Activo", "On")}</label>
+        <label class="toggle" title="${esc(L("Maestro carga su skill principal en cada mensaje y prefiere sus skills cuando encajan", "Maestro loads its main skill with every message and prefers its skills when they match"))}"><input type="checkbox" data-a="plugin-prefer" ${p.preferred ? "checked" : ""} ${p.enabled ? "" : "disabled"}> ${L("Usar siempre", "Always use")}</label>
         <button class="sk-btn danger" data-a="plugin-remove">${icon("trash", 14)} ${L("Quitar plugin", "Remove plugin")}</button>
       </footer>
     </article>`;
@@ -121,6 +123,7 @@ export function skillsDialogHTML(list, opts = {}) {
     <h3 class="sk-h">${icon("plugin", 15)} ${L("Plugins", "Plugins")}</h3>
     <p class="hint pl-intro">${L("Un plugin es un paquete de Claude Code (.claude-plugin/plugin.json) que puede traer muchas skills y comandos. Maestro usa sus skills como las demás y sus comandos los escribes en el chat (/nombre). Se instalan solo en tu ordenador.",
       "A plugin is a Claude Code package (.claude-plugin/plugin.json) that can bring many skills and commands. Maestro uses its skills like any other and you type its commands in the chat (/name). They're installed only on your computer.")}</p>
+    ${opts.defaultState === "installing" ? `<p class="hint">${L("Descargando el plugin de composición musical que viene por defecto…", "Downloading the default music composition plugin…")}</p>` : ""}
     ${pluginBlocks || `<p class="hint">${L("Aún no hay plugins instalados.", "No plugins installed yet.")}</p>`}
     <form class="sk-install" id="sk-install">
       <label>${icon("plus", 14)} ${L("Instalar una skill o un plugin desde GitHub", "Install a skill or a plugin from GitHub")}</label>
