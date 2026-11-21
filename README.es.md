@@ -239,8 +239,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema desde la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest); los pasos
-están en [Instalación](#instalación-una-sola-vez).
+instalador para tu sistema (versión 0.3.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+
+| Sistema | Descarga | Después |
+|---|---|---|
+| **Mac** (Apple Silicon) | [TidalStudio-0.3.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.3.0/TidalStudio-0.3.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.3.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.3.0/TidalStudio-0.3.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.3.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.3.0/tidal-studio_0.3.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tutorial interactivo
 
