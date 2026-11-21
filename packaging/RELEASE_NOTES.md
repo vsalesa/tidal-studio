@@ -1,4 +1,10 @@
-## What's new in 0.4.0 / Novedades
+## What's new in 0.4.1 / Novedades
+
+- **Each track shows its mix** (volume and EQ) in Tracks and Blocks, so you always see what is changing the sound.
+
+**Español:** cada pista muestra su **mezcla** (volumen y ecualización) en Pistas y Bloques.
+
+## 0.4.0
 
 - **Pick by ear**: Maestro offers 3–4 options you can listen to over your song (live A/B) before keeping one.
 - **Timeline tab**: see where each sound plays in time, calculated by Tidal and linked to its code.
