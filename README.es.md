@@ -96,6 +96,10 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 |---|---|
 | ![Skills en el chat](docs/screenshots/skills-in-chat.png) | ![Panel de skills](docs/screenshots/es/panel-skills.png) |
 
+**Plugins**: instala un plugin o marketplace de Claude Code pegando su enlace de GitHub; sus skills se suman a las de Maestro y sus comandos funcionan en el chat (`/nombre`).
+
+![Panel de plugins](docs/screenshots/es/panel-plugins.png)
+
 ### Cursos por género
 
 | Elige un género | Cada paso: por qué suena así, el código y Maestro explicándolo |
@@ -241,6 +245,21 @@ Maestro puede cargar **skills** (carpetas con un `SKILL.md`, el mismo formato qu
 skills de música con licencia abierta (live coding con Tidal, recetas de Strudel y composición musical en general); con el botón de skills de la barra superior puedes activarlas o desactivarlas,
 marcar una como «Cargar siempre», leerla o instalar otra pegando su enlace de GitHub. Debajo de cada respuesta de Maestro
 ves qué skills se cargaron para ese mensaje y cuáles usó de verdad. Detalles y fuentes: [skills/README.md](skills/README.md).
+
+### Plugins
+
+El mismo cuadro instala también **plugins de Claude Code** (un repositorio con `.claude-plugin/plugin.json`) y
+**marketplaces** (`.claude-plugin/marketplace.json`, con varios plugins: eliges cuáles). Pega el enlace del repositorio,
+por ejemplo `https://github.com/jtydhr88/music-composition-skills`. Tidal Studio lo descarga con `git` (o con el
+`.tar.gz` de GitHub si no tienes git), copia **solo archivos de texto** en `my-plugins/<plugin>/` en tu ordenador
+(nunca en este repositorio) y además:
+
+- sus **skills** las usa Maestro como las demás (salen agrupadas bajo el plugin en el panel);
+- sus **comandos** (`commands/*.md`) se escriben en el chat de Maestro: `/nombre` o `/plugin:nombre`, con argumentos;
+- agentes, hooks y servidores MCP/LSP son para Claude Code: se listan pero no se usan.
+
+Cada plugin se puede desactivar (desaparecen sus skills y comandos) o quitar. Mira su licencia y su `NOTICE` antes de
+compartir su contenido.
 
 ### Samples
 

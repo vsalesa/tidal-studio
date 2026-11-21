@@ -3,6 +3,7 @@ Skills para Maestro: carpetas con un SKILL.md (el mismo formato que las Agent Sk
 
   skills/<nombre>/SKILL.md        skills que vienen con Tidal Studio (de terceros, con su licencia)
   my-skills/<nombre>/SKILL.md     skills que instalas tú (desde GitHub o copiando la carpeta)
+  my-plugins/<plugin>/skills/…    skills que vienen dentro de un plugin instalado (ver plugins.py)
 
 Cada SKILL.md empieza con un bloque YAML sencillo (name, description y, opcionalmente,
 trigger_keywords / triggers / tags) y sigue con instrucciones en Markdown. Puede traer
@@ -24,6 +25,7 @@ import urllib.parse
 import urllib.request
 
 import net
+import plugins as pluginset
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILTIN_DIR = os.path.join(ROOT, "skills")
@@ -142,41 +144,49 @@ def scan(cfg=None):
     disabled = set(sk.get("disabled") or [])
     pinned = set(sk.get("pinned") or [])
     out, seen = [], set()
+    places = []
     for origin, d in (("builtin", BUILTIN_DIR), ("user", USER_DIR)):
-        if not os.path.isdir(d):
+        if os.path.isdir(d):
+            places += [(origin, os.path.join(d, e), "") for e in sorted(os.listdir(d))]
+    try:
+        places += [("plugin", folder, plug) for folder, plug in pluginset.skill_dirs(cfg)]
+    except Exception as e:  # un plugin roto no debe dejar sin skills
+        print(f"[plugins] {e}")
+    for origin, folder, plugin in places:
+        entry = os.path.basename(folder)
+        path = os.path.join(folder, "SKILL.md")
+        if not os.path.isfile(path):
             continue
-        for entry in sorted(os.listdir(d)):
-            folder = os.path.join(d, entry)
-            path = os.path.join(folder, "SKILL.md")
-            if not os.path.isfile(path):
-                continue
-            text = _read(path)
-            meta, body = _parse_frontmatter(text)
-            name = re.sub(r"[^a-z0-9-]+", "-", str(meta.get("name") or entry).lower()).strip("-") or entry
-            if name in seen:
-                continue
-            seen.add(name)
-            desc = re.sub(r"\s+", " ", str(meta.get("description") or meta.get("when_to_use") or "")).strip()
-            src = _source(folder)
-            low = (name + " " + desc).lower()
-            out.append({
-                "name": name,
-                "folder": entry,
-                "origin": origin,
-                "description": desc[:600],
-                "keywords": _as_list(meta.get("trigger_keywords") or meta.get("triggers"))[:40] + _as_list(meta.get("tags"))[:20],
-                "language": "strudel" if "strudel" in low and "tidal" not in name else "tidal",
-                "refs": _refs(folder),
-                "chars": len(text),
-                "license": src.get("license") or str(meta.get("license") or ""),
-                "url": src.get("url") or "",
-                "author": src.get("author") or str(meta.get("author") or ""),
-                "enabled": name not in disabled,
-                "pinned": name in pinned,
-                "_path": path,
-                "_folder": folder,
-                "_body": body,
-            })
+        text = _read(path)
+        meta, body = _parse_frontmatter(text)
+        name = re.sub(r"[^a-z0-9-]+", "-", str(meta.get("name") or entry).lower()).strip("-") or entry
+        if name in seen:
+            continue
+        seen.add(name)
+        desc = re.sub(r"\s+", " ", str(meta.get("description") or meta.get("when_to_use") or "")).strip()
+        src = _source(folder)
+        if plugin and not src.get("license"):
+            src = {**pluginset.source_of(plugin), **src}
+        low = (name + " " + desc).lower()
+        out.append({
+            "name": name,
+            "folder": entry,
+            "origin": origin,
+            "plugin": plugin,
+            "description": desc[:600],
+            "keywords": _as_list(meta.get("trigger_keywords") or meta.get("triggers"))[:40] + _as_list(meta.get("tags"))[:20],
+            "language": "strudel" if "strudel" in low and "tidal" not in name else "tidal",
+            "refs": _refs(folder),
+            "chars": len(text),
+            "license": src.get("license") or str(meta.get("license") or ""),
+            "url": src.get("url") or "",
+            "author": src.get("author") or str(meta.get("author") or ""),
+            "enabled": name not in disabled,
+            "pinned": name in pinned,
+            "_path": path,
+            "_folder": folder,
+            "_body": body,
+        })
     return out
 
 
@@ -319,7 +329,8 @@ def select(cfg, query, extra_words=""):
         used_chars += len(chunk)
         parts.append(chunk)
         loaded.append({"name": s["name"], "refs": refs, "pinned": s["pinned"], "score": sc})
-    catalog = "\n".join(f"- {s['name']}: {s['description'][:240]}" for s in skills)
+    cut = 240 if len(skills) <= 12 else 140  # con muchas skills (plugins grandes) la lista va más corta
+    catalog = "\n".join(f"- {s['name']}: {s['description'][:cut]}" for s in skills)
     text = ("\n\nSKILLS INSTALADAS (conocimiento experto escrito por otras personas; formato Agent Skills):\n" + catalog +
             "\n\nCONTENIDO CARGADO PARA ESTA RESPUESTA:\n" + ("\n\n".join(parts) if parts else "(ninguna encaja con este mensaje)") +
             "\n\nCómo usar las skills: apóyate en ellas para tomar decisiones musicales (ritmos, acordes, estructura, mezcla), "
@@ -451,6 +462,8 @@ def install(url, token=""):
 def remove(cfg, name):
     for s in scan(cfg):
         if s["name"] == name:
+            if s["origin"] == "plugin":
+                raise SkillError(f"Esta skill es del plugin «{s['plugin']}»: desactívala o quita el plugin entero")
             if s["origin"] != "user":
                 raise SkillError("Las skills que vienen con Tidal Studio no se borran: desactívala")
             shutil.rmtree(s["_folder"], ignore_errors=True)
