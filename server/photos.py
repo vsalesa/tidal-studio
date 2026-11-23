@@ -16,7 +16,7 @@ import net
 from samples import SampleError, safe_name
 
 API = "https://commons.wikimedia.org/w/api.php"
-HOSTS = ("commons.wikimedia.org", "upload.wikimedia.org")
+HOSTS = ("commons.wikimedia.org", "upload.wikimedia.org", "thumb.wikimedia.org")
 UA = {"User-Agent": "TidalStudio/1.0 (https://github.com/vsalesa/tidal-studio; instrument photos)"}
 FREE = ("CC0", "Public domain", "PD", "CC BY", "CC-BY")
 
