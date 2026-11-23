@@ -87,7 +87,10 @@ def session_summary(session):
     if ref:
         lines.append(ref[:3000])
     samples = session.get("samples") or []
-    if samples:
+    if session.get("inventario"):
+        # Leído del disco en el servidor en cada mensaje (ver inventory.py): lo recién descargado siempre aparece
+        lines.append(str(session["inventario"])[:20000])
+    elif samples:
         lines.append("Samples propios del alumno en su biblioteca (puedes usarlos con s \"nombre\" o s \"nombre:n\"; propónselos cuando encajen): "
                      + ", ".join(f'{x.get("name")} ({x.get("type")}, {x.get("n")} variantes)' for x in samples[:40] if isinstance(x, dict)))
     loops_lines = [str(x)[:400] for x in (session.get("loops_lines") or [])][:30]
