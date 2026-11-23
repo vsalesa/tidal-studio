@@ -61,6 +61,19 @@ Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un
 | **Paso de arreglo: intro, merengue y mambo** | **Paso de mezcla y curso completado** |
 | ![Arreglo del curso](docs/screenshots/es/curso-arreglo.png) | ![Curso completado](docs/screenshots/es/curso-completado.png) |
 
+**Cursos latinos que siguen tu plugin de composición.** Merengue, salsa, cumbia, reggaeton y bossa nova siguen las skills
+de estilos latinos del [plugin music-composition](https://github.com/vsalesa/music-composition-skills): cada curso dice
+qué tradición toca (por ejemplo, salsa dura de Nueva York de los 70 sobre clave de son 2-3), cada paso muestra «Lo que
+dice la skill» y Maestro carga esa skill cuando le preguntas por el paso. Las partes las tocan instrumentos reales de la
+biblioteca (güiro, congas, bongós, claves, contrabajo, trombones, acordeón, guitarra de nailon, flauta…), que se
+descargan solos al empezar el curso.
+
+| Cada curso latino dice su tradición y su skill | La tradición y el artista de referencia, antes del primer paso |
+|---|---|
+| ![Cursos latinos](docs/screenshots/es/cursos-latinos.png) | ![Tradición del curso](docs/screenshots/es/curso-tradicion.png) |
+| **«Lo que dice la skill» en cada paso, con instrumentos reales** | |
+| ![Paso con la regla de la skill](docs/screenshots/es/curso-skill-paso.png) | |
+
 ### Maestro, tu profesor
 
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.

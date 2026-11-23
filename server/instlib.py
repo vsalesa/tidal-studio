@@ -155,6 +155,55 @@ def wav_to16(data, max_sec=MAX_SEC):
     return make_wav(bytes(out), sr, nch)
 
 
+LEVEL_DB = -6.0     # pico al que se llevan los instrumentos WAV (VCSL y VSCO vienen a −20/−40 dB y casi no se oían)
+MAX_BOOST_DB = 36.0
+
+
+def wav_peak16(data):
+    """Pico (0..1) de un WAV de 16 bits."""
+    import array
+    ch = _wav_chunks(data)
+    dpos, dsize = ch[b"data"]
+    a = array.array("h")
+    a.frombytes(data[dpos:dpos + dsize - (dsize % 2)])
+    return (max(max(a), -min(a)) / 32768.0) if len(a) else 0.0
+
+
+def normalize_folder(folder, target_db=LEVEL_DB):
+    """Sube todos los WAV de un instrumento con la MISMA ganancia, para que el más fuerte llegue a target_db.
+    Así se conservan las diferencias entre golpes suaves y fuertes. Devuelve los dB que se han subido."""
+    import array
+    import math
+    files = [os.path.join(folder, f) for f in sorted(os.listdir(folder)) if f.lower().endswith(".wav")]
+    datas, peak = {}, 0.0
+    for f in files:
+        try:
+            with open(f, "rb") as fh:
+                d = fh.read()
+            fpos, _ = _wav_chunks(d)[b"fmt "]
+            if struct.unpack("<H", d[fpos + 14:fpos + 16])[0] != 16:
+                continue
+            datas[f] = d
+            peak = max(peak, wav_peak16(d))
+        except (OSError, ValueError, KeyError, struct.error):
+            continue
+    if not datas or peak <= 0:
+        return 0.0
+    boost = min(target_db - 20 * math.log10(peak), MAX_BOOST_DB)
+    if boost < 1.0:   # ya está a buen nivel (o más fuerte): no se toca
+        return 0.0
+    g = 10 ** (boost / 20)
+    for f, d in datas.items():
+        ch = _wav_chunks(d)
+        dpos, dsize = ch[b"data"]
+        a = array.array("h")
+        a.frombytes(d[dpos:dpos + dsize - (dsize % 2)])
+        b = array.array("h", (max(-32768, min(32767, int(x * g))) for x in a))
+        with open(f, "wb") as fh:
+            fh.write(d[:dpos] + b.tobytes() + d[dpos + len(a) * 2:])
+    return round(boost, 1)
+
+
 def make_wav(pcm16, sr, nch=1):
     return (b"RIFF" + struct.pack("<I", 36 + len(pcm16)) + b"WAVEfmt " + struct.pack("<IHHIIHH", 16, 1, nch, sr, sr * nch * 2, nch * 2, 16)
             + b"data" + struct.pack("<I", len(pcm16)) + pcm16)
@@ -309,10 +358,11 @@ class InstLib:
             shutil.rmtree(tmp, ignore_errors=True)
             raise
         src = cat.SOURCES.get(it["src"], {})
+        boost = normalize_folder(tmp)
         with open(os.path.join(tmp, "instrument.json"), "w", encoding="utf-8") as f:
             json.dump({"id": iid, "src": it["src"], "es": it["es"], "en": it["en"], "kind": kind_of(it),
                        "license": src.get("license"), "author": src.get("author"), "home": src.get("home"),
-                       "installed": time.strftime("%Y-%m-%d")}, f, ensure_ascii=False, indent=1)
+                       "installed": time.strftime("%Y-%m-%d"), "level_db": boost}, f, ensure_ascii=False, indent=1)
         shutil.rmtree(folder, ignore_errors=True)
         os.replace(tmp, folder)
         _size_cache[iid] = round(total_bytes[0] / 1048576, 1)
@@ -341,6 +391,59 @@ class InstLib:
         if self.engine:
             self.engine.free_sample(safe_name(iid))
         return {"id": iid, "removed": True}
+
+    # ------------------------------------------------------------ lo que necesita un código (cursos)
+    def missing_in(self, codes):
+        """Ids del catálogo que usan estos códigos ( s "…" ) y que aún no están descargados."""
+        found = []
+        for code in codes:
+            for m in _SOUND_RX.finditer(str(code or "")):
+                for word in re.findall(r"[A-Za-z][\w]*", m.group(1)):
+                    it = cat.BY_ID.get(word)
+                    if it and it["kind"] == "multi" and not self.installed(word) and word not in found:
+                        found.append(word)
+        return found
+
+    def ensure(self, codes, progress=None):
+        """Descarga los instrumentos que faltan para tocar estos códigos. No para si uno falla."""
+        need = self.missing_in(codes)
+        done, failed = [], []
+        for k, iid in enumerate(need):
+            if progress:
+                progress(k, len(need))
+            try:
+                self.install(iid)
+                done.append(iid)
+            except Exception as e:  # noqa: BLE001  (sin red, GitHub caído…)
+                failed.append({"id": iid, "es": cat.BY_ID[iid]["es"], "en": cat.BY_ID[iid]["en"], "error": str(e)})
+        if progress:
+            progress(len(need), len(need))
+        return {"installed": done, "failed": failed}
+
+    def level_old(self):
+        """Los instrumentos WAV instalados antes de la 0.9 se oían muy bajos: se suben una vez."""
+        out = []
+        if not os.path.isdir(self.dir):
+            return out
+        for name in sorted(os.listdir(self.dir)):
+            meta_f = os.path.join(self.dir, name, "instrument.json")
+            if not os.path.isfile(meta_f):
+                continue
+            try:
+                with open(meta_f, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+                if meta.get("src") == "user" or "level_db" in meta:
+                    continue
+                meta["level_db"] = normalize_folder(os.path.join(self.dir, name))
+                with open(meta_f, "w", encoding="utf-8") as f:
+                    json.dump(meta, f, ensure_ascii=False, indent=1)
+                if meta["level_db"]:
+                    out.append(name)
+                    if self.engine:
+                        self.engine.reload_sample(os.path.join(self.dir, name), name)
+            except (OSError, ValueError):
+                continue
+        return out
 
     # ------------------------------------------------------------ escuchar antes (y después) de instalar
     def preview(self, iid, midi):

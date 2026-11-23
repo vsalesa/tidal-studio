@@ -775,6 +775,15 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .cs-dot.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 .cs-step h3 { margin: 2px 0 6px; font-size: 20px; display: flex; gap: 8px; align-items: center; }
 .cs-step > p { margin: 0 0 8px; color: var(--ink-2); }
+.cs-trad { margin: 0 14px 6px !important; font-size: 12px !important; color: var(--ink-2); flex: 0 !important; }
+.cs-skill { margin: 0 14px 8px; align-self: flex-start; display: inline-flex; gap: 5px; align-items: center; font-size: 11px; font-family: var(--mono, monospace); padding: 2px 8px; border-radius: 99px; border: 1px solid var(--rule); color: var(--ink-2); }
+.cs-rule { display: flex; gap: 8px; align-items: flex-start; background: var(--sunk); border-left: 3px solid var(--g, var(--teal)); padding: 8px 10px; border-radius: var(--r-sm); font-size: 13px; margin-bottom: 8px; }
+.cs-rule b { display: block; font-size: 12px; }
+.cs-rule code { font-size: 11px; font-weight: 400; color: var(--ink-3); margin-left: 4px; }
+.cs-rule b { margin-bottom: 2px; }
+.cs-trad-box { margin: 0 0 10px; padding: 8px 10px; border-radius: var(--r-sm); border: 1px dashed var(--rule); font-size: 13px; display: flex; flex-direction: column; gap: 3px; }
+.cs-trad-box b { font-size: 12px; color: var(--ink-2); }
+.cs-lens { color: var(--ink-3); font-style: italic; }
 .cs-listen { display: flex; gap: 8px; align-items: flex-start; background: var(--teal-soft); color: var(--ink); padding: 8px 10px; border-radius: var(--r-sm); font-size: 13px; margin-bottom: 8px; }
 .cs-listen .ico { color: var(--teal); margin-top: 2px; }
 .cs-track { border-left: 3px solid var(--k); background: var(--card); border-radius: var(--r-sm); padding: 6px 8px; margin-bottom: 6px; border-top: 1px solid var(--rule); border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }

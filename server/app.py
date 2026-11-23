@@ -162,9 +162,11 @@ def llm_configured(cfg):
 def with_skills(cfg, system, query, session):
     """Añade al prompt la lista de skills y el contenido de las que encajan con el mensaje."""
     extra = " ".join(str(x) for x in (session.get("step"), session.get("style")) if x)
+    curso = session.get("curso") if isinstance(session.get("curso"), dict) else {}
+    force = (str(curso["skill"]),) if curso.get("skill") else ()   # los cursos latinos se basan en una skill del plugin
     extra += " " + " ".join(f"{t.get('kind', '')} {t.get('name', '')}" for t in session.get("tracks") or [] if isinstance(t, dict))
     try:
-        active, loaded, text = skillset.select(cfg, query or "", extra)
+        active, loaded, text = skillset.select(cfg, query or "", extra, force)
     except Exception as e:  # una skill rota no debe romper el chat
         print(f"[skills] {e}")
         return system, None
@@ -823,6 +825,12 @@ class Handler(SimpleHTTPRequestHandler):
                         if it["kind"] in ("synth", "engine"):
                             return self._json({"id": iid, "ready": True})
                         return self._json(INSTLIB.start_job("install", lambda prog: INSTLIB.install(iid, prog)))
+                    if path == "/api/instruments/ensure":
+                        # Los cursos (y lo que se escuche antes) descargan los instrumentos que usa su código
+                        codes = [str(c) for c in (data.get("codes") or [])][:60]
+                        if not INSTLIB.missing_in(codes):
+                            return self._json({"ready": True, "installed": [], "failed": []})
+                        return self._json(INSTLIB.start_job("ensure", lambda prog: INSTLIB.ensure(codes, prog)))
                     if path == "/api/instruments/remove":
                         iid = str(data.get("id") or "")
                         if iid.startswith("surge") or iid == "vital":
@@ -1138,6 +1146,12 @@ def main():
     print(f"\n🎛  Tidal Studio listo en {url}\n   (Ctrl+C para salir)\n")
     _graceful_signals()
     _write_port_file(port)
+    try:   # instrumentos WAV de antes de la 0.9: se suben de nivel antes de que SuperDirt los cargue
+        lv = INSTLIB.level_old()
+        if lv:
+            print(f"[instrumentos] nivel corregido: {', '.join(lv)}")
+    except Exception as e:  # noqa: BLE001
+        print(f"[instrumentos] {e}")
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
     threading.Thread(target=install_default_plugins, daemon=True).start()

@@ -299,7 +299,7 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   <div class="wrap">
     <div class="kicker" data-i="kc">Genre courses</div>
     <h2 class="sec-title" data-i="tc">Build a merengue from scratch.</h2>
-    <p class="sec-lead" data-i="lc">Eleven courses, one genre each: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum &amp; bass and lo-fi. Like a production class: the signature rhythm first, then bass, harmony, melody, arrangement and mix. Every step adds a piece that already sounds good, and Maestro explains why it sounds like that style.</p>
+    <p class="sec-lead" data-i="lc">Eleven courses, one genre each: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum &amp; bass and lo-fi. Like a production class: the signature rhythm first, then bass, harmony, melody, arrangement and mix. Every step adds a piece that already sounds good, and Maestro explains why it sounds like that style. The Latin courses follow the Latin style skills of your composition plugin, name the tradition they play and use real instruments: güiro, congas, bongos, upright bass, trombones, accordion, nylon guitar…</p>
     <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="course-img" alt="" width="3000" height="1880"></div>
     <div class="styles"><span>Merengue</span><span>Salsa</span><span>Cumbia</span><span>Reggaeton</span><span>Bossa nova</span><span>Jazz</span><span>Funk</span><span>House</span><span>Techno</span><span>Drum &amp; bass</span><span>Lo-fi</span></div>
   </div>
@@ -421,7 +421,7 @@ const ES = {
   l2: "Pulsa opciones y escucha el resultado en vivo. Las que encajan con tu estilo vienen marcadas, y el último paso te enseña todo el código explicado.",
   k3: "Así se ve", t3: "Un estudio claro, como una partitura.",
   kc: "Cursos por género", tc: "Construye un merengue desde cero.",
-  lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo.",
+  lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo. Los cursos latinos siguen las skills de estilos latinos de tu plugin de composición, dicen qué tradición tocan y usan instrumentos reales: güiro, congas, bongós, contrabajo, trombones, acordeón, guitarra de nailon…",
   ki: "Importar canción", ti: "Empieza con una canción que te encanta. Termina con una tuya.",
   li: "Suelta un MIDI, o un mp3 o wav, y se convierte en pistas de Tidal y en su receta: tempo, tonalidad, acordes, estructura y groove. Luego Maestro te ayuda a escribir algo nuevo inspirado en ella, conservando lo que funciona y cambiando el resto. Todo se queda en tu ordenador.",
   k4: "Recetas de estilo", t4: "«¿Quieres que suene tipo jazz?»",
@@ -603,7 +603,7 @@ function applyLang() {
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
 { const ii = document.getElementById("import-img"); ii.src = shotPath(lang === "es" ? "importar-resultado" : "import-result"); ii.alt = lang === "es" ? "Canción importada: receta y pistas de Tidal" : "Imported song: recipe and Tidal tracks"; }
-{ const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-paso" : "course-step"); ci.alt = lang === "es" ? "Curso de merengue paso a paso" : "Merengue course, step by step"; }
+{ const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-skill-paso" : "course-skill-step"); ci.alt = lang === "es" ? "Curso de salsa: cada paso con la regla de la skill y con instrumentos reales" : "Salsa course: each step with the skill's rule and real instruments"; }
 [...SHOTS, ...WZ].forEach((s) => { const p = new Image(); p.src = shotPath((lang === "es" ? s.es : s.en)[1]); });
 
 // ---------- Onda decorativa y aparición ----------
