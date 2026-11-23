@@ -852,6 +852,14 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .pl-card header .ico { color: var(--teal); }
 .pl-cmds { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; color: var(--ink-3); }
 .pl-cmds .sk-chip { cursor: pointer; }
+.sk-tag.new { background: var(--teal); color: #fff; }
+.pl-update { display: flex; align-items: center; gap: 10px; justify-content: space-between; margin: 6px 0; padding: 6px 10px; border-radius: 8px; background: var(--teal-soft); color: #0e5148; font-size: 12.5px; }
+.pl-update span { display: inline-flex; align-items: center; gap: 6px; }
+.pl-update.ok { justify-content: flex-start; gap: 6px; background: var(--sunk); color: var(--ink-2); }
+.pl-updates { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 10px; padding: 8px 10px; border: 1px dashed var(--rule-strong); border-radius: 10px; font-size: 12.5px; }
+.pl-updates .toggle { white-space: nowrap; display: inline-flex; }
+.pl-updates .toggle input { width: auto; margin: 0; }
+.pl-upd-status { color: var(--ink-3); flex: 1; min-width: 140px; }
 .pl-note { font-size: 12px !important; color: var(--ink-3) !important; }
 .pl-skills { margin: 0 0 14px 14px; }
 .pl-skills summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--ink-2); margin-bottom: 8px; }

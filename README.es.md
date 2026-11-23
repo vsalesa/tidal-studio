@@ -625,6 +625,19 @@ skill principal `music-composition` en cada mensaje y siempre reserva un hueco p
 (armonía, jazz, groove, forma…). Se descarga en vez de ir dentro del instalador porque sus referencias citan libros con
 copyright (ver su `NOTICE`). Si lo quitas, no vuelve; desmarca «Usar siempre» para que sea un plugin normal.
 
+**Los plugins se mantienen al día.** Cada vez que Tidal Studio arranca pregunta a GitHub si ha cambiado cada plugin que
+instalaste desde un enlace (el último commit que tocó la carpeta del plugin, así que un arreglo cuenta aunque no subas
+`version` en `plugin.json`) y, con **Actualizar los plugins solos al arrancar** activado (viene así), descarga la versión
+nueva y te avisa con un mensaje. Se conservan tus «Activo» y «Usar siempre». Desmárcalo para decidir tú: el plugin enseña
+**Hay una versión nueva en GitHub** con un botón **Actualizar**, y **Buscar actualizaciones** vuelve a mirar sin
+reiniciar. Sin internet no cambia nada y lo intenta la próxima vez. Así, cuando subes un cambio a
+`vsalesa/music-composition-skills`, cada Tidal Studio lo coge al arrancar. Lo que edites a mano dentro de
+`my-plugins/<plugin>/` se sustituye al actualizar.
+
+| Hay versión nueva en GitHub: un clic en Actualizar | Actualizado (o solo al arrancar) |
+|---|---|
+| ![Actualización de plugin disponible](docs/screenshots/es/plugin-actualizar.png) | ![Plugin actualizado](docs/screenshots/es/plugin-actualizado.png) |
+
 ### Samples
 
 Tus sonidos viven en `samples/<nombre>/` (cada carpeta es un sonido de Tidal: `s "nombre"`, `s "nombre:1"` para el segundo

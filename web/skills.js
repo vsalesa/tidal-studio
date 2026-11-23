@@ -47,16 +47,21 @@ function pluginCardHTML(p, focus) {
     `<button class="sk-chip" data-a="cmd" data-cmd="/${esc(p.name)}:${esc(c.name)}" title="${esc(c.description)}">/${esc(c.name)}${c.hint ? `<small>${esc(c.hint)}</small>` : ""}</button>`).join("")}</div>` : "";
   const unused = [...(p.agents.length ? [L("agentes", "agents")] : []), ...p.other];
   const note = unused.length ? `<p class="pl-note">${esc(L(`Este plugin también trae ${unused.join(", ")}: son piezas para Claude Code y Tidal Studio no las usa.`, `This plugin also brings ${unused.join(", ")}: those are for Claude Code and Tidal Studio doesn't use them.`))}</p>` : "";
+  const u = p.update || {};
+  const upd = u.available
+    ? `<div class="pl-update"><span>${icon("download", 13)} ${esc(L(`Hay una versión nueva${u.remote_version ? ` (v${u.remote_version})` : ""} en GitHub.`, `A new version${u.remote_version ? ` (v${u.remote_version})` : ""} is on GitHub.`))}</span><button class="sk-btn primary" data-a="plugin-update">${L("Actualizar", "Update")}</button></div>`
+    : u.just_updated ? `<div class="pl-update ok">${icon("check", 13)} ${L("Actualizado a la última versión.", "Updated to the latest version.")}</div>` : "";
   return `<article class="sk-card pl-card ${p.enabled ? "" : "off"} ${focus === p.name ? "focus" : ""}" data-plugin="${esc(p.name)}">
       <header>
         ${icon("plugin", 16)}<b>${esc(p.title)}</b>
         ${p.default ? `<span class="sk-tag lic">${L("Por defecto", "Default")}</span>` : ""}
-        ${p.version ? `<span class="sk-tag">v${esc(p.version)}</span>` : ""}
+        ${p.version ? `<span class="sk-tag" ${p.commit ? `title="commit ${esc(p.commit)}"` : ""}>v${esc(p.version)}</span>` : ""}
+        ${u.available ? `<span class="sk-tag new">${L("Actualización", "Update")}</span>` : ""}
         ${p.license ? `<span class="sk-tag lic">${esc(p.license)}</span>` : `<span class="sk-tag warn">${L("sin licencia", "no license")}</span>`}
       </header>
       <p>${esc(p.description)}</p>
       <div class="sk-meta">${parts.join("")}${p.author ? `<span>${esc(L("por ", "by ") + p.author)}</span>` : ""}${p.marketplace ? `<span>${L("marketplace", "marketplace")} ${esc(p.marketplace)}</span>` : ""}${src}</div>
-      ${cmds}${note}
+      ${upd}${cmds}${note}
       ${p.notice ? `<p class="pl-note">${L("Trae un aviso (NOTICE) con condiciones de uso: está en su carpeta, léelo antes de compartir su contenido.", "It ships a NOTICE with terms of use: it's in its folder, read it before sharing its content.")}</p>` : ""}
       <footer>
         <label class="toggle"><input type="checkbox" data-a="plugin-enable" ${p.enabled ? "checked" : ""}> ${L("Activo", "On")}</label>
@@ -64,6 +69,22 @@ function pluginCardHTML(p, focus) {
         <button class="sk-btn danger" data-a="plugin-remove">${icon("trash", 14)} ${L("Quitar plugin", "Remove plugin")}</button>
       </footer>
     </article>`;
+}
+
+// Actualizaciones: «actualizar solos al arrancar», buscar ahora y actualizar todos
+function updatesBarHTML(plugins, opts) {
+  const n = plugins.filter((p) => (p.update || {}).available).length;
+  const st = opts.updates || {};
+  const when = st.checked_at ? new Date(st.checked_at * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "";
+  const status = st.state === "checking" ? L("Buscando versiones nuevas…", "Checking for new versions…")
+    : n ? L(`${n} plugin${n > 1 ? "s tienen" : " tiene"} versión nueva.`, `${n} plugin${n > 1 ? "s have" : " has"} a new version.`)
+    : when ? L(`Todo al día (comprobado a las ${when}).`, `All up to date (checked at ${when}).`) : "";
+  return `<div class="pl-updates">
+      <label class="toggle" title="${esc(L("Cada vez que abres Tidal Studio mira en GitHub si tus plugins tienen versión nueva y la instala", "Every time Tidal Studio starts it checks GitHub for new plugin versions and installs them"))}"><input type="checkbox" data-a="plugin-autoupdate" ${opts.autoUpdate !== false ? "checked" : ""}> ${L("Actualizar los plugins solos al arrancar", "Update plugins automatically at startup")}</label>
+      <span class="pl-upd-status">${esc(status)}</span>
+      <button class="sk-btn" data-a="plugin-check">${icon("cloud", 14)} ${L("Buscar actualizaciones", "Check for updates")}</button>
+      ${n > 1 ? `<button class="sk-btn primary" data-a="plugin-update-all">${L("Actualizar todos", "Update all")}</button>` : ""}
+    </div>`;
 }
 
 // Elegir qué plugins de un marketplace instalar
@@ -124,6 +145,7 @@ export function skillsDialogHTML(list, opts = {}) {
     <p class="hint pl-intro">${L("Un plugin es un paquete de Claude Code (.claude-plugin/plugin.json) que puede traer muchas skills y comandos. Maestro usa sus skills como las demás y sus comandos los escribes en el chat (/nombre). Se instalan solo en tu ordenador.",
       "A plugin is a Claude Code package (.claude-plugin/plugin.json) that can bring many skills and commands. Maestro uses its skills like any other and you type its commands in the chat (/name). They're installed only on your computer.")}</p>
     ${opts.defaultState === "installing" ? `<p class="hint">${L("Descargando el plugin de composición musical que viene por defecto…", "Downloading the default music composition plugin…")}</p>` : ""}
+    ${plugins.some((p) => p.updatable) ? updatesBarHTML(plugins, opts) : ""}
     ${pluginBlocks || `<p class="hint">${L("Aún no hay plugins instalados.", "No plugins installed yet.")}</p>`}
     <form class="sk-install" id="sk-install">
       <label>${icon("plus", 14)} ${L("Instalar una skill o un plugin desde GitHub", "Install a skill or a plugin from GitHub")}</label>

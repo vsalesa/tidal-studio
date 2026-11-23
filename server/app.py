@@ -96,6 +96,8 @@ DEFAULT_CONFIG = {
         # Se descargan la primera vez que arranca (no van en el instalador: ver plugins.ensure_defaults)
         "defaults": ["https://github.com/vsalesa/music-composition-skills"],
         "defaults_done": [],
+        # Al arrancar, buscar versiones nuevas de los plugins en GitHub e instalarlas solas
+        "auto_update": True,
     },
     "temperature": 0.7,
     "language": "es",
@@ -295,6 +297,27 @@ def install_default_plugins():
             print(f"[plugins] Instalado / installed: {', '.join(got)}")
     except Exception as e:  # sin red, sin git…: se reintenta en el próximo arranque
         DEFAULT_PLUGINS["state"] = "error"
+        print(f"[plugins] {e}")
+
+
+PLUGIN_UPDATES = {"state": "idle", "updated": [], "checked_at": 0}
+
+
+def update_plugins_on_start():
+    """Al arrancar: primero los plugins por defecto (si faltan) y luego, buscar versiones nuevas."""
+    install_default_plugins()
+    cfg = load_config()
+    pluginset.GITHUB_TOKEN = ((cfg.get("github") or {}).get("token") or "").strip()
+    if not os.path.isdir(pluginset.PLUGIN_DIR):
+        return
+    PLUGIN_UPDATES["state"] = "checking"
+    try:
+        got = pluginset.auto_update(cfg)
+        PLUGIN_UPDATES.update(state="done", updated=got, checked_at=int(time.time()))
+        if got:
+            print(f"[plugins] Actualizado / updated: {', '.join(got)}")
+    except Exception as e:  # sin red: lo intentará en el próximo arranque
+        PLUGIN_UPDATES["state"] = "error"
         print(f"[plugins] {e}")
 
 
@@ -620,7 +643,9 @@ class Handler(SimpleHTTPRequestHandler):
                 cfg = load_config()
                 return self._json({"skills": skillset.public(skillset.scan(cfg)), "folder": skillset.USER_DIR,
                                    "plugins": pluginset.public(pluginset.scan(cfg)), "plugin_folder": pluginset.PLUGIN_DIR,
-                                   "default_plugins": DEFAULT_PLUGINS["state"]})
+                                   "default_plugins": DEFAULT_PLUGINS["state"],
+                                   "plugin_updates": PLUGIN_UPDATES,
+                                   "plugins_auto_update": bool(cfg.get("plugins", {}).get("auto_update", True))})
             if path == "/api/trace":
                 q = parse_qs(urlparse(self.path).query)
                 with _traces_lock:
@@ -926,6 +951,24 @@ class Handler(SimpleHTTPRequestHandler):
                                            "plugins": pluginset.public(pluginset.scan(cfg))})
                     elif act == "remove":
                         pluginset.remove(name)
+                    elif act == "check":
+                        pluginset.GITHUB_TOKEN = ((cfg.get("github") or {}).get("token") or "").strip()
+                        if name:
+                            pluginset.check_one(name)
+                        else:
+                            pluginset.check_all()
+                        PLUGIN_UPDATES["checked_at"] = int(time.time())
+                    elif act == "update":
+                        names = [name] if name else [p["name"] for p in pluginset.scan(cfg) if (p["update"] or {}).get("available")]
+                        done = []
+                        for n in names:
+                            pluginset.update(n)
+                            done.append(n)
+                        return self._json({"updated": done, "skills": skillset.public(skillset.scan(cfg)),
+                                           "plugins": pluginset.public(pluginset.scan(cfg))})
+                    elif act == "autoupdate":
+                        pl["auto_update"] = bool(data.get("on"))
+                        save_config(cfg)
                     else:
                         return self._json({"error": "Ruta no encontrada"}, 404)
                 except (pluginset.PluginError, skillset.SkillError) as e:
@@ -1140,7 +1183,7 @@ def main():
     _write_port_file(port)
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
-    threading.Thread(target=install_default_plugins, daemon=True).start()
+    threading.Thread(target=update_plugins_on_start, daemon=True).start()
     if not ARGS.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
