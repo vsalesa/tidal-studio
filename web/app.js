@@ -1734,7 +1734,7 @@ async function askLLM(opts = {}) {
     if (opts.forcePlan && opts.request) history.push({ role: "user", content: L(`Hazlo por pasos con un plan: ${opts.request}`, `Do it in steps with a plan: ${opts.request}`) });
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}) } : undefined; })() : undefined,
+      curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
       bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       plan_modo: planEnabled() && !state.course, ...(opts.planStep ? { plan_paso: opts.planStep } : {}), ...(opts.forcePlan ? { plan_forzar: true } : {}),
       referencia: state.reference || undefined,
@@ -3667,6 +3667,46 @@ function refBox(c) {
   </div>`;
 }
 
+// Tu propio ejemplo: un MIDI de una canción del estilo (tuyo o comprado). Suena solo y Maestro lo usa de referencia.
+function mineBox(c) {
+  const m = state.course && state.course.mine;
+  const file = `<input type="file" id="cs-mine-file" accept=".mid,.midi,.rmi,audio/midi" hidden>`;
+  if (!m) return `<div class="cs-mine">${file}<span>${L(`¿Tienes un MIDI de una canción de ${c.name} con todos los instrumentos (tuyo o de un pack que hayas comprado)? Cárgalo como ejemplo: lo escuchas aquí y Maestro lo usa como referencia del estilo.`, `Have a MIDI of a ${c.name} song with all the instruments (your own or from a pack you bought)? Load it as an example: you hear it here and Maestro uses it as a style reference.`)}</span>
+    <button data-mine="load">${icon("folder", 14)} ${L("Cargar mi MIDI de ejemplo", "Load my example MIDI")}</button></div>`;
+  return `<div class="cs-ref-box cs-mine-box">${file}
+    <b>${icon("course", 15)} ${L("Tu ejemplo", "Your example")}</b>
+    <span class="cs-ref-style">${esc(m.name)} · ${m.bpm} BPM · ${esc(m.key || "")} · ${esc((m.chords || []).join(" "))}</span>
+    <p>${esc(m.instruments.join(", "))}</p>
+    <div class="cs-actions">
+      <button class="prehear" data-mine="hear">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button>
+      <button data-mine="load">${icon("folder", 14)} ${L("Otro", "Another")}</button>
+      <button data-mine="remove">${icon("close", 14)} ${L("Quitar", "Remove")}</button>
+    </div></div>`;
+}
+
+function mineCambios() {
+  const m = state.course.mine;
+  const ids = m.tracks.map((_, k) => `d${k + 1}`);
+  // Suena solo el ejemplo: lo demás de la canción calla mientras lo escuchas
+  const quiet = state.tracks.filter((t) => !ids.includes(t.id)).map((t) => ({ id: t.id, codigo: "silence" }));
+  return { bpm: m.bpm, pistas: [...m.tracks.map((t, k) => ({ ...t, id: ids[k] })), ...quiet] };
+}
+
+async function courseMineLoad(f) {
+  try {
+    const q = new URLSearchParams({ name: f.name.replace(/\.[^.]+$/, ""), lang: LANG, bars: "4" });
+    const r = await fetch(`/api/import/midi?${q}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: new Uint8Array(await f.arrayBuffer()) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || `Error ${r.status}`);
+    const s = data.summary;
+    state.course.mine = { name: s.name, bpm: s.studio_bpm, key: s.key && s.key.name, chords: s.window.chords, instruments: s.instruments,
+      tracks: data.tracks.slice(0, 12).map((t) => ({ nombre: t.nombre, tipo: t.tipo, codigo: t.codigo })), reference: (data.reference || "").slice(0, 3000) };
+    save(); renderCourse();
+    say(L(`He cargado «${s.name}» como ejemplo del curso: ${s.bpm} BPM, ${s.meter}, ${s.key ? s.key.name : "?"}, acordes ${s.progression.slice(0, 4).join(" → ")}. Pulsa Escuchar en el panel del curso para oír cuatro compases con todos sus instrumentos. Cuando me preguntes por un paso, lo compararé con este ejemplo.`,
+      `I loaded «${s.name}» as the course example: ${s.bpm} BPM, ${s.meter}, ${s.key ? s.key.name : "?"}, chords ${s.progression.slice(0, 4).join(" → ")}. Press Listen in the course panel to hear four bars with all its instruments. When you ask me about a step, I'll compare it with this example.`), [COURSE_ASK()]);
+  } catch (e) { toast(e.message); }
+}
+
 async function courseReferenceAdd(c, btn) {
   btn.disabled = true;
   try {
@@ -3740,7 +3780,7 @@ function renderCourse() {
     </div>
     <div class="cs-dots">${dots}</div>
     ${c.skill && i === 0 ? `<div class="cs-trad-box"><b>${L("La tradición que vamos a tocar", "The tradition we'll play")}</b><span>${esc(c.tradition)}</span><span class="cs-lens">${esc(c.lens)}</span></div>` : ""}
-    ${c.ref && i <= 1 ? refBox(c) : ""}
+    ${i <= 1 ? (c.ref ? refBox(c) : "") + mineBox(c) : ""}
     <div class="cs-step">
       <h3>${icon(stepIcon(st), 18)} ${esc(st.t)}</h3>
       <p>${esc(st.why)}</p>
@@ -3768,6 +3808,13 @@ function renderCourse() {
   if (hear) wirePreHear(hear, { pistas: st.tracks });
   const refHear = dock.querySelector("[data-ref=hear]");
   if (refHear) wirePreHear(refHear, async () => ({ pistas: (await courseReference(c)).tracks }));
+  const mineHear = dock.querySelector("[data-mine=hear]");
+  if (mineHear) wirePreHear(mineHear, mineCambios);
+  dock.querySelectorAll("[data-mine=load]").forEach((b) => b.onclick = () => dock.querySelector("#cs-mine-file").click());
+  const mineFile = dock.querySelector("#cs-mine-file");
+  if (mineFile) mineFile.onchange = () => mineFile.files[0] && courseMineLoad(mineFile.files[0]);
+  const mineDrop = dock.querySelector("[data-mine=remove]");
+  if (mineDrop) mineDrop.onclick = () => { stopPreHear(); delete state.course.mine; save(); renderCourse(); };
   const refAdd = dock.querySelector("[data-ref=add]");
   if (refAdd) refAdd.onclick = () => courseReferenceAdd(c, refAdd);
   dock.querySelectorAll("[data-cs]").forEach((b) => { if (b.dataset.cs !== "hear") b.onclick = () => courseAction(b.dataset.cs); });

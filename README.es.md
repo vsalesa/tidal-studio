@@ -93,6 +93,25 @@ MIDI con licencia libre, así que siguen con sus patrones escritos.
 | **El baterista en tu canción: la fuerza y el tiempo de cada golpe, en código** | |
 | ![Baterista real en la canción](docs/screenshots/es/baterista-real-en-cancion.png) | |
 
+**Estilos aprendidos de canciones reales, no solo de reglas escritas.** Con reglas de estilo escritas los cursos latinos no
+acababan de sonar bien, así que ahora el estudio también aprende de música real. `tools/learn_style.py` ha medido 31
+canciones latinas en MIDI (3 merengues, 7 salsas, 9 cumbias y 12 bossas nova, del Lakh MIDI Dataset y de PDMX) en una
+rejilla de 16 semicorcheas por compás: cuándo tocan el bajo, el piano, la guitarra y los metales, qué nota del acorde
+elige el bajo en cada sitio, qué hace cada percusión y qué progresiones se repiten. Solo se guarda esa estadística
+(`server/data/style_profiles.json`). No se copia ni se incluye ninguna canción. Maestro lee el perfil del género del curso
+(o del estilo de tu proyecto), así sus partes siguen cómo se tocan las canciones de verdad. El curso de merengue se ha
+reescrito con los datos: el bajo toca en el 1, el «y» del 2, el 3, el 4 y el «y» del 4, el piano no para de tocar
+corcheas con semicorcheas de enganche, y el grave de la tambora cae en el «y» del 2 y del 4. Los bajos de salsa, cumbia
+y bossa ya coincidían con lo que hacen las canciones. Para enseñarle un género con tus MIDI:
+`python3 tools/learn_style.py merengue ~/mis-midi/merengue/`.
+
+**Tu propio ejemplo.** Cada curso tiene **Cargar mi MIDI de ejemplo**: carga una canción del estilo que sea tuya o que hayas
+comprado, escucha cuatro compases con todos sus instrumentos, y Maestro compara cada paso con ella.
+
+| Tu ejemplo en el curso, junto al baterista real | |
+|---|---|
+| ![Tu ejemplo](docs/screenshots/es/curso-mi-ejemplo.png) | |
+
 ### Maestro, tu profesor
 
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.

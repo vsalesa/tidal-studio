@@ -57,6 +57,21 @@ Cumbia and techno have no example: the dataset has no cumbia or techno, and no o
 What the reggaeton drummer does (hi-hats loud on the «and», dembow early) was measured over all 32 bars and copied into
 the course's own dembow step. All 32 example tracks were compiled and queried with tidal-core 1.10.0.
 
+## Style profiles learned from real songs (0.10)
+
+`tools/learn_style.py GENRE files-or-folders` measures MIDI songs on a 16-step grid and writes one profile per genre to
+`server/data/style_profiles.json`: per role (bass, keys, guitar, brass, sax) the % of bars with a hit on each sixteenth
+and the three most common rhythms, the chord degree the bass plays at each common step, every General MIDI percussion
+instrument's pattern, and the most repeated four-chord progressions. Maestro gets the profile of the course's genre.
+
+| Genre | Songs | What the data said | Change to the course |
+|---|---|---|---|
+| Merengue | 3 | bass on 1, «and» of 2, 3, 4, «and» of 4 (root, fifth, approach); piano on every eighth (over 90%) with sixteenth pickups, 1.6 notes per hit; low conga on the «and» of 2 and 4 (over 70%) | bass, piano and tambora rewritten |
+| Salsa | 7 | bass anticipates: «and» of 2 and beat 4; i–iv–V–i is the most repeated progression | none, the tumbao already matched |
+| Cumbia | 9 | bass on 1, 3 and 4; güiro on three of every four sixteenths | none, already matched |
+| Bossa nova | 12 | bass on 1, «and» of 2, 3, «and» of 4 (dotted quarter + eighth) | none, already matched |
+| Reggaeton | 1 drummer | off-beat hi-hat accents, dembow about 15 ms early | hi-hats and snare timing |
+
 ## How the code was checked
 
 - Every track in every course (70 tracks) was compiled and evaluated with the real TidalCycles

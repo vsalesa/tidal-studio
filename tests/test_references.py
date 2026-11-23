@@ -134,3 +134,26 @@ class ReferencesTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StyleProfilesTest(unittest.TestCase):
+    def test_profiles_reach_maestro(self):
+        import assistant
+        import styleprofiles
+        for g in ("merengue", "salsa", "cumbia", "bossa", "reggaeton"):
+            self.assertIn("PERFIL MEDIDO", styleprofiles.text_for(g), g)
+        self.assertEqual(styleprofiles.genre_in("Reguetón desde cero"), "reggaeton")
+        txt = assistant.session_summary({"bpm": 140, "tracks": [], "curso": {"nombre": "Merengue", "ejemplo_del_alumno": "Mi canción"}})
+        self.assertIn("PERFIL MEDIDO DE MERENGUE", txt)
+        self.assertIn("Mi canción", txt)
+        self.assertNotIn("PERFIL MEDIDO", assistant.session_summary({"bpm": 124, "tracks": [], "style": "house"}))
+
+    def test_profiles_hold_statistics_only(self):
+        import json
+        import styleprofiles
+        data = json.load(open(styleprofiles.PATH, encoding="utf-8"))
+        for g, p in data.items():
+            for role in (p.get("roles") or {}).values():
+                self.assertEqual(len(role["onsets"]), 16)
+                self.assertTrue(all(set(r["grid"].split()) <= {"x", "."} for r in role["rhythms"]))
+            self.assertNotIn("notes", json.dumps(p).replace("notes_per_hit", ""))  # ninguna nota de ninguna canción

@@ -77,7 +77,7 @@ def parse_midi(data):
                 elif typ == 0x01:
                     texts.append(body.decode("latin-1", "replace"))
                 elif typ in (0x03, 0x04) and not name:
-                    name = body.decode("latin-1", "replace").strip()
+                    name = body.decode("latin-1", "replace").replace("\x00", "").strip()
                 elif typ == 0x2F:
                     break
                 continue

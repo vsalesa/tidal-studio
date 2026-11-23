@@ -83,6 +83,17 @@ def session_summary(session):
         lines.append(f'- {t.get("id")} · {t.get("name", "")} ({t.get("kind", "")}){estado}: {t.get("code", "")}')
     if session.get("step"):
         lines.append(f"Paso actual de la guía: {session['step']}")
+    curso = session.get("curso") if isinstance(session.get("curso"), dict) else {}
+    if curso.get("ejemplo_real"):
+        lines.append("Ejemplo real del curso (un baterista profesional, MIDI del Groove MIDI Dataset; úsalo para explicar "
+                     f"acentos y tiempo): {str(curso['ejemplo_real'])[:1200]}")
+    if curso.get("ejemplo_del_alumno"):
+        lines.append("Ejemplo que ha cargado el alumno para este curso (una canción de referencia del estilo; compara sus "
+                     f"pasos con ella):\n{str(curso['ejemplo_del_alumno'])[:3000]}")
+    import styleprofiles
+    g = styleprofiles.genre_in(curso.get("nombre"), session.get("style"))
+    if g:
+        lines.append(styleprofiles.text_for(g))
     ref = str(session.get("referencia") or "").strip()
     if ref:
         lines.append(ref[:3000])

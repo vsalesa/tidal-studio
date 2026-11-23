@@ -21,6 +21,14 @@ shows this credit under every example.
 | Drum & bass | `drummer1/session1/80_dance-breakbeat_170_beat_4-4.mid` |
 | Lo-fi hip hop | `drummer8/session2/10_hiphop_86_beat_4-4.mid` |
 
+## Style profiles learned from songs
+
+`server/data/style_profiles.json` holds statistics measured with `tools/learn_style.py`: rhythm grids, bass chord degrees,
+percussion patterns and chord progression counts. It contains no notes or melodies from any song. They were measured from
+MIDI files in the [Lakh MIDI Dataset](https://colinraffel.com/projects/lmd/) (Colin Raffel, CC BY 4.0) and
+[PDMX](https://zenodo.org/records/15571083) (Long, Novack, Berg-Kirkpatrick and McAuley, CC BY 4.0), plus the
+reggaeton drummer of the Groove MIDI Dataset.
+
 ## Instrument photos
 
 The instrument photos in `web/img/instruments/` come from [Wikimedia Commons](https://commons.wikimedia.org/).
