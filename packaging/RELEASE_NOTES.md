@@ -1,4 +1,10 @@
-## What's new in 0.9.0 / Novedades
+## What's new in 0.9.1 / Novedades
+
+- **Tidal Studio route for Maestro**: when your composition plugin brings `mc-tidal-studio` (music-composition-skills 1.2.0+), a skills route written for this app, Maestro loads it with every message instead of the plugin's generic index, plus the genre skill that best fits your request. The Skills panel shows it as «Tidal Studio route».
+
+**Español:** **Ruta de Tidal Studio para Maestro**: cuando tu plugin de composición trae `mc-tidal-studio` (music-composition-skills 1.2.0 o posterior), una ruta de skills escrita para esta app, Maestro la carga en cada mensaje en lugar del índice genérico del plugin, más la skill de género que mejor encaje con lo que pides. El panel de Skills la muestra como «Ruta Tidal Studio».
+
+## 0.9.0
 
 - **Instrument library with 600+ specific instruments** (harpsichord, pizzicato double bass, Steinway, sitar, celesta…), by category with real photos, pre-listen, on-demand downloads from freely licensed sound sets, and notes mapped to the real recordings.
 - **Add your own instruments**: SoundFont (.sf2), SFZ in a zip, recordings with the note in the name, or a single sound.

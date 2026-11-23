@@ -214,6 +214,18 @@ const scenes = {
     await page.waitForTimeout(500);
     await shot(page, T(lang, 'panel-plugins', 'plugins-panel'), lang);
   },
+  async 'skill-route'(b, lang) {
+    // Needs the music-composition plugin (v1.2.0+, with mc-tidal-studio) in my-plugins/
+    const { page } = await open(b, { lang, state: sunday(lang) });
+    await page.click('#btn-skills'); await page.waitForTimeout(1200);
+    await page.locator('.pl-card[data-plugin="music-composition"]').evaluate((el) => {
+      el.nextElementSibling.open = true;
+      document.querySelector('.sk-card[data-name="mc-tidal-studio"]').classList.add('focus');
+      el.scrollIntoView({ block: 'start' });
+    });
+    await page.waitForTimeout(500);
+    await shot(page, T(lang, 'ruta-tidal-studio', 'skill-route'), lang);
+  },
   async 'skills-in-chat'(b, lang) {
     const { page } = await studioWithHat(b, lang);
     const el = page.locator('#chat .msg.assistant').last();
