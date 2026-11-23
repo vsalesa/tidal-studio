@@ -47,7 +47,9 @@ def _get(url, limit=8 * 1024 * 1024, retry=True):
 
 def _clean(text):
     import html
-    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", text or ""))).strip()[:120]
+    t = re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", text or ""))).strip()
+    t = re.sub(r"^(?:Creator:\s*)+|\s*Creator:\s*$", "", t)   # plantilla «Creator:» de algunos museos
+    return t[:120]
 
 
 def search(query, limit=12):

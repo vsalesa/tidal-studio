@@ -1252,6 +1252,7 @@ dialog.il-dialog[open] { display: flex; }
 .il-badge.eng.ok { background: var(--ok); }
 .il-eng .il-badge { position: static; }
 .il-detail { overflow: auto; border-left: 1px solid var(--rule); padding: 0 4px 10px 14px; display: flex; flex-direction: column; gap: 8px; }
+.il-detail > * { flex-shrink: 0; }
 .il-dphoto { aspect-ratio: 16 / 10; border-radius: 12px; overflow: hidden; background: #fff; }
 .il-dphoto img { width: 100%; height: 100%; object-fit: cover; }
 .il-detail h3 { margin: 2px 0 0; font-size: 21px; line-height: 1.2; }
