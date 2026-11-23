@@ -538,10 +538,27 @@ en la base de una canción **nueva** tuya.
   instrumentos o tonalidad y te explica qué ha tomado prestado y qué ha cambiado. Sin IA te da una lista de pasos para
   hacerla tuya. **Estudiarla tal cual** solo carga las pistas para que pulses Explícame en cada una.
 - **Audio (mp3, wav, flac, ogg, m4a, aiff)**, aproximado: la primera vez ofrece instalar herramientas libres que
-  funcionan sin internet (~1-2 GB, en `~/.tidal-studio/audio-tools`): **Demucs** separa batería, bajo, voz y el resto,
-  **basic-pitch** (Spotify) pasa cada parte a notas y **librosa** encuentra el pulso. El resultado se cuadra a los
+  funcionan sin internet (~1-2 GB, en `~/.tidal-studio/audio-tools`). Primero separa batería, bajo, voz y el resto,
+  luego **basic-pitch** (Spotify) pasa cada parte a notas y **librosa** encuentra el pulso. El resultado se cuadra a los
   compases y los acordes se escriben con nombres de acorde de Tidal (`a4'minor f4'major`). Es un esqueleto para estudiar
   y reinventar, no una copia exacta.
+- **Dos separadores; eliges en cada canción:**
+  - **Calidad: MSST** ([Music-Source-Separation-Training](https://github.com/ZFTurbo/Music-Source-Separation-Training)
+    de ZFTurbo, MIT) con su modelo **SCNet XL** para batería, voz y el resto, y Demucs para el bajo. El modelo (214 MB)
+    se descarga la primera vez que lo usas. Recomendado en Apple Silicon (va por la GPU con MPS) y en ordenadores con
+    tarjeta NVIDIA.
+  - **Rápido: Demucs** (Meta) para todo. Recomendado en ordenadores sin tarjeta gráfica, donde MSST tarda unas 6 veces
+    lo que dura la canción.
+  - Si MSST falla en tu ordenador, usa Demucs él solo. Si ya tenías instaladas las herramientas de audio, Tidal Studio te ofrece actualizarlas.
+
+  Cómo lo elegimos: con 8 canciones del conjunto de prueba de MUSDB18 (SDR mediano en dB, más es mejor), SCNet XL separó
+  mejor que Demucs la batería (9,0 frente a 6,8), la voz (11,9 frente a 9,5) y el resto (5,5 frente a 4,8), pero peor el
+  bajo (6,2 frente a 8,8). Por eso el bajo sale de Demucs. BS-RoFormer puntuó un poco más (media 8,5 frente a 8,1), pero
+  su modelo pesa 527 MB y es un 40 % más lento.
+
+  | Elige el separador | Separando con MSST |
+  |---|---|
+  | ![Elegir MSST o Demucs, con el tiempo que tardará](docs/screenshots/es/importar-separador.png) | ![MSST separando los instrumentos, con su progreso](docs/screenshots/es/importar-audio-msst.png) |
 - Todo se queda en tu ordenador. Si la canción no es tuya, úsala para estudiar y publica lo que crees, no la copia.
 
 | La receta de la canción y sus pistas | Desde un mp3 o wav |
@@ -575,7 +592,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
-| **0.10.0** | [Plan paso a paso](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso): en las peticiones grandes Maestro te enseña antes un plan y lo hace paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar (o Esc) detiene lo que has enviado; la IA solo se corta si se queda callada, y Maestro guarda en caché sus instrucciones, skills y búsquedas de sonidos. |
+| **0.10.0** | [Plan paso a paso](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso): en las peticiones grandes Maestro te enseña antes un plan y lo hace paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar (o Esc) detiene lo que has enviado; la IA solo se corta si se queda callada, y Maestro guarda en caché sus instrucciones, skills y búsquedas de sonidos. La [importación de audio](#importar-una-canción-como-punto-de-partida) separa ahora los instrumentos con MSST (SCNet XL) y el bajo con Demucs, con Calidad o Rápido en cada canción. |
 | **0.9.1** | [Ruta de Tidal Studio](#plugins): Maestro carga en cada mensaje `mc-tidal-studio`, la ruta de skills de tu plugin de composición hecha para esta app, más la skill de género que mejor encaje. |
 | **0.9.0** | [Biblioteca de instrumentos](#biblioteca-de-instrumentos-más-de-600-instrumentos-concretos): más de 600 instrumentos concretos con fotos, escucha previa y tus propios SoundFonts, motores de synth nuevos (Mi-UGens, Surge XT, Vital), cursos latinos que siguen tu plugin de composición con instrumentos reales, y plugins que se actualizan solos. |
 | **0.8.0** | [Biblioteca de loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos): arrastra loops, carpetas o un zip; detecta tempo, compases, tonalidad y golpes y te da código que encaja con tu canción, con variaciones. |

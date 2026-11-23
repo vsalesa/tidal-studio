@@ -446,7 +446,7 @@ class Handler(SimpleHTTPRequestHandler):
                     start = arg("start")
                     return self._json(songimport.analyse(raw, lang, int(start) if start.isdigit() else None,
                                                          int(arg("bars", "4") or 4), arg("name")))
-                return self._json(audioimport.start_job(arg("filename", "song.mp3"), raw))
+                return self._json(audioimport.start_job(arg("filename", "song.mp3"), raw, arg("engine") or None))
             except (songimport.ImportError_, ValueError) as e:
                 return self._err(e, lang)
             except Exception as e:  # noqa: BLE001  un MIDI raro no debe tumbar el estudio

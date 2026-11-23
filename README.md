@@ -523,9 +523,26 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
   borrowed and what it changed. Without AI you get a step-by-step list of ways to make it yours. **Study it as is**
   just loads the tracks so you can press Explain on each one.
 - **Audio (mp3, wav, flac, ogg, m4a, aiff)**, approximate: the first time it offers to install free offline tools
-  (~1-2 GB, in `~/.tidal-studio/audio-tools`): **Demucs** separates drums, bass, vocals and the rest, **basic-pitch**
+  (~1-2 GB, in `~/.tidal-studio/audio-tools`). First it separates drums, bass, vocals and the rest, then **basic-pitch**
   (Spotify) turns each one into notes and **librosa** finds the beat. The result is aligned to the bars, and chords are
   written as Tidal chord names (`a4'minor f4'major`). It's a skeleton to study and reinvent, not an exact copy.
+- **Two separators, you pick per song:**
+  - **Quality: MSST** ([Music-Source-Separation-Training](https://github.com/ZFTurbo/Music-Source-Separation-Training)
+    by ZFTurbo, MIT) with its **SCNet XL** model for drums, vocals and the rest, plus Demucs for the bass. The model
+    (214 MB) downloads the first time you use it. Recommended on Apple Silicon (it runs on the GPU through MPS) and on
+    computers with an NVIDIA card.
+  - **Fast: Demucs** (Meta) for everything. Recommended on computers without a graphics card, where MSST takes about 6×
+    the song's length.
+  - If MSST fails on your computer, it falls back to Demucs on its own. If you already had the audio tools installed, Tidal Studio offers to update them.
+
+  How we chose: on 8 songs from the MUSDB18 test set (median SDR in dB, higher is better), compared with Demucs, SCNet XL
+  separated drums better (9.0 vs 6.8), as well as vocals (11.9 vs 9.5) and the rest (5.5 vs 4.8), but the bass worse
+  (6.2 vs 8.8). That's why the bass comes from Demucs. BS-RoFormer scored a little higher (avg 8.5 vs 8.1), but its
+  model is 527 MB and it's 40% slower.
+
+  | Pick the separator | Separating with MSST |
+  |---|---|
+  | ![Choose MSST or Demucs, with the expected time](docs/screenshots/import-separator.png) | ![MSST separating the instruments, with its progress](docs/screenshots/import-audio-msst.png) |
 - Everything stays on your computer. If the song isn't yours, use it to study and publish what you create, not the copy.
 
 | The song's recipe and its Tidal tracks | From an mp3 or wav |
@@ -559,7 +576,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
-| **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. |
+| **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. [Audio import](#import-a-song-as-a-starting-point) now separates instruments with MSST (SCNet XL) plus Demucs for the bass, with Quality or Fast per song. |
 | **0.9.1** | [Tidal Studio route](#plugins): Maestro loads `mc-tidal-studio`, the skills route of your composition plugin made for this app, with every message, plus the genre skill that best fits. |
 | **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |
 | **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |

@@ -1381,3 +1381,4 @@ dialog.il-dialog[open] { display: flex; }
 /* Cancelar lo enviado al chat */
 .chat-cancel { padding: 2px 6px; font-size: 12px; font-style: normal; margin-left: 6px; display: inline-flex; align-items: center; gap: 4px; }
 #chat-form button.is-stop { background: var(--ink); border-color: var(--ink); }
+.np-choice b.imp-time { display: inline-block; margin-top: 6px; font: 600 13px/1.4 var(--sans); color: var(--ink); }

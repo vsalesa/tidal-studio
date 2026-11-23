@@ -317,7 +317,7 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   <div class="wrap">
     <div class="kicker" data-i="ki">Import a song</div>
     <h2 class="sec-title" data-i="ti">Start from a song you love. End with one of your own.</h2>
-    <p class="sec-lead" data-i="li">Drop in a MIDI file, or an mp3 or wav, and it becomes Tidal tracks plus its recipe: tempo, key, chords, structure and groove. Then Maestro helps you write something new inspired by it, keeping what works and changing the rest. Everything stays on your computer.</p>
+    <p class="sec-lead" data-i="li">Drop in a MIDI file, or an mp3 or wav (its instruments are separated with MSST or Demucs), and it becomes Tidal tracks plus its recipe: tempo, key, chords, structure and groove. Then Maestro helps you write something new inspired by it, keeping what works and changing the rest. Everything stays on your computer.</p>
     <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="import-img" alt="" width="2880" height="1800"></div>
   </div>
 </section>
@@ -344,7 +344,7 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <h2 class="sec-title" data-i="tn">Version 0.10.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
-      <li><b>0.10.0</b><span data-i="v10">For big requests Maestro shows a plan first and builds it step by step, saving each step, so a timeout no longer loses work; a Cancel button stops what you sent; plus prompt caching and saved sound searches.</span></li>
+      <li><b>0.10.0</b><span data-i="v10">For big requests Maestro shows a plan first and builds it step by step, saving each step, so a timeout no longer loses work; a Cancel button stops what you sent; plus prompt caching, saved sound searches, and better audio import with MSST.</span></li>
       <li><b>0.9.1</b><span data-i="v91">Maestro loads mc-tidal-studio, the skills route of your composition plugin made for this app, with every message.</span></li>
       <li><b>0.9.0</b><span data-i="v9">600+ instruments with photos and pre-listen, your own SoundFonts, new synth engines, Latin courses played by real instruments, and plugins that update themselves.</span></li>
       <li><b>0.8.0</b><span data-i="v8">Long loops library: drop loops, folders or a zip, and the studio detects tempo, bars, key and hits and writes code that fits your song.</span></li>
@@ -447,7 +447,7 @@ const ES = {
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Abrir y guardar archivos de Tidal", f18p: "Un menú Archivo abre cualquier .tidal o .hs de tu ordenador y lo convierte en pistas; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
   nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.10.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
-  v10: "En las peticiones grandes Maestro te enseña antes un plan y lo construye paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar detiene lo que envías; además, caché de prompts y búsquedas de sonidos guardadas.",
+  v10: "En las peticiones grandes Maestro te enseña antes un plan y lo construye paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar detiene lo que envías; además, caché de prompts, búsquedas de sonidos guardadas y mejor importación de audio con MSST.",
   v91: "Maestro carga en cada mensaje mc-tidal-studio, la ruta de skills de tu plugin de composición hecha para esta app.",
   v9: "Más de 600 instrumentos con fotos y escucha previa, tus propios SoundFonts, motores de synth nuevos, cursos latinos tocados con instrumentos reales y plugins que se actualizan solos.",
   v8: "Biblioteca de loops largos: arrastra loops, carpetas o un zip, y el estudio detecta tempo, compases, tonalidad y golpes y escribe el código que encaja con tu canción.",
@@ -463,7 +463,7 @@ const ES = {
   kc: "Cursos por género", tc: "Construye un merengue desde cero.",
   lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo. Los cursos latinos siguen las skills de estilos latinos de tu plugin de composición, dicen qué tradición tocan y usan instrumentos reales: güiro, congas, bongós, contrabajo, trombones, acordeón, guitarra de nailon…",
   ki: "Importar canción", ti: "Empieza con una canción que te encanta. Termina con una tuya.",
-  li: "Suelta un MIDI, o un mp3 o wav, y se convierte en pistas de Tidal y en su receta: tempo, tonalidad, acordes, estructura y groove. Luego Maestro te ayuda a escribir algo nuevo inspirado en ella, conservando lo que funciona y cambiando el resto. Todo se queda en tu ordenador.",
+  li: "Suelta un MIDI, o un mp3 o wav (sus instrumentos se separan con MSST o Demucs), y se convierte en pistas de Tidal y en su receta: tempo, tonalidad, acordes, estructura y groove. Luego Maestro te ayuda a escribir algo nuevo inspirado en ella, conservando lo que funciona y cambiando el resto. Todo se queda en tu ordenador.",
   k4: "Recetas de estilo", t4: "«¿Quieres que suene tipo jazz?»",
   l4: "Pulsa un estilo y tu canción se transforma. Verás el antes y el después con lo nuevo resaltado, y una explicación de cada cambio para que mañana lo hagas tú.",
   before: "Antes", after: "Después: jazz", latin: "Latino (bossa)",
