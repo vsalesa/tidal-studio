@@ -3,7 +3,10 @@
 #
 # - push to a branch touching packaging/** : build + test, installers kept as workflow artifacts
 # - push to main touching packaging/**     : same, and if there is no Release yet for
-#                                            v<packaging/VERSION>, publish it (bump VERSION to release)
+#                                            v<packaging/VERSION>, publish it (bump VERSION to release).
+#                                            If a green branch build already exists for the same shipped
+#                                            files (usually the PR you just merged), its installers are
+#                                            reused instead of building again (job "reuse").
 # - push a tag v*                           : build + test + publish the Release for that tag
 # - Actions tab → "Offline installers" → Run workflow : build, and publish if "publish" is ticked
 name: Offline installers
@@ -28,6 +31,7 @@ on:
 
 permissions:
   contents: write
+  actions: read     # to find and download the installers of an earlier branch build
 
 # a newer push to the same branch cancels the older build (never on main, where releases happen)
 concurrency:
@@ -39,8 +43,51 @@ env:
   TIDAL_VERSION: "1.10.1"
 
 jobs:
+  # On a push to main, look for an earlier successful build of the same shipped files (normally the
+  # merged PR's branch build). PR builds and release builds are the same build, so its installers are
+  # release-ready: reuse them and skip the 3 build jobs. Nothing found -> output empty -> build as usual.
+  # "Same shipped files" = same git tree, ignoring top-level entries that never go into an installer.
+  reuse:
+    runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.find.outputs.run_id }}
+    steps:
+      - name: Find a branch build of the same files
+        id: find
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          IGNORE='docs ROADMAP.md tests tools examples'
+          key() {  # content key of a commit: top-level tree entries minus the ignored ones
+            gh api "repos/$REPO/git/trees/$(gh api "repos/$REPO/commits/$1" --jq .commit.tree.sha)" \
+              --jq '.tree[] | "\(.path) \(.sha)"' | while read -r p h; do
+                case " $IGNORE " in *" $p "*) ;; *) echo "$p $h" ;; esac
+              done | sort | sha256sum | cut -d' ' -f1
+          }
+          WANT="$(key "$GITHUB_SHA")" || { echo "could not read this commit's tree; building"; exit 0; }
+          echo "content key of $GITHUB_SHA: $WANT"
+          NEED='TidalStudio-Linux TidalStudio-Windows TidalStudio-macOS-AppleSilicon'
+          gh api "repos/$REPO/actions/workflows/installers.yml/runs?status=success&event=push&per_page=50" \
+            --jq '.workflow_runs[] | select(.head_branch != "main") | "\(.id) \(.head_sha) \(.head_branch)"' |
+          while read -r RUN SHA BRANCH; do
+            [ "$(key "$SHA" 2>/dev/null)" = "$WANT" ] || continue
+            HAVE="$(gh api "repos/$REPO/actions/runs/$RUN/artifacts?per_page=100" \
+                      --jq '.artifacts[] | select(.expired | not) | .name')"
+            ok=1; for n in $NEED; do grep -qx "$n" <<<"$HAVE" || ok=0; done
+            [ "$ok" = 1 ] || { echo "run $RUN ($BRANCH) matches but its installers are missing or expired"; continue; }
+            echo "Reusing the installers of run $RUN ($BRANCH @ $SHA)"
+            echo "run_id=$RUN" >> "$GITHUB_OUTPUT"
+            echo "Installers reused from [run $RUN]($GITHUB_SERVER_URL/$REPO/actions/runs/$RUN) ($BRANCH), built from the same files." >> "$GITHUB_STEP_SUMMARY"
+            break
+          done || true
+          grep -q '^run_id=' "$GITHUB_OUTPUT" 2>/dev/null || echo "No reusable branch build found: building."
+
   macos:
     name: macOS ${{ matrix.label }}
+    needs: reuse
+    if: needs.reuse.outputs.run_id == ''
     strategy:
       fail-fast: false
       matrix:
@@ -128,13 +175,18 @@ jobs:
 
   linux:
     name: Linux (.deb)
+    needs: reuse
+    if: needs.reuse.outputs.run_id == ''
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
 
       - name: Build dependencies
-        run: sudo apt-get update && sudo apt-get install -y libgmp-dev libffi-dev libnuma-dev zlib1g-dev
+        run: |
+          sudo apt-get update && sudo apt-get install -y libgmp-dev libffi-dev libnuma-dev zlib1g-dev
+          # the cache is restored into /opt, so it must exist and belong to the runner user first
+          sudo mkdir -p /opt/tidal-studio && sudo chown "$(id -u):$(id -g)" /opt/tidal-studio
 
       - name: Restore GHC + Tidal cache
         id: cache
@@ -151,8 +203,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash packaging/linux/build.sh
 
+      # (hashFiles() only sees files inside the workspace, so it can't test /opt: the cache was never saved)
+      - name: Check whether GHC + Tidal were built
+        id: hs
+        if: always()
+        run: |
+          if [ -f /opt/tidal-studio/tidal.env ] && [ -x /opt/tidal-studio/ghc/bin/ghci ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+
       - name: Save GHC + Tidal cache
-        if: always() && steps.cache.outputs.cache-hit != 'true' && hashFiles('/opt/tidal-studio/tidal.env') != ''
+        if: always() && steps.hs.outputs.ok == 'true' && steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
@@ -164,7 +223,8 @@ jobs:
       - name: Install the .deb on a clean path and smoke-test it
         run: |
           sudo mv /opt/tidal-studio "$RUNNER_TEMP/build-runtime"
-          sudo apt-get install -y ./dist/*.deb
+          # Recommends would pull the chromium snap (~1.5 min) that the self-test never opens
+          sudo apt-get install -y --no-install-recommends ./dist/*.deb sc3-plugins-server
           test -x /usr/bin/tidal-studio
           /opt/tidal-studio/python/bin/python3 packaging/common/smoke_test.py /opt/tidal-studio
           QT_QPA_PLATFORM=offscreen tidal-studio --self-test
@@ -180,6 +240,8 @@ jobs:
 
   windows:
     name: Windows (Setup.exe)
+    needs: reuse
+    if: needs.reuse.outputs.run_id == ''
     runs-on: windows-2022
     timeout-minutes: 150
     defaults:
@@ -203,8 +265,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: bash packaging/windows/build.sh
 
+      # (hashFiles() only sees files inside the workspace, so it can't test C:/TidalStudio)
+      - name: Check whether GHC + Tidal were built
+        id: hs
+        if: always()
+        run: |
+          if [ -f /c/TidalStudio/tidal.env ] && [ -f /c/TidalStudio/ghc/bin/ghc.exe ]; then echo "ok=true" >> "$GITHUB_OUTPUT"; fi
+
       - name: Save GHC + Tidal cache
-        if: always() && steps.cache.outputs.cache-hit != 'true' && hashFiles('C:/TidalStudio/tidal.env') != ''
+        if: always() && steps.hs.outputs.ok == 'true' && steps.cache.outputs.cache-hit != 'true'
         uses: actions/cache/save@v4
         with:
           path: |
@@ -232,15 +301,32 @@ jobs:
           retention-days: 30
 
   release:
-    needs: [macos, linux, windows]
-    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish || github.ref == 'refs/heads/main'
+    needs: [reuse, macos, linux, windows]
+    # with reuse the build jobs are skipped, so "all needs succeeded" can't be the rule any more
+    if: >-
+      !cancelled() &&
+      (startsWith(github.ref, 'refs/tags/v') || inputs.publish || github.ref == 'refs/heads/main') &&
+      needs.reuse.result == 'success' &&
+      (needs.reuse.outputs.run_id != '' ||
+       (needs.macos.result == 'success' && needs.linux.result == 'success' && needs.windows.result == 'success'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - name: Download the installers built in this run
+        if: needs.reuse.outputs.run_id == ''
+        uses: actions/download-artifact@v4
         with:
           path: dist
           merge-multiple: true
+      - name: Download the installers of the reused branch build
+        if: needs.reuse.outputs.run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: TidalStudio-*
+          merge-multiple: true
+          run-id: ${{ needs.reuse.outputs.run_id }}
+          github-token: ${{ github.token }}
       - name: Publish the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
