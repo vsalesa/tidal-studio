@@ -1,0 +1,3220 @@
+{
+"agogo_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Agogo%20Bells/Agogo_High_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Agogo%20Bells/Agogo_High_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Agogo%20Bells/Agogo_High_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Agogo%20Bells/Agogo_Low_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Agogo%20Bells/Agogo_Low_v2_rr1_Mid.wav"
+],
+"mb": 1.3
+},
+"anvil": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit1_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit1_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit1_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit2_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit2_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit2_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit3_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit3_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Anvil/Anvil_Hit3_v3_rr1_Mid.wav"
+],
+"mb": 2.7
+},
+"balafon": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.3,
+"notes": {
+"49": "Idiophones/Struck%20Idiophones/Balafon/Traditional%20Mallet/EthnicXylo_tradM_C%233_vl3_rr1_Mid.wav",
+"53": "Idiophones/Struck%20Idiophones/Balafon/Traditional%20Mallet/EthnicXylo_tradM_F3_vl3_rr1_Mid.wav",
+"60": "Idiophones/Struck%20Idiophones/Balafon/Traditional%20Mallet/EthnicXylo_tradM_C4_vl3_rr1_Mid.wav",
+"65": "Idiophones/Struck%20Idiophones/Balafon/Traditional%20Mallet/EthnicXylo_tradM_F4_vl3_rr1_Mid.wav",
+"72": "Idiophones/Struck%20Idiophones/Balafon/Traditional%20Mallet/EthnicXylo_tradM_C5_vl3_rr1_Mid.wav",
+"77": "Idiophones/Struck%20Idiophones/Balafon/Traditional%20Mallet/EthnicXylo_tradM_F5_vl3_rr1_Mid.wav"
+},
+"shift": 12
+},
+"balafon_hard": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.2,
+"notes": {
+"49": "Idiophones/Struck%20Idiophones/Balafon/Hard%20Mallet/EthnicXylo_hardM_C%233_vl3_rr1_Mid.wav",
+"53": "Idiophones/Struck%20Idiophones/Balafon/Hard%20Mallet/EthnicXylo_hardM_F3_vl3_rr1_Mid.wav",
+"60": "Idiophones/Struck%20Idiophones/Balafon/Hard%20Mallet/EthnicXylo_hardM_C4_vl3_rr1_Mid.wav",
+"65": "Idiophones/Struck%20Idiophones/Balafon/Hard%20Mallet/EthnicXylo_hardM_F4_vl3_rr1_Mid.wav",
+"72": "Idiophones/Struck%20Idiophones/Balafon/Hard%20Mallet/EthnicXylo_hardM_C5_vl3_rr1_Mid.wav",
+"77": "Idiophones/Struck%20Idiophones/Balafon/Hard%20Mallet/EthnicXylo_hardM_F5_vl3_rr1_Mid.wav"
+},
+"shift": 12
+},
+"balafon_soft": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.2,
+"notes": {
+"49": "Idiophones/Struck%20Idiophones/Balafon/Soft%20Mallet/EthnicXylo_softM_C%233_vl3_rr1_Mid.wav",
+"53": "Idiophones/Struck%20Idiophones/Balafon/Soft%20Mallet/EthnicXylo_softM_F3_vl3_rr1_Mid.wav",
+"60": "Idiophones/Struck%20Idiophones/Balafon/Soft%20Mallet/EthnicXylo_softM_C4_vl3_rr2_Mid.wav",
+"65": "Idiophones/Struck%20Idiophones/Balafon/Soft%20Mallet/EthnicXylo_softM_F4_vl3_rr1_Mid.wav",
+"72": "Idiophones/Struck%20Idiophones/Balafon/Soft%20Mallet/EthnicXylo_softM_C5_vl3_rr1_Mid.wav",
+"77": "Idiophones/Struck%20Idiophones/Balafon/Soft%20Mallet/EthnicXylo_softM_F5_vl3_rr1_Mid.wav"
+},
+"shift": 12
+},
+"ball_whistle": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Aerophones/Edge-blown%20Aerophones/Ball%20Whistle/Main_BallWhistle_Long-001.wav",
+"Aerophones/Edge-blown%20Aerophones/Ball%20Whistle/Main_BallWhistle_Short-001.wav"
+],
+"mb": 0.5
+},
+"bell_tree": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 4.4,
+"notes": {
+"72": "Idiophones/Struck%20Idiophones/Bell%20Tree/Individual/BellTree_Hit_C5_rr1_Mid.wav",
+"74": "Idiophones/Struck%20Idiophones/Bell%20Tree/Individual/BellTree_Hit_D5_rr1_Mid.wav",
+"76": "Idiophones/Struck%20Idiophones/Bell%20Tree/Individual/BellTree_Hit_E5_rr1_Mid.wav",
+"78": "Idiophones/Struck%20Idiophones/Bell%20Tree/Individual/BellTree_Hit_F%235_rr1_Mid.wav",
+"80": "Idiophones/Struck%20Idiophones/Bell%20Tree/Individual/BellTree_Hit_G%235_rr1_Mid.wav",
+"82": "Idiophones/Struck%20Idiophones/Bell%20Tree/Individual/BellTree_Hit_A%235_rr1_Mid.wav"
+},
+"shift": 12
+},
+"bongos": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Hit1_v1_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Hit1_v1_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Hit1_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Hit1_v2_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Hit1_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Hit1_v3_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_HitMuted1_v1_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_HitMuted1_v1_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_HitMuted1_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_HitMuted1_v2_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_HitMuted1_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_HitMuted1_v3_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Roll_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoH_Roll_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_Hit1_v1_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_Hit1_v1_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_Hit1_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_Hit1_v2_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_Hit1_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_Hit1_v3_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_HitMuted2_v1_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_HitMuted2_v1_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_HitMuted2_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Bongos/BongoL_HitMuted2_v2_rr2_Mid.wav"
+],
+"mb": 5.0
+},
+"brake_drum": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_Bowed_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_Hammer_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_Hammer_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_Hammer_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_Susp_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_Susp_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_YarnM_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_YarnM_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum1_YarnM_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Bowed_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Hammer1_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Hammer1_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Hammer3_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Hammer3_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Hammer3_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Susp_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Brake%20Drum/BrakeDrum2_Susp_v2_rr1_Mid.wav"
+],
+"mb": 7.0
+},
+"cabasa": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Cabasa/Cabasa1_Hit_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cabasa/Cabasa1_Hit_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cabasa/Cabasa1_Rub_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cabasa/Cabasa1_Rub_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cabasa/Cabasa1_Rub_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cabasa/Cabasa1_Rub_v2_rr2_Mid.wav"
+],
+"mb": 1.0
+},
+"cajon": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit1_f_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit1_f_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit1_fff_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit1_fff_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit1_mp_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit1_mp_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit2_f_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit2_f_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit2_mp_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit2_mp_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit2_pp_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit2_pp_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit3_f_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit3_f_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit3_mp_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit3_mp_rr2.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit3_p_rr1.wav",
+"Idiophones/Struck%20Idiophones/Cajon/Cajon_hit3_p_rr2.wav"
+],
+"mb": 4.0
+},
+"claps_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Claps/Clap_rr1.wav",
+"Idiophones/Struck%20Idiophones/Claps/Clap_rr2.wav",
+"Idiophones/Struck%20Idiophones/Claps/Clap_rr3.wav",
+"Idiophones/Struck%20Idiophones/Claps/Clap_rr4.wav",
+"Idiophones/Struck%20Idiophones/Claps/Clap_rr5.wav",
+"Idiophones/Struck%20Idiophones/Claps/Clap_rr6.wav",
+"Idiophones/Struck%20Idiophones/Claps/SoloClap_vl1.wav",
+"Idiophones/Struck%20Idiophones/Claps/SoloClap_vl2.wav",
+"Idiophones/Struck%20Idiophones/Claps/SoloClap_vl3.wav",
+"Idiophones/Struck%20Idiophones/Claps/SoloClap_vl4.wav"
+],
+"mb": 1.2
+},
+"clash_cymbals": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_ff2.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_ff3.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_mf1.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_mf2.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_mp1.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_mp2.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_pp1.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_pp2.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_short1.wav",
+"Idiophones/Struck%20Idiophones/Clash%20Cymbals%201/cymbal_crash1_short2.wav"
+],
+"mb": 14.0
+},
+"claves": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Claves/Claves1_Hit_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Claves/Claves1_Hit_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Claves/Claves1_Hit_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Claves/Claves2_Hit_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Claves/Claves2_Hit_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Claves/Claves2_Hit_v3_rr1_Mid.wav"
+],
+"mb": 0.9
+},
+"concert_bass_drum": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v5_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v5_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v7_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Bass%20Drum%201/BDrumNew_hit_v7_rr2_Sum.wav"
+],
+"mb": 4.4
+},
+"concert_harp": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 33.4,
+"notes": {
+"101": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_F7_p1.wav",
+"28": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_E1_f1.wav",
+"31": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_G1_mp1.wav",
+"35": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_B1_mf1.wav",
+"38": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_D2_mf1.wav",
+"41": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_F2_mf1.wav",
+"45": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_A2_mf1.wav",
+"48": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_C3_mf3.wav",
+"52": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_E3_mf1.wav",
+"55": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_G3_mf1.wav",
+"59": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_B3_mf1.wav",
+"62": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_D4_mf1.wav",
+"65": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_F4_mf1.wav",
+"69": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_A4_mf1.wav",
+"72": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_C5_mf1.wav",
+"76": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_E5_mf1.wav",
+"79": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_G5_mf1.wav",
+"83": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_B5_mf1.wav",
+"86": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_D6_mf1.wav",
+"89": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_F6_mf1.wav",
+"93": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_A6_mf1.wav",
+"95": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_B6_mf1.wav",
+"98": "Chordophones/Composite%20Chordophones/Concert%20Harp/KSHarp_D7_p1.wav"
+},
+"shift": 0
+},
+"concert_tom_hi": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_HitS_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_HitS_v2_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_HitS_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_HitS_v3_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_HitS_v4_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_HitS_v4_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_RollS_v1_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%201/Stick/TomH_RollS_v2_rr1_Mid.wav"
+],
+"mb": 6.1
+},
+"concert_tom_lo": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_HitS_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_HitS_v2_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_HitS_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_HitS_v3_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_HitS_v4_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_HitS_v4_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_RollS_v1_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Tom%202/Stick/TomL_RollS_v2_rr1_Mid.wav"
+],
+"mb": 6.1
+},
+"congas": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitFM_v1_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitFM_v1_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitFM_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitFM_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitN_v1_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitN_v1_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitN_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitN_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitN_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Conga_HitN_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitFM1_v1_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitFM1_v1_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitFM1_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitFM1_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitN_v1_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitN_v1_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitN_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitN_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitN_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Quinto_HitN_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Tumba_HitFM_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Tumba_HitFM_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Tumba_HitFM_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Conga/Tumba_HitFM_v3_rr2_Sum.wav"
+],
+"mb": 3.3
+},
+"cowbells": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell1_Hit_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell1_Hit_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell1_Hit_v4_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell1_Muted_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell1_Muted_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell1_Normal_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell1_Normal_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell2_Double_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell2_Double_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell2_Muted_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell2_Muted_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell2_Normal_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Cowbells/Cowbell2_Normal_v3_rr1_Mid.wav"
+],
+"mb": 2.6
+},
+"dan_tranh": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 11.3,
+"notes": {
+"35": "Chordophones/Zithers/Dan%20Tranh/Normal/B1_mf_1.wav",
+"37": "Chordophones/Zithers/Dan%20Tranh/Normal/C%232_mf_1.wav",
+"39": "Chordophones/Zithers/Dan%20Tranh/Normal/D%232_mf_1.wav",
+"42": "Chordophones/Zithers/Dan%20Tranh/Normal/F%232_mf_1.wav",
+"44": "Chordophones/Zithers/Dan%20Tranh/Normal/G%232_mf_1.wav",
+"47": "Chordophones/Zithers/Dan%20Tranh/Normal/b2_mf_1.wav",
+"49": "Chordophones/Zithers/Dan%20Tranh/Normal/C%233_mf_1.wav",
+"51": "Chordophones/Zithers/Dan%20Tranh/Normal/D%233_mf_1.wav",
+"54": "Chordophones/Zithers/Dan%20Tranh/Normal/F%233_mf_1.wav",
+"56": "Chordophones/Zithers/Dan%20Tranh/Normal/G%233_mf_1.wav",
+"59": "Chordophones/Zithers/Dan%20Tranh/Normal/B3_mf_1.wav",
+"61": "Chordophones/Zithers/Dan%20Tranh/Normal/C%234_mf_1.wav",
+"63": "Chordophones/Zithers/Dan%20Tranh/Normal/D%234_mf_1.wav",
+"66": "Chordophones/Zithers/Dan%20Tranh/Normal/F%234_mf_1.wav",
+"68": "Chordophones/Zithers/Dan%20Tranh/Normal/G%234_mf_1.wav",
+"71": "Chordophones/Zithers/Dan%20Tranh/Normal/B4_mf_1.wav"
+},
+"shift": 12
+},
+"dan_tranh_trem": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 24.3,
+"notes": {
+"35": "Chordophones/Zithers/Dan%20Tranh/Tremolo/B1_Trem_1.wav",
+"37": "Chordophones/Zithers/Dan%20Tranh/Tremolo/C%232_Trem_1.wav",
+"39": "Chordophones/Zithers/Dan%20Tranh/Tremolo/D%232_Trem_1.wav",
+"42": "Chordophones/Zithers/Dan%20Tranh/Tremolo/F%232_Trem_1.wav",
+"44": "Chordophones/Zithers/Dan%20Tranh/Tremolo/G%232_Trem_1.wav",
+"47": "Chordophones/Zithers/Dan%20Tranh/Tremolo/B2_Trem_1.wav",
+"49": "Chordophones/Zithers/Dan%20Tranh/Tremolo/C%233_Trem_1.wav",
+"51": "Chordophones/Zithers/Dan%20Tranh/Tremolo/D%233_Trem_1.wav",
+"54": "Chordophones/Zithers/Dan%20Tranh/Tremolo/F%233_Trem_1.wav",
+"56": "Chordophones/Zithers/Dan%20Tranh/Tremolo/G%233_Trem_1.wav",
+"59": "Chordophones/Zithers/Dan%20Tranh/Tremolo/B3_Trem_1.wav",
+"61": "Chordophones/Zithers/Dan%20Tranh/Tremolo/C%234_Trem_1.wav",
+"63": "Chordophones/Zithers/Dan%20Tranh/Tremolo/D%234_Trem_1.wav",
+"66": "Chordophones/Zithers/Dan%20Tranh/Tremolo/F%234_Trem_1.wav",
+"68": "Chordophones/Zithers/Dan%20Tranh/Tremolo/G%234_Trem_1.wav",
+"71": "Chordophones/Zithers/Dan%20Tranh/Tremolo/B4_Trem_1.wav"
+},
+"shift": 12
+},
+"dan_tranh_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 9.4,
+"notes": {
+"35": "Chordophones/Zithers/Dan%20Tranh/Vibrato/B1_vib_mf_1.wav",
+"37": "Chordophones/Zithers/Dan%20Tranh/Vibrato/C%232_vib_mf_1.wav",
+"39": "Chordophones/Zithers/Dan%20Tranh/Vibrato/D%232_vib_mf_1.wav",
+"42": "Chordophones/Zithers/Dan%20Tranh/Vibrato/F%232_vib_mf_1.wav",
+"44": "Chordophones/Zithers/Dan%20Tranh/Vibrato/G%232_vib_mf_1.wav",
+"47": "Chordophones/Zithers/Dan%20Tranh/Vibrato/B2_vib_mf_1.wav",
+"49": "Chordophones/Zithers/Dan%20Tranh/Vibrato/C%233_vib_mf_1.wav",
+"51": "Chordophones/Zithers/Dan%20Tranh/Vibrato/D%233_vib_mf_1.wav",
+"54": "Chordophones/Zithers/Dan%20Tranh/Vibrato/F%233_vib_mf_1.wav",
+"56": "Chordophones/Zithers/Dan%20Tranh/Vibrato/G%233_vib_mf_1.wav",
+"59": "Chordophones/Zithers/Dan%20Tranh/Vibrato/B3_vib_mf_1.wav",
+"61": "Chordophones/Zithers/Dan%20Tranh/Vibrato/C%234_vib_mf_1.wav",
+"63": "Chordophones/Zithers/Dan%20Tranh/Vibrato/D%234_vib_mf_1.wav",
+"66": "Chordophones/Zithers/Dan%20Tranh/Vibrato/F%234_vib_mf_1.wav",
+"68": "Chordophones/Zithers/Dan%20Tranh/Vibrato/G%234_vib_mf_1.wav",
+"71": "Chordophones/Zithers/Dan%20Tranh/Vibrato/B4_vib_mf_1.wav"
+},
+"shift": 12
+},
+"darbuka": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_1_hit_vl1_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_1_hit_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_1_hit_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_1_hit_vl2_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_2_hit_vl1_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_2_hit_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_2_hit_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_2_hit_vl2_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_3_hit_vl1_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_3_hit_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_3_hit_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_3_hit_vl2_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_4_hit_vl1_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_4_hit_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_4_hit_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_4_hit_vl2_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_5_hit_vl1_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_5_hit_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_5_hit_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Darbuka/Darbuka_5_hit_vl2_rr2.wav"
+],
+"mb": 2.4
+},
+"didgeridoo": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Bark1_Main_rr3.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_BarkDown2_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Phrase1_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Phrase3_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Phrase5_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Phrase6_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Phrase8_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Short1_Main_rr2.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Sus2_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Sus3_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Sus8_Main.wav",
+"Aerophones/Lip%20Aerophones/Didgeridoo/Didgeridoo1_Tap1_Main_rr16.wav"
+],
+"mb": 26.1
+},
+"finger_cymbal": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Finger%20Cymbals/Fing_Cymb.wav"
+],
+"mb": 1.6
+},
+"flexatone": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone1.wav",
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone2.wav",
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone_extralong.wav",
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone_fast.wav",
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone_long.wav",
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone_long2.wav",
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone_slap1.wav",
+"Idiophones/Struck%20Idiophones/Flexatone/flexatone_slap2.wav"
+],
+"mb": 10.9
+},
+"folk_harp": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 45.8,
+"notes": {
+"24": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_C1_v3_RR1.wav",
+"26": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_D1_v3_RR1.wav",
+"28": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_E1_v3_RR1.wav",
+"30": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_F%231_v3_RR1.wav",
+"32": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_G%231_v3_RR1.wav",
+"34": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_A%231_v3_RR1.wav",
+"36": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_C2_v3_RR1.wav",
+"38": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_D2_v3_RR1.wav",
+"40": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_E2_v3_RR1.wav",
+"42": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_F%232_v3_RR1.wav",
+"44": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_G%232_v3_RR1.wav",
+"46": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_A%232_v3_RR1.wav",
+"48": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_C3_v3_RR1.wav",
+"50": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_D3_v3_RR1.wav",
+"52": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_E3_v3_RR1.wav",
+"54": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_F%233_v3_RR1.wav",
+"56": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_G%233_v3_RR1.wav",
+"58": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_A%233_v3_RR1.wav",
+"60": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_C4_v3_RR1.wav",
+"62": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_D4_v3_RR1.wav",
+"64": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_E4_v3_RR1.wav",
+"66": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_F%234_v3_RR1.wav",
+"68": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_G%234_v3_RR1.wav",
+"70": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_A%234_v3_RR1.wav",
+"72": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_C5_v3_RR1.wav",
+"74": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_D5_v3_RR1.wav",
+"76": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_E5_v3_RR1.wav",
+"78": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_F%235_v3_RR1.wav",
+"80": "Chordophones/Composite%20Chordophones/Folk%20Harp/EWHarp_Normal_G%235_v3_RR1.wav"
+},
+"shift": 12
+},
+"frame_drum": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_Hand_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_HitMuted_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_HitMuted_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_HitMuted_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_HitMuted_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_Hit_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_Hit_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_Hit_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumL_Hit_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_Hand_v1_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_HitMuted_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_HitMuted_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_HitMuted_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_HitMuted_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_Hit_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_Hit_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_Hit_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Frame%20Drum/HDrumS_Hit_v3_rr2_Sum.wav"
+],
+"mb": 6.0
+},
+"glockenspiel_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 4.8,
+"notes": {
+"67": "Idiophones/Struck%20Idiophones/Glockenspiel/glock_soft_G4_01.wav",
+"72": "Idiophones/Struck%20Idiophones/Glockenspiel/glock_soft_C5_02.wav",
+"79": "Idiophones/Struck%20Idiophones/Glockenspiel/glock_soft_G5_01.wav",
+"84": "Idiophones/Struck%20Idiophones/Glockenspiel/glock_soft_C6_01.wav",
+"91": "Idiophones/Struck%20Idiophones/Glockenspiel/glock_soft_G6_01.wav",
+"92": "Idiophones/Struck%20Idiophones/Glockenspiel/glock_loud_G%236_01.wav",
+"96": "Idiophones/Struck%20Idiophones/Glockenspiel/glock_soft_C7_03.wav"
+},
+"shift": 12
+},
+"gong": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Gong%201/gong_2_f.wav",
+"Idiophones/Struck%20Idiophones/Gong%201/gong_2_mp.wav",
+"Idiophones/Struck%20Idiophones/Gong%201/gong_f.wav",
+"Idiophones/Struck%20Idiophones/Gong%201/gong_fff.wav",
+"Idiophones/Struck%20Idiophones/Gong%201/gong_mf.wav",
+"Idiophones/Struck%20Idiophones/Gong%201/gong_p.wav",
+"Idiophones/Struck%20Idiophones/Gong%201/gong_scrape_mf.wav"
+],
+"mb": 29.3
+},
+"gong_tam": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Gong%202/hit_full1.mp3",
+"Idiophones/Struck%20Idiophones/Gong%202/hit_full2_loudest_ST.mp3",
+"Idiophones/Struck%20Idiophones/Gong%202/hit_light1.mp3",
+"Idiophones/Struck%20Idiophones/Gong%202/hit_light2.mp3",
+"Idiophones/Struck%20Idiophones/Gong%202/hit_light3.mp3",
+"Idiophones/Struck%20Idiophones/Gong%202/scrape1.mp3"
+],
+"mb": 2.4
+},
+"guiro": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Guiro/Guiro_Fast_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Guiro/Guiro_Hit_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Guiro/Guiro_Hit_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Guiro/Guiro_Med_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Guiro/Guiro_Slow_rr2_Mid.wav"
+],
+"mb": 1.4
+},
+"hand_chimes": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 41.0,
+"notes": {
+"48": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_C3_r01_main.wav",
+"50": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_D3_r01_main.wav",
+"52": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_E3_r01_main.wav",
+"54": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_F%233_r01_main.wav",
+"56": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_G%233_r01_main.wav",
+"58": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_A%233_r01_main.wav",
+"60": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_C4_r01_main.wav",
+"62": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_D4_r01_main.wav",
+"64": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_E4_r01_main.wav",
+"66": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_F%234_r01_main.wav",
+"68": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_G%234_r01_main.wav",
+"69": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_A4_r01_main.wav",
+"72": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_C5_r01_main.wav",
+"74": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_D5_r01_main.wav",
+"76": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_E5_r01_main.wav",
+"78": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_F%235_r01_main.wav",
+"80": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_G%235_r01_main.wav",
+"82": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_A%235_r01_main.wav",
+"84": "Idiophones/Struck%20Idiophones/Hand%20Chimes/sus_C6_r01_main.wav"
+},
+"shift": 12
+},
+"hihat_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_Close_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_Close_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v2_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v3_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v4_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitC_v4_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitLoose_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitLoose_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitOC_rr5_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitO_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Hi-Hat%20Cymbal/HiHat_HitO_rr2_Mid.wav"
+],
+"mb": 5.5
+},
+"hohner_special20": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 5.4,
+"notes": {
+"48": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_C3.wav",
+"52": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_E3.wav",
+"60": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_C4.wav",
+"64": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_E4.wav",
+"67": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_G4.wav",
+"72": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_C5.wav",
+"76": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_E5.wav",
+"79": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_G5.wav",
+"84": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Normal/Hohner-Special20_Normal_C6.wav"
+},
+"shift": 24
+},
+"hohner_special20_soft": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 6.9,
+"notes": {
+"48": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_C3.wav",
+"52": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_E3.wav",
+"55": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_G3.wav",
+"60": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_C4.wav",
+"64": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_E4.wav",
+"67": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_G4.wav",
+"72": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_C5.wav",
+"76": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_E5.wav",
+"79": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_G5.wav",
+"84": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Soft/Hohner-Special20_Soft_C6.wav"
+},
+"shift": 12
+},
+"hohner_special20_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 7.7,
+"notes": {
+"48": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_C3.wav",
+"52": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_E3.wav",
+"55": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_G3.wav",
+"60": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_C4.wav",
+"64": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_E4.wav",
+"67": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_G4.wav",
+"72": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_C5.wav",
+"76": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_E5.wav",
+"79": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_G5.wav",
+"84": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Special20-C/Sustains/Vib/Hohner-Special20_Vib_C6.wav"
+},
+"shift": 12
+},
+"hohner_super64": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 8.1,
+"notes": {
+"36": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_C2.wav",
+"40": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_E2.wav",
+"43": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_G2.wav",
+"48": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_C3.wav",
+"52": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_E3.wav",
+"55": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_G3.wav",
+"60": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_C4.wav",
+"64": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_E4.wav",
+"67": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_G4.wav",
+"72": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_C5.wav",
+"76": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_E5.wav",
+"79": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_G5.wav",
+"84": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Normal/Hohner-Super64_Normal%20_C6.wav"
+},
+"shift": 12
+},
+"hohner_super64_acc": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 7.7,
+"notes": {
+"36": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C2.wav",
+"40": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E2.wav",
+"43": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G2.wav",
+"48": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C3.wav",
+"52": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E3.wav",
+"55": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G3.wav",
+"60": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C4.wav",
+"64": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E4.wav",
+"67": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G4.wav",
+"72": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C5.wav",
+"76": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_E5.wav",
+"79": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_G5.wav",
+"84": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Accented/Hohner-Super64_Accented_C6.wav"
+},
+"shift": 12
+},
+"hohner_super64_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 9.6,
+"notes": {
+"36": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_C2.wav",
+"40": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_E2.wav",
+"43": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_G2.wav",
+"48": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_C3.wav",
+"52": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_E3.wav",
+"55": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_G3.wav",
+"60": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_C4.wav",
+"64": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_E4.wav",
+"67": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_G4.wav",
+"72": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_C5.wav",
+"76": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_E5.wav",
+"79": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_G5.wav",
+"84": "Aerophones/Free%20Aerophones/Harmonica-Hohner-Super64/Sustains/Vib/Hohner-Super64_Vib_C6.wav"
+},
+"shift": 12
+},
+"kawai_grand": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 135.4,
+"notes": {
+"12": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C0_v4_rr1_Player.wav",
+"15": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_D%230_v4_rr1_Player.wav",
+"18": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_F%230_v4_rr1_Player.wav",
+"21": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_A0_v4_rr1_Player.wav",
+"24": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C1_v4_rr1_Player.wav",
+"27": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_D%231_v4_rr1_Player.wav",
+"30": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_F%231_v4_rr1_Player.wav",
+"33": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_A1_v4_rr1_Player.wav",
+"36": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C2_v4_rr1_Player.wav",
+"38": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_D2_v4_rr1_Player.wav",
+"40": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_E2_v4_rr1_Player.wav",
+"42": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_F%232_v4_rr1_Player.wav",
+"44": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_G%232_v4_rr1_Player.wav",
+"46": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_A%232_v4_rr1_Player.wav",
+"48": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C3_v4_rr1_Player.wav",
+"50": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_D3_v4_rr1_Player.wav",
+"52": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_E3_v4_rr1_Player.wav",
+"54": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_F%233_v4_rr1_Player.wav",
+"56": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_G%233_v4_rr1_Player.wav",
+"58": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_A%233_v4_rr1_Player.wav",
+"60": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C4_v4_rr1_Player.wav",
+"62": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_D4_v4_rr1_Player.wav",
+"64": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_E4_v4_rr1_Player.wav",
+"66": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_F%234_v4_rr1_Player.wav",
+"68": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_G%234_v4_rr1_Player.wav",
+"70": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_A%234_v3_rr1_Player.wav",
+"71": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_B4_v4_rr1_Player.wav",
+"72": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C5_v4_rr1_Player.wav",
+"75": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_D%235_v4_rr1_Player.wav",
+"78": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_F%235_v4_rr1_Player.wav",
+"81": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_A5_v4_rr1_Player.wav",
+"84": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C6_v4_rr1_Player.wav",
+"87": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_D%236_v4_rr1_Player.wav",
+"90": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_F%236_v4_rr1_Player.wav",
+"91": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_G6_v2_rr1_Player.wav",
+"93": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_A6_v4_rr1_Player.wav",
+"96": "Chordophones/Zithers/Grand%20Piano%2C%20Kawai/Sustains/GPiano_sus_C7_v4_rr1_Player.wav"
+},
+"shift": 12
+},
+"marimba_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 9.9,
+"notes": {
+"29": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_F1_soft_01.wav",
+"36": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_C2_soft_01.wav",
+"43": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_G2_soft_01.wav",
+"47": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_B2_soft_01.wav",
+"53": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_F3_soft_01.wav",
+"60": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_C4_soft_01.wav",
+"67": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_G4_soft_01.wav",
+"71": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_B4_soft_01.wav",
+"77": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_F5_soft_01.wav",
+"84": "Idiophones/Struck%20Idiophones/Marimba/Marimba_hit_Outrigger_C6_soft_01.wav"
+},
+"shift": 12
+},
+"mark_trees": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Mark%20Trees/Legacy/windchimes_asc1.wav",
+"Idiophones/Struck%20Idiophones/Mark%20Trees/Legacy/windchimes_desc1.wav",
+"Idiophones/Struck%20Idiophones/Mark%20Trees/Legacy/windchimes_fastAsc1.wav",
+"Idiophones/Struck%20Idiophones/Mark%20Trees/Legacy/windchimes_random.wav",
+"Idiophones/Struck%20Idiophones/Mark%20Trees/Legacy/windchimes_slowAsc1.wav",
+"Idiophones/Struck%20Idiophones/Mark%20Trees/Legacy/windchimes_slowDesc1.wav"
+],
+"mb": 18.8
+},
+"mbira_gandanga": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 32.7,
+"notes": {
+"34": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_A%231_k12_vl2_rr1.wav",
+"36": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_C2_k10_vl2_rr1.wav",
+"38": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_D2_k8_vl2_rr1.wav",
+"39": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_D%232_k6_vl2_rr1.wav",
+"41": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_F2_k4_vl2_rr1.wav",
+"43": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_G2_k13_vl2_rr1.wav",
+"44": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_G%232_k2_vl2_rr1.wav",
+"46": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_A%232_k15_vl2_rr1.wav",
+"48": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_C3_k9_vl2_rr1.wav",
+"50": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_D3_k11_vl2_rr1.wav",
+"51": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_D%233_k7_vl2_rr1.wav",
+"53": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_F3_k5_vl2_rr1.wav",
+"55": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_G3_k3_vl2_rr1.wav",
+"56": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_G%233_k1_vl2_rr1.wav",
+"58": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_A%233_k18_vl2_rr1.wav",
+"60": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_C4_k19_vl2_rr1.wav",
+"61": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_C%234_k14_vl2_rr1.wav",
+"62": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_D4_k20_vl2_rr1.wav",
+"63": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_D%234_k21_vl2_rr1.wav",
+"65": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_F4_k22_vl2_rr1.wav",
+"67": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_G4_k23_vl2_rr1.wav",
+"69": "Idiophones/Plucked%20Idiophones/Mbira%20Mavembe%20%28Gandanga%29%2C%20Zimbabwe%2C%20Low%20G/Mbira5_Normal_MainSpirit_A4_k24_vl2_rr1.wav"
+},
+"shift": 12
+},
+"mbira_kenya": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 14.1,
+"notes": {
+"47": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_B2_k8_vl3_rr2.wav",
+"49": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_C%233_k7_vl3_rr2.wav",
+"51": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_D%233_k9_vl3_rr2.wav",
+"54": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_F%233_k5_vl3_rr2.wav",
+"56": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_G%233_k4_vl3_rr2.wav",
+"59": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_B3_k3_vl3_rr2.wav",
+"61": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_C%234_k2_vl3_rr2.wav",
+"63": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_D%234_k13_vl3_rr2.wav",
+"66": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_F%234_k14_vl3_rr2.wav",
+"69": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_A4_k1_vl3_rr2.wav",
+"71": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Kenya/Mbira6_Normal_MainSpirit_B4_k15_vl3_rr2.wav"
+},
+"shift": 12
+},
+"mbira_nyamaropa": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 21.5,
+"notes": {
+"34": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_A%231_14_50_100_rr1.wav",
+"39": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_D%232_12_50_100_rr2.wav",
+"40": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_E2_10_50_100_rr3.wav",
+"42": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_F%232_8_50_100_rr2.wav",
+"44": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_G%232_6_50_100_rr1.wav",
+"45": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_A2_4_50_100_rr2.wav",
+"47": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_B2_13_50_100_rr3.wav",
+"49": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_C%233_2_50_100_rr5.wav",
+"51": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_D%233_15_50_100_rr1.wav",
+"52": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_E3_9_50_100_rr4.wav",
+"54": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_F%233_11_50_100_rr2.wav",
+"56": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_G%233_7_50_100_rr2.wav",
+"57": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_A3_5_50_100_rr1.wav",
+"59": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_B3_3_50_100_rr2.wav",
+"61": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_C%234_1_50_100_rr1.wav",
+"63": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_D%234_18_50_100_rr5.wav",
+"64": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_E4_19_50_100_rr2.wav",
+"66": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_F%234_20_50_100_rr3.wav",
+"68": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_G%234_21_50_100_rr3.wav",
+"69": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_A4_22_50_100_rr3.wav",
+"71": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_B4_23_50_100_rr3.wav",
+"73": "Idiophones/Plucked%20Idiophones/Mbira%20dzaVadzimu%20Nyamaropa%2C%20Zimbabwe%2C%20Low%20B/MBira4_pluck_Main_C%235_24_50_100_rr5.wav"
+},
+"shift": 12
+},
+"mbira_tanzania": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 22.1,
+"notes": {
+"31": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_G1_k12_50_100_rr2.wav",
+"32": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_G%231_k11_50_100_rr2.wav",
+"35": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_B1_k13_50_100_rr2.wav",
+"37": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_C%232_k10_50_100_rr2.wav",
+"39": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_D%232_k14_50_100_rr2.wav",
+"41": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_F2_k9alt_50_100_rr2.wav",
+"43": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_G2_k15_50_100_rr2.wav",
+"46": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_A%232_k8_50_100_rr2.wav",
+"49": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_C%233_k16_50_100_rr2.wav",
+"51": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_D%233_k7_50_100_rr2.wav",
+"53": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_F3_k17_50_100_rr2.wav",
+"55": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_G3_k6_50_100_rr2.wav",
+"58": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_A%233_k18_50_100_rr2.wav",
+"61": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_C%234_k5_50_100_rr2.wav",
+"62": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_D4_k19_50_100_rr2.wav",
+"63": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_D%234_k4_50_100_rr2.wav",
+"65": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_F4_k3_50_100_rr2.wav",
+"67": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_G4_k22_50_100_rr2.wav",
+"70": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_A%234_k2_50_100_rr2.wav",
+"71": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_B4_k23_50_100_rr2.wav",
+"73": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_C%235_k24_50_100_rr2.wav",
+"76": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_E5_k25_50_100_rr2.wav",
+"78": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_F%235_k1_50_100_rr2.wav",
+"80": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_G%235_k26_50_100_rr2.wav",
+"85": "Idiophones/Plucked%20Idiophones/Kalimba%2C%20Tanzania/MBira3_pluck_Main_C%236_k27_50_100_rr2.wav"
+},
+"shift": 12
+},
+"nepalese_bells": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Hand%20Bells%2C%20Nepalese/HB_1.wav",
+"Idiophones/Struck%20Idiophones/Hand%20Bells%2C%20Nepalese/HB_2.wav",
+"Idiophones/Struck%20Idiophones/Hand%20Bells%2C%20Nepalese/HB_3.wav"
+],
+"mb": 1.6
+},
+"nyunga_nyunga": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 13.4,
+"notes": {
+"41": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_F2_k11_vl3_rr2.wav",
+"45": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_A2_k9_vl3_rr2.wav",
+"46": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_A%232_k13_vl3_rr2.wav",
+"48": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_C3_k15_vl3_rr3.wav",
+"50": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_D3_k17_vl3_rr2.wav",
+"52": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_E3_k7_vl3_rr2.wav",
+"53": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_F3_k5_vl3_rr2.wav",
+"55": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_G3_k3_vl3_rr2.wav",
+"57": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_A3_k1_vl3_rr2.wav",
+"58": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_A%233_k8_vl3_rr2.wav",
+"60": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_C4_k6_vl3_rr2.wav",
+"62": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_D4_k4_vl3_rr2.wav",
+"64": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_E4_k2_vl3_rr2.wav",
+"65": "Idiophones/Plucked%20Idiophones/Nyunga%20Nyunga%2C%20Mozambique%2C%20Low%20F/Mbira2_Normal_MainSpirit_F4_k10_vl3_rr2.wav"
+},
+"shift": 12
+},
+"ocarina_small": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 40.8,
+"notes": {
+"70": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_A%234_sustain0.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_C5_sustain0.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_D5_sustain0.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_E5_sustain0.wav",
+"77": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_F5_sustain0.wav",
+"79": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_G5_sustain0.wav",
+"80": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_G%235_sustain0.wav",
+"81": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_A5_sustain0.wav",
+"82": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_A%235_sustain0.wav",
+"83": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Sustain/ocarina_B5_sustain0.wav"
+},
+"shift": 12
+},
+"ocarina_small_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 0.9,
+"notes": {
+"69": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_A4_staccato0.wav",
+"71": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_B4_staccato0.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_D5_staccato0.wav",
+"75": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_D%235_staccato0.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_E5_staccato0.wav",
+"77": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_F5_staccato0.wav",
+"78": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_F%235_staccato0.wav",
+"79": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_G5_staccato0.wav",
+"80": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_G%235_staccato0.wav",
+"81": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_A5_staccato0.wav",
+"82": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_A%235_staccato0.wav",
+"83": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_B5_staccato0.wav",
+"84": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Small/Staccato/ocarina_C6_staccato0.wav"
+},
+"shift": 12
+},
+"ocarina_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 17.9,
+"notes": {
+"57": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_A3.wav",
+"59": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_B3.wav",
+"61": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_C%234.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_D4.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_E4.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_F%234.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_G%234.wav",
+"69": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_A4.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_A%234.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_C5.wav",
+"73": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/Sus/StdOcarina_Sus_C%235.wav"
+},
+"shift": 12
+},
+"ocarina_vcsl_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 20.5,
+"notes": {
+"57": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_A3.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_C4.wav",
+"61": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_C%234.wav",
+"63": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_D%234.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_E4.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_F%234.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_G%234.wav",
+"69": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_A4.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_A%234.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Ocarina%2C%20Typical/Sustains/SusVib/StdOcarina_SusVib_C5.wav"
+},
+"shift": 12
+},
+"ocean_drum": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Other%20Membranophones/Ocean%20Drum/OceanDrum_Sus_1_Mid.wav",
+"Membranophones/Other%20Membranophones/Ocean%20Drum/OceanDrum_Sus_2_Mid.wav",
+"Membranophones/Other%20Membranophones/Ocean%20Drum/OceanDrum_Sus_3_Mid.wav"
+],
+"mb": 14.4
+},
+"pipe_organ_loud": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 43.4,
+"notes": {
+"24": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_C1.wav",
+"27": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_D%231.wav",
+"30": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_F%231.wav",
+"33": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_A1.wav",
+"36": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_C2.wav",
+"39": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_D%232.wav",
+"42": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_F%232.wav",
+"45": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_A2.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_C3.wav",
+"51": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_D%233.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_F%233.wav",
+"57": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_A3.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_C4.wav",
+"63": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_D%234.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_F%234.wav",
+"69": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_A4.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_C5.wav",
+"75": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_D%235.wav",
+"78": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_F%235.wav",
+"81": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_A5.wav",
+"84": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud/Rode_Man3Open_C6.wav"
+},
+"shift": 12
+},
+"pipe_organ_pedal": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 23.7,
+"notes": {
+"24": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_C1.wav",
+"27": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_D%231.wav",
+"30": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_F%231.wav",
+"33": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_A1.wav",
+"36": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_C2.wav",
+"39": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_D%232.wav",
+"42": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_F%232.wav",
+"45": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_A2.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_C3.wav",
+"51": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_D%233.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Loud%20Pedal/Rode_Pedal_F%233.wav"
+},
+"shift": 12
+},
+"pipe_organ_pedal_soft": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 22.2,
+"notes": {
+"24": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_C1_rr1.wav",
+"27": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_D%231_rr1.wav",
+"30": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_F%231_rr1.wav",
+"33": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_A1_rr1.wav",
+"36": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_C2_rr1.wav",
+"39": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_D%232_rr1.wav",
+"42": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_F%232_rr1.wav",
+"45": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_A2_rr1.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_C3_rr1.wav",
+"51": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_D%233_rr1.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet%20Pedal/NT5_PedalQuiet_F%233_rr1.wav"
+},
+"shift": 12
+},
+"pipe_organ_soft": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 42.8,
+"notes": {
+"24": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_C1_rr1.wav",
+"27": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_D%231_rr1.wav",
+"30": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_F%231_rr1.wav",
+"33": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_A1_rr1.wav",
+"36": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_C2_rr1.wav",
+"39": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_D%232_rr1.wav",
+"42": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_F%232_rr1.wav",
+"45": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_A2_rr1.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_C3_rr1.wav",
+"51": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_D%233_rr1.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_F%233_rr1.wav",
+"57": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_A3_rr1.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_C4_rr1.wav",
+"63": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_D%234_rr1.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_F%234_rr1.wav",
+"69": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_A4_rr1.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_C5_rr1.wav",
+"75": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_D%235_rr1.wav",
+"78": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_F%235_rr1.wav",
+"81": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_A5_rr1.wav",
+"84": "Aerophones/Edge-blown%20Aerophones/Pipe%20Organ/Quiet/NT5_Man3Quiet_C6_rr1.wav"
+},
+"shift": 12
+},
+"psaltery_bow": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 18.3,
+"notes": {
+"58": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_A%233_Main_LongBow_rr2.wav",
+"60": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_C4_Main_LongBow_rr1.wav",
+"62": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_D4_Main_LongBow_rr1.wav",
+"64": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_E4_Main_LongBow_rr2.wav",
+"66": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_F%234_Main_LongBow_rr1.wav",
+"68": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_G%234_Main_LongBow_rr1.wav",
+"70": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_A%234_Main_LongBow_rr2.wav",
+"72": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_C5_Main_LongBow_rr1.wav",
+"74": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_D5_Main_LongBow_rr2.wav",
+"76": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_E5_Main_LongBow_rr2.wav",
+"78": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/LongBow/BowedPsaltery_F%235_Main_LongBow_rr2.wav"
+},
+"shift": 24
+},
+"psaltery_pluck": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 12.7,
+"notes": {
+"58": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_A%233_Main_Pluck_rr1.wav",
+"60": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_C4_Main_Pluck_rr1.wav",
+"62": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_D4_Main_Pluck_rr1.wav",
+"64": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_E4_Main_Pluck_rr2.wav",
+"66": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_F%234_Main_Pluck_rr1.wav",
+"68": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_G%234_Main_Pluck_rr3.wav",
+"70": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_A%234_Main_Pluck_rr1.wav",
+"72": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_C5_Main_Pluck_rr1.wav",
+"74": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_D5_Main_Pluck_rr1.wav",
+"76": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_E5_Main_Pluck_rr1.wav",
+"78": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Pluck/BowedPsaltery_F%235_Main_Pluck_rr3.wav"
+},
+"shift": 12
+},
+"psaltery_spic": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 10.3,
+"notes": {
+"58": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_A%233_Main_Spic_rr1.wav",
+"60": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_C4_Main_Spic_rr1.wav",
+"62": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_D4_Main_Spic_rr1.wav",
+"64": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_E4_Main_Spic_rr3.wav",
+"66": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_F%234_Main_Spic_rr1.wav",
+"68": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_G%234_Main_Spic_rr3.wav",
+"70": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_A%234_Main_Spic_rr1.wav",
+"72": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_C5_Main_Spic_rr1.wav",
+"74": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_D5_Main_Spic_rr1.wav",
+"76": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_E5_Main_Spic_rr2.wav",
+"78": "Chordophones/Zithers/Psaltery%2C%20Bowed%20and%20Plucked/Spiccato/BowedPsaltery_F%235_Main_Spic_rr4.wav"
+},
+"shift": 12
+},
+"ratchet": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet1_Crank_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet1_Crank_rr3_Mid.wav",
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet1_Fast_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet1_Slow_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet2_Crank_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet2_Crank_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet2_Fast_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Ratchet/Ratchet2_Slow_rr1_Mid.wav"
+],
+"mb": 6.9
+},
+"recorder_alto": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 28.1,
+"notes": {
+"53": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_F3_rr1_Main.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_G%233_rr1_Main.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_A%233_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_F%234_rr1_Main.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_G%234_rr1_Main.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_A%234_rr1_Main.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_C5_rr1_Main.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_D5_rr1_Main.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Sustain/AltRecorder_Sus_E5_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_alto_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.0,
+"notes": {
+"54": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_F%233_rr1_Main.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_G%233_rr1_Main.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_A%233_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_F%234_rr1_Main.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_G%234_rr1_Main.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_A%234_rr1_Main.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_C5_rr1_Main.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_D5_rr1_Main.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/Staccato/AltRecorder_Stac_E5_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_alto_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 24.6,
+"notes": {
+"53": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_F3_rr1_Main.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_G%233_rr1_Main.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_A%233_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_F%234_rr1_Main.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_G%234_rr1_Main.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_A%234_rr1_Main.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_C5_rr1_Main.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_D5_rr1_Main.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Baroque%20Alto%20Recorder/SusVib/AltRecorder_SusVib_E5_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_bass": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 13.2,
+"notes": {
+"42": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_F%232_rr1_Main.wav",
+"44": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_G%232_rr1_Main.wav",
+"46": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_A%232_rr1_Main.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_C3_rr1_Main.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_D3_rr1_Main.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_E3_rr1_Main.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_F%233_rr1_Main.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_G%233_rr1_Main.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_A%233_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Sustain/BassRecorder_Sus_E4_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_bass_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.2,
+"notes": {
+"41": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_F2_rr1_Main.wav",
+"43": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_G2_rr1_Main.wav",
+"45": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_A2_rr1_Main.wav",
+"46": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_A%232_rr1_Main.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_C3_rr1_Main.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_D3_rr1_Main.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_E3_rr1_Main.wav",
+"53": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_F3_rr1_Main.wav",
+"55": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_G3_rr1_Main.wav",
+"57": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_A3_rr1_Main.wav",
+"59": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_B3_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_E4_rr1_Main.wav",
+"65": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/Staccato/BassRecorder_Stac_F4_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_bass_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 11.6,
+"notes": {
+"41": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_F2_rr1_Main.wav",
+"43": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_G2_rr1_Main.wav",
+"45": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_A2_rr1_Main.wav",
+"47": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_B2_rr1_Main.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_C3_rr1_Main.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_D3_rr1_Main.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_E3_rr1_Main.wav",
+"53": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_F3_rr1_Main.wav",
+"55": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_G3_rr1_Main.wav",
+"57": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_A3_rr1_Main.wav",
+"59": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_B3_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Bass%20Recorder/SusVib/BassRecorder_SusVib_E4_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_soprano": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 28.5,
+"notes": {
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_F%234_rr1_Main.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_G%234_rr1_Main.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_A%234_rr1_Main.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_C5_rr1_Main.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_D5_rr1_Main.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_E5_rr1_Main.wav",
+"78": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_F%235_rr1_Main.wav",
+"79": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_G5_rr1_Main.wav",
+"82": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_A%235_rr1_Main.wav",
+"84": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Sustain/SopRecorder_Sus_C6_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_soprano_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.0,
+"notes": {
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_F%234_rr1_Main.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_G%234_rr1_Main.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_A%234_rr1_Main.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_C5_rr1_Main.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_D5_rr1_Main.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_E5_rr1_Main.wav",
+"78": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_F%235_rr1_Main.wav",
+"79": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_G5_rr1_Main.wav",
+"82": "Aerophones/Edge-blown%20Aerophones/Baroque%20Soprano%20Recorder/Staccato/SopRecorder_Stac_A%235_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_tenor": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 19.7,
+"notes": {
+"48": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_C3_rr1_Main.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_D3_rr1_Main.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_E3_rr1_Main.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_F%233_rr1_Main.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_G%233_rr1_Main.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_A%233_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_F%234_rr1_Main.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_G%234_rr1_Main.wav",
+"69": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_A4_rr1_Main.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Sustain/TenRecorder_Sus_C5_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_tenor_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.1,
+"notes": {
+"48": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_C3_rr1_Main.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_D3_rr1_Main.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_E3_rr1_Main.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_F%233_rr1_Main.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_G%233_rr1_Main.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_A%233_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_F%234_rr1_Main.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_G%234_rr1_Main.wav",
+"71": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/Staccato/TenRecorder_Stac_B4_rr1_Main.wav"
+},
+"shift": 12
+},
+"recorder_tenor_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 14.0,
+"notes": {
+"48": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_C3_rr1_Main.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_D3_rr1_Main.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_E3_rr1_Main.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_F%233_rr1_Main.wav",
+"55": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_G3_rr1_Main.wav",
+"57": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_A3_rr1_Main.wav",
+"59": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_B3_rr1_Main.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_C4_rr1_Main.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_D4_rr1_Main.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_E4_rr1_Main.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_F%234_rr1_Main.wav",
+"67": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_G4_rr1_Main.wav",
+"69": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_A4_rr1_Main.wav",
+"71": "Aerophones/Edge-blown%20Aerophones/Baroque%20Tenor%20Recorder/SusVib/TenRecorder_SusVib_B4_rr1_Main.wav"
+},
+"shift": 12
+},
+"renaissance_organ_4": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 44.4,
+"notes": {
+"24": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_C1_rr1.wav",
+"26": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_D1_rr1.wav",
+"28": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_E1_rr1.wav",
+"30": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_F%231_rr1.wav",
+"32": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_G%231_rr1.wav",
+"34": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_A%231_rr1.wav",
+"36": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_C2_rr1.wav",
+"38": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_D2_rr1.wav",
+"40": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_E2_rr1.wav",
+"42": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_F%232_rr1.wav",
+"44": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_G%232_rr1.wav",
+"46": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_A%232_rr1.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_C3_rr1.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_D3_rr1.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_E3_rr1.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_F%233_rr1.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_G%233_rr1.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_A%233_rr1.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_C4_rr1.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_D4_rr1.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_E4_rr1.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_F%234_rr1.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_G%234_rr1.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_A%234_rr1.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_C5_rr1.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_D5_rr1.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/4%27/RenOrgan_4foot_Room_E5_rr1.wav"
+},
+"shift": 24
+},
+"renaissance_organ_8": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 54.1,
+"notes": {
+"24": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_C1_rr1.wav",
+"26": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_D1_rr1.wav",
+"28": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_E1_rr1.wav",
+"30": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_F%231_rr1.wav",
+"32": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_G%231_rr1.wav",
+"34": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_A%231_rr1.wav",
+"36": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_C2_rr1.wav",
+"38": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_D2_rr1.wav",
+"40": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_E2_rr1.wav",
+"42": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_F%232_rr1.wav",
+"44": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_G%232_rr1.wav",
+"46": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_A%232_rr1.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_C3_rr1.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_D3_rr1.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_E3_rr1.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_F%233_rr1.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_G%233_rr1.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_A%233_rr1.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_C4_rr1.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_D4_rr1.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_E4_rr1.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_F%234_rr1.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_G%234_rr1.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_A%234_rr1.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_C5_rr1.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_D5_rr1.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/8%27/RenOrgan_8foot_Room_E5_rr1.wav"
+},
+"shift": 12
+},
+"renaissance_organ_full": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 40.2,
+"notes": {
+"24": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_C1_rr1.wav",
+"26": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_D1_rr1.wav",
+"28": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_E1_rr1.wav",
+"30": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_F%231_rr1.wav",
+"32": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_G%231_rr1.wav",
+"34": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_A%231_rr1.wav",
+"36": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_C2_rr1.wav",
+"38": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_D2_rr1.wav",
+"40": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_E2_rr1.wav",
+"42": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_F%232_rr1.wav",
+"44": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_G%232_rr1.wav",
+"46": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_A%232_rr1.wav",
+"48": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_C3_rr1.wav",
+"50": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_D3_rr1.wav",
+"52": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_E3_rr1.wav",
+"54": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_F%233_rr1.wav",
+"56": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_G%233_rr1.wav",
+"58": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_A%233_rr1.wav",
+"60": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_C4_rr1.wav",
+"62": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_D4_rr1.wav",
+"64": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_E4_rr1.wav",
+"66": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_F%234_rr1.wav",
+"68": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_G%234_rr1.wav",
+"70": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_A%234_rr1.wav",
+"72": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_C5_rr1.wav",
+"74": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_D5_rr1.wav",
+"76": "Aerophones/Edge-blown%20Aerophones/Renaissance%20Organ/Full/RenOrgan_Full_Room_E5_rr1.wav"
+},
+"shift": 12
+},
+"rope_snare": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_ns_Main_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_ns_Main_vl1_rr3.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_ns_Main_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_ns_Main_vl2_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_ns_Main_vl3_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_ns_Main_vl3_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_sn_Main_vl1_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_sn_Main_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_sn_Main_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_sn_Main_vl2_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_sn_Main_vl3_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_sn_Main_vl3_rr3.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl1_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl1_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl2_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl2_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl3_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl3_rr2.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl4_rr1.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Rope%20Tension/Low/RopeSnare_low_tsn_Main_vl4_rr4.wav"
+],
+"mb": 10.5
+},
+"salamander_grand": {
+"base": "https://raw.githubusercontent.com/felixroos/dough-samples/main/piano/",
+"mb": 5.2,
+"notes": {
+"102": "Fs7v8.mp3",
+"105": "A7v8.mp3",
+"108": "C8v8.mp3",
+"21": "A0v8.mp3",
+"24": "C1v8.mp3",
+"27": "Ds1v8.mp3",
+"30": "Fs1v8.mp3",
+"33": "A1v8.mp3",
+"36": "C2v8.mp3",
+"39": "Ds2v8.mp3",
+"42": "Fs2v8.mp3",
+"45": "A2v8.mp3",
+"48": "C3v8.mp3",
+"51": "Ds3v8.mp3",
+"54": "Fs3v8.mp3",
+"57": "A3v8.mp3",
+"60": "C4v8.mp3",
+"63": "Ds4v8.mp3",
+"66": "Fs4v8.mp3",
+"69": "A4v8.mp3",
+"72": "C5v8.mp3",
+"78": "Fs5v8.mp3",
+"81": "A5v8.mp3",
+"84": "C6v8.mp3",
+"87": "Ds6v8.mp3",
+"90": "Fs6v8.mp3",
+"93": "A6v8.mp3",
+"96": "C7v8.mp3",
+"99": "Ds7v8.mp3"
+}
+},
+"saxello": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 11.6,
+"notes": {
+"46": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_A%232_vl3_rr1.wav",
+"50": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_D3_vl3_rr1.wav",
+"54": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_F%233_vl3_rr1.wav",
+"58": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_A%233_vl3_rr1.wav",
+"62": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_D4_vl3_rr1.wav",
+"66": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_F%234_vl3_rr1.wav",
+"70": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_A%234_vl3_rr1.wav",
+"76": "Aerophones/Reed%20Aerophones/Saxello/Non-Vibrato/BrettSaxello_SusNV_MainSpirit_E5_vl3_rr1.wav"
+},
+"shift": 12
+},
+"saxello_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 1.2,
+"notes": {
+"46": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_A%232_vl2_rr3.wav",
+"50": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_D3_vl2_rr4.wav",
+"54": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_F%233_vl2_rr4.wav",
+"58": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_A%233_vl2_rr2.wav",
+"62": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_D4_vl2_rr5.wav",
+"66": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_F%234_vl2_rr4.wav",
+"70": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_A%234_vl2_rr5.wav",
+"74": "Aerophones/Reed%20Aerophones/Saxello/Staccato/BrettSaxello_Stcts_MainSpirit_D5_vl1_rr6.wav"
+},
+"shift": 12
+},
+"saxello_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 13.7,
+"notes": {
+"46": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_A%232_vl2_rr1.wav",
+"50": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_D3_vl2_rr1.wav",
+"54": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_F%233_vl2_rr1.wav",
+"58": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_A%233_vl2_rr1.wav",
+"62": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_D4_vl2_rr1.wav",
+"66": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_F%234_vl2_rr1.wav",
+"70": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_A%234_vl2_rr1.wav",
+"75": "Aerophones/Reed%20Aerophones/Saxello/Vibrato/BrettSaxello_SusVB_MainSpirit_D%235_vl2_rr1.wav"
+},
+"shift": 12
+},
+"shaker_large": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Large/LShaker_Hit_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Large/LShaker_Hit_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Large/LShaker_Shake1D_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Large/LShaker_Shake1D_rr3_Mid.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Large/LShaker_Shake1U_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Large/LShaker_Shake1U_rr4_Mid.wav"
+],
+"mb": 1.4
+},
+"shaker_small": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerDouble_Down_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerDouble_Down_rr2.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerDouble_Up_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerDouble_Up_rr2.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerHighFaster_Down_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerHighFaster_Down_rr2.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerHighFaster_Up_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerHighFaster_Up_rr2.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerLowFaster_Down_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerLowFaster_Down_rr2.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerLowFaster_Up_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_ShakerLowFaster_Up_rr2.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_Shaker_Roll_Fast_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_Shaker_Roll_Fast_rr2.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_Shaker_Slap_rr1.wav",
+"Idiophones/Struck%20Idiophones/Shaker%2C%20Small/Mid_Shaker_Slap_rr2.wav"
+],
+"mb": 1.7
+},
+"siren_whistle": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Aerophones/Free%20Aerophones/Siren/Main_SirenWhistle-002.wav",
+"Aerophones/Free%20Aerophones/Siren/Main_SirenWhistle-005.wav",
+"Aerophones/Free%20Aerophones/Siren/Main_SirenWhistle-008.wav",
+"Aerophones/Free%20Aerophones/Siren/Main_SirenWhistle-009.wav",
+"Aerophones/Free%20Aerophones/Siren/Main_SirenWhistle-010.wav"
+],
+"mb": 5.6
+},
+"slapstick": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Slapstick/slapstick_quiet_rr1.wav",
+"Idiophones/Struck%20Idiophones/Slapstick/slapstick_quiet_rr2.wav",
+"Idiophones/Struck%20Idiophones/Slapstick/slapstick_rr1.wav",
+"Idiophones/Struck%20Idiophones/Slapstick/slapstick_rr2.wav",
+"Idiophones/Struck%20Idiophones/Slapstick/slapstick_rr3.wav"
+],
+"mb": 0.8
+},
+"sleigh_bells": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Sleigh%20Bells/Sleighbells_Hit_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Sleigh%20Bells/Sleighbells_Hit_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Sleigh%20Bells/sleighbell1_shake1.wav",
+"Idiophones/Struck%20Idiophones/Sleigh%20Bells/sleighbell2_hit_2.wav",
+"Idiophones/Struck%20Idiophones/Sleigh%20Bells/sleighbell2_hit_loud.wav",
+"Idiophones/Struck%20Idiophones/Sleigh%20Bells/sleighbell2_shake1.wav"
+],
+"mb": 4.5
+},
+"slit_drum": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Slit%20Drum/LogDrumHi_MedM_v1_rr1_Sum.wav",
+"Idiophones/Struck%20Idiophones/Slit%20Drum/LogDrumHi_MedM_v2_rr1_Sum.wav",
+"Idiophones/Struck%20Idiophones/Slit%20Drum/LogDrumHi_MedM_v3_rr1_Sum.wav",
+"Idiophones/Struck%20Idiophones/Slit%20Drum/LogDrumLo_MedM_v1_rr1_Sum.wav",
+"Idiophones/Struck%20Idiophones/Slit%20Drum/LogDrumLo_MedM_v2_rr1_Sum.wav",
+"Idiophones/Struck%20Idiophones/Slit%20Drum/LogDrumLo_MedM_v3_rr1_Sum.wav"
+],
+"mb": 1.4
+},
+"snare_modern": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v2_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v4_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v4_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v5_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v5_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v6_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitNS_v6_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v3_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v5_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v5_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v6_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v6_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v7_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v7_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v9_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_HitSN_v9_rr2_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_rollNS_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_rollNS_v3_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_rollNS_v4_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_rollNS_v5_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_rollSN_v2_rr1_Mid.wav",
+"Membranophones/Struck%20Membranophones/Snare%20Drum%2C%20Modern%201/Snare2_rollSN_v4_rr1_Mid.wav"
+],
+"mb": 11.5
+},
+"steinway_b": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 244.3,
+"notes": {
+"100": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_E7_vl4_rr1.wav",
+"102": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_F%237_vl4_rr1.wav",
+"104": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_G%237_vl4_rr1.wav",
+"22": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_A%230_vl4_rr1.wav",
+"24": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_C1_vl4_rr1.wav",
+"26": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_D1_vl4_rr1.wav",
+"28": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_E1_vl4_rr1.wav",
+"30": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_F%231_vl4_rr1.wav",
+"32": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_G%231_vl4_rr1.wav",
+"34": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_A%231_vl4_rr1.wav",
+"36": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_C2_vl4_rr1.wav",
+"38": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_D2_vl4_rr1.wav",
+"40": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_E2_vl4_rr1.wav",
+"42": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_F%232_vl4_rr1.wav",
+"44": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_G%232_vl4_rr1.wav",
+"46": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_A%232_vl4_rr1.wav",
+"48": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_C3_vl4_rr1.wav",
+"50": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_D3_vl4_rr1.wav",
+"52": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_E3_vl4_rr1.wav",
+"54": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_F%233_vl4_rr1.wav",
+"56": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_G%233_vl4_rr1.wav",
+"58": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_A%233_vl4_rr1.wav",
+"60": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_C4_vl4_rr1.wav",
+"62": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_D4_vl4_rr1.wav",
+"64": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_E4_vl4_rr1.wav",
+"66": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_F%234_vl4_rr1.wav",
+"68": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_G%234_vl4_rr1.wav",
+"70": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_A%234_vl4_rr1.wav",
+"72": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_C5_vl4_rr1.wav",
+"74": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_D5_vl4_rr1.wav",
+"76": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_E5_vl4_rr1.wav",
+"78": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_F%235_vl4_rr1.wav",
+"80": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_G%235_vl4_rr1.wav",
+"82": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_A%235_vl4_rr1.wav",
+"84": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_C6_vl4_rr1.wav",
+"86": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_D6_vl4_rr1.wav",
+"88": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_E6_vl4_rr1.wav",
+"90": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_F%236_vl4_rr1.wav",
+"92": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_G%236_vl4_rr1.wav",
+"94": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_A%236_vl4_rr1.wav",
+"96": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_C7_vl4_rr1.wav",
+"98": "Chordophones/Zithers/Grand%20Piano%2C%20Steinway%20B/Sus/JHPiano_Sus_Close_D7_vl4_rr1.wav"
+},
+"shift": 0
+},
+"strumstick": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 30.3,
+"notes": {
+"38": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str1_Main_D2_vl3_rr1.wav",
+"40": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str1_Main_E2_vl3_rr1.wav",
+"42": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str1_Main_F%232_vl3_rr2.wav",
+"43": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str1_Main_G2_vl3_rr1.wav",
+"45": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str2_Main_A2_vl3_rr1.wav",
+"47": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str2_Main_B2_vl3_rr1.wav",
+"49": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str2_Main_C%233_vl3_rr1.wav",
+"50": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str2_Main_D3_vl3_rr1.wav",
+"52": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_E3_vl3_rr1.wav",
+"54": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_F%233_vl3_rr1.wav",
+"55": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_G3_vl3_rr1.wav",
+"57": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_A3_vl3_rr1.wav",
+"59": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_B3_vl3_rr1.wav",
+"61": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_C%234_vl3_rr1.wav",
+"62": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_D4_vl3_rr1.wav",
+"64": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_E4_vl3_rr1.wav",
+"66": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_F%234_vl3_rr1.wav",
+"67": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_G4_vl3_rr1.wav",
+"69": "Chordophones/Composite%20Chordophones/Strumstick/Finger/Strumstick_Finger_Str3_Main_A4_vl3_rr1.wav"
+},
+"shift": 12
+},
+"suspended_cymbal": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_bow_13.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_bow_17.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_bow_20.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_bow_7.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_cresc_1.5s.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_cresc_2s.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_cresc_4s.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_cresc_7.5s.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_bell_fff1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_bell_mf1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_bell_pp1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_f1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_fff1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_mp1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_pp1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_stick_f1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_stick_mp1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_hit_stick_pp1.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_roll_f1_nloop.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_roll_f1_rel.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_roll_ff2_nloop.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_roll_ff2_rel.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_roll_mp1_nloop.wav",
+"Idiophones/Struck%20Idiophones/Suspended%20Cymbal%201/susCymb1_roll_mp1_rel.wav"
+],
+"mb": 49.2
+},
+"tambourine_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Tambourine%201/Tamb1_Hit_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Tambourine%201/Tamb1_Hit_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Tambourine%201/Tamb1_Roll_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Tambourine%201/Tamb1_Roll_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Tambourine%201/Tamb1_Roll_v3_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Tambourine%201/Tamb1_Shake_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Tambourine%201/Tamb1_Shake_rr2_Mid.wav"
+],
+"mb": 6.2
+},
+"tenor_sax_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 47.9,
+"notes": {
+"32": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_G%231_vl3_rr1.wav",
+"34": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_A%231_vl3_rr1.wav",
+"36": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_C2_vl3_rr1.wav",
+"38": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_D2_vl3_rr1.wav",
+"40": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_E2_vl3_rr1.wav",
+"42": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_F%232_vl3_rr1.wav",
+"44": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_G%232_vl3_rr1.wav",
+"46": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_A%232_vl3_rr1.wav",
+"48": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_C3_vl3_rr1.wav",
+"50": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_D3_vl3_rr1.wav",
+"52": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_E3_vl3_rr1.wav",
+"54": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_F%233_vl3_rr1.wav",
+"56": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_G%233_vl3_rr1.wav",
+"58": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_A%233_vl3_rr1.wav",
+"60": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_C4_vl3_rr1.wav",
+"62": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_D4_vl3_rr1.wav",
+"64": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_E4_vl3_rr1.wav",
+"66": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_F%234_vl3_rr1.wav",
+"68": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_G%234_vl3_rr1.wav",
+"70": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_A%234_vl3_rr1.wav",
+"72": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_C5_vl3_rr1.wav",
+"74": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_D5_vl3_rr1.wav",
+"76": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Non-Vibrato/BrettTenor_NV_Main_E5_vl3_rr1.wav"
+},
+"shift": 12
+},
+"tenor_sax_vcsl_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 3.5,
+"notes": {
+"32": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_G%231_vl2_rr1.wav",
+"34": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_A%231_vl2_rr5.wav",
+"36": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_C2_vl2_rr1.wav",
+"38": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_D2_vl2_rr4.wav",
+"40": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_E2_vl2_rr1.wav",
+"42": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_F%232_vl2_rr7.wav",
+"44": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_G%232_vl2_rr1.wav",
+"45": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_A2_vl2_rr4.wav",
+"48": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_C3_vl2_rr4.wav",
+"50": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_D3_vl2_rr5.wav",
+"52": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_E3_vl2_rr3.wav",
+"54": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_F%233_vl2_rr6.wav",
+"56": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_G%233_vl2_rr1.wav",
+"58": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_A%233_vl2_rr4.wav",
+"60": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_C4_vl2_rr3.wav",
+"62": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_D4_vl2_rr2.wav",
+"64": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_E4_vl2_rr4.wav",
+"65": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_F4_vl2_rr1.wav",
+"68": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_G%234_vl2_rr2.wav",
+"69": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_A4_vl2_rr3.wav",
+"72": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_C5_vl2_rr1.wav",
+"74": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_D5_vl2_rr3.wav",
+"76": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Staccato/BrettTenor_Staccato_Main_E5_vl2_rr1.wav"
+},
+"shift": 12
+},
+"tenor_sax_vcsl_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 32.2,
+"notes": {
+"34": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_A%231_var2.wav",
+"36": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_C2_var4.wav",
+"38": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_D2_var2.wav",
+"40": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_E2_var2.wav",
+"42": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_F%232_var3.wav",
+"46": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_A%232_var4.wav",
+"48": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_C3_var1.wav",
+"50": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_D3_var1.wav",
+"52": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_E3_var3.wav",
+"54": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_F%233_var2.wav",
+"58": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_A%233_var3.wav",
+"60": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_C4_var2.wav",
+"62": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_D4_var1.wav",
+"64": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_E4_var4.wav",
+"67": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_G4_var3.wav",
+"68": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_G%234_var3.wav",
+"70": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_A%234_var2.wav",
+"72": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_C5_var2.wav",
+"74": "Aerophones/Reed%20Aerophones/Tenor%20Saxophone/Vibrato/BrettTenor_Vib_Main_D5_var3.wav"
+},
+"shift": 12
+},
+"timpani_roll": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani1_Roll_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani1_Roll_v5_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani2_Roll_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani2_Roll_v5_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani3_Roll_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani3_Roll_v5_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani4_Roll_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani4_Roll_v5_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani5_Roll_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Roll/Timpani5_Roll_v4_rr1_Sum.wav"
+],
+"mb": 37.0
+},
+"timpani_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani1_Hit_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani1_Hit_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani1_Hit_v3_rr3_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani1_Hit_v3_rr4_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani1_Hit_v4_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani1_Hit_v4_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani2_Hit_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani2_Hit_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani2_Hit_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani2_Hit_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani2_Hit_v4_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani2_Hit_v4_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani3_Hit_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani3_Hit_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani3_Hit_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani3_Hit_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani3_Hit_v4_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani3_Hit_v4_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani4_Hit_v2_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani4_Hit_v2_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani4_Hit_v3_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani4_Hit_v3_rr2_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani4_Hit_v4_rr1_Sum.wav",
+"Membranophones/Struck%20Membranophones/Timpani%201/Hit/Timpani4_Hit_v4_rr2_Sum.wav"
+],
+"mb": 35.3
+},
+"train_whistle": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Aerophones/Edge-blown%20Aerophones/Train%20Whistle%2C%20Toy/Main_TrainLow_Double-001.wav",
+"Aerophones/Edge-blown%20Aerophones/Train%20Whistle%2C%20Toy/Main_TrainLow_Fall-001.wav",
+"Aerophones/Edge-blown%20Aerophones/Train%20Whistle%2C%20Toy/Main_TrainLow_Med-001.wav",
+"Aerophones/Edge-blown%20Aerophones/Train%20Whistle%2C%20Toy/Main_TrainLow_Short-001.wav",
+"Aerophones/Edge-blown%20Aerophones/Train%20Whistle%2C%20Toy/Main_TrainLow_Sus-001.wav",
+"Aerophones/Edge-blown%20Aerophones/Train%20Whistle%2C%20Toy/Main_TrainMed_Short-001.wav"
+],
+"mb": 1.9
+},
+"triangles": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_HitFM_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_HitFM_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_HitM_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_HitM_v1_rr4_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_Hit_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_Hit_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_Hit_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_Hit_v2_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_Roll_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_hitFM_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle1_hitFM_v2_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitFM_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitFM_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitFM_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitFM_v2_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitM_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitM_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitM_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_HitM_v2_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_Hit_v1_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_Hit_v1_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_Hit_v2_rr1_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_Hit_v2_rr2_Mid.wav",
+"Idiophones/Struck%20Idiophones/Triangles/Triangle3_Roll_v2_rr1_Mid.wav"
+],
+"mb": 24.2
+},
+"tubular_bells_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 28.5,
+"notes": {
+"48": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_C3_pp_rr2.wav",
+"50": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_D3_pp_rr3.wav",
+"52": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_E3_pp_rr1.wav",
+"54": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_F%233_p_rr1.wav",
+"56": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_G%233_p_rr2.wav",
+"58": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_A%233_pp_rr1.wav",
+"60": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_C4_p_rr1.wav",
+"62": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_D4_p_rr1.wav",
+"64": "Idiophones/Struck%20Idiophones/Tubular%20Bells%201/chimes_E4_pp_rr3.wav"
+},
+"shift": 12
+},
+"tubular_bells_vcsl2": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 42.7,
+"notes": {
+"60": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_C4_v4_1.wav",
+"62": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_D4_v4_2.wav",
+"64": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_E4_v4_1.wav",
+"65": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_F4_v4_1.wav",
+"67": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_G4_v4_1.wav",
+"69": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_A4_v4_1.wav",
+"71": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_B4_v4_1.wav",
+"72": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_C5_v4_1.wav",
+"74": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_D5_v4_1.wav",
+"76": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_E5_v4_2.wav",
+"77": "Idiophones/Struck%20Idiophones/Tubular%20Bells%202/TB_hit_F5_v4_1.wav"
+},
+"shift": 12
+},
+"tx81z_clavisynth": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 11.7,
+"notes": {
+"12": "Electrophones/TX81Z/Clavisynth/Clavisynth_C0_vl3.wav",
+"16": "Electrophones/TX81Z/Clavisynth/Clavisynth_E0_vl3.wav",
+"20": "Electrophones/TX81Z/Clavisynth/Clavisynth_G%230_vl3.wav",
+"24": "Electrophones/TX81Z/Clavisynth/Clavisynth_C1_vl3.wav",
+"28": "Electrophones/TX81Z/Clavisynth/Clavisynth_E1_vl3.wav",
+"32": "Electrophones/TX81Z/Clavisynth/Clavisynth_G%231_vl3.wav",
+"36": "Electrophones/TX81Z/Clavisynth/Clavisynth_C2_vl3.wav",
+"40": "Electrophones/TX81Z/Clavisynth/Clavisynth_E2_vl3.wav",
+"44": "Electrophones/TX81Z/Clavisynth/Clavisynth_G%232_vl3.wav",
+"48": "Electrophones/TX81Z/Clavisynth/Clavisynth_C3_vl3.wav",
+"52": "Electrophones/TX81Z/Clavisynth/Clavisynth_E3_vl3.wav",
+"56": "Electrophones/TX81Z/Clavisynth/Clavisynth_G%233_vl3.wav",
+"60": "Electrophones/TX81Z/Clavisynth/Clavisynth_C4_vl3.wav",
+"64": "Electrophones/TX81Z/Clavisynth/Clavisynth_E4_vl3.wav",
+"68": "Electrophones/TX81Z/Clavisynth/Clavisynth_G%234_vl3.wav",
+"72": "Electrophones/TX81Z/Clavisynth/Clavisynth_C5_vl3.wav",
+"76": "Electrophones/TX81Z/Clavisynth/Clavisynth_E5_vl3.wav",
+"80": "Electrophones/TX81Z/Clavisynth/Clavisynth_G%235_vl3.wav",
+"84": "Electrophones/TX81Z/Clavisynth/Clavisynth_C6_vl3.wav"
+},
+"shift": 24
+},
+"tx81z_fmpiano": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 22.4,
+"notes": {
+"12": "Electrophones/TX81Z/FM%20Piano/FMPiano_C0_vl3.wav",
+"16": "Electrophones/TX81Z/FM%20Piano/FMPiano_E0_vl3.wav",
+"20": "Electrophones/TX81Z/FM%20Piano/FMPiano_G%230_vl3.wav",
+"24": "Electrophones/TX81Z/FM%20Piano/FMPiano_C1_vl3.wav",
+"28": "Electrophones/TX81Z/FM%20Piano/FMPiano_E1_vl3.wav",
+"32": "Electrophones/TX81Z/FM%20Piano/FMPiano_G%231_vl3.wav",
+"36": "Electrophones/TX81Z/FM%20Piano/FMPiano_C2_vl3.wav",
+"40": "Electrophones/TX81Z/FM%20Piano/FMPiano_E2_vl3.wav",
+"44": "Electrophones/TX81Z/FM%20Piano/FMPiano_G%232_vl3.wav",
+"48": "Electrophones/TX81Z/FM%20Piano/FMPiano_C3_vl3.wav",
+"52": "Electrophones/TX81Z/FM%20Piano/FMPiano_E3_vl3.wav",
+"56": "Electrophones/TX81Z/FM%20Piano/FMPiano_G%233_vl3.wav",
+"60": "Electrophones/TX81Z/FM%20Piano/FMPiano_C4_vl3.wav",
+"64": "Electrophones/TX81Z/FM%20Piano/FMPiano_E4_vl3.wav",
+"68": "Electrophones/TX81Z/FM%20Piano/FMPiano_G%234_vl3.wav",
+"72": "Electrophones/TX81Z/FM%20Piano/FMPiano_C5_vl3.wav",
+"76": "Electrophones/TX81Z/FM%20Piano/FMPiano_E5_vl3.wav",
+"80": "Electrophones/TX81Z/FM%20Piano/FMPiano_G%235_vl3.wav",
+"84": "Electrophones/TX81Z/FM%20Piano/FMPiano_C6_vl3.wav",
+"88": "Electrophones/TX81Z/FM%20Piano/FMPiano_E6_vl3.wav",
+"92": "Electrophones/TX81Z/FM%20Piano/FMPiano_G%236_vl3.wav",
+"96": "Electrophones/TX81Z/FM%20Piano/FMPiano_C7_vl3.wav"
+},
+"shift": 0
+},
+"tx81z_piano": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 12.9,
+"notes": {
+"12": "Electrophones/TX81Z/Piano%201/Piano%201_C0_vl3.wav",
+"16": "Electrophones/TX81Z/Piano%201/Piano%201_E0_vl3.wav",
+"20": "Electrophones/TX81Z/Piano%201/Piano%201_G%230_vl3.wav",
+"24": "Electrophones/TX81Z/Piano%201/Piano%201_C1_vl3.wav",
+"28": "Electrophones/TX81Z/Piano%201/Piano%201_E1_vl3.wav",
+"32": "Electrophones/TX81Z/Piano%201/Piano%201_G%231_vl3.wav",
+"36": "Electrophones/TX81Z/Piano%201/Piano%201_C2_vl3.wav",
+"40": "Electrophones/TX81Z/Piano%201/Piano%201_E2_vl3.wav",
+"44": "Electrophones/TX81Z/Piano%201/Piano%201_G%232_vl3.wav",
+"48": "Electrophones/TX81Z/Piano%201/Piano%201_C3_vl3.wav",
+"52": "Electrophones/TX81Z/Piano%201/Piano%201_E3_vl3.wav",
+"56": "Electrophones/TX81Z/Piano%201/Piano%201_G%233_vl3.wav",
+"60": "Electrophones/TX81Z/Piano%201/Piano%201_C4_vl3.wav",
+"64": "Electrophones/TX81Z/Piano%201/Piano%201_E4_vl3.wav",
+"68": "Electrophones/TX81Z/Piano%201/Piano%201_G%234_vl3.wav",
+"72": "Electrophones/TX81Z/Piano%201/Piano%201_C5_vl3.wav",
+"76": "Electrophones/TX81Z/Piano%201/Piano%201_E5_vl3.wav",
+"80": "Electrophones/TX81Z/Piano%201/Piano%201_G%235_vl3.wav",
+"84": "Electrophones/TX81Z/Piano%201/Piano%201_C6_vl3.wav",
+"88": "Electrophones/TX81Z/Piano%201/Piano%201_E6_vl3.wav",
+"92": "Electrophones/TX81Z/Piano%201/Piano%201_G%236_vl3.wav",
+"96": "Electrophones/TX81Z/Piano%201/Piano%201_C7_vl3.wav"
+},
+"shift": 12
+},
+"vibraphone_bowed": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 14.7,
+"notes": {
+"45": "Idiophones/Struck%20Idiophones/Vibraphone/Bowed/Vibes_bowed_A2_rr1_Main.wav",
+"52": "Idiophones/Struck%20Idiophones/Vibraphone/Bowed/Vibes_bowed_E3_rr1_Main.wav",
+"55": "Idiophones/Struck%20Idiophones/Vibraphone/Bowed/Vibes_bowed_G3_rr1_Main.wav",
+"62": "Idiophones/Struck%20Idiophones/Vibraphone/Bowed/Vibes_bowed_D4_rr1_Main.wav",
+"69": "Idiophones/Struck%20Idiophones/Vibraphone/Bowed/Vibes_bowed_A4_rr1_Main.wav",
+"76": "Idiophones/Struck%20Idiophones/Vibraphone/Bowed/Vibes_bowed_E5_rr1_Main.wav"
+},
+"shift": 12
+},
+"vibraphone_hard": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 18.5,
+"notes": {
+"41": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_F2_v3_rr1_Main.wav",
+"45": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_A2_v3_rr1_Main.wav",
+"48": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_C3_v3_rr1_Main.wav",
+"52": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_E3_v3_rr1_Main.wav",
+"55": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_G3_v3_rr1_Main.wav",
+"59": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_B3_v3_rr1_Main.wav",
+"62": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_D4_v3_rr1_Main.wav",
+"65": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_F4_v3_rr1_Main.wav",
+"69": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_A4_v3_rr1_Main.wav",
+"72": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_C5_v3_rr1_Main.wav",
+"76": "Idiophones/Struck%20Idiophones/Vibraphone/Hard%20Mallets/Vibes_hard_E5_v3_rr1_Main.wav"
+},
+"shift": 12
+},
+"vibraphone_soft": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 23.4,
+"notes": {
+"41": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_F2_v2_rr1_Main.wav",
+"45": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_A2_v2_rr1_Main.wav",
+"48": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_C3_v2_rr1_Main.wav",
+"52": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_E3_v2_rr1_Main.wav",
+"55": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_G3_v2_rr1_Main.wav",
+"59": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_B3_v2_rr1_Main.wav",
+"62": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_D4_v2_rr1_Main.wav",
+"65": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_F4_v2_rr1_Main.wav",
+"69": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_A4_v2_rr1_Main.wav",
+"72": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_C5_v2_rr1_Main.wav",
+"76": "Idiophones/Struck%20Idiophones/Vibraphone/Soft%20Mallets/Vibes_soft_E5_v2_rr1_Main.wav"
+},
+"shift": 12
+},
+"vibraslap": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Vibraslap/Legacy/vibraslap_rr1.wav",
+"Idiophones/Struck%20Idiophones/Vibraslap/Legacy/vibraslap_rr2.wav",
+"Idiophones/Struck%20Idiophones/Vibraslap/Legacy/vibraslap_rr3.wav",
+"Idiophones/Struck%20Idiophones/Vibraslap/Legacy/vibraslap_rr4.wav"
+],
+"mb": 2.9
+},
+"vsco_bassoon": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 16.3,
+"notes": {
+"22": "Woodwinds/Bassoon/sus/PSBassoon_A%230_v2_1.wav",
+"25": "Woodwinds/Bassoon/sus/PSBassoon_C%231_v2_1.wav",
+"29": "Woodwinds/Bassoon/sus/PSBassoon_F1_v2_1.wav",
+"33": "Woodwinds/Bassoon/sus/PSBassoon_A1_v2_1.wav",
+"34": "Woodwinds/Bassoon/sus/PSBassoon_A%231_v2_1.wav",
+"36": "Woodwinds/Bassoon/sus/PSBassoon_C2_v2_1.wav",
+"43": "Woodwinds/Bassoon/sus/PSBassoon_G2_v2_1.wav",
+"48": "Woodwinds/Bassoon/sus/PSBassoon_C3_v2_1.wav",
+"51": "Woodwinds/Bassoon/sus/PSBassoon_D%233_v2_1.wav",
+"56": "Woodwinds/Bassoon/sus/PSBassoon_G%233_v2_1.wav",
+"57": "Woodwinds/Bassoon/sus/PSBassoon_A3_v2_1.wav",
+"60": "Woodwinds/Bassoon/sus/PSBassoon_C4_v2_1.wav",
+"63": "Woodwinds/Bassoon/sus/PSBassoon_D%234_v2_1.wav"
+},
+"shift": 12
+},
+"vsco_bassoon_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 1.6,
+"notes": {
+"22": "Woodwinds/Bassoon/stac/PSBassoon_A%230_v2_rr1.wav",
+"26": "Woodwinds/Bassoon/stac/PSBassoon_D1_v2_rr1.wav",
+"29": "Woodwinds/Bassoon/stac/PSBassoon_F1_v2_rr1.wav",
+"33": "Woodwinds/Bassoon/stac/PSBassoon_A1_v2_rr1.wav",
+"36": "Woodwinds/Bassoon/stac/PSBassoon_C2_v2_rr1.wav",
+"39": "Woodwinds/Bassoon/stac/PSBassoon_D%232_v2_rr1.wav",
+"40": "Woodwinds/Bassoon/stac/PSBassoon_E2_v2_rr1.wav",
+"43": "Woodwinds/Bassoon/stac/PSBassoon_G2_v2_rr1.wav",
+"45": "Woodwinds/Bassoon/stac/PSBassoon_A2_v2_rr1.wav",
+"48": "Woodwinds/Bassoon/stac/PSBassoon_C3_v2_rr1.wav",
+"52": "Woodwinds/Bassoon/stac/PSBassoon_E3_v2_rr1.wav",
+"55": "Woodwinds/Bassoon/stac/PSBassoon_G3_v2_rr1.wav",
+"60": "Woodwinds/Bassoon/stac/PSBassoon_C4_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_cellos_arco": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 28.2,
+"notes": {
+"24": "Strings/Cello%20Section/susvib/susvib_C1_v1_1.wav",
+"28": "Strings/Cello%20Section/susvib/susvib_E1_v1_1.wav",
+"31": "Strings/Cello%20Section/susvib/susvib_G1_v1_1.wav",
+"35": "Strings/Cello%20Section/susvib/susvib_B1_v1_1.wav",
+"38": "Strings/Cello%20Section/susvib/susvib_D2_v1_1.wav",
+"41": "Strings/Cello%20Section/susvib/susvib_F2_v1_1.wav",
+"45": "Strings/Cello%20Section/susvib/susvib_A2_v1_1.wav",
+"48": "Strings/Cello%20Section/susvib/susvib_C3_v1_1.wav",
+"52": "Strings/Cello%20Section/susvib/susvib_E3_v1_1.wav",
+"55": "Strings/Cello%20Section/susvib/susvib_G3_v1_1.wav",
+"59": "Strings/Cello%20Section/susvib/susvib_B3_v1_1.wav",
+"62": "Strings/Cello%20Section/susvib/susvib_D4_v1_1.wav",
+"65": "Strings/Cello%20Section/susvib/susvib_F4_v1_1.wav"
+},
+"shift": 12
+},
+"vsco_cellos_pizz": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 8.6,
+"notes": {
+"24": "Strings/Cello%20Section/pizzT/pizzT_C1_v2_RR1.wav",
+"28": "Strings/Cello%20Section/pizzT/pizzT_E1_v2_RR1.wav",
+"31": "Strings/Cello%20Section/pizzT/pizzT_G1_v2_RR1.wav",
+"35": "Strings/Cello%20Section/pizzT/pizzT_B1_v2_RR1.wav",
+"38": "Strings/Cello%20Section/pizzT/pizzT_D2_v2_RR1.wav",
+"41": "Strings/Cello%20Section/pizzT/pizzT_F2_v2_RR1.wav",
+"45": "Strings/Cello%20Section/pizzT/pizzT_A2_v2_RR1.wav",
+"48": "Strings/Cello%20Section/pizzT/pizzT_C3_v2_RR1.wav",
+"52": "Strings/Cello%20Section/pizzT/pizzT_E3_v2_RR1.wav",
+"55": "Strings/Cello%20Section/pizzT/pizzT_G3_v2_RR1.wav",
+"59": "Strings/Cello%20Section/pizzT/pizzT_B3_v2_RR1.wav",
+"62": "Strings/Cello%20Section/pizzT/pizzT_D4_v2_RR1.wav",
+"65": "Strings/Cello%20Section/pizzT/pizzT_F4_v2_RR1.wav"
+},
+"shift": 12
+},
+"vsco_cellos_spic": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 7.1,
+"notes": {
+"24": "Strings/Cello%20Section/spic/spic_C1_v2_RR1.wav",
+"28": "Strings/Cello%20Section/spic/spic_E1_v2_RR1.wav",
+"31": "Strings/Cello%20Section/spic/spic_G1_v2_RR1.wav",
+"35": "Strings/Cello%20Section/spic/spic_B1_v2_RR1.wav",
+"38": "Strings/Cello%20Section/spic/spic_D2_v2_RR1.wav",
+"41": "Strings/Cello%20Section/spic/spic_F2_v2_RR1.wav",
+"45": "Strings/Cello%20Section/spic/spic_A2_v2_RR1.wav",
+"48": "Strings/Cello%20Section/spic/spic_C3_v2_RR1.wav",
+"52": "Strings/Cello%20Section/spic/spic_E3_v2_RR1.wav",
+"55": "Strings/Cello%20Section/spic/spic_G3_v2_RR1.wav",
+"59": "Strings/Cello%20Section/spic/spic_B3_v2_RR1.wav",
+"62": "Strings/Cello%20Section/spic/spic_D4_v2_RR1.wav",
+"65": "Strings/Cello%20Section/spic/spic_F4_v2_RR1.wav"
+},
+"shift": 12
+},
+"vsco_cellos_trem": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 29.2,
+"notes": {
+"24": "Strings/Cello%20Section/trem/trem_C1_v2_1.wav",
+"28": "Strings/Cello%20Section/trem/trem_E1_v2_1.wav",
+"31": "Strings/Cello%20Section/trem/trem_G1_v2_1.wav",
+"35": "Strings/Cello%20Section/trem/trem_B1_v1_1.wav",
+"38": "Strings/Cello%20Section/trem/trem_D2_v2_1.wav",
+"41": "Strings/Cello%20Section/trem/trem_F2_v2_1.wav",
+"45": "Strings/Cello%20Section/trem/trem_A2_v2_1.wav",
+"47": "Strings/Cello%20Section/trem/trem_B2_v2_1.wav",
+"48": "Strings/Cello%20Section/trem/trem_C3_v2_1.wav",
+"52": "Strings/Cello%20Section/trem/trem_E3_v2_1.wav",
+"55": "Strings/Cello%20Section/trem/trem_G3_v2_1.wav",
+"59": "Strings/Cello%20Section/trem/trem_B3_v2_1.wav",
+"62": "Strings/Cello%20Section/trem/trem_D4_v2_1.wav",
+"65": "Strings/Cello%20Section/trem/trem_F4_v2_1.wav"
+},
+"shift": 12
+},
+"vsco_clarinet": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 19.3,
+"notes": {
+"38": "Woodwinds/Clarinet/susLong/DCClar_susLong_D2_v2_rr1_sum.wav",
+"41": "Woodwinds/Clarinet/susLong/DCClar_susLong_F2_v2_rr1_sum.wav",
+"46": "Woodwinds/Clarinet/susLong/DCClar_susLong_A%232_v2_rr1_sum.wav",
+"50": "Woodwinds/Clarinet/susLong/DCClar_susLong_D3_v2_rr1_sum.wav",
+"53": "Woodwinds/Clarinet/susLong/DCClar_susLong_F3_v2_rr1_sum.wav",
+"58": "Woodwinds/Clarinet/susLong/DCClar_susLong_A%233_v2_rr1_sum.wav",
+"62": "Woodwinds/Clarinet/susLong/DCClar_susLong_D4_v2_rr1_sum.wav",
+"65": "Woodwinds/Clarinet/susLong/DCClar_susLong_F4_v2_rr1_sum.wav",
+"70": "Woodwinds/Clarinet/susLong/DCClar_susLong_A%234_v2_rr1_sum.wav",
+"74": "Woodwinds/Clarinet/susLong/DCClar_susLong_D5_v2_rr1_sum.wav",
+"78": "Woodwinds/Clarinet/susLong/DCClar_susLong_F%235_v2_rr1_sum.wav"
+},
+"shift": 12
+},
+"vsco_clarinet_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 1.1,
+"notes": {
+"38": "Woodwinds/Clarinet/stac/DCClar_stac_D2_v2_rr1_sum.wav",
+"41": "Woodwinds/Clarinet/stac/DCClar_stac_F2_v2_rr1_sum.wav",
+"46": "Woodwinds/Clarinet/stac/DCClar_stac_A%232_v2_rr1_sum.wav",
+"50": "Woodwinds/Clarinet/stac/DCClar_stac_D3_v2_rr1_sum.wav",
+"53": "Woodwinds/Clarinet/stac/DCClar_stac_F3_v2_rr1_sum.wav",
+"58": "Woodwinds/Clarinet/stac/DCClar_stac_A%233_v2_rr1_sum.wav",
+"62": "Woodwinds/Clarinet/stac/DCClar_stac_D4_v2_rr1_sum.wav",
+"65": "Woodwinds/Clarinet/stac/DCClar_stac_F4_v2_rr1_sum.wav",
+"70": "Woodwinds/Clarinet/stac/DCClar_stac_A%234_v2_rr1_sum.wav",
+"74": "Woodwinds/Clarinet/stac/DCClar_stac_D5_v2_rr1_sum.wav",
+"77": "Woodwinds/Clarinet/stac/DCClar_stac_F5_v2_rr1_sum.wav"
+},
+"shift": 12
+},
+"vsco_contrabass_arco": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 20.9,
+"notes": {
+"18": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_F%230_v1_rr1.wav",
+"19": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_G0_v1_rr1.wav",
+"22": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_A%230_v1_rr1.wav",
+"24": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_C1_v1_rr1.wav",
+"26": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_D1_v1_rr1.wav",
+"28": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_E1_v1_rr1.wav",
+"30": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_F%231_v1_rr1.wav",
+"32": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_G%231_v1_rr1.wav",
+"33": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_A1_v1_rr1.wav",
+"37": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_C%232_v1_rr1.wav",
+"40": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_E2_v1_rr1.wav",
+"44": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_G%232_v1_rr1.wav",
+"47": "Strings/Solo%20Contrabass/SusVib/BKCtbss_SusVib_B2_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_contrabass_pizz": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 6.2,
+"notes": {
+"16": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_E0_v1_rr1.wav",
+"18": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_F%230_v1_rr1.wav",
+"19": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_G0_v1_rr1.wav",
+"22": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_A%230_v1_rr1.wav",
+"24": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_C1_v1_rr1.wav",
+"26": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_D1_v1_rr1.wav",
+"28": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_E1_v1_rr1.wav",
+"30": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_F%231_v1_rr1.wav",
+"32": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_G%231_v1_rr1.wav",
+"33": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_A1_v1_rr1.wav",
+"37": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_C%232_v1_rr1.wav",
+"40": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_E2_v1_rr1.wav",
+"44": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_G%232_v1_rr1.wav",
+"47": "Strings/Solo%20Contrabass/Pizz/BKCtbss_Pizz_B2_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_contrabass_spic": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 3.8,
+"notes": {
+"16": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_E0_v1_rr1.wav",
+"18": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_F%230_v1_rr1.wav",
+"19": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_G0_v1_rr1.wav",
+"22": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_A%230_v1_rr1.wav",
+"24": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_C1_v1_rr1.wav",
+"26": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_D1_v1_rr1.wav",
+"28": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_E1_v1_rr1.wav",
+"30": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_F%231_v1_rr1.wav",
+"32": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_G%231_v1_rr1.wav",
+"33": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_A1_v1_rr1.wav",
+"37": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_C%232_v1_rr1.wav",
+"40": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_E2_v1_rr1.wav",
+"44": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_G%232_v1_rr1.wav",
+"47": "Strings/Solo%20Contrabass/Spic/BKCtbss_Spic_B2_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_contrabass_straight": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 24.1,
+"notes": {
+"16": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_E0_v1_rr1.wav",
+"18": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_F%230_v1_rr1.wav",
+"19": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_G0_v1_rr1.wav",
+"22": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_A%230_v1_rr1.wav",
+"24": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_C1_v1_rr1.wav",
+"26": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_D1_v1_rr1.wav",
+"28": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_E1_v1_rr1.wav",
+"30": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_F%231_v1_rr1.wav",
+"32": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_G%231_v1_rr1.wav",
+"33": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_A1_v1_rr1.wav",
+"37": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_C%232_v1_rr1.wav",
+"40": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_E2_v1_rr1.wav",
+"44": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_G%232_v1_rr1.wav",
+"47": "Strings/Solo%20Contrabass/SusNV/BKCtbss_SusNV_B2_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_contrabass_trem": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 10.2,
+"notes": {
+"16": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_E0_v2_rr1.wav",
+"19": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_G0_v2_rr1.wav",
+"24": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_C1_v2_rr1.wav",
+"28": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_E1_v2_rr1.wav",
+"32": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_G%231_v2_rr1.wav",
+"40": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_E2_v2_rr1.wav",
+"44": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_G%232_v2_rr1.wav",
+"47": "Strings/Solo%20Contrabass/Trem/BKCtbss_Trem_B2_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_flute": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 18.4,
+"notes": {
+"48": "Woodwinds/Flute/susvib/LDFlute_susvib_C3_v1_1.wav",
+"52": "Woodwinds/Flute/susvib/LDFlute_susvib_E3_v1_1.wav",
+"57": "Woodwinds/Flute/susvib/LDFlute_susvib_A3_v1_1.wav",
+"60": "Woodwinds/Flute/susvib/LDFlute_susvib_C4_v1_1.wav",
+"64": "Woodwinds/Flute/susvib/LDFlute_susvib_E4_v1_1.wav",
+"69": "Woodwinds/Flute/susvib/LDFlute_susvib_A4_v1_1.wav",
+"72": "Woodwinds/Flute/susvib/LDFlute_susvib_C5_v1_1.wav",
+"76": "Woodwinds/Flute/susvib/LDFlute_susvib_E5_v1_1.wav",
+"81": "Woodwinds/Flute/susvib/LDFlute_susvib_A5_v1_1.wav",
+"84": "Woodwinds/Flute/susvib/LDFlute_susvib_C6_v1_1.wav"
+},
+"shift": 12
+},
+"vsco_flute_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 1.6,
+"notes": {
+"57": "Woodwinds/Flute/stac/LDFlute_stac_A3_v2_rr1.wav",
+"60": "Woodwinds/Flute/stac/LDFlute_stac_C4_v2_rr1.wav",
+"64": "Woodwinds/Flute/stac/LDFlute_stac_E4_v2_rr1.wav",
+"69": "Woodwinds/Flute/stac/LDFlute_stac_A4_v2_rr1.wav",
+"72": "Woodwinds/Flute/stac/LDFlute_stac_C5_v2_rr1.wav",
+"76": "Woodwinds/Flute/stac/LDFlute_stac_E5_v2_rr1.wav",
+"81": "Woodwinds/Flute/stac/LDFlute_stac_A5_v2_rr1.wav",
+"84": "Woodwinds/Flute/stac/LDFlute_stac_C6_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_flute_straight": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 24.8,
+"notes": {
+"48": "Woodwinds/Flute/susNV/LDFlute_susNV_C3_v1_1.wav",
+"52": "Woodwinds/Flute/susNV/LDFlute_susNV_E3_v1_1.wav",
+"57": "Woodwinds/Flute/susNV/LDFlute_susNV_A3_v1_1.wav",
+"60": "Woodwinds/Flute/susNV/LDFlute_susNV_C4_v1_1.wav",
+"64": "Woodwinds/Flute/susNV/LDFlute_susNV_E4_v1_1.wav",
+"69": "Woodwinds/Flute/susNV/LDFlute_susNV_A4_v1_1.wav",
+"72": "Woodwinds/Flute/susNV/LDFlute_susNV_C5_v2_1.wav",
+"76": "Woodwinds/Flute/susNV/LDFlute_susNV_E5_v2_1.wav",
+"81": "Woodwinds/Flute/susNV/LDFlute_susNV_A5_v1_1.wav",
+"84": "Woodwinds/Flute/susNV/LDFlute_susNV_C6_v1_1.wav"
+},
+"shift": 12
+},
+"vsco_glockenspiel": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 6.1,
+"notes": {
+"67": "Percussion/Glock/glock_medium_G4.wav",
+"72": "Percussion/Glock/glock_medium_C5.wav",
+"79": "Percussion/Glock/glock_medium_G5.wav",
+"84": "Percussion/Glock/glock_medium_C6.wav",
+"91": "Percussion/Glock/glock_medium_G6.wav",
+"96": "Percussion/Glock/glock_medium_C7.wav"
+},
+"shift": 12
+},
+"vsco_harp": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 33.7,
+"notes": {
+"101": "Strings/Harp/KSHarp_F7_f.wav",
+"28": "Strings/Harp/KSHarp_E1_f.wav",
+"31": "Strings/Harp/KSHarp_G1_mp.wav",
+"35": "Strings/Harp/KSHarp_B1_mf.wav",
+"38": "Strings/Harp/KSHarp_D2_mf.wav",
+"41": "Strings/Harp/KSHarp_F2_mf.wav",
+"45": "Strings/Harp/KSHarp_A2_mf.wav",
+"48": "Strings/Harp/KSHarp_C3_mf.wav",
+"52": "Strings/Harp/KSHarp_E3_mf.wav",
+"55": "Strings/Harp/KSHarp_G3_mf.wav",
+"59": "Strings/Harp/KSHarp_B3_mf.wav",
+"62": "Strings/Harp/KSHarp_D4_mf.wav",
+"65": "Strings/Harp/KSHarp_F4_mf.wav",
+"69": "Strings/Harp/KSHarp_A4_mf.wav",
+"72": "Strings/Harp/KSHarp_C5_mf.wav",
+"76": "Strings/Harp/KSHarp_E5_mf.wav",
+"79": "Strings/Harp/KSHarp_G5_mf.wav",
+"83": "Strings/Harp/KSHarp_B5_mf.wav",
+"86": "Strings/Harp/KSHarp_D6_mf.wav",
+"89": "Strings/Harp/KSHarp_F6_mf.wav",
+"93": "Strings/Harp/KSHarp_A6_mf.wav",
+"95": "Strings/Harp/KSHarp_B6_mf.wav",
+"98": "Strings/Harp/KSHarp_D7_f.wav"
+},
+"shift": 0
+},
+"vsco_horn": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 18.7,
+"notes": {
+"21": "Brass/F%20Horn/sus/MOHorn_sus_A0_v1_1.wav",
+"24": "Brass/F%20Horn/sus/MOHorn_sus_C1_v2_1.wav",
+"27": "Brass/F%20Horn/sus/MOHorn_sus_D%231_v2_1.wav",
+"31": "Brass/F%20Horn/sus/MOHorn_sus_G1_v2_1.wav",
+"34": "Brass/F%20Horn/sus/MOHorn_sus_A%231_v2_1.wav",
+"38": "Brass/F%20Horn/sus/MOHorn_sus_D2_v2_1.wav",
+"41": "Brass/F%20Horn/sus/MOHorn_sus_F2_v2_1.wav",
+"45": "Brass/F%20Horn/sus/MOHorn_sus_A2_v2_1.wav",
+"48": "Brass/F%20Horn/sus/MOHorn_sus_C3_v2_1.wav",
+"62": "Brass/F%20Horn/sus/MOHorn_sus_D4_v1_1.wav",
+"65": "Brass/F%20Horn/sus/MOHorn_sus_F4_v1_1.wav"
+},
+"shift": 12
+},
+"vsco_horn_muted": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 7.2,
+"notes": {
+"34": "Brass/F%20Horn/mute/MOHorn_mute_A%231_v2_1.wav",
+"39": "Brass/F%20Horn/mute/MOHorn_mute_D%232_v2_1.wav",
+"41": "Brass/F%20Horn/mute/MOHorn_mute_F2_v2_1.wav",
+"48": "Brass/F%20Horn/mute/MOHorn_mute_C3_v2_1.wav",
+"51": "Brass/F%20Horn/mute/MOHorn_mute_D%233_v2_1.wav",
+"56": "Brass/F%20Horn/mute/MOHorn_mute_G%233_v2_1.wav",
+"58": "Brass/F%20Horn/mute/MOHorn_mute_A%233_v2_1.wav",
+"62": "Brass/F%20Horn/mute/MOHorn_mute_D4_v1_1.wav",
+"65": "Brass/F%20Horn/mute/MOHorn_mute_F4_v1_1.wav"
+},
+"shift": 12
+},
+"vsco_horn_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 2.2,
+"notes": {
+"21": "Brass/F%20Horn/stac/MOHorn_stac_A0_v1_rr1.wav",
+"24": "Brass/F%20Horn/stac/MOHorn_stac_C1_v2_rr1.wav",
+"27": "Brass/F%20Horn/stac/MOHorn_stac_D%231_v2_rr1.wav",
+"31": "Brass/F%20Horn/stac/MOHorn_stac_G1_v2_rr1.wav",
+"34": "Brass/F%20Horn/stac/MOHorn_stac_A%231_v2_rr1.wav",
+"38": "Brass/F%20Horn/stac/MOHorn_stac_D2_v2_rr1.wav",
+"41": "Brass/F%20Horn/stac/MOHorn_stac_F2_v2_rr1.wav",
+"45": "Brass/F%20Horn/stac/MOHorn_stac_A2_v2_rr1.wav",
+"48": "Brass/F%20Horn/stac/MOHorn_stac_C3_v2_rr1.wav",
+"62": "Brass/F%20Horn/stac/MOHorn_stac_D4_v2_rr1.wav",
+"65": "Brass/F%20Horn/stac/MOHorn_stac_F4_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_marimba": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 11.2,
+"notes": {
+"29": "Percussion/Marimba/Marimba_hit_Outrigger_F1_loud_01.wav",
+"36": "Percussion/Marimba/Marimba_hit_Outrigger_C2_loud_01.wav",
+"43": "Percussion/Marimba/Marimba_hit_Outrigger_G2_loud_01.wav",
+"47": "Percussion/Marimba/Marimba_hit_Outrigger_B2_loud_01.wav",
+"53": "Percussion/Marimba/Marimba_hit_Outrigger_F3_loud_01.wav",
+"60": "Percussion/Marimba/Marimba_hit_Outrigger_C4_loud_01.wav",
+"67": "Percussion/Marimba/Marimba_hit_Outrigger_G4_loud_01.wav",
+"71": "Percussion/Marimba/Marimba_hit_Outrigger_B4_loud_01.wav",
+"77": "Percussion/Marimba/Marimba_hit_Outrigger_F5_loud_01.wav",
+"84": "Percussion/Marimba/Marimba_hit_Outrigger_C6_loud_01.wav"
+},
+"shift": 12
+},
+"vsco_oboe": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 11.8,
+"notes": {
+"46": "Woodwinds/Oboe/Vib/Oboe_Vib_A%232_v1_Main.wav",
+"50": "Woodwinds/Oboe/Vib/Oboe_Vib_D3_v1_Main.wav",
+"53": "Woodwinds/Oboe/Vib/Oboe_Vib_F3_v1_Main.wav",
+"58": "Woodwinds/Oboe/Vib/Oboe_Vib_A%233_v1_Main.wav",
+"62": "Woodwinds/Oboe/Vib/Oboe_Vib_D4_v1_Main.wav",
+"65": "Woodwinds/Oboe/Vib/Oboe_Vib_F4_v1_Main.wav",
+"70": "Woodwinds/Oboe/Vib/Oboe_Vib_A%234_v1_Main.wav",
+"74": "Woodwinds/Oboe/Vib/Oboe_Vib_D5_v1_Main.wav",
+"77": "Woodwinds/Oboe/Vib/Oboe_Vib_F5_v1_Main.wav"
+},
+"shift": 12
+},
+"vsco_oboe_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 1.2,
+"notes": {
+"46": "Woodwinds/Oboe/Stacc/Oboe_Stacc_A%232_v2_rr1_Main.wav",
+"50": "Woodwinds/Oboe/Stacc/Oboe_Stacc_D3_v2_rr1_Main.wav",
+"53": "Woodwinds/Oboe/Stacc/Oboe_Stacc_F3_v2_rr1_Main.wav",
+"58": "Woodwinds/Oboe/Stacc/Oboe_Stacc_A%233_v2_rr1_Main.wav",
+"62": "Woodwinds/Oboe/Stacc/Oboe_Stacc_D4_v2_rr1_Main.wav",
+"65": "Woodwinds/Oboe/Stacc/Oboe_Stacc_F4_v2_rr1_Main.wav",
+"70": "Woodwinds/Oboe/Stacc/Oboe_Stacc_A%234_v2_rr1_Main.wav",
+"74": "Woodwinds/Oboe/Stacc/Oboe_Stacc_D5_v1_rr1_Main.wav",
+"77": "Woodwinds/Oboe/Stacc/Oboe_Stacc_F5_v2_rr1_Main.wav"
+},
+"shift": 12
+},
+"vsco_oldtrombone": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 40.9,
+"notes": {
+"29": "Brass/OldTrombone/Sustain/Trombone_Sustain_F1_v2_1.wav",
+"31": "Brass/OldTrombone/Sustain/Trombone_Sustain_G1_v2_1.wav",
+"33": "Brass/OldTrombone/Sustain/Trombone_Sustain_A1_v2_1.wav",
+"34": "Brass/OldTrombone/Sustain/Trombone_Sustain_A%231_v2_1.wav",
+"36": "Brass/OldTrombone/Sustain/Trombone_Sustain_C2_v2_1.wav",
+"38": "Brass/OldTrombone/Sustain/Trombone_Sustain_D2_v2_1.wav",
+"39": "Brass/OldTrombone/Sustain/Trombone_Sustain_D%232_v2_1.wav",
+"41": "Brass/OldTrombone/Sustain/Trombone_Sustain_F2_v2_1.wav",
+"43": "Brass/OldTrombone/Sustain/Trombone_Sustain_G2_v2_1.wav",
+"45": "Brass/OldTrombone/Sustain/Trombone_Sustain_A2_v2_1.wav",
+"46": "Brass/OldTrombone/Sustain/Trombone_Sustain_A%232_v2_1.wav",
+"48": "Brass/OldTrombone/Sustain/Trombone_Sustain_C3_v2_1.wav",
+"50": "Brass/OldTrombone/Sustain/Trombone_Sustain_D3_v2_1.wav",
+"51": "Brass/OldTrombone/Sustain/Trombone_Sustain_D%233_v2_1.wav",
+"53": "Brass/OldTrombone/Sustain/Trombone_Sustain_F3_v2_1.wav",
+"55": "Brass/OldTrombone/Sustain/Trombone_Sustain_G3_v2_1.wav"
+},
+"shift": 12
+},
+"vsco_oldtrombone_buzz": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 7.7,
+"notes": {
+"29": "Brass/OldTrombone/Buzz/Trombone_Buzz_F1_v2_1.wav",
+"31": "Brass/OldTrombone/Buzz/Trombone_Buzz_G1_v2_1.wav",
+"33": "Brass/OldTrombone/Buzz/Trombone_Buzz_A1_v2_1.wav",
+"34": "Brass/OldTrombone/Buzz/Trombone_Buzz_A%231_v2_1.wav",
+"36": "Brass/OldTrombone/Buzz/Trombone_Buzz_C2_v2_1.wav",
+"38": "Brass/OldTrombone/Buzz/Trombone_Buzz_D2_v2_1.wav",
+"39": "Brass/OldTrombone/Buzz/Trombone_Buzz_D%232_v2_1.wav",
+"41": "Brass/OldTrombone/Buzz/Trombone_Buzz_F2_v2_1.wav",
+"43": "Brass/OldTrombone/Buzz/Trombone_Buzz_G2_v2_1.wav",
+"45": "Brass/OldTrombone/Buzz/Trombone_Buzz_A2_v2_1.wav",
+"46": "Brass/OldTrombone/Buzz/Trombone_Buzz_A%232_v2_1.wav",
+"48": "Brass/OldTrombone/Buzz/Trombone_Buzz_C3_v2_1.wav",
+"50": "Brass/OldTrombone/Buzz/Trombone_Buzz_D3_v2_1.wav"
+},
+"shift": 12
+},
+"vsco_piccolo": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 11.3,
+"notes": {
+"67": "Woodwinds/Piccolo/Sus/piccolo_G4_sustain1.wav",
+"72": "Woodwinds/Piccolo/Sus/piccolo_C5_sustain1.wav",
+"79": "Woodwinds/Piccolo/Sus/piccolo_G5_sustain1.wav",
+"84": "Woodwinds/Piccolo/Sus/piccolo_C6_sustain1.wav",
+"91": "Woodwinds/Piccolo/Sus/piccolo_G6_sustain1.wav"
+},
+"shift": 12
+},
+"vsco_trombone": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 16.5,
+"notes": {
+"22": "Brass/Tenor%20Trombone/sus/tenortbn_sus_A%230_v2_1.wav",
+"25": "Brass/Tenor%20Trombone/sus/tenortbn_sus_C%231_v2_1.wav",
+"27": "Brass/Tenor%20Trombone/sus/tenortbn_sus_D%231_v2_1.wav",
+"29": "Brass/Tenor%20Trombone/sus/tenortbn_sus_F1_v2_1.wav",
+"34": "Brass/Tenor%20Trombone/sus/tenortbn_sus_A%231_v2_1.wav",
+"38": "Brass/Tenor%20Trombone/sus/tenortbn_sus_D2_v2_1.wav",
+"41": "Brass/Tenor%20Trombone/sus/tenortbn_sus_F2_v2_1.wav",
+"48": "Brass/Tenor%20Trombone/sus/tenortbn_sus_C3_v2_1.wav",
+"49": "Brass/Tenor%20Trombone/sus/tenortbn_sus_C%233_v2_1.wav",
+"51": "Brass/Tenor%20Trombone/sus/tenortbn_sus_D%233_v2_1.wav",
+"53": "Brass/Tenor%20Trombone/sus/tenortbn_sus_F3_v2_1.wav"
+},
+"shift": 12
+},
+"vsco_trombone_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 1.4,
+"notes": {
+"22": "Brass/Tenor%20Trombone/stac/tenortbn_stac_A%230_v2_rr1.wav",
+"29": "Brass/Tenor%20Trombone/stac/tenortbn_stac_F1_v2_rr1.wav",
+"34": "Brass/Tenor%20Trombone/stac/tenortbn_stac_A%231_v2_rr1.wav",
+"41": "Brass/Tenor%20Trombone/stac/tenortbn_stac_F2_v2_rr1.wav",
+"46": "Brass/Tenor%20Trombone/stac/tenortbn_stac_A%232_v2_rr1.wav",
+"50": "Brass/Tenor%20Trombone/stac/tenortbn_stac_D3_v2_rr1.wav",
+"53": "Brass/Tenor%20Trombone/stac/tenortbn_stac_F3_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_trombone_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 10.5,
+"notes": {
+"29": "Brass/Tenor%20Trombone/vib/tenortbn_vib_F1_v1_1.wav",
+"32": "Brass/Tenor%20Trombone/vib/tenortbn_vib_G%231_v1_1.wav",
+"34": "Brass/Tenor%20Trombone/vib/tenortbn_vib_A%231_v1_1.wav",
+"36": "Brass/Tenor%20Trombone/vib/tenortbn_vib_C2_v1_1.wav",
+"39": "Brass/Tenor%20Trombone/vib/tenortbn_vib_D%232_v1_1.wav",
+"41": "Brass/Tenor%20Trombone/vib/tenortbn_vib_F2_v1_1.wav",
+"44": "Brass/Tenor%20Trombone/vib/tenortbn_vib_G%232_v1_1.wav",
+"46": "Brass/Tenor%20Trombone/vib/tenortbn_vib_A%232_v1_1.wav",
+"48": "Brass/Tenor%20Trombone/vib/tenortbn_vib_C3_v1_1.wav",
+"50": "Brass/Tenor%20Trombone/vib/tenortbn_vib_D3_v1_1.wav",
+"51": "Brass/Tenor%20Trombone/vib/tenortbn_vib_D%233_v1_1.wav"
+},
+"shift": 12
+},
+"vsco_trumpet": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 25.3,
+"notes": {
+"41": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_F2_v1_rr1.wav",
+"45": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_A2_v1_rr1.wav",
+"48": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_C3_v1_rr1.wav",
+"51": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_D%233_v1_rr1.wav",
+"55": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_G3_v1_rr1.wav",
+"58": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_A%233_v1_rr1.wav",
+"62": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_D4_v1_rr1.wav",
+"65": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_F4_v1_rr1.wav",
+"69": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_A4_v1_rr1.wav",
+"72": "Brass/Trumpet/sus/Sum_SHTrumpet_sus_C5_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_trumpet_harmon": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 9.3,
+"notes": {
+"46": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_A%232_v1_rr1.wav",
+"48": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_C3_v1_rr1.wav",
+"51": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_D%233_v1_rr1.wav",
+"56": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_G%233_v1_rr1.wav",
+"58": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_A%233_v1_rr1.wav",
+"62": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_D4_v1_rr1.wav",
+"65": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_F4_v1_rr1.wav",
+"69": "Brass/Trumpet/harmonM-sus/Sum_SHTrumpet_harmonM-sus_A4_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_trumpet_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 2.2,
+"notes": {
+"41": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_F2_v2_rr1.wav",
+"45": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_A2_v2_rr1.wav",
+"48": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_C3_v2_rr1.wav",
+"51": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_D%233_v2_rr1.wav",
+"53": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_F3_v2_rr1.wav",
+"55": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_G3_v2_rr1.wav",
+"58": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_A%233_v2_rr1.wav",
+"62": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_D4_v2_rr1.wav",
+"65": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_F4_v2_rr1.wav",
+"69": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_A4_v2_rr1.wav",
+"72": "Brass/Trumpet/stac/Sum_SHTrumpet_stac_C5_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_trumpet_straight": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 12.6,
+"notes": {
+"46": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_A%232_v1_rr1.wav",
+"48": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_C3_v1_rr1.wav",
+"50": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_D3_v1_rr1.wav",
+"55": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_G3_v1_rr1.wav",
+"58": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_A%233_v1_rr1.wav",
+"62": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_D4_v1_rr1.wav",
+"65": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_F4_v1_rr1.wav",
+"69": "Brass/Trumpet/straightM-sus/Sum_SHTrumpet_straightM-sus_A4_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_trumpet_vib": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 9.8,
+"notes": {
+"41": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F2_v2_rr1.wav",
+"45": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A2_v2_rr1.wav",
+"48": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_C3_v2_rr1.wav",
+"51": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_D%233_v2_rr1.wav",
+"53": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F3_v2_rr1.wav",
+"55": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_G3_v2_rr1.wav",
+"58": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A%233_v2_rr1.wav",
+"62": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_D4_v2_rr1.wav",
+"65": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_F4_v2_rr1.wav",
+"69": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_A4_v2_rr1.wav",
+"72": "Brass/Trumpet/susvib/Sum_SHTrumpet_susvib_C5_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_tuba": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 12.8,
+"notes": {
+"17": "Brass/Tuba/sus/Tuba3_sus_F0_v1_rr1_Mid.wav",
+"22": "Brass/Tuba/sus/Tuba3_sus_A%230_v2_rr1_Mid.wav",
+"27": "Brass/Tuba/sus/Tuba3_sus_D%231_v2_rr1_Mid.wav",
+"29": "Brass/Tuba/sus/Tuba3_sus_F1_v2_rr1_Mid.wav",
+"34": "Brass/Tuba/sus/Tuba3_sus_A%231_v2_rr1_Mid.wav",
+"38": "Brass/Tuba/sus/Tuba3_sus_D2_v2_rr1_Mid.wav",
+"41": "Brass/Tuba/sus/Tuba3_sus_F2_v2_rr1_Mid.wav",
+"46": "Brass/Tuba/sus/Tuba3_sus_A%232_v2_rr1_Mid.wav",
+"50": "Brass/Tuba/sus/Tuba3_sus_D3_v1_rr1_Mid.wav"
+},
+"shift": 12
+},
+"vsco_tuba_stac": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 1.3,
+"notes": {
+"22": "Brass/Tuba/stac/Tuba3_stac_A%230_v2_rr1_Sum.wav",
+"27": "Brass/Tuba/stac/Tuba3_stac_D%231_v2_rr1_Sum.wav",
+"29": "Brass/Tuba/stac/Tuba3_stac_F1_v2_rr1_Sum.wav",
+"34": "Brass/Tuba/stac/Tuba3_stac_A%231_v2_rr1_Sum.wav",
+"38": "Brass/Tuba/stac/Tuba3_stac_D2_v2_rr1_Sum.wav",
+"41": "Brass/Tuba/stac/Tuba3_stac_F2_v2_rr1_Sum.wav",
+"46": "Brass/Tuba/stac/Tuba3_stac_A%232_v2_rr1_Sum.wav",
+"50": "Brass/Tuba/stac/Tuba3_stac_D3_v2_rr1_Sum.wav"
+},
+"shift": 12
+},
+"vsco_upright": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 25.7,
+"notes": {
+"103": "Keys/Upright%20Nr1/UR1_G7_mf_RR1.wav",
+"24": "Keys/Upright%20Nr1/UR1_C1_f_RR1.wav",
+"31": "Keys/Upright%20Nr1/UR1_G1_mf_RR1.wav",
+"36": "Keys/Upright%20Nr1/UR1_C2_mf_RR1.wav",
+"43": "Keys/Upright%20Nr1/UR1_G2_mf_RR1.wav",
+"48": "Keys/Upright%20Nr1/UR1_C3_mf_RR1.wav",
+"55": "Keys/Upright%20Nr1/UR1_G3_mf_RR1.wav",
+"60": "Keys/Upright%20Nr1/UR1_C4_mf_RR1.wav",
+"67": "Keys/Upright%20Nr1/UR1_G4_mf_RR1.wav",
+"72": "Keys/Upright%20Nr1/UR1_C5_mf_RR1.wav",
+"79": "Keys/Upright%20Nr1/UR1_G5_mf_RR1.wav",
+"84": "Keys/Upright%20Nr1/UR1_C6_mf_RR1.wav",
+"91": "Keys/Upright%20Nr1/UR1_G6_mf_RR1.wav",
+"96": "Keys/Upright%20Nr1/UR1_C7_mf_RR1.wav"
+},
+"shift": 0
+},
+"vsco_violas_arco": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 38.5,
+"notes": {
+"36": "Strings/Viola%20Section/susvib/ViolaEns_susvib_C2_v2_1.wav",
+"38": "Strings/Viola%20Section/susvib/ViolaEns_susvib_D2_v2_1.wav",
+"40": "Strings/Viola%20Section/susvib/ViolaEns_susvib_E2_v2_1.wav",
+"43": "Strings/Viola%20Section/susvib/ViolaEns_susvib_G2_v2_1.wav",
+"47": "Strings/Viola%20Section/susvib/ViolaEns_susvib_B2_v2_1.wav",
+"50": "Strings/Viola%20Section/susvib/ViolaEns_susvib_D3_v2_1.wav",
+"53": "Strings/Viola%20Section/susvib/ViolaEns_susvib_F3_v2_1.wav",
+"57": "Strings/Viola%20Section/susvib/ViolaEns_susvib_A3_v2_1.wav",
+"60": "Strings/Viola%20Section/susvib/ViolaEns_susvib_C4_v2_1.wav",
+"64": "Strings/Viola%20Section/susvib/ViolaEns_susvib_E4_v2_1.wav",
+"67": "Strings/Viola%20Section/susvib/ViolaEns_susvib_G4_v2_1.wav",
+"71": "Strings/Viola%20Section/susvib/ViolaEns_susvib_B4_v2_1.wav",
+"74": "Strings/Viola%20Section/susvib/ViolaEns_susvib_D5_v2_1.wav"
+},
+"shift": 12
+},
+"vsco_violas_pizz": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 4.4,
+"notes": {
+"36": "Strings/Viola%20Section/pizz/ViolaEns_pizz_C2_v2_rr1.wav",
+"40": "Strings/Viola%20Section/pizz/ViolaEns_pizz_E2_v2_rr1.wav",
+"43": "Strings/Viola%20Section/pizz/ViolaEns_pizz_G2_v2_rr1.wav",
+"47": "Strings/Viola%20Section/pizz/ViolaEns_pizz_B2_v2_rr1.wav",
+"50": "Strings/Viola%20Section/pizz/ViolaEns_pizz_D3_v2_rr1.wav",
+"53": "Strings/Viola%20Section/pizz/ViolaEns_pizz_F3_v2_rr1.wav",
+"57": "Strings/Viola%20Section/pizz/ViolaEns_pizz_A3_v2_rr1.wav",
+"60": "Strings/Viola%20Section/pizz/ViolaEns_pizz_C4_v2_rr1.wav",
+"64": "Strings/Viola%20Section/pizz/ViolaEns_pizz_E4_v2_rr1.wav",
+"67": "Strings/Viola%20Section/pizz/ViolaEns_pizz_G4_v2_rr1.wav",
+"71": "Strings/Viola%20Section/pizz/ViolaEns_pizz_B4_v2_rr1.wav",
+"74": "Strings/Viola%20Section/pizz/ViolaEns_pizz_D5_v1_rr1.wav"
+},
+"shift": 12
+},
+"vsco_violas_spic": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 2.7,
+"notes": {
+"36": "Strings/Viola%20Section/spic/Violas_spic_C2_v2_rr1.wav",
+"40": "Strings/Viola%20Section/spic/Violas_spic_E2_v2_rr1.wav",
+"43": "Strings/Viola%20Section/spic/Violas_spic_G2_v2_rr1.wav",
+"47": "Strings/Viola%20Section/spic/Violas_spic_B2_v2_rr1.wav",
+"50": "Strings/Viola%20Section/spic/Violas_spic_D3_v2_rr1.wav",
+"53": "Strings/Viola%20Section/spic/Violas_spic_F3_v2_rr1.wav",
+"57": "Strings/Viola%20Section/spic/Violas_spic_A3_v2_rr1.wav",
+"60": "Strings/Viola%20Section/spic/Violas_spic_C4_v2_rr1.wav",
+"64": "Strings/Viola%20Section/spic/Violas_spic_E4_v2_rr1.wav",
+"67": "Strings/Viola%20Section/spic/Violas_spic_G4_v2_rr1.wav",
+"71": "Strings/Viola%20Section/spic/Violas_spic_B4_v2_rr1.wav",
+"74": "Strings/Viola%20Section/spic/Violas_spic_D5_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_violas_trem": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 19.2,
+"notes": {
+"36": "Strings/Viola%20Section/trem/Violas_trem_C2_v2_rr1.wav",
+"40": "Strings/Viola%20Section/trem/Violas_trem_E2_v2_rr1.wav",
+"43": "Strings/Viola%20Section/trem/Violas_trem_G2_v2_rr1.wav",
+"47": "Strings/Viola%20Section/trem/Violas_trem_B2_v2_rr1.wav",
+"50": "Strings/Viola%20Section/trem/Violas_trem_D3_v2_rr1.wav",
+"53": "Strings/Viola%20Section/trem/Violas_trem_F3_v2_rr1.wav",
+"57": "Strings/Viola%20Section/trem/Violas_trem_A3_v2_rr1.wav",
+"60": "Strings/Viola%20Section/trem/Violas_trem_C4_v2_rr1.wav",
+"64": "Strings/Viola%20Section/trem/Violas_trem_E4_v2_rr1.wav",
+"67": "Strings/Viola%20Section/trem/Violas_trem_G4_v2_rr1.wav",
+"71": "Strings/Viola%20Section/trem/Violas_trem_B4_v2_rr1.wav",
+"74": "Strings/Viola%20Section/trem/Violas_trem_D5_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_violin_arco": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 33.8,
+"notes": {
+"55": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_G3_f.wav",
+"57": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_A3_f.wav",
+"60": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_C4_f.wav",
+"64": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_E4_f.wav",
+"67": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_G4_f.wav",
+"69": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_A4_f.wav",
+"72": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_C5_f.wav",
+"76": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_E5_f.wav",
+"79": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_G5_f.wav",
+"81": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_A5_f.wav",
+"84": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_C6_f.wav",
+"88": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_E6_f.wav",
+"91": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_G6_f.wav",
+"93": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_A6_f.wav",
+"96": "Strings/Solo%20Violin/Arco%20Vib/LLVln_ArcoVib_C7_f.wav"
+},
+"shift": 0
+},
+"vsco_violin_pizz": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 4.2,
+"notes": {
+"55": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_G3_f_RR1.wav",
+"57": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_A3_f_RR1.wav",
+"60": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_C4_f_RR1.wav",
+"64": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_E4_f_RR1.wav",
+"67": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_G4_f_RR1.wav",
+"69": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_A4_f_RR1.wav",
+"72": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_C5_f_RR1.wav",
+"76": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_E5_f_RR1.wav",
+"79": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_G5_f_RR1.wav",
+"81": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_A5_f_RR1.wav",
+"88": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_E6_f_RR1.wav",
+"93": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_A6_f_RR1.wav",
+"96": "Strings/Solo%20Violin/Pizz/LLVln_Pizz_C7_f.wav"
+},
+"shift": 0
+},
+"vsco_violin_spic": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 3.5,
+"notes": {
+"43": "Strings/Solo%20Violin/spic/LLVln_spic_G2_v2_rr1.wav",
+"45": "Strings/Solo%20Violin/spic/LLVln_spic_A2_v2_rr1.wav",
+"48": "Strings/Solo%20Violin/spic/LLVln_spic_C3_v2_rr1.wav",
+"52": "Strings/Solo%20Violin/spic/LLVln_spic_E3_v2_rr1.wav",
+"55": "Strings/Solo%20Violin/spic/LLVln_spic_G3_v2_rr1.wav",
+"57": "Strings/Solo%20Violin/spic/LLVln_spic_A3_v2_rr1.wav",
+"60": "Strings/Solo%20Violin/spic/LLVln_spic_C4_v2_rr1.wav",
+"64": "Strings/Solo%20Violin/spic/LLVln_spic_E4_v2_rr1.wav",
+"67": "Strings/Solo%20Violin/spic/LLVln_spic_G4_v2_rr1.wav",
+"69": "Strings/Solo%20Violin/spic/LLVln_spic_A4_v2_rr1.wav",
+"72": "Strings/Solo%20Violin/spic/LLVln_spic_C5_v2_rr1.wav",
+"76": "Strings/Solo%20Violin/spic/LLVln_spic_E5_v2_rr1.wav",
+"79": "Strings/Solo%20Violin/spic/LLVln_spic_G5_v2_rr1.wav",
+"81": "Strings/Solo%20Violin/spic/LLVln_spic_A5_v2_rr1.wav",
+"84": "Strings/Solo%20Violin/spic/LLVln_spic_C6_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_violin_trem": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 17.2,
+"notes": {
+"43": "Strings/Solo%20Violin/Trem/LLVln_trem_G2_v2_rr1.wav",
+"45": "Strings/Solo%20Violin/Trem/LLVln_trem_A2_v2_rr1.wav",
+"48": "Strings/Solo%20Violin/Trem/LLVln_trem_C3_v2_rr1.wav",
+"52": "Strings/Solo%20Violin/Trem/LLVln_trem_E3_v2_rr1.wav",
+"55": "Strings/Solo%20Violin/Trem/LLVln_trem_G3_v2_rr1.wav",
+"57": "Strings/Solo%20Violin/Trem/LLVln_trem_A3_v2_rr1.wav",
+"60": "Strings/Solo%20Violin/Trem/LLVln_trem_C4_v2_rr1.wav",
+"64": "Strings/Solo%20Violin/Trem/LLVln_trem_E4_v2_rr1.wav",
+"67": "Strings/Solo%20Violin/Trem/LLVln_trem_G4_v2_rr1.wav",
+"69": "Strings/Solo%20Violin/Trem/LLVln_trem_A4_v2_rr1.wav",
+"72": "Strings/Solo%20Violin/Trem/LLVln_trem_C5_v2_rr1.wav",
+"76": "Strings/Solo%20Violin/Trem/LLVln_trem_E5_v2_rr1.wav",
+"79": "Strings/Solo%20Violin/Trem/LLVln_trem_G5_v2_rr1.wav",
+"84": "Strings/Solo%20Violin/Trem/LLVln_trem_C6_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_violins_arco": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 21.8,
+"notes": {
+"43": "Strings/Violin%20Section/susVib/VlnEns_susVib_G2_v2.wav",
+"45": "Strings/Violin%20Section/susVib/VlnEns_susVib_A2_v2.wav",
+"47": "Strings/Violin%20Section/susVib/VlnEns_susVib_B2_v2.wav",
+"50": "Strings/Violin%20Section/susVib/VlnEns_susVib_D3_v2.wav",
+"54": "Strings/Violin%20Section/susVib/VlnEns_susVib_F%233_v2.wav",
+"57": "Strings/Violin%20Section/susVib/VlnEns_susVib_A3_v2.wav",
+"60": "Strings/Violin%20Section/susVib/VlnEns_susVib_C4_v2.wav",
+"64": "Strings/Violin%20Section/susVib/VlnEns_susVib_E4_v2.wav",
+"67": "Strings/Violin%20Section/susVib/VlnEns_susVib_G4_v2.wav",
+"71": "Strings/Violin%20Section/susVib/VlnEns_susVib_B4_v2.wav",
+"74": "Strings/Violin%20Section/susVib/VlnEns_susVib_D5_v2.wav"
+},
+"shift": 12
+},
+"vsco_violins_pizz": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 2.3,
+"notes": {
+"43": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_G2_v2_rr1.wav",
+"45": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_A2_v2_rr1.wav",
+"47": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_B2_v2_rr1.wav",
+"50": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_D3_v2_rr1.wav",
+"54": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_F%233_v2_rr1.wav",
+"57": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_A3_v2_rr1.wav",
+"60": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_C4_v2_rr1.wav",
+"64": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_E4_v2_rr1.wav",
+"67": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_G4_v2_rr1.wav",
+"71": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_B4_v2_rr1.wav",
+"74": "Strings/Violin%20Section/Pizz/VlnEns_Pizz_D5_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_violins_spic": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 2.3,
+"notes": {
+"43": "Strings/Violin%20Section/Spic/VlnEns_Spic_G2_v2_rr1.wav",
+"45": "Strings/Violin%20Section/Spic/VlnEns_Spic_A2_v2_rr1.wav",
+"47": "Strings/Violin%20Section/Spic/VlnEns_Spic_B2_v2_rr1.wav",
+"50": "Strings/Violin%20Section/Spic/VlnEns_Spic_D3_v2_rr1.wav",
+"54": "Strings/Violin%20Section/Spic/VlnEns_Spic_F%233_v2_rr1.wav",
+"57": "Strings/Violin%20Section/Spic/VlnEns_Spic_A3_v2_rr1.wav",
+"60": "Strings/Violin%20Section/Spic/VlnEns_Spic_C4_v2_rr1.wav",
+"64": "Strings/Violin%20Section/Spic/VlnEns_Spic_E4_v2_rr1.wav",
+"67": "Strings/Violin%20Section/Spic/VlnEns_Spic_G4_v2_rr1.wav",
+"71": "Strings/Violin%20Section/Spic/VlnEns_Spic_B4_v2_rr1.wav",
+"74": "Strings/Violin%20Section/Spic/VlnEns_Spic_D5_v2_rr1.wav"
+},
+"shift": 12
+},
+"vsco_violins_trem": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 16.7,
+"notes": {
+"43": "Strings/Violin%20Section/Trem/VlnEns_Trem_G2_v2.wav",
+"45": "Strings/Violin%20Section/Trem/VlnEns_Trem_A2_v2.wav",
+"47": "Strings/Violin%20Section/Trem/VlnEns_Trem_B2_v2.wav",
+"50": "Strings/Violin%20Section/Trem/VlnEns_Trem_D3_v2.wav",
+"54": "Strings/Violin%20Section/Trem/VlnEns_Trem_F%233_v1.wav",
+"57": "Strings/Violin%20Section/Trem/VlnEns_Trem_A3_v2.wav",
+"60": "Strings/Violin%20Section/Trem/VlnEns_Trem_C4_v2.wav",
+"64": "Strings/Violin%20Section/Trem/VlnEns_Trem_E4_v2.wav",
+"67": "Strings/Violin%20Section/Trem/VlnEns_Trem_G4_v2.wav",
+"71": "Strings/Violin%20Section/Trem/VlnEns_Trem_B4_v2.wav",
+"74": "Strings/Violin%20Section/Trem/VlnEns_Trem_D5_v2.wav"
+},
+"shift": 12
+},
+"vsco_xylophone": {
+"base": "https://raw.githubusercontent.com/sgossner/VSCO-2-CE/master/",
+"mb": 4.3,
+"notes": {
+"55": "Percussion/Xylo/Xylo_Medium_G3_ff_01_far.wav",
+"60": "Percussion/Xylo/Xylo_Medium_C4_ff_01_far.wav",
+"67": "Percussion/Xylo/Xylo_Medium_G4_ff_01_far.wav",
+"72": "Percussion/Xylo/Xylo_Medium_C5_ff_01_far.wav",
+"79": "Percussion/Xylo/Xylo_Medium_G5_ff_01_far.wav",
+"84": "Percussion/Xylo/Xylo_Medium_C6_ff_01_far.wav",
+"91": "Percussion/Xylo/Xylo_Medium_G6_ff_01_far.wav",
+"96": "Percussion/Xylo/Xylo_Medium_C7_ff_01_far.wav"
+},
+"shift": 0
+},
+"wine_glass": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 20.3,
+"notes": {
+"63": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Fast/glass1_D%234_Fast_1_main.wav",
+"66": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Fast/glass2_F%234_Fast_1_Main.wav",
+"70": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Fast/glass3_A%234_Fast_1_Main.wav",
+"74": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Fast/glass4_D5_Fast_1_Main.wav"
+},
+"shift": 12
+},
+"wine_glass_slow": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 17.7,
+"notes": {
+"63": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Slow/glass1_D%234_Slow_1_Main.wav",
+"66": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Slow/glass2_F%234_Slow_1_Main.wav",
+"70": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Slow/glass3_A%234_Slow_1_Main.wav",
+"74": "Idiophones/Friction%20Idiophones/Wine%20Glasses/Sustains/Slow/glass4_D5_Slow_2_Main.wav"
+},
+"shift": 12
+},
+"woodblock_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"hits": [
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click2_mp.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click3_vl1.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click3_vl2.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click_f_rr1.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click_f_rr2.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click_ff.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click_mp.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click_pp_rr1.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click_pp_rr2.wav",
+"Idiophones/Struck%20Idiophones/Woodblock/wood_click_pp_rr3.wav"
+],
+"mb": 2.3
+},
+"xylophone_vcsl": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 4.3,
+"notes": {
+"55": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_G3_ff_01_far.wav",
+"60": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_C4_ff_01_far.wav",
+"67": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_G4_ff_01_far.wav",
+"72": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_C5_ff_01_far.wav",
+"79": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_G5_ff_01_far.wav",
+"84": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_C6_ff_01_far.wav",
+"91": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_G6_ff_01_far.wav",
+"96": "Idiophones/Struck%20Idiophones/Xylophone/Medium%20Mallets/Xylo_Medium_C7_ff_01_far.wav"
+},
+"shift": 0
+},
+"xylophone_vcsl_hard": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 4.6,
+"notes": {
+"55": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_G3_ff_01_far.wav",
+"60": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_C4_ff_01_far.wav",
+"67": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_G4_ff_01_far.wav",
+"72": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_C5_ff_01_far.wav",
+"79": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_G5_ff_01_far.wav",
+"84": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_C6_ff_01_far.wav",
+"91": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_G6_ff_01_far.wav",
+"96": "Idiophones/Struck%20Idiophones/Xylophone/Hard%20Mallets/Xylo_Hard_C7_ff_01_far.wav"
+},
+"shift": 12
+},
+"xylophone_vcsl_soft": {
+"base": "https://raw.githubusercontent.com/sgossner/VCSL/master/",
+"mb": 4.7,
+"notes": {
+"55": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_G3_pp_01_far.wav",
+"60": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_C4_pp_01_far.wav",
+"67": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_G4_pp_01_far.wav",
+"72": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_C5_pp_01_far.wav",
+"79": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_G5_pp_01_far.wav",
+"84": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_C6_pp_01_far.wav",
+"91": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_G6_pp_01_far.wav",
+"96": "Idiophones/Struck%20Idiophones/Xylophone/Soft%20Mallets/Xylo_Soft_C7_pp_01_far.wav"
+},
+"shift": 12
+}
+}

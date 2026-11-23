@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.8.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.9.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -61,6 +61,19 @@ for the full list and sources.
 | ![Genre courses](docs/screenshots/courses.png) | ![Course step](docs/screenshots/course-step.png) |
 | **Arrangement step: intro, band, mambo** | **Mix step and course complete** |
 | ![Course arrangement](docs/screenshots/course-arrangement.png) | ![Course complete](docs/screenshots/course-complete.png) |
+
+**Latin courses that follow your composition plugin.** Merengue, salsa, cumbia, reggaeton and bossa nova follow the Latin
+style skills of the [music-composition plugin](https://github.com/vsalesa/music-composition-skills): each course names
+the tradition it plays (for example 1970s New York salsa dura on a 2-3 son clave), each step shows «What the skill says»,
+and Maestro loads that skill when you ask about the step. The parts are played by real instruments from the library
+(güiro, congas, bongos, claves, upright bass, trombones, accordion, nylon guitar, flute…), which download by themselves
+when you start the course.
+
+| Each Latin course names its tradition and its skill | The tradition and the artist lens, before the first step |
+|---|---|
+| ![Latin courses](docs/screenshots/courses-latin.png) | ![Course tradition](docs/screenshots/course-tradition.png) |
+| **«What the skill says» on every step, played by real instruments** | |
+| ![Course step with the skill's rule](docs/screenshots/course-skill-step.png) | |
 
 ### Maestro, your teacher
 
@@ -249,6 +262,52 @@ Every component in the catalog also has its own icon.
 |---|---|
 | ![Drum kit](docs/screenshots/instruments-drums.png) | ![Sax](docs/screenshots/instruments-sax.png) |
 
+### Instrument library: 600+ specific instruments
+
+Like GarageBand, but for Tidal: a harpsichord, a double bass played pizzicato, a Steinway B, a celesta, a sitar, a
+theremin, a church organ, a koto… **634 specific instruments** in 21 categories (pianos, keys, organs, early music,
+mallets, guitars, basses, strings, brass, woodwinds, voices, world, percussion, synth leads/pads/basses/keys/FX, synth
+engines, sound FX and your own). Open it with the speaker button at the top or the **600+ Library** card. Search in
+English or Spanish («clavecín» finds the harpsichord), filter by downloaded or by source, and press any card to **hear
+the real recordings** before downloading anything. Each instrument is a few MB and is only downloaded when you ask for it.
+
+Pick a version (the same instrument from different sound sets, or articulations like arco and pizzicato), play the
+keyboard to write a melody, and **Add as a track**: you get the Tidal code (`n "c5 e5 g5" # s "harpsichord_fluid"`), and
+it plays with notes just like a synth, because each note is mapped to the nearest real recording. Recordings come only
+from freely licensed sets: VSCO 2 Community Edition and VCSL (CC0), Salamander grand piano (CC BY), and the FluidR3,
+MusyngKite and FatBoy General MIDI sound sets (CC BY / CC BY-SA). Credits go to `samples/CREDITS.md` on download.
+
+| Browse by category, hear it, add it | Search in your own words |
+|---|---|
+| ![Instrument library](docs/screenshots/instlib-browse.png) | ![Search: double bass](docs/screenshots/instlib-search.png) |
+
+**Your own instruments.** Drop a **SoundFont (.sf2)** and pick which of its sounds to import (looped notes are unrolled
+so they last), a **.zip with an SFZ**, a folder of **recordings with the note in the name** (`Violin_C4.wav`, `060.wav`),
+or **a single sound** tuned from the note you choose. They show up in **My instruments** and play with notes too.
+
+**Synth engines.** Besides 15 new built-in synths (Rhodes, organ, strings, pad, brass, choir, Juno, acid, wobble…), the
+**Synth engines** page installs free plugins with one button: **sc3-plugins**, **Mi-UGens** (Mutable Instruments
+Plaits, Braids and Rings: 16 + 16 + 6 models in the library) and **VSTPlugin**, which lets SuperDirt play **Surge XT**
+(its factory sounds appear in the library) and **Vital**. Tidal gets the parameters it needs:
+`d1 $ n "c e g" # s "plaits" # engine 5 # timbre 0.3 # harm 0.5 # morph 0.6`.
+
+| Add your own: SoundFont, SFZ, recordings | Synth engines with one button |
+|---|---|
+| ![Import a SoundFont](docs/screenshots/instlib-import.png) | ![Synth engines](docs/screenshots/instlib-engines.png) |
+
+**A photo for every instrument, and pin it as a component.** Every instrument shows a real photo from Wikimedia
+Commons. Press **Wikimedia photo** to search Commons for another one: only freely licensed photos (CC0, public domain,
+CC BY, CC BY-SA) are shown, and the one you pick is saved with its author and license, which are always shown under it.
+Press **★ Pin** and the instrument becomes a card in the studio's instrument row, next to the piano and drums, ready
+to open with one click.
+
+| Pick a photo from Wikimedia Commons | Pinned as a card in the studio |
+|---|---|
+| ![Wikimedia photo picker](docs/screenshots/instlib-wikimedia.png) | ![Pinned instrument card](docs/screenshots/instlib-pinned.png) |
+
+**Maestro knows them too.** Ask for «a harpsichord on the chords» or «a double bass in pizzicato» and Maestro uses the
+exact instrument from the library. If it is small it is downloaded right away; if it is big, Maestro asks first.
+
 ### Sample library
 
 Sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths). Listen to them, use
@@ -364,13 +423,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.8.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.9.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.8.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/TidalStudio-0.8.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.8.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/TidalStudio-0.8.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.8.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/tidal-studio_0.8.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.9.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.9.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/tidal-studio_0.9.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Interactive tutorial
 
@@ -457,6 +516,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |
 | **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |
 | **0.7.0** | [Import a song](#import-a-song-as-a-starting-point) (MIDI, or audio with optional tools) as the starting point for a new one. |
 | **0.6.0** | [Maestro downloads the sounds it needs](#maestro-downloads-the-sounds-it-needs) from free sample packs and Freesound. |
@@ -583,6 +643,19 @@ jtydhr88's 30-skill composition plugin, MIT) into `my-plugins/`. It is marked **
 groove, form…). It is downloaded instead of shipped in the installer because its reference files quote copyrighted
 books (see its `NOTICE`). If you remove it, it doesn't come back; untick «Always use» to make it an ordinary plugin.
 
+**Plugins stay up to date.** Every time Tidal Studio starts it asks GitHub whether each plugin you installed from a link
+has changed (the last commit that touched the plugin's folder, so a fix counts even if `version` in `plugin.json` wasn't
+bumped) and, with **Update plugins automatically at startup** on (the default), downloads the new version and tells you
+with a message. Your «On» and «Always use» choices are kept. Untick it to decide yourself: the plugin then shows
+**A new version is on GitHub** with an **Update** button, and **Check for updates** looks again without restarting.
+Without internet nothing changes and it tries again next time. So when you push a change to
+`vsalesa/music-composition-skills`, every Tidal Studio picks it up on its next start. Files you edit by hand inside
+`my-plugins/<plugin>/` are replaced by an update.
+
+| A new version on GitHub: one click on Update | Updated (or automatically at startup) |
+|---|---|
+| ![Plugin update available](docs/screenshots/plugin-update.png) | ![Plugin updated](docs/screenshots/plugin-updated.png) |
+
 ### Samples
 
 Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`, `s "name:1"` for the second file).
@@ -627,6 +700,7 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `server/plugins.py`: Claude Code plugins and marketplaces (`my-plugins/`): download, manifests, skills and `/commands`.
 - `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: the Timeline tab. The server asks Tidal (`queryArc`) in its own GHCi; `web/tpat.js` is the approximate in-browser calculator used without the engine.
+- `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: the instrument library (catalog, downloads, SoundFont/SFZ import, pre-listen). `supercollider/studio-instruments.scd` plays multisampled instruments with notes; `studio-synthlib.scd` holds the built-in synths; `server/engines.py` + `studio-engines.scd` install and load Mi-UGens and VSTPlugin (Surge XT, Vital); `server/photos.py` finds photos on Wikimedia Commons.
 - `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio).
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro finds and downloads missing sounds. `web/variants.js`: Maestro's audible options (live A/B).
 - `server/loops.py` + `web/loops.js`: long-loops library (analysis of tempo, bars, key and hits, and the code that fits your song).

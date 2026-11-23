@@ -46,6 +46,18 @@ let only = (hush >>)
     eqlow = pF "eqlow"
     eqmid = pF "eqmid"
     eqhigh = pF "eqhigh"
+    -- Motores de synth opcionales (studio-engine-mi.scd): plaits, braids y rings
+    -- d1 $ n "c e g" # s "plaits" # engine 5 # timbre 0.3 # harm 0.5 # morph 0.6
+    engine = pF "engine"
+    harm = pF "harm"
+    timbre = pF "timbre"
+    morph = pF "morph"
+    color = pF "color"
+    structure = pF "structure"
+    brightness = pF "brightness"
+    damping = pF "damping"
+    position = pF "position"
+    lpg = pF "lpg"
 :}
 
 putStrLn "TIDAL_STUDIO_READY"

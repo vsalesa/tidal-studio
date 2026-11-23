@@ -94,6 +94,9 @@ def session_summary(session):
     if loops_lines:
         from loops import LOOPS_PROMPT
         lines.append(LOOPS_PROMPT.format(lista="\n".join(loops_lines)))
+    inst_lines = [str(x)[:3000] for x in (session.get("instrument_lines") or [])][:4]
+    from instlib import PROMPT as INST_PROMPT
+    lines.append(INST_PROMPT.format(lista="\n".join(inst_lines)).strip())
     descartadas = [str(x)[:160] for x in (session.get("ideas_descartadas") or []) if x][:25]
     if descartadas:
         lines.append("Ideas que el alumno DESCARTÓ porque no le gustaron (no vuelvas a proponerlas ni otras casi iguales; busca otro camino): "

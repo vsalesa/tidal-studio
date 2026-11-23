@@ -271,6 +271,7 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
       <div><svg class="i" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5"/><rect x="11" y="9" width="10" height="6" rx="1.5"/><path d="M8 12h3"/></svg><h4 data-i="f15h">Every hit points to its code</h4><p data-i="f15p">Hover a hit and the piece of code that makes it lights up. Hover the code and all its hits light up.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 01-.5-9 6 6 0 0111.4-1.2A4.6 4.6 0 0117.5 18z"/><path d="M12 10.5v5.5M9.8 13.8L12 16l2.2-2.2"/></svg><h4 data-i="f16h">Maestro fetches the sounds</h4><p data-i="f16p">If your song needs a sound you don't have, like a real cowbell or a vinyl crackle, Maestro finds a free-licensed one online, downloads it, credits it and plays it. It asks before big packs.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><path d="M17 2.5l3 3-3 3"/><path d="M4 11.5v-2a4 4 0 014-4h12"/><path d="M7 21.5l-3-3 3-3"/><path d="M20 12.5v2a4 4 0 01-4 4H4"/></svg><h4 data-i="f17h">A library for long loops</h4><p data-i="f17p">Drop downloaded loops, folders or a zip: the studio detects tempo, bars, key and hits, and writes the code so they play at your tempo, with variations instead of repeating.</p></div>
+      <div><svg class="i" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg><h4 data-i="f19h">600+ instruments</h4><p data-i="f19p">A harpsichord, a pizzicato double bass, a Steinway, a sitar… Browse by category with real photos, hear each one before downloading, add your own SoundFonts, and pin your favourites to the studio.</p></div>
       <div><svg class="i" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M12 10v7M9 14l3 3 3-3"/></svg><h4 data-i="f18h">Open and save Tidal files</h4><p data-i="f18p">A File menu opens any .tidal or .hs file from anywhere on your computer and turns it into tracks; Save writes a clean .tidal that plays in any Tidal editor.</p></div>
     </div>
   </div>
@@ -305,7 +306,7 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   <div class="wrap">
     <div class="kicker" data-i="kc">Genre courses</div>
     <h2 class="sec-title" data-i="tc">Build a merengue from scratch.</h2>
-    <p class="sec-lead" data-i="lc">Eleven courses, one genre each: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum &amp; bass and lo-fi. Like a production class: the signature rhythm first, then bass, harmony, melody, arrangement and mix. Every step adds a piece that already sounds good, and Maestro explains why it sounds like that style.</p>
+    <p class="sec-lead" data-i="lc">Eleven courses, one genre each: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum &amp; bass and lo-fi. Like a production class: the signature rhythm first, then bass, harmony, melody, arrangement and mix. Every step adds a piece that already sounds good, and Maestro explains why it sounds like that style. The Latin courses follow the Latin style skills of your composition plugin, name the tradition they play and use real instruments: güiro, congas, bongos, upright bass, trombones, accordion, nylon guitar…</p>
     <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="course-img" alt="" width="3000" height="1880"></div>
     <div class="styles"><span>Merengue</span><span>Salsa</span><span>Cumbia</span><span>Reggaeton</span><span>Bossa nova</span><span>Jazz</span><span>Funk</span><span>House</span><span>Techno</span><span>Drum &amp; bass</span><span>Lo-fi</span></div>
   </div>
@@ -339,9 +340,10 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
 <section id="novedades" style="padding-top: 20px">
   <div class="wrap">
     <div class="kicker" data-i="kn">What's new</div>
-    <h2 class="sec-title" data-i="tn">Version 0.8.0 is out.</h2>
+    <h2 class="sec-title" data-i="tn">Version 0.9.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
+      <li><b>0.9.0</b><span data-i="v9">600+ instruments with photos and pre-listen, your own SoundFonts, new synth engines, Latin courses played by real instruments, and plugins that update themselves.</span></li>
       <li><b>0.8.0</b><span data-i="v8">Long loops library: drop loops, folders or a zip, and the studio detects tempo, bars, key and hits and writes code that fits your song.</span></li>
       <li><b>0.7.0</b><span data-i="v7">Import a song (MIDI, or audio) as the starting point for one of your own.</span></li>
       <li><b>0.6.0</b><span data-i="v6">Maestro finds and downloads the sounds your song is missing.</span></li>
@@ -360,8 +362,8 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="step solo reveal" style="margin-bottom:40px">
       <h4 data-i="mach">Mac, Windows and Linux: one installer, everything inside</h4>
       <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. It opens as a real Mac app, in its own window and with no Terminal. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
-      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/TidalStudio-0.8.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
-      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/TidalStudio-0.8.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/tidal-studio_0.8.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/tidal-studio_0.9.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
       <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows and Linux have their own installers too, each opening the studio in its own window. Intel Mac, or prefer the source? Follow the three steps below.</p>
       <p style="margin-top:4px;font-size:.9em"><a href="https://github.com/vsalesa/tidal-studio/releases/latest" data-i="allv">All versions</a></p>
     </div>
@@ -437,9 +439,11 @@ const ES = {
   f14h: "Línea de tiempo", f14p: "Mira dónde cae cada golpe, compás a compás y tiempo a tiempo, en vez de descifrar «cada cuánto». Lo calcula el propio TidalCycles, y una línea sigue la música.",
   f15h: "Cada golpe apunta a su código", f15p: "Pasa el ratón por un golpe y se ilumina el trozo de código que lo produce. Pásalo por el código y se iluminan todos sus golpes.",
   f17h: "Biblioteca de loops largos", f17p: "Suelta loops descargados, carpetas o un zip: el estudio detecta tempo, compases, tonalidad y golpes, y escribe el código para que suenen a tu tempo, con variaciones en vez de repetirse.",
+  f19h: "Más de 600 instrumentos", f19p: "Un clavecín, un contrabajo en pizzicato, un Steinway, un sitar… Explora por categorías con fotos reales, escucha cada uno antes de descargarlo, añade tus SoundFonts y fija tus favoritos en el estudio.",
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Abrir y guardar archivos de Tidal", f18p: "Un menú Archivo abre cualquier .tidal o .hs de tu ordenador y lo convierte en pistas; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
-  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.8.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
+  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.9.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
+  v9: "Más de 600 instrumentos con fotos y escucha previa, tus propios SoundFonts, motores de synth nuevos, cursos latinos tocados con instrumentos reales y plugins que se actualizan solos.",
   v8: "Biblioteca de loops largos: arrastra loops, carpetas o un zip, y el estudio detecta tempo, compases, tonalidad y golpes y escribe el código que encaja con tu canción.",
   v7: "Importa una canción (MIDI o audio) como punto de partida de una tuya.",
   v6: "Maestro busca y descarga los sonidos que le faltan a tu canción.",
@@ -451,7 +455,7 @@ const ES = {
   l2: "Pulsa opciones y escucha el resultado en vivo. Las que encajan con tu estilo vienen marcadas, y el último paso te enseña todo el código explicado.",
   k3: "Así se ve", t3: "Un estudio claro, como una partitura.",
   kc: "Cursos por género", tc: "Construye un merengue desde cero.",
-  lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo.",
+  lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo. Los cursos latinos siguen las skills de estilos latinos de tu plugin de composición, dicen qué tradición tocan y usan instrumentos reales: güiro, congas, bongós, contrabajo, trombones, acordeón, guitarra de nailon…",
   ki: "Importar canción", ti: "Empieza con una canción que te encanta. Termina con una tuya.",
   li: "Suelta un MIDI, o un mp3 o wav, y se convierte en pistas de Tidal y en su receta: tempo, tonalidad, acordes, estructura y groove. Luego Maestro te ayuda a escribir algo nuevo inspirado en ella, conservando lo que funciona y cambiando el resto. Todo se queda en tu ordenador.",
   k4: "Recetas de estilo", t4: "«¿Quieres que suene tipo jazz?»",
@@ -556,6 +560,11 @@ wzList.addEventListener("click", (e) => { const b = e.target.closest("button"); 
 
 // ---------- Galería ----------
 const SHOTS = [
+  { en: ["Instrument library", "instlib-browse", "634 specific instruments by category, with real photos. Press one to hear the real recordings, then add it as a track."], es: ["Biblioteca de instrumentos", "biblioteca-instrumentos", "634 instrumentos concretos por categorías, con fotos reales. Pulsa uno para oír sus grabaciones y añádelo como pista."] },
+  { en: ["Your instruments", "instlib-import", "Drop a SoundFont, an SFZ in a zip or your own recordings: they play with notes like the rest."], es: ["Tus instrumentos", "biblioteca-importar", "Suelta un SoundFont, un SFZ en un zip o tus grabaciones: se tocan con notas como los demás."] },
+  { en: ["Synth engines", "instlib-engines", "Install Mi-UGens, sc3-plugins and VSTPlugin (Surge XT, Vital) with one button."], es: ["Motores de synth", "biblioteca-motores", "Instala Mi-UGens, sc3-plugins y VSTPlugin (Surge XT, Vital) con un botón."] },
+  { en: ["Wikimedia photos", "instlib-wikimedia", "Find a freely licensed photo for any instrument on Wikimedia Commons, saved with its author and license."], es: ["Fotos de Wikimedia", "biblioteca-wikimedia", "Busca una foto con licencia libre para cualquier instrumento en Wikimedia Commons, guardada con su autor y licencia."] },
+  { en: ["Pinned instruments", "instlib-pinned", "Pin an instrument and it becomes a card in the studio's instrument row."], es: ["Instrumentos fijados", "biblioteca-fijado", "Fija un instrumento y se convierte en una tarjeta de la fila de instrumentos del estudio."] },
   { en: ["Maestro's options", "maestro-options", "Ask for something and Maestro offers 3-4 different options. Each one plays live over your song: switch between them and pick one."], es: ["Opciones de Maestro", "opciones-maestro", "Pide algo y Maestro te propone 3-4 opciones distintas. Cada una suena en directo sobre tu canción: cambia entre ellas y elige una."] },
   { en: ["Long loops", "loops-loader", "Drop a zip of loops: each one is analysed (tempo, bars, key, type) and tells you how it fits your song's tempo."], es: ["Loops largos", "loops-cargador", "Suelta un zip de loops: cada uno se analiza (tempo, compases, tonalidad, tipo) y te dice cómo encaja con el tempo de tu canción."] },
   { en: ["Loop variations", "loops-variations", "Slices coloured by kick, snare and hats, and variations with splice so the loop never repeats exactly."], es: ["Variaciones de un loop", "loops-variaciones", "Trozos coloreados por bombo, caja y platos, y variaciones con splice para que el loop nunca se repita igual."] },
@@ -570,6 +579,7 @@ const SHOTS = [
   { en: ["Mix", "mixer", "A mixing desk: volume, 3-band EQ, mute and solo per track, and a Master for the whole song."], es: ["Mezcla", "mezcla", "Una mesa de mezcla: volumen, ecualizador de 3 bandas, silencio y solo por pista, y un Master para toda la canción."] },
   { en: ["Skills", "skills-panel", "Maestro's skills: turn them on, always load one, read it or install another from GitHub."], es: ["Skills", "panel-skills", "Las skills de Maestro: actívalas, carga una siempre, léela o instala otra desde GitHub."] },
   { en: ["Plugins", "plugins-panel", "Install a Claude Code plugin or marketplace from GitHub: its skills join Maestro's and its commands work in the chat."], es: ["Plugins", "panel-plugins", "Instala un plugin o marketplace de Claude Code desde GitHub: sus skills se suman a las de Maestro y sus comandos funcionan en el chat."] },
+  { en: ["Plugin updates", "plugin-update", "When a plugin changes on GitHub, Tidal Studio updates it at startup, or shows an Update button if you prefer to decide."], es: ["Actualizar plugins", "plugin-actualizar", "Cuando un plugin cambia en GitHub, Tidal Studio lo actualiza al arrancar, o enseña un botón Actualizar si prefieres decidir tú."] },
   { en: ["How I decided", "skills-decisions", "Every answer that used a skill shows each musical decision, the skill and rule behind it, and what Maestro did."], es: ["Cómo lo he decidido", "decisiones-skills", "Cada respuesta que usó una skill enseña cada decisión musical, la skill y la regla en que se basa, y lo que hizo Maestro."] },
   { en: ["Reasoning", "reasoning", "While Maestro thinks, a faint line shows what it's doing and its reasoning as it streams."], es: ["Razonamiento", "razonamiento", "Mientras Maestro piensa, una línea tenue enseña qué está haciendo y su razonamiento según llega."] },
   { en: ["Claude detection", "claude-detect", "Settings shows the Claude Code it found on your computer: path, version, sign-in, model and endpoint."], es: ["Detección de Claude", "deteccion-claude", "Ajustes enseña el Claude Code que ha encontrado en tu ordenador: ruta, versión, sesión, modelo y endpoint."] },
@@ -630,7 +640,7 @@ function applyLang() {
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
 { const ii = document.getElementById("import-img"); ii.src = shotPath(lang === "es" ? "importar-resultado" : "import-result"); ii.alt = lang === "es" ? "Canción importada: receta y pistas de Tidal" : "Imported song: recipe and Tidal tracks"; }
-{ const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-paso" : "course-step"); ci.alt = lang === "es" ? "Curso de merengue paso a paso" : "Merengue course, step by step"; }
+{ const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-skill-paso" : "course-skill-step"); ci.alt = lang === "es" ? "Curso de salsa: cada paso con la regla de la skill y con instrumentos reales" : "Salsa course: each step with the skill's rule and real instruments"; }
 [...SHOTS, ...WZ].forEach((s) => { const p = new Image(); p.src = shotPath((lang === "es" ? s.es : s.en)[1]); });
 
 // ---------- Onda decorativa y aparición ----------

@@ -223,7 +223,7 @@ class Library:
 # ------------------------------------------------------------------ packs con índice strudel.json
 # Muchos packs de la comunidad (Strudel / Tidal) publican un índice JSON:
 #   {"_base": "https://raw.githubusercontent.com/…/", "bd": ["bd/1.wav", "bd/2.wav"], "piano": {"A0": "A0.mp3", …}}
-REMOTE_HOSTS = ("raw.githubusercontent.com", "github.com", "cdn.freesound.org", "freesound.org", "codeload.github.com")
+REMOTE_HOSTS = ("raw.githubusercontent.com", "github.com", "gleitz.github.io", "cdn.freesound.org", "freesound.org", "codeload.github.com")
 _index_cache = {}
 
 

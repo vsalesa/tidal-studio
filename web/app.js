@@ -27,6 +27,7 @@ import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LET
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { openImport, importedSummary, INSPIRE_PROMPT } from "./importsong.js";
+import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -926,10 +927,40 @@ function stopPreHear() {
   api("/api/eval", { code: revert.join("\n\n") }).catch(() => {});
   if (onEnd) onEnd();
 }
+// Instrumentos de la biblioteca que usa un código (cursos): se descargan antes de sonar.
+// Una sola descarga a la vez: las siguientes esperan a la anterior (no se pisan las carpetas).
+let ensuring = Promise.resolve();
+function ensureInstruments(codes, { quiet = false } = {}) {
+  const run = async () => {
+    if (!codes.length || !live()) return { failed: [] };
+    let job;
+    try { job = await api("/api/instruments/ensure", { codes }); } catch { return { failed: [] }; }
+    if (job.ready) return { failed: [] };
+    if (!quiet) toastSoft(L("Descargando los instrumentos de este paso…", "Downloading this step's instruments…"));
+    while (job.state === "running") {
+      await new Promise((r) => setTimeout(r, 600));
+      try { job = await api(`/api/instruments/job?id=${job.id}`); } catch { break; }
+    }
+    const failed = (job.result && job.result.failed) || [];
+    if (failed.length) toast(L(`No he podido descargar: ${failed.map((f) => f.es).join(", ")}. Esas pistas sonarán en silencio hasta que los instales en Instrumentos (¿hay conexión a internet?).`,
+      `Couldn't download: ${failed.map((f) => f.en).join(", ")}. Those tracks will be silent until you install them from Instruments (are you online?).`));
+    else if (job.result && job.result.installed && job.result.installed.length && !quiet) toastSoft(L("Instrumentos listos", "Instruments ready"));
+    return { failed };
+  };
+  ensuring = ensuring.then(run, run);
+  return ensuring;
+}
+
 function wirePreHear(btn, cambios) {
-  btn.onclick = (e) => {
+  btn.onclick = async (e) => {
     e.stopPropagation();
     if (btn.classList.contains("playing")) { stopPreHear(); return; }
+    if (btn.dataset.loading) return;
+    btn.dataset.loading = "1";
+    const label = btn.innerHTML;
+    btn.innerHTML = icon("speaker", 13) + " " + L("Preparando…", "Getting ready…");
+    await ensureInstruments((cambios.pistas || []).map((p) => p.codigo));
+    delete btn.dataset.loading; btn.innerHTML = label;
     document.querySelectorAll(".prehear.playing").forEach((b) => { b.classList.remove("playing"); b.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
     const secs = preHear(cambios, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
     btn.classList.add("playing");
@@ -1252,8 +1283,8 @@ function renderCatalog() {
   const style = sel.value;
   const box = $("#catalog");
   box.innerHTML = `<div class="inst-strip"><div class="inst-head">${icon("speaker", 15)} ${L("Instrumentos", "Instruments")}<span>${L("pulsa uno para tocarlo", "press one to play it")}</span></div>
-    <div class="inst-row">${INSTRUMENTS.map((i) => `<button class="inst-card" data-i="${i.id}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span><span>${esc(L(i.es, i.en))}</span></button>`).join("")}</div></div>`;
-  box.querySelectorAll(".inst-card").forEach((b) => b.onclick = () => openInstrument(b.dataset.i));
+    <div class="inst-row">${INSTRUMENTS.map((i) => `<button class="inst-card" data-i="${i.id}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span><span>${esc(L(i.es, i.en))}</span></button>`).join("")}${pinnedInstruments().map((p) => `<button class="inst-card inst-pinned" data-pin="${esc(p.id)}" title="${esc(L(p.es, p.en))} · s &quot;${esc(p.id)}&quot;"><span class="inst-art"><img src="${esc(p.photo)}" alt="" draggable="false"></span><span>${esc(L(p.es, p.en).split(/: | \(/)[0])}</span></button>`).join("")}<button class="inst-card inst-more" data-lib="1" title="${L("Biblioteca de instrumentos: cientos de instrumentos concretos", "Instrument library: hundreds of specific instruments")}"><span class="inst-art inst-more-art"><b>600+</b></span><span>${L("Biblioteca", "Library")}</span></button></div></div>`;
+  box.querySelectorAll(".inst-card").forEach((b) => b.onclick = () => (b.dataset.pin ? openInstLib({ id: b.dataset.pin }) : b.dataset.lib ? openInstLib() : openInstrument(b.dataset.i)));
   for (const cat of CATEGORIES) {
     let items = COMPONENTS.filter((c) => c.cat === cat.id);
     if (style && items[0] && items[0].estilos) {
@@ -1314,7 +1345,7 @@ function instCode(ins) {
 }
 function renderInstrument() {
   const ins = instById[inst.id];
-  const tabs = `<div class="inst-tabs">${INSTRUMENTS.map((i) => `<button data-i="${i.id}" class="${i.id === ins.id ? "active" : ""}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span>${esc(L(i.es, i.en))}</button>`).join("")}</div>`;
+  const tabs = `<div class="inst-tabs">${INSTRUMENTS.map((i) => `<button data-i="${i.id}" class="${i.id === ins.id ? "active" : ""}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span>${esc(L(i.es, i.en))}</button>`).join("")}<button data-lib="1" class="inst-tab-more"><span class="inst-art inst-more-art"><b>600+</b></span>${L("Más instrumentos", "More instruments")}</button></div>`;
   let art, side;
   if (ins.id === "drums") {
     const P = DRUM_PIECES[inst.piece], steps = inst.steps[inst.piece] || P.steps;
@@ -1371,6 +1402,7 @@ function instPlaySeq(ins) {
 function wireInstrument() {
   $("#inst-body").addEventListener("click", async (e) => {
     const ins = instById[inst.id];
+    if (e.target.closest(".inst-tabs [data-lib]")) { $("#instrument").close(); return openInstLib({ cat: ({ piano: "pianos", bass: "basses", guitar: "guitars", sax: "woodwinds", trumpet: "brass", marimba: "mallets", kalimba: "world", drums: "percussion" })[inst.id] || "pianos" }); }
     const tab = e.target.closest(".inst-tabs [data-i]");
     if (tab) { inst.id = tab.dataset.i; return renderInstrument(); }
     const piece = e.target.closest("[data-p]");
@@ -1443,6 +1475,9 @@ function renderChat() {
     }
     if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
     if (m.descargas && m.descargas.length) el.insertAdjacentHTML("beforeend", fetchHTML(m, mi, fxPlaying));
+    if (m.instrumentos && m.instrumentos.length) el.insertAdjacentHTML("beforeend", `<div class="inst-fetch">${m.instrumentos.map((x) => x.estado === "descargado"
+      ? `<span class="ok">${icon("check", 13)} ${L("Instrumento descargado", "Instrument downloaded")}: <b>${esc(L(x.es, x.en))}</b> <code>${esc(x.id)}</code></span>`
+      : `<button data-instlib="${esc(x.id)}">${icon("download", 13)} ${x.estado === "error" ? L("Reintentar", "Retry") : L("Descargar", "Download")} ${esc(L(x.es, x.en))}${x.mb ? ` · ${x.mb} MB` : ""}</button>`).join("")}</div>`);
     if (m.variantes && m.variantes.length) el.insertAdjacentHTML("beforeend", variantsHTML(m, mi, audition, (k) => variantDiff(m.variantes[k])));
     if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
@@ -1566,6 +1601,7 @@ async function askLLM() {
     const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) + fetchContext(m) }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
+      curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1 } : undefined; })() : undefined,
       bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       referencia: state.reference || undefined,
       master: state.master || undefined,
@@ -1591,7 +1627,7 @@ async function askLLM() {
       stopAudition();
       state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
     }
-    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), ...(r.descargas && r.descargas.length ? { descargas: r.descargas } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
+    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), ...(r.descargas && r.descargas.length ? { descargas: r.descargas } : {}), ...(r.instrumentos && r.instrumentos.length ? { instrumentos: r.instrumentos } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
   } catch (e) {
     trace.end();
@@ -2468,6 +2504,18 @@ function wireSamples() {
     }
   });
 }
+// --- biblioteca de instrumentos (web/instlib.js)
+function wireInstLib() {
+  initInstLib({
+    api, state, toast, beep, isSim, evalCode,
+    addTrack: (name, kind, code) => addTrack(name, kind, code),
+    say: (text, code) => say(text, state.options, { explicacion: explainLocal(code).partes }),
+    onPinsChanged: () => renderCatalog(),
+    restartEngine: async () => { await api("/api/engine/stop", {}); await api("/api/engine/start", {}); refreshStatus(); },
+  });
+  mountInstLib();
+  $("#btn-instlib").onclick = () => openInstLib();
+}
 // --- loops largos (web/loops.js): el cargador, el navegador y cómo entran en la canción
 function wireLoops() {
   initLoops({
@@ -3281,8 +3329,18 @@ const stepIcon = (st) => st.arrange ? "estructura" : st.mix ? "mixer" : (st.trac
 
 // ------------------------------------------------------------------ skills de Maestro
 let skillList = [];
+let pluginUpdatePolls = 0, pluginUpdateToasted = false;
 async function refreshSkillCount() {
-  try { const r = await api("/api/skills"); skillList = r.skills || []; } catch { skillList = []; }
+  let r = {};
+  try { r = await api("/api/skills"); skillList = r.skills || []; } catch { skillList = []; }
+  // Al arrancar, el servidor busca versiones nuevas de los plugins: avisamos cuando termina
+  const pu = r.plugin_updates || {};
+  if ((pu.state === "idle" || pu.state === "checking") && pluginUpdatePolls < 12) { pluginUpdatePolls++; setTimeout(refreshSkillCount, 5000); }
+  if (pu.state === "done" && !pluginUpdateToasted) {
+    pluginUpdateToasted = true;
+    if ((pu.updated || []).length) toast(L(`Plugins actualizados a su última versión: ${pu.updated.join(", ")}`, `Plugins updated to their latest version: ${pu.updated.join(", ")}`));
+    else { const n = (r.plugins || []).filter((p) => (p.update || {}).available).length; if (n) toast(L(`Hay ${n} plugin${n > 1 ? "s" : ""} con versión nueva: ábrelos en Skills`, `${n} plugin${n > 1 ? "s have" : " has"} a new version: open Skills to update`)); }
+  }
   const n = skillList.filter((s) => s.enabled).length;
   const b = $("#sk-count"); b.textContent = n; b.hidden = !n;
   return skillList;
@@ -3291,7 +3349,7 @@ async function openSkills(focus = "") {
   let r = { skills: [], folder: "" };
   try { r = await api("/api/skills"); } catch (e) { toast(e.message); }
   skillList = r.skills || [];
-  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins });
+  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins, updates: r.plugin_updates, autoUpdate: r.plugins_auto_update });
   if (!$("#skills").open) $("#skills").showModal();
   const f = focus && ($(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`) || $(`#skills-body .pl-card[data-plugin="${CSS.escape(focus)}"]`));
   if (f) f.scrollIntoView({ block: "nearest" });
@@ -3300,8 +3358,12 @@ async function openSkills(focus = "") {
 function wireSkills() {
   const body = $("#skills-body");
   body.addEventListener("change", async (e) => {
-    const card = e.target.closest(".sk-card"); const a = e.target.dataset.a;
+    const card = e.target.closest(".sk-card, .pl-updates"); const a = e.target.dataset.a;
     if (!card || !a) return;
+    if (a === "plugin-autoupdate") {
+      try { await api("/api/plugins/autoupdate", { on: e.target.checked }); } catch (err) { toast(err.message); }
+      return;
+    }
     if (a === "plugin-enable" || a === "plugin-prefer") {
       try { await api(`/api/plugins/${a === "plugin-enable" ? "enable" : "prefer"}`, { name: card.dataset.plugin, on: e.target.checked }); } catch (err) { toast(err.message); }
       return openSkills(card.dataset.plugin);
@@ -3336,6 +3398,16 @@ function wireSkills() {
       $("#skills").close();
       const inp = $("#chat-input"); if (inp) { inp.value = b.dataset.cmd + " "; inp.focus(); }
       return;
+    }
+    if (b.dataset.a === "plugin-check" || b.dataset.a === "plugin-update" || b.dataset.a === "plugin-update-all") {
+      const pc = b.closest(".pl-card"); const name = pc ? pc.dataset.plugin : "";
+      const check = b.dataset.a === "plugin-check";
+      b.disabled = true; b.textContent = check ? L("Buscando…", "Checking…") : L("Actualizando…", "Updating…");
+      try {
+        const r = await api(`/api/plugins/${check ? "check" : "update"}`, { name });
+        if (!check && r.updated) toast(L(`Plugin actualizado: ${r.updated.join(", ")}`, `Plugin updated: ${r.updated.join(", ")}`));
+      } catch (err) { toast(err.message); }
+      return openSkills(name);
     }
     if (b.dataset.a === "plugin-remove") {
       const pc = b.closest(".pl-card");
@@ -3380,6 +3452,8 @@ function openCourses() {
         <header><b>${esc(c.name)}</b><span>${esc(c.origin)}</span></header>
         <div class="cs-meta"><span>${c.bpm} BPM</span>${levelDots(c.level)}<span>${esc(c.key)}</span></div>
         <p>${esc(c.blurb)}</p>
+        ${c.skill ? `<p class="cs-trad"><b>${L("Tradición:", "Tradition:")}</b> ${esc(c.tradition)}</p>
+          <div class="cs-skill" title="${esc(L("Este curso sigue las reglas de esta skill de tu plugin de composición. Maestro la carga al explicarte cada paso.", "This course follows the rules of this skill from your composition plugin. Maestro loads it when explaining each step."))}">${icon("skill", 13)} ${L("Skill", "Skill")} · ${esc(c.skill)}</div>` : ""}
         <div class="cs-learn">${c.learn.map((x) => `<span>${esc(x)}</span>`).join("")}</div>
         <div class="cs-prog"><div class="bar"><div style="width:${Math.round((done / total) * 100)}%"></div></div><small>${done}/${total} ${L("pasos", "steps")}</small></div>
         <div class="cs-actions">
@@ -3408,9 +3482,13 @@ function startCourse(id) {
   state.name = L(`${c.name} desde cero`, `${c.name} from scratch`);
   state.bpm = c.bpm; $("#bpm").value = c.bpm; $("#proj-name").value = state.name;
   if (live()) evalCode(cps(c.bpm));
+  // Los instrumentos reales del curso (congas, bajo acústico, trombones…) se van bajando mientras lees
+  ensureInstruments(finalTracks(c).map((t) => t.codigo), { quiet: true });
   state.step = "libre";
-  say(L(`¡Vamos a construir un ${c.name} desde cero! (${c.origin})\n\n${c.blurb}\n\nHe puesto el tempo a ${c.bpm} BPM. El curso está en el panel de la izquierda: lee cada paso, pulsa «Escuchar» para oírlo antes y «Añadir a mi canción» cuando quieras. Yo te explico el código de cada pieza aquí.`,
-    `Let's build ${/^[aeiou]/i.test(c.name) ? "an" : "a"} ${c.name} track from scratch! (${c.origin})\n\n${c.blurb}\n\nI set the tempo to ${c.bpm} BPM. The course is in the left panel: read each step, press «Listen» to hear it first and «Add to my song» when you're ready. I'll explain each piece's code here.`), []);
+  const trad = c.skill ? L(`\n\nTradición: ${c.tradition} ${c.lens} El curso sigue la skill ${c.skill} de tu plugin de composición; los instrumentos reales se descargan solos.`,
+    `\n\nTradition: ${c.tradition} ${c.lens} The course follows the ${c.skill} skill from your composition plugin; the real instruments download by themselves.`) : "";
+  say(L(`¡Vamos a construir un ${c.name} desde cero! (${c.origin})\n\n${c.blurb}${trad}\n\nHe puesto el tempo a ${c.bpm} BPM. El curso está en el panel de la izquierda: lee cada paso, pulsa «Escuchar» para oírlo antes y «Añadir a mi canción» cuando quieras. Yo te explico el código de cada pieza aquí.`,
+    `Let's build ${/^[aeiou]/i.test(c.name) ? "an" : "a"} ${c.name} track from scratch! (${c.origin})\n\n${c.blurb}${trad}\n\nI set the tempo to ${c.bpm} BPM. The course is in the left panel: read each step, press «Listen» to hear it first and «Add to my song» when you're ready. I'll explain each piece's code here.`), []);
   save();
   renderCourse();
 }
@@ -3452,9 +3530,11 @@ function renderCourse() {
       <button class="icon-btn" data-cs="leave" title="${esc(L("Salir del curso (tu canción se queda)", "Leave the course (your song stays)"))}">${icon("close", 17)}</button>
     </div>
     <div class="cs-dots">${dots}</div>
+    ${c.skill && i === 0 ? `<div class="cs-trad-box"><b>${L("La tradición que vamos a tocar", "The tradition we'll play")}</b><span>${esc(c.tradition)}</span><span class="cs-lens">${esc(c.lens)}</span></div>` : ""}
     <div class="cs-step">
       <h3>${icon(stepIcon(st), 18)} ${esc(st.t)}</h3>
       <p>${esc(st.why)}</p>
+      ${st.rule ? `<div class="cs-rule">${icon("skill", 15)} <span><b>${L("Lo que dice la skill", "What the skill says")} <code>${esc(c.skill)}</code></b>${esc(st.rule)}</span></div>` : ""}
       ${st.listen ? `<div class="cs-listen">${icon("speaker", 15)} <span><b>${L("Escucha:", "Listen for:")}</b> ${esc(st.listen)}</span></div>` : ""}
       ${what}
       ${missing ? `<p class="hint">${L("Faltan pistas de pasos anteriores: se aplicará a las que existan.", "Some tracks from earlier steps are missing: it will apply to the ones that exist.")}</p>` : ""}
@@ -3499,9 +3579,10 @@ function courseAction(a) {
   if (a === "apply") return courseApply();
 }
 
-function courseApply() {
+async function courseApply() {
   const c = courseById(state.course.id), i = state.course.i, st = c.steps[i];
   stopPreHear();
+  if (st.tracks) await ensureInstruments(st.tracks.map((t) => t.codigo));
   const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
   let changes = "", diff = [];
   if (state.bpm !== c.bpm) { state.bpm = c.bpm; $("#bpm").value = c.bpm; if (live()) evalCode(cps(c.bpm)); }
@@ -3531,7 +3612,7 @@ function courseApply() {
   if (!state.course.done.includes(i)) state.course.done.push(i);
   markStepDone(c.id, i);
   const last = i === c.steps.length - 1;
-  const intro = `${L("Paso", "Step")} ${i + 1}/${c.steps.length} · ${st.t}\n\n${st.why}${st.listen ? `\n\n${L("Escucha:", "Listen for:")} ${st.listen}` : ""}`;
+  const intro = `${L("Paso", "Step")} ${i + 1}/${c.steps.length} · ${st.t}\n\n${st.why}${st.rule ? `\n\n${L("Según la skill", "Per the skill")} ${c.skill}: ${st.rule}` : ""}${st.listen ? `\n\n${L("Escucha:", "Listen for:")} ${st.listen}` : ""}`;
   const opts = [...(last ? [] : [COURSE_NEXT()]), COURSE_ASK(), ...(last ? [COURSE_OPEN()] : [])];
   say(intro, opts, { explicacion: st.parts, reto: st.try, changes, diff });
   save();
@@ -3681,10 +3762,13 @@ function init() {
   $("#btn-courses").onclick = openCourses;
   $("#btn-skills").onclick = () => openSkills();
   $("#chat").addEventListener("click", (e) => { const b = e.target.closest("[data-skill],[data-plugin]"); if (b) openSkills(b.dataset.skill || b.dataset.plugin); });
+  // Instrumento grande que Maestro quiere usar: se abre en la biblioteca para descargarlo
+  $("#chat").addEventListener("click", (e) => { const b = e.target.closest("[data-instlib]"); if (b) openInstLib({ id: b.dataset.instlib }); });
   wireSkills();
   refreshSkillCount();
   wireInstrument();
   wireSamples();
+  wireInstLib();
   wireLoops();
   wireControls();
   wireArrange();

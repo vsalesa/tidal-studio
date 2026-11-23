@@ -301,7 +301,7 @@ STRUDEL_NOTE = ("(Esta skill está escrita para Strudel, la versión JavaScript 
                 "stack(a, b) → pistas separadas; .every(4, x => x.fast(2)) → every 4 (fast 2) $ …; bancos .bank() y sonidos gm_* NO existen aquí.)")
 
 
-def select(cfg, query, extra_words=""):
+def select(cfg, query, extra_words="", force=()):
     """Devuelve (skills activas, cargadas[{name, refs, reason}], texto para el prompt)."""
     skills = [s for s in scan(cfg) if s["enabled"]]
     if not skills:
@@ -310,7 +310,7 @@ def select(cfg, query, extra_words=""):
     words = qwords | _words(extra_words)
     ranked = []
     for s in skills:
-        sc = 100 if s["pinned"] else _score(s, words, query + " " + extra_words)
+        sc = 100 if s["pinned"] or s["name"] in force or s["name"].split(":")[-1] in force else _score(s, words, query + " " + extra_words)
         ranked.append((sc, s))
     ranked.sort(key=lambda x: -x[0])
     # Un plugin «usar siempre» tiene garantizado un hueco: su mejor skill que encaje entra la primera

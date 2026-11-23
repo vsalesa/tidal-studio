@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.8.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.9.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -62,6 +62,19 @@ Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un
 | ![Cursos por género](docs/screenshots/es/cursos.png) | ![Paso de curso](docs/screenshots/es/curso-paso.png) |
 | **Paso de arreglo: intro, merengue y mambo** | **Paso de mezcla y curso completado** |
 | ![Arreglo del curso](docs/screenshots/es/curso-arreglo.png) | ![Curso completado](docs/screenshots/es/curso-completado.png) |
+
+**Cursos latinos que siguen tu plugin de composición.** Merengue, salsa, cumbia, reggaeton y bossa nova siguen las skills
+de estilos latinos del [plugin music-composition](https://github.com/vsalesa/music-composition-skills): cada curso dice
+qué tradición toca (por ejemplo, salsa dura de Nueva York de los 70 sobre clave de son 2-3), cada paso muestra «Lo que
+dice la skill» y Maestro carga esa skill cuando le preguntas por el paso. Las partes las tocan instrumentos reales de la
+biblioteca (güiro, congas, bongós, claves, contrabajo, trombones, acordeón, guitarra de nailon, flauta…), que se
+descargan solos al empezar el curso.
+
+| Cada curso latino dice su tradición y su skill | La tradición y el artista de referencia, antes del primer paso |
+|---|---|
+| ![Cursos latinos](docs/screenshots/es/cursos-latinos.png) | ![Tradición del curso](docs/screenshots/es/curso-tradicion.png) |
+| **«Lo que dice la skill» en cada paso, con instrumentos reales** | |
+| ![Paso con la regla de la skill](docs/screenshots/es/curso-skill-paso.png) | |
 
 ### Maestro, tu profesor
 
@@ -253,6 +266,55 @@ código. Cada componente del catálogo tiene además su propio icono.
 |---|---|
 | ![Batería](docs/screenshots/es/instrumentos-bateria.png) | ![Saxo](docs/screenshots/es/instrumentos-saxo.png) |
 
+### Biblioteca de instrumentos: más de 600 instrumentos concretos
+
+Como GarageBand, pero para Tidal: un clavecín, un contrabajo en pizzicato, un Steinway B, una celesta, un sitar, un
+theremin, un órgano de iglesia, un koto… **634 instrumentos concretos** en 21 categorías (pianos, teclados, órganos,
+música antigua, láminas, guitarras, bajos, cuerdas, metales, maderas, voces, del mundo, percusión, synths
+solistas/pads/bajos/teclados/efectos, motores de synth, efectos de sonido y los tuyos). Ábrela con el botón del altavoz
+de arriba o con la tarjeta **600+ Biblioteca**. Busca en español o en inglés, filtra por descargados o por fuente, y pulsa
+cualquier tarjeta para **escuchar las grabaciones de verdad** antes de descargar nada. Cada instrumento pesa unos pocos MB
+y solo se descarga cuando lo pides.
+
+Elige una versión (el mismo instrumento de distintos juegos de sonidos, o articulaciones como arco y pizzicato), toca el
+teclado para escribir una melodía y pulsa **Añadir como pista**: tienes el código de Tidal
+(`n "c5 e5 g5" # s "harpsichord_fluid"`) y se toca con notas igual que un synth, porque cada nota usa la grabación real
+más cercana. Las grabaciones vienen solo de juegos con licencia libre: VSCO 2 Community Edition y VCSL (CC0), el piano
+de cola Salamander (CC BY) y los juegos General MIDI FluidR3, MusyngKite y FatBoy (CC BY / CC BY-SA). Los créditos se
+escriben en `samples/CREDITS.md` al descargar.
+
+| Por categorías: escúchalo y añádelo | Busca con tus palabras |
+|---|---|
+| ![Biblioteca de instrumentos](docs/screenshots/es/biblioteca-instrumentos.png) | ![Buscar: contrabajo](docs/screenshots/es/biblioteca-buscar.png) |
+
+**Tus propios instrumentos.** Arrastra un **SoundFont (.sf2)** y elige qué sonidos importar (las notas sostenidas se
+desenrollan para que duren), un **.zip con un SFZ**, una carpeta de **grabaciones con la nota en el nombre**
+(`Violin_C4.wav`, `060.wav`) o **un solo sonido** afinado desde la nota que elijas. Aparecen en **Mis instrumentos** y
+también se tocan con notas.
+
+**Motores de synth.** Además de 15 synths nuevos incluidos (Rhodes, órgano, cuerdas, pad, metales, coro, Juno, acid,
+wobble…), la página **Motores de synth** instala plugins gratuitos con un botón: **sc3-plugins**, **Mi-UGens**
+(Plaits, Braids y Rings de Mutable Instruments: 16 + 16 + 6 modelos en la biblioteca) y **VSTPlugin**, con el que
+SuperDirt toca **Surge XT** (sus sonidos de fábrica aparecen en la biblioteca) y **Vital**. Tidal tiene los parámetros
+que necesitan: `d1 $ n "c e g" # s "plaits" # engine 5 # timbre 0.3 # harm 0.5 # morph 0.6`.
+
+| Añade los tuyos: SoundFont, SFZ, grabaciones | Motores de synth con un botón |
+|---|---|
+| ![Importar un SoundFont](docs/screenshots/es/biblioteca-importar.png) | ![Motores de synth](docs/screenshots/es/biblioteca-motores.png) |
+
+**Una foto para cada instrumento, y fíjalo como componente.** Cada instrumento muestra una foto real de Wikimedia
+Commons. Pulsa **Foto de Wikimedia** para buscar otra en Commons: solo salen fotos con licencia libre (CC0, dominio
+público, CC BY, CC BY-SA) y la que elijas se guarda con su autor y licencia, que siempre se muestran debajo. Pulsa
+**★ Fijar** y el instrumento se convierte en una tarjeta de la fila de instrumentos del estudio, junto al piano y la
+batería, lista para abrirla con un clic.
+
+| Elige una foto de Wikimedia Commons | Fijado como tarjeta en el estudio |
+|---|---|
+| ![Buscar foto en Wikimedia](docs/screenshots/es/biblioteca-wikimedia.png) | ![Instrumento fijado](docs/screenshots/es/biblioteca-fijado.png) |
+
+**Maestro también los conoce.** Pide «un clavecín en los acordes» o «un contrabajo en pizzicato» y Maestro usa el
+instrumento exacto de la biblioteca. Si es pequeño lo descarga al momento; si es grande, te pregunta antes.
+
 ### Biblioteca de samples
 
 Sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX, sintes). Escúchalos,
@@ -372,13 +434,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.8.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.9.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.8.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/TidalStudio-0.8.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.8.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/TidalStudio-0.8.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.8.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.8.0/tidal-studio_0.8.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.9.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.9.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/tidal-studio_0.9.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tutorial interactivo
 
@@ -468,6 +530,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.9.0** | [Biblioteca de instrumentos](#biblioteca-de-instrumentos-más-de-600-instrumentos-concretos): más de 600 instrumentos concretos con fotos, escucha previa y tus propios SoundFonts, motores de synth nuevos (Mi-UGens, Surge XT, Vital), cursos latinos que siguen tu plugin de composición con instrumentos reales, y plugins que se actualizan solos. |
 | **0.8.0** | [Biblioteca de loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos): arrastra loops, carpetas o un zip; detecta tempo, compases, tonalidad y golpes y te da código que encaja con tu canción, con variaciones. |
 | **0.7.0** | [Importar una canción](#importar-una-canción-como-punto-de-partida) (MIDI, o audio con herramientas opcionales) como punto de partida de otra nueva. |
 | **0.6.0** | [Maestro descarga los sonidos que necesita](#maestro-descarga-los-sonidos-que-necesita) de packs libres y de Freesound. |
@@ -593,6 +656,19 @@ skill principal `music-composition` en cada mensaje y siempre reserva un hueco p
 (armonía, jazz, groove, forma…). Se descarga en vez de ir dentro del instalador porque sus referencias citan libros con
 copyright (ver su `NOTICE`). Si lo quitas, no vuelve; desmarca «Usar siempre» para que sea un plugin normal.
 
+**Los plugins se mantienen al día.** Cada vez que Tidal Studio arranca pregunta a GitHub si ha cambiado cada plugin que
+instalaste desde un enlace (el último commit que tocó la carpeta del plugin, así que un arreglo cuenta aunque no subas
+`version` en `plugin.json`) y, con **Actualizar los plugins solos al arrancar** activado (viene así), descarga la versión
+nueva y te avisa con un mensaje. Se conservan tus «Activo» y «Usar siempre». Desmárcalo para decidir tú: el plugin enseña
+**Hay una versión nueva en GitHub** con un botón **Actualizar**, y **Buscar actualizaciones** vuelve a mirar sin
+reiniciar. Sin internet no cambia nada y lo intenta la próxima vez. Así, cuando subes un cambio a
+`vsalesa/music-composition-skills`, cada Tidal Studio lo coge al arrancar. Lo que edites a mano dentro de
+`my-plugins/<plugin>/` se sustituye al actualizar.
+
+| Hay versión nueva en GitHub: un clic en Actualizar | Actualizado (o solo al arrancar) |
+|---|---|
+| ![Actualización de plugin disponible](docs/screenshots/es/plugin-actualizar.png) | ![Plugin actualizado](docs/screenshots/es/plugin-actualizado.png) |
+
 ### Samples
 
 Tus sonidos viven en `samples/<nombre>/` (cada carpeta es un sonido de Tidal: `s "nombre"`, `s "nombre:1"` para el segundo
@@ -633,6 +709,7 @@ Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architec
 - `web/builder.js`: wizard de proyecto base. `web/wizard.js`: preguntas de la lluvia de ideas y plan sin IA. `web/flavors.js`: recetas de estilo (jazz, latino, techno, lo-fi, ambient).
 - `web/doctor.js`: revisión y arreglos sin IA del panel Ayuda (`/api/fix` con IA). `web/palette.js`: bloques de la paleta.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: la pestaña Línea de tiempo. El servidor le pregunta a Tidal (`queryArc`) en su propio GHCi; `web/tpat.js` es la calculadora aproximada del navegador que se usa sin motor.
+- `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: la biblioteca de instrumentos (catálogo, descargas, importar SoundFont/SFZ, escucha previa). `supercollider/studio-instruments.scd` toca con notas los instrumentos multisample; `studio-synthlib.scd` tiene los synths incluidos; `server/engines.py` + `studio-engines.scd` instalan y cargan Mi-UGens y VSTPlugin (Surge XT, Vital); `server/photos.py` busca fotos en Wikimedia Commons.
 - `web/controls.js`: controles en el chat. `web/blocks.js` + `web/edit.js`: vista de bloques y su edición. `web/card.js`: tarjeta configuradora. `web/mixer.js`: pestaña Mezcla. `web/history.js`: deshacer e historial. `web/samples.js` + `server/samples.py`: biblioteca de samples y Freesound. `server/github.py`: versiones en GitHub.
 - `server/skills.py` + `server/plugins.py` + `web/skills.js`: skills y plugins de Maestro.
 - `server/files.py` + `web/tidalfile.js`: abrir y guardar archivos `.tidal` / `.hs` (menú Archivo). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: importar una canción (MIDI o audio).
