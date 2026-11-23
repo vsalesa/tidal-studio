@@ -20,6 +20,8 @@ LANGS=es OUT=../screenshots node scenes.js         # Spanish
 OUT=../screenshots node scenes.js studio mixer     # just some scenes
 ```
 
+- `skill-route` needs the music-composition plugin v1.2.0+ (with `mc-tidal-studio`) in `my-plugins/` and
+  `"plugins":{"preferred":["music-composition"]}` in `config.json`.
 - `sample-trim` needs a sample called `my_kick` in the library (upload any short `.wav` first).
 - `settings` (AI detection and Diagnostics) needs a second studio set to Claude with your subscription,
   started with a clean environment: `HOME` pointing to a folder with `.claude/settings.json` and `fake-claude` copied
