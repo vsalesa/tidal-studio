@@ -3,7 +3,7 @@
 title <size:20><b>How Tidal Studio works</b></size>
 
 actor "You" as you
-rectangle "<b>Browser</b>\nweb/ (vanilla JS)\nTracks · Blocks · Mix · Code\nMaestro chat" as web #fbe3db
+rectangle "<b>Browser</b>\nweb/ (vanilla JS)\nTracks · Blocks · Mix · Timeline\nArrangement · Code · Maestro chat" as web #fbe3db
 
 frame "Your computer  (127.0.0.1)" {
   rectangle "<b>server/app.py</b>\nlocal web server\n(Python standard library)" as app
@@ -12,7 +12,11 @@ frame "Your computer  (127.0.0.1)" {
   rectangle "<b>SuperCollider + SuperDirt</b>\nsupercollider/start_superdirt.scd\nsamples · synths · EQ" as sc #f8ecd2
   rectangle "<b>server/llm.py</b> + assistant.py\nMaestro's prompts and replies" as llm
   rectangle "<b>server/skills.py</b> + plugins.py\nskills/ · my-skills/ · my-plugins/" as skills
-  rectangle "<b>server/samples.py</b>\nsamples/ library" as samples
+  rectangle "<b>server/samples.py</b> + fetcher.py\nsamples/ library\nMaestro fetches what is missing" as samples
+  rectangle "<b>server/loops.py</b>\nlong loops: tempo, bars,\nkey, hits" as loops
+  rectangle "<b>server/timeline.py</b>\nits own GHCi: queryArc\nfor the Timeline" as tl #dcefeb
+  rectangle "<b>server/files.py</b> + songimport.py\nopen/save .tidal,\nimport MIDI or audio" as files
+  rectangle "<b>server/ccdetect.py</b> + llmdiag.py\nfinds Claude Code,\nDiagnostics" as diag
   node "Speakers" as out
 }
 
@@ -33,4 +37,9 @@ app --> samples
 samples --> sc : reload sounds\n(OSC /tidalstudio)
 samples ..> gh
 skills ..> gh
+app --> loops
+loops --> samples : every new sound\nis analysed
+app --> tl : where does\neach hit play?
+app --> files
+llm --> diag
 @enduml
