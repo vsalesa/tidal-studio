@@ -8,10 +8,37 @@ would: the signature rhythm first, then bass, harmony, melody, arrangement (16 b
 code piece by piece, and each step ends with a small challenge. «Hear the result» on each course card plays the
 finished song for a few bars before you start.
 
+## Latin courses follow your composition plugin
+
+The five Latin courses (merengue, salsa, cumbia, reggaeton, bossa nova) were rewritten in version 0.9 with the Latin
+style skills of the [music-composition plugin](https://github.com/vsalesa/music-composition-skills)
+(`mc-style-latin-merengue`, `-salsa`, `-cumbia`, `-reggaeton`, `-bossa-mpb`):
+
+- **A named tradition first.** Each course says which branch and era it plays (1980s orchestral merengue, 1970s New York
+  salsa dura on a 2-3 son clave, Mexican accordion cumbia, today's melodic reggaeton, classic Rio bossa nova) and which
+  artist it uses as a lens, as the skills ask, instead of a generic «Latin» groove.
+- **The skill's rule on every step.** Each step shows «What the skill says»: the rule from the skill that the step puts
+  into practice (interlocking parts, clave direction, coro and pregón with different jobs, the bossa «early chord» on even
+  bars, shortening the sub when it collides with the kick, a hook that comes back changed, a real density drop…).
+- **Maestro loads the same skill.** While you are in a Latin course, «Ask Maestro» always loads that course's skill.
+- **Real instruments.** The parts use the instrument library instead of generic synths: güiro, congas, bongos, claves,
+  cowbell, wood block, shaker and timbal (VCSL, CC0) and upright and electric bass, bright piano, trumpet, trombone, alto
+  sax, choir, organ, accordion, nylon guitar, flute and pad (FluidR3 GM, CC BY 3.0). They download by themselves the first
+  time you start the course (about 25 MB in total); if a download fails, the studio tells you which one.
+- **New musical content.** The salsa now has a bongo martillo that switches to the bell in the montuno, a piano guajeo in
+  octaves, a coro answering a trombone moña, and a five-part form; the merengue has bass approach notes and trumpet/sax
+  call and response with a jaleo break; the cumbia has a 1-5-5 bass matched by the kick and an 8-bar accordion hook with a
+  varied answer; the reggaeton has a dembow fill, a short sub, chopped vocals and a subtractive break; the bossa follows
+  the odd/even bar chord rule and plans a density drop.
+
 ## How the code was checked
 
-- Every track in every course (66 tracks) was compiled and evaluated with the real TidalCycles
+- Every track in every course (70 tracks) was compiled and evaluated with the real TidalCycles
   pattern library (tidal-core 1.10.0): it type-checks, the mini-notation parses, and it produces events.
+- The 34 tracks of the Latin courses were checked again for 0.9 the same way, and their notes were read back from
+  Tidal to confirm the chord tones, anticipations and ranges of each real instrument. Every instrument name exists in
+  the instrument library catalog, and the kit indices (for example `congas:12` quinto, `congas:22` tumba, `bongos:16`
+  open low bongo, `cowbells:11` open bell) were checked against the downloaded files.
 - Every sample name and index exists in [Dirt-Samples](https://github.com/tidalcycles/Dirt-Samples) (for example
   `drumtraks:0` is a cabasa, `808:2` claves, `808:4` maracas, `808hc/808mc/808lc` congas, `drumtraks:7` a ride).
   Pitched parts use the studio's synths (superpiano, superpwm, supersaw, superhammond, supertrumpet, supersquare,
@@ -22,11 +49,11 @@ finished song for a few bars before you start.
 
 | Course | Origin | BPM | Key / progression | Steps | You learn |
 |---|---|---|---|---|---|
-| Merengue | Dominican Republic | 136 | C major · I–IV–V7–I | The güira: the engine → Tambora and kick → The bass that jumps ahead → Off-beat piano → The horn mambo → Arrangement: intro, merengue and mambo → Mix: let everything be heard | Güira and tambora, Anticipated bass, Horn mambo |
-| Salsa | Cuba · Puerto Rico · New York | 180 | C major · I–IV–V–IV | The 2-3 clave → Congas and cowbell → The bass tumbao → The piano montuno → The horns → Arrangement: intro, montuno and mambo → Orchestra mix | 2-3 clave, Tumbao, Montuno |
-| Cumbia | Colombia | 96 | A minor · i–iv–V7–i | The guacharaca → Llamador and tambora → Root-and-fifth bass → The off-beat organ → The melody → Arrangement → Mix | Off-beat, Root and fifth, Harmonic minor |
-| Reggaeton | Puerto Rico · Panama | 92 | A minor · i–VI–III–VII | The kick → The dembow snare → 808 bass in tresillo → Chord pad → The hook with echo → Arrangement: intro and drop → Mix | Dembow, Tresillo, Tempo-synced delay |
-| Bossa nova | Brazil | 130 | C major · Imaj7–vi7–ii7–V7 | Sixteenth-note shaker → Surdo and rimshot → Bass → The guitar (batida) → Flute melody → Arrangement → Intimate mix | Seventh chords, Batida, Syncopation |
+| Merengue | Dominican Republic | 140 | C major · I–IV–V7–I | The güira: the engine → Tambora and kick → The bass that jumps ahead → Off-beat piano → Horns: call and response → Arrangement: launch, merengue, mambo and jaleo → Mix: let everything be heard | Güira and tambora, Bass with approach notes, Horn call and response |
+| Salsa | Cuba · Puerto Rico · New York | 180 | A minor · i–iv–V7–iv | The 2-3 clave → Congas and bongo → The bass tumbao → The piano guajeo → Montuno: coro and bell → The trombone moña → Arrangement: intro, tema, montuno, mambo and ending → Orchestra mix | 2-3 clave, Tumbao and guajeo, Coro and moña |
+| Cumbia | Colombia · Mexico | 96 | A minor · i–iv–V7–i | The güiro → Congas, kick and timbal → 1-5-5 bass → The off-beat organ → The accordion: a hook that comes back changed → Arrangement: opening, cumbia, interlude and return → Mix | «Cha-chi-ki» güiro, 1-5-5 bass, A hook that comes back changed |
+| Reggaeton | Puerto Rico · Panama | 92 | A minor · i–VI–III–VII | The kick → The dembow (with variation) → 808 sub in tresillo (without clashing) → Chord pad → The guitar hook → Chopped vocals: the hook in another rhythm → Arrangement: hook, verse, break and return → Mix | Dembow with variations, A sub that doesn't clash, Break and return |
+| Bossa nova | Brazil | 130 | C major · Imaj7–vi7–ii7–V7 | Sixteenth-note shaker → Surdo and rimshot → Upright bass → The batida: the early chord → The flute: first time and variation → Arrangement: solo guitar, band, intimate moment → Intimate mix | Guitar batida, The early chord, Dropping the density |
 | Jazz (swing) | United States | 140 | C major · ii–V–I–VI | The ride and swing → Hi-hat on 2 and 4 → Walking bass → Charleston piano → The head: muted trumpet → Arrangement: intro, head, ending → Jazz club mix | Swing, Walking bass, ii–V–I |
 | Funk | United States | 104 | E dorian · Em7–A7 | Syncopated kick → Snare with ghost notes and hi-hats → Octave-jumping bass → Scratchy guitar → Horn stabs → Arrangement → Mix | Ghost notes, Sixteenth notes, Two-chord vamp |
 | House | Chicago | 124 | A minor · im7–VImaj7–ivm7–vm7 | Four-on-the-floor → Claps and hi-hats → Off-beat bass → Piano chords → Filtered arpeggio → DJ arrangement → Club mix | Four-on-the-floor, Arpeggios, Filter modulation |
