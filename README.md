@@ -612,6 +612,19 @@ jtydhr88's 30-skill composition plugin, MIT) into `my-plugins/`. It is marked **
 groove, form…). It is downloaded instead of shipped in the installer because its reference files quote copyrighted
 books (see its `NOTICE`). If you remove it, it doesn't come back; untick «Always use» to make it an ordinary plugin.
 
+**Plugins stay up to date.** Every time Tidal Studio starts it asks GitHub whether each plugin you installed from a link
+has changed (the last commit that touched the plugin's folder, so a fix counts even if `version` in `plugin.json` wasn't
+bumped) and, with **Update plugins automatically at startup** on (the default), downloads the new version and tells you
+with a message. Your «On» and «Always use» choices are kept. Untick it to decide yourself: the plugin then shows
+**A new version is on GitHub** with an **Update** button, and **Check for updates** looks again without restarting.
+Without internet nothing changes and it tries again next time. So when you push a change to
+`vsalesa/music-composition-skills`, every Tidal Studio picks it up on its next start. Files you edit by hand inside
+`my-plugins/<plugin>/` are replaced by an update.
+
+| A new version on GitHub: one click on Update | Updated (or automatically at startup) |
+|---|---|
+| ![Plugin update available](docs/screenshots/plugin-update.png) | ![Plugin updated](docs/screenshots/plugin-updated.png) |
+
 ### Samples
 
 Your sounds live in `samples/<name>/` (each folder is a Tidal sound: `s "name"`, `s "name:1"` for the second file).

@@ -23,7 +23,10 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import threading
+import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 import net
@@ -352,6 +355,10 @@ def install(url, names=None):
                 "author": author.get("name", "") if isinstance(author, dict) else str(author),
                 "homepage": str(man.get("homepage") or e.get("homepage") or ""),
             }
+            # para saber luego si hay una versión nueva: último commit que tocó la carpeta del plugin
+            source["commit"] = remote_commit(f"{owner}/{repo}", ref, source["path"]) or ""
+            source["version"] = str(man.get("version") or e.get("version") or "")
+            source["installed_at"] = int(time.time())
             with open(os.path.join(stage, "PLUGIN-SOURCE.json"), "w", encoding="utf-8") as f:
                 json.dump(source, f, indent=2, ensure_ascii=False)
             shutil.rmtree(dest, ignore_errors=True)
@@ -391,12 +398,120 @@ def ensure_defaults(cfg):
     return out
 
 
+# ------------------------------------------------------------------ actualizaciones
+
+GITHUB_TOKEN = ""  # lo pone app.py si configuraste GitHub (más margen con el límite de la API)
+UPDATES = {}       # nombre -> {"available", "remote_commit", "remote_version", "checked_at", "error"}
+_lock = threading.Lock()
+
+
+def _http(url, accept_json=True):
+    req = urllib.request.Request(url, headers={"User-Agent": "tidal-studio/0.1"})
+    if accept_json:
+        req.add_header("Accept", "application/vnd.github+json")
+    if GITHUB_TOKEN and "api.github.com" in url:
+        req.add_header("Authorization", "Bearer " + GITHUB_TOKEN)
+    with net.urlopen(req, timeout=20) as r:
+        return r.read(2_000_000)
+
+
+def remote_commit(repo, ref="", path=""):
+    """SHA del último commit de GitHub que tocó esa carpeta del repositorio ("" si no se puede saber)."""
+    q = "per_page=1" + (f"&sha={urllib.parse.quote(ref)}" if ref else "") + \
+        (f"&path={urllib.parse.quote(path)}" if path and path != "." else "")
+    try:
+        data = json.loads(_http(f"https://api.github.com/repos/{repo}/commits?{q}"))
+        return str(data[0]["sha"]) if isinstance(data, list) and data else ""
+    except Exception as e:
+        print(f"[plugins] No pude consultar la última versión de {repo}: {e}")
+        return ""
+
+
+def remote_version(repo, ref="", path=""):
+    """La «version» del plugin.json que hay ahora en GitHub ("" si no tiene)."""
+    rel = (path.strip("/") + "/" if path and path != "." else "") + ".claude-plugin/plugin.json"
+    try:
+        return str(json.loads(_http(f"https://raw.githubusercontent.com/{repo}/{ref or 'HEAD'}/{rel}", False)).get("version") or "")
+    except Exception:
+        return ""
+
+
+def _source(name):
+    return _load_json(os.path.join(PLUGIN_DIR, _slug(name), "PLUGIN-SOURCE.json")) or {}
+
+
+def check_one(name):
+    """¿Hay una versión más nueva en GitHub? Compara el último commit de su carpeta y, si no se
+    puede (sin red, límite de la API), la «version» de su plugin.json."""
+    src = _source(name)
+    repo = src.get("repo") or ""
+    if not re.fullmatch(r"[\w.-]+/[\w.-]+", repo):
+        info = {"available": False, "checked_at": int(time.time()), "error": "", "local": True}
+    else:
+        ref, path = src.get("ref") or "", src.get("path") or ""
+        rc = remote_commit(repo, ref, path)
+        rv = remote_version(repo, ref, path)
+        local_v = src.get("version") or str((_load_json(os.path.join(PLUGIN_DIR, _slug(name), ".claude-plugin", "plugin.json")) or {}).get("version") or "")
+        if rc:
+            # instalado antes de que guardáramos el commit (v0.8 o anterior): lo damos por desactualizado
+            available = rc != src.get("commit")
+        else:
+            available = bool(rv and local_v and rv != local_v)
+        info = {"available": available, "remote_commit": rc[:7], "remote_version": rv,
+                "checked_at": int(time.time()), "error": "" if (rc or rv) else "offline"}
+    with _lock:
+        UPDATES[_slug(name)] = info
+    return info
+
+
+def check_all():
+    out = {}
+    if os.path.isdir(PLUGIN_DIR):
+        for entry in sorted(os.listdir(PLUGIN_DIR)):
+            if not entry.endswith(".tmp") and os.path.isdir(os.path.join(PLUGIN_DIR, entry)):
+                out[entry] = check_one(entry)
+    return out
+
+
+def update(name):
+    """Vuelve a descargar el plugin desde el mismo sitio de donde se instaló."""
+    name = _slug(name)
+    src = _source(name)
+    if not src.get("repo"):
+        raise PluginError("Este plugin no se instaló desde GitHub: no sé de dónde actualizarlo")
+    url = src.get("url") or f"https://github.com/{src['repo']}"
+    r = install(url, [name])
+    if name not in (r.get("installed") or []):
+        raise PluginError(f"No encuentro «{name}» en {url}")
+    with _lock:
+        UPDATES[name] = {"available": False, "checked_at": int(time.time()), "error": "", "just_updated": True,
+                         "remote_version": _source(name).get("version", "")}
+    return r
+
+
+def auto_update(cfg):
+    """Al arrancar: busca versiones nuevas y, si «actualizar solos» está activo, las instala.
+    Devuelve los nombres actualizados."""
+    done = []
+    for name, info in check_all().items():
+        if not info.get("available") or not (cfg.get("plugins") or {}).get("auto_update", True):
+            continue
+        try:
+            update(name)
+            done.append(name)
+        except PluginError as e:
+            print(f"[plugins] No se pudo actualizar {name}: {e}")
+    return done
+
+
 def remove(name):
     name = _slug(name)
     d = os.path.join(PLUGIN_DIR, name)
     if not name or not os.path.isdir(d):
         raise PluginError("No encuentro ese plugin")
     shutil.rmtree(d, ignore_errors=True)
+    with _lock:
+        UPDATES.pop(name, None)
     return True
 
 
@@ -451,6 +566,9 @@ def scan(cfg=None):
             "homepage": src.get("homepage") or "",
             "marketplace": src.get("marketplace") or "",
             "notice": os.path.isfile(os.path.join(folder, "NOTICE")),
+            "commit": (src.get("commit") or "")[:7],
+            "updatable": bool(src.get("repo")),
+            "update": dict(UPDATES.get(entry) or {}),
             "enabled": entry not in disabled,
             "preferred": entry in preferred,
             "default": (src.get("repo") or "").lower() in {u.split("github.com/")[-1].lower() for u in DEFAULT_REPOS},

@@ -3298,8 +3298,18 @@ const stepIcon = (st) => st.arrange ? "estructura" : st.mix ? "mixer" : (st.trac
 
 // ------------------------------------------------------------------ skills de Maestro
 let skillList = [];
+let pluginUpdatePolls = 0, pluginUpdateToasted = false;
 async function refreshSkillCount() {
-  try { const r = await api("/api/skills"); skillList = r.skills || []; } catch { skillList = []; }
+  let r = {};
+  try { r = await api("/api/skills"); skillList = r.skills || []; } catch { skillList = []; }
+  // Al arrancar, el servidor busca versiones nuevas de los plugins: avisamos cuando termina
+  const pu = r.plugin_updates || {};
+  if ((pu.state === "idle" || pu.state === "checking") && pluginUpdatePolls < 12) { pluginUpdatePolls++; setTimeout(refreshSkillCount, 5000); }
+  if (pu.state === "done" && !pluginUpdateToasted) {
+    pluginUpdateToasted = true;
+    if ((pu.updated || []).length) toast(L(`Plugins actualizados a su última versión: ${pu.updated.join(", ")}`, `Plugins updated to their latest version: ${pu.updated.join(", ")}`));
+    else { const n = (r.plugins || []).filter((p) => (p.update || {}).available).length; if (n) toast(L(`Hay ${n} plugin${n > 1 ? "s" : ""} con versión nueva: ábrelos en Skills`, `${n} plugin${n > 1 ? "s have" : " has"} a new version: open Skills to update`)); }
+  }
   const n = skillList.filter((s) => s.enabled).length;
   const b = $("#sk-count"); b.textContent = n; b.hidden = !n;
   return skillList;
@@ -3308,7 +3318,7 @@ async function openSkills(focus = "") {
   let r = { skills: [], folder: "" };
   try { r = await api("/api/skills"); } catch (e) { toast(e.message); }
   skillList = r.skills || [];
-  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins });
+  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins, updates: r.plugin_updates, autoUpdate: r.plugins_auto_update });
   if (!$("#skills").open) $("#skills").showModal();
   const f = focus && ($(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`) || $(`#skills-body .pl-card[data-plugin="${CSS.escape(focus)}"]`));
   if (f) f.scrollIntoView({ block: "nearest" });
@@ -3317,8 +3327,12 @@ async function openSkills(focus = "") {
 function wireSkills() {
   const body = $("#skills-body");
   body.addEventListener("change", async (e) => {
-    const card = e.target.closest(".sk-card"); const a = e.target.dataset.a;
+    const card = e.target.closest(".sk-card, .pl-updates"); const a = e.target.dataset.a;
     if (!card || !a) return;
+    if (a === "plugin-autoupdate") {
+      try { await api("/api/plugins/autoupdate", { on: e.target.checked }); } catch (err) { toast(err.message); }
+      return;
+    }
     if (a === "plugin-enable" || a === "plugin-prefer") {
       try { await api(`/api/plugins/${a === "plugin-enable" ? "enable" : "prefer"}`, { name: card.dataset.plugin, on: e.target.checked }); } catch (err) { toast(err.message); }
       return openSkills(card.dataset.plugin);
@@ -3353,6 +3367,16 @@ function wireSkills() {
       $("#skills").close();
       const inp = $("#chat-input"); if (inp) { inp.value = b.dataset.cmd + " "; inp.focus(); }
       return;
+    }
+    if (b.dataset.a === "plugin-check" || b.dataset.a === "plugin-update" || b.dataset.a === "plugin-update-all") {
+      const pc = b.closest(".pl-card"); const name = pc ? pc.dataset.plugin : "";
+      const check = b.dataset.a === "plugin-check";
+      b.disabled = true; b.textContent = check ? L("Buscando…", "Checking…") : L("Actualizando…", "Updating…");
+      try {
+        const r = await api(`/api/plugins/${check ? "check" : "update"}`, { name });
+        if (!check && r.updated) toast(L(`Plugin actualizado: ${r.updated.join(", ")}`, `Plugin updated: ${r.updated.join(", ")}`));
+      } catch (err) { toast(err.message); }
+      return openSkills(name);
     }
     if (b.dataset.a === "plugin-remove") {
       const pc = b.closest(".pl-card");
