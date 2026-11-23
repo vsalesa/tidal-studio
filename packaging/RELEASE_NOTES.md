@@ -1,4 +1,13 @@
-## What's new in 0.8.0 / Novedades
+## What's new in 0.9.0 / Novedades
+
+- **Instrument library with 600+ specific instruments** (harpsichord, pizzicato double bass, Steinway, sitar, celesta…), by category with real photos, pre-listen, on-demand downloads from freely licensed sound sets, and notes mapped to the real recordings.
+- **Add your own instruments**: SoundFont (.sf2), SFZ in a zip, recordings with the note in the name, or a single sound.
+- **Synth engines**: 15 new built-in synths, plus one-button install of sc3-plugins, Mi-UGens (Plaits, Braids, Rings) and VSTPlugin for Surge XT and Vital.
+- **Wikimedia photos**: find a freely licensed photo for any instrument and pin it as a card in the studio's instrument row. Maestro also picks specific instruments from the library.
+
+**Español:** **Biblioteca con más de 600 instrumentos concretos** (clavecín, contrabajo en pizzicato, Steinway, sitar, celesta…), por categorías con fotos reales, escucha previa, descarga cuando la pides desde juegos de sonidos con licencia libre y notas tocadas con las grabaciones reales. **Añade tus instrumentos** (SoundFont, SFZ en un zip, grabaciones con la nota en el nombre o un solo sonido). **Motores de synth**: 15 synths nuevos incluidos e instalación con un botón de sc3-plugins, Mi-UGens y VSTPlugin para Surge XT y Vital. **Fotos de Wikimedia** para cualquier instrumento, que puedes fijar como tarjeta en la fila de instrumentos del estudio. Maestro también elige instrumentos concretos de la biblioteca.
+
+## 0.8.0
 
 - **Long loops library**: drop loops, folders or a zip; tempo, bars, key and hits are detected, and you get code that fits your tempo, with variations.
 
