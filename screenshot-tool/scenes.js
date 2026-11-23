@@ -348,6 +348,45 @@ const scenes = {
     await ctx.close();
   },
 
+  // Teclado MIDI: tools/virtual_midi.py hace de piano USB (y de canción sonando, con --fake-song)
+  async midi(b, lang) {
+    const { spawn, execFileSync } = require('child_process');
+    const VM = require('path').join(__dirname, '..', '..', 'tools', 'virtual_midi.py');
+    execFileSync('python3', [VM, '--list-only']);
+    const reply = () => ({
+      mensaje: T(lang, 'Has tocado una progresión muy clásica en do mayor: C → Am → F → G (I-vi-IV-V). La mano izquierda marca los acordes en el 1 y el 3, y la derecha canta una melodía en corcheas que se apoya en las notas de cada acorde. Yo le añadiría un bajo que siga la raíz de cada acorde y, en la última vuelta, una melodía que suba para cerrar.',
+        'You played a very classic progression in C major: C → Am → F → G (I-vi-IV-V). Your left hand lays the chords on beats 1 and 3, and your right hand sings an eighth-note melody that leans on each chord\'s notes. I\'d add a bass that follows each chord\'s root and, on the last loop, a rising melody to close.'),
+      explicacion: [{ fragmento: '<[c4,e4,g4]*2 [a3,c4,e4]*2 …>', explicacion: T(lang, 'Un acorde distinto en cada vuelta; [c4,e4,g4] son tres notas a la vez y *2 lo toca dos veces.', 'A different chord on each loop; [c4,e4,g4] are three notes at once and *2 plays it twice.') }],
+      opciones: [T(lang, 'Añade el bajo', 'Add the bass'), T(lang, 'Cambia el sonido de la derecha', 'Change the right-hand sound'), T(lang, 'Hazlo jazz', 'Make it jazz')],
+      cambios: { pistas: [{ id: 'd8', nombre: T(lang, 'Bajo de raíces', 'Root bass'), tipo: 'bajo', codigo: 'note "<c3 a2 f2 g2>" # s "supersaw" # lpf 800 # legato 1' }] },
+      skills: SK(lang),
+    });
+    const { page } = await open(b, { lang, state: sunday(lang, { bpm: 100 }), routes: { '/api/chat': chatMock(lang, [[/./, reply]]) } });
+    await page.click('#btn-midi'); await page.waitForTimeout(900);
+    for (const n of [48, 52, 55, 64]) await page.evaluate((n) => fetch('/api/midi/note', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'on', note: n, vel: 90, src: 'virtual' }) }), n);
+    await page.waitForTimeout(700);
+    await shot(page, T(lang, 'midi-teclado', 'midi-keyboard'), lang);
+    for (const n of [48, 52, 55, 64]) await page.evaluate((n) => fetch('/api/midi/note', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'off', note: n, vel: 0, src: 'virtual' }) }), n);
+    // «canción» sonando a 100 BPM y el pianista entrando a compás
+    const vm = spawn('python3', [VM, '--fake-song', '--bpm', '100', '--bars', '4', '--wait', '2']);
+    await page.waitForTimeout(1200);
+    await page.click('#mididock [data-a=rec]');
+    await page.waitForTimeout(8200);
+    await shot(page, T(lang, 'midi-grabando', 'midi-recording'), lang);
+    await new Promise((ok) => vm.on('exit', ok));
+    await page.click('#mididock [data-a=stop]'); await page.waitForTimeout(1200);
+    await shot(page, T(lang, 'midi-traducido', 'midi-result'), lang);
+    await page.click('#mididock [data-a=maestro]'); await page.waitForTimeout(2500);
+    await page.evaluate(() => {
+      document.querySelector('#tracks .track[data-id="d6"]')?.scrollIntoView({ block: 'start' });
+      const msgs = [...document.querySelectorAll('#chat .msg')]; const u = msgs.filter((m) => m.classList.contains('user')).pop();
+      if (u) u.scrollIntoView({ block: 'start' });
+      window.scrollTo(0, 0); document.querySelector('.layout')?.scrollTo?.(0, 0);
+    });
+    await page.waitForTimeout(400);
+    await shot(page, T(lang, 'midi-maestro', 'midi-maestro'), lang);
+  },
+
   async settings(b, lang) {
     const { page } = await open(b, { lang, state: sunday(lang) });
     await page.click('#btn-settings'); await page.waitForTimeout(800);
