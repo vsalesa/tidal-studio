@@ -38,6 +38,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         .appendingPathComponent("Library/Logs/Tidal Studio")
     var logURL: URL { logDir.appendingPathComponent("studio.log") }
     var portFile: URL { supportDir.appendingPathComponent(".port") }
+    /// The studio writes this file to ask the app to quit (to install an update: server/appupdate.py)
+    var quitFile: URL { supportDir.appendingPathComponent(".quit-request") }
+    var quitTimer: Timer?
 
     // MARK: - App lifecycle
 
@@ -88,6 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
         try? FileManager.default.createDirectory(at: logDir, withIntermediateDirectories: true)
         try? FileManager.default.removeItem(at: portFile)
+        try? FileManager.default.removeItem(at: quitFile)
         // keep the previous log for troubleshooting
         let old = logDir.appendingPathComponent("studio.previous.log")
         try? FileManager.default.removeItem(at: old)
@@ -102,6 +106,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         var env = ProcessInfo.processInfo.environment
         env["TIDAL_STUDIO_WATCH_PARENT"] = "1"
         env["PYTHONUNBUFFERED"] = "1"
+        env["TIDAL_STUDIO_QUIT_FILE"] = quitFile.path
+        env["TIDAL_STUDIO_SHELL_PID"] = String(ProcessInfo.processInfo.processIdentifier)
         if env["TIDAL_STUDIO_LANG"] == nil { env["TIDAL_STUDIO_LANG"] = spanish ? "es" : "en" }
         p.environment = env
         p.standardInput = FileHandle.nullDevice
@@ -120,6 +126,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         startedAt = Date()
         say("server started (pid \(p.processIdentifier)), log: \(logURL.path)")
         pollTimer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] _ in self?.poll() }
+        quitTimer?.invalidate()
+        quitTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
+            guard let self = self, FileManager.default.fileExists(atPath: self.quitFile.path) else { return }
+            try? FileManager.default.removeItem(at: self.quitFile)
+            say("the studio asked to quit (update)")
+            NSApp.terminate(nil)
+        }
     }
 
     /// Waits for the server to write its port and answer /api/status, then shows the studio.
@@ -317,6 +330,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     @objc func zoomOut(_ sender: Any?) { webView.pageZoom = max(webView.pageZoom - 0.1, 0.5) }
     @objc func zoomReset(_ sender: Any?) { webView.pageZoom = 1 }
 
+    @objc func checkForUpdates(_ sender: Any?) {
+        webView.evaluateJavaScript("window.tsCheckUpdates && window.tsCheckUpdates()", completionHandler: nil)
+    }
+
     @objc func openWebsite(_ sender: Any?) {
         NSWorkspace.shared.open(URL(string: "https://vsalesa.github.io/tidal-studio/")!)
     }
@@ -472,6 +489,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         _ = add("Tidal Studio") { m in
             item(m, T("About Tidal Studio", "Acerca de Tidal Studio"),
                  #selector(NSApplication.orderFrontStandardAboutPanel(_:)))
+            item(m, T("Check for Updates…", "Buscar actualizaciones…"), #selector(checkForUpdates(_:)), "", [], target: self)
             m.addItem(.separator())
             item(m, T("Restart the studio", "Reiniciar el estudio"), #selector(restartStudio(_:)), "", [], target: self)
             m.addItem(.separator())

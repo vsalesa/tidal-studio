@@ -27,6 +27,7 @@ import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LET
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { openImport, importedSummary, INSPIRE_PROMPT } from "./importsong.js";
+import { initAppUpdate } from "./appupdate.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
@@ -3739,6 +3740,7 @@ function init() {
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };
 
   $("#btn-settings").onclick = openSettings;
+  initAppUpdate();
   $("#btn-new").onclick = openNewProject;
   $("#btn-projects").onclick = () => openProjects();
   wireFiles();

@@ -431,6 +431,28 @@ Download the installer for your system (version 0.9.1; newer ones appear on the 
 | **Windows** 10/11 (x64) | [TidalStudio-0.9.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
 | **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/tidal-studio_0.9.1_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
+### Tidal Studio updates itself
+
+When a new version comes out, the app tells you: at startup and every 12 hours it checks the
+[releases on GitHub](https://github.com/vsalesa/tidal-studio/releases) and shows a card with what's new. **Update now**
+downloads the installer for your computer (the Apple Silicon `.pkg` on a Mac, `Setup.exe` on Windows, the `.deb` on
+Linux) with a progress bar and checks it against the SHA-256 that GitHub publishes. **Install and restart** closes
+Tidal Studio, runs the installer (your Mac asks for your password, Windows for permission) and opens the new version.
+Your songs, samples, plugins and settings are left alone. **Later** hides the card until tomorrow and **Skip this
+version** until the next one.
+
+| A new version is out | Downloading, with progress |
+|---|---|
+| ![Update available](docs/screenshots/app-update.png) | ![Downloading the update](docs/screenshots/app-update-download.png) |
+
+| Ready: one click installs and reopens | Settings › Updates |
+|---|---|
+| ![Ready to install, with what's new](docs/screenshots/app-update-ready.png) | ![Update settings](docs/screenshots/app-update-settings.png) |
+
+In **Settings › Updates** you see your version, can **Check for updates** by hand (on the Mac also from the menu
+**Tidal Studio › Check for Updates…**) and untick **Check for new versions automatically** so it never looks by itself.
+If you run Tidal Studio from the source folder, it only tells you about the new version: update with `git pull`.
+
 ### Interactive tutorial
 
 The first time you open the studio, Maestro walks you through everything in 22 short steps (play the drums, add tracks,
@@ -533,6 +555,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.11.0** | [Tidal Studio updates itself](#tidal-studio-updates-itself): it tells you about new versions, downloads and verifies the installer for your computer and installs it with one click. |
 | **0.9.1** | [Tidal Studio route](#plugins): Maestro loads `mc-tidal-studio`, the skills route of your composition plugin made for this app, with every message, plus the genre skill that best fits. |
 | **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |
 | **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |

@@ -41,6 +41,7 @@ import ccdetect  # noqa: E402
 import songimport  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
+import appupdate  # noqa: E402
 import instlib  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
@@ -98,6 +99,11 @@ DEFAULT_CONFIG = {
         "defaults_done": [],
         # Al arrancar, buscar versiones nuevas de los plugins en GitHub e instalarlas solas
         "auto_update": True,
+    },
+    # Versiones nuevas de la propia app (GitHub Releases): avisar al arrancar y cada 12 h
+    "updates": {
+        "auto_check": True,
+        "skipped": "",             # versión que elegiste saltarte
     },
     "temperature": 0.7,
     "language": "es",
@@ -323,6 +329,21 @@ def update_plugins_on_start():
         print(f"[plugins] {e}")
 
 
+def app_update_loop():
+    """Busca versiones nuevas de Tidal Studio al arrancar (tras 20 s) y luego cada 12 horas."""
+    time.sleep(20)
+    while True:
+        try:
+            cfg = load_config()
+            appupdate.GITHUB_TOKEN = ((cfg.get("github") or {}).get("token") or "").strip()
+            r = appupdate.maybe_check(cfg, cfg.get("language") or "es")
+            if r and r.get("state") in ("available", "ready"):
+                print(f"[update] Tidal Studio {r.get('latest')} disponible / available")
+        except Exception as e:  # noqa: BLE001
+            print(f"[update] {e}")
+        time.sleep(1800)
+
+
 ENGINE = Engine(ROOT)
 TIMELINE = TimelineQuery(ROOT)
 llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
@@ -532,6 +553,8 @@ class Handler(SimpleHTTPRequestHandler):
                 })
             if path == "/api/config":
                 return self._json(public_config(load_config()))
+            if path == "/api/appupdate":
+                return self._json(appupdate.public(load_config()))
             if path == "/api/samples":
                 return self._json(LIBRARY.list())
             if path == "/api/loops":
@@ -937,6 +960,32 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json({"commits": github.history(cfg, github.slugify(data.get("slug")))})
                 return self._json({"error": "Ruta no encontrada"}, 404)
 
+            if path.startswith("/api/appupdate/"):
+                act = path[len("/api/appupdate/"):]
+                cfg = load_config()
+                lang = data.get("lang") or cfg.get("language") or "es"
+                up = cfg.setdefault("updates", {})
+                if act == "check":
+                    appupdate.GITHUB_TOKEN = ((cfg.get("github") or {}).get("token") or "").strip()
+                    appupdate.check(lang)
+                elif act == "download":
+                    appupdate.start_download()
+                elif act == "install":
+                    try:
+                        r = appupdate.install(lang)
+                    except ValueError as e:
+                        return self._json({"error": str(e)}, 400)
+                    return self._json({**appupdate.public(cfg), **r})
+                elif act == "auto":
+                    up["auto_check"] = bool(data.get("on"))
+                    save_config(cfg)
+                elif act == "skip":
+                    up["skipped"] = str(data.get("version") or "")
+                    save_config(cfg)
+                else:
+                    return self._json({"error": "Ruta no encontrada"}, 404)
+                return self._json(appupdate.public(cfg))
+
             if path.startswith("/api/plugins/"):
                 act = path[len("/api/plugins/"):]
                 cfg = load_config()
@@ -1198,6 +1247,7 @@ def main():
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
     threading.Thread(target=update_plugins_on_start, daemon=True).start()
+    threading.Thread(target=app_update_loop, daemon=True).start()
     if not ARGS.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:
