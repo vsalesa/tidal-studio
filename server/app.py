@@ -39,6 +39,7 @@ import shellenv  # noqa: E402
 import files as tfiles  # noqa: E402
 import ccdetect  # noqa: E402
 import songimport  # noqa: E402
+import midigen  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
 import instlib  # noqa: E402
@@ -435,7 +436,7 @@ class Handler(SimpleHTTPRequestHandler):
         q = parse_qs(urlparse(self.path).query)
         arg = lambda k, d="": q.get(k, [d])[0]  # noqa: E731
         lang = arg("lang", "es")
-        if path in ("/api/import/midi", "/api/import/audio"):
+        if path in ("/api/import/midi", "/api/import/audio", "/api/import/generate"):
             if not self._origin_ok():
                 return self._json({"error": "forbidden"}, 403)
             length = int(self.headers.get("Content-Length") or 0)
@@ -443,6 +444,11 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._err("El archivo es demasiado grande|The file is too big", lang, 413)
             raw = self.rfile.read(length)
             try:
+                if path == "/api/import/generate":
+                    start, seed = arg("start"), arg("seed", "1")
+                    return self._json(midigen.generate(raw, arg("style", "merengue"), [k for k in arg("keep").split(",") if k],
+                                                       int(seed) if seed.isdigit() else 1, lang,
+                                                       int(start) if start.isdigit() else None, int(arg("bars", "4") or 4), arg("name")))
                 if path == "/api/import/midi":
                     start = arg("start")
                     return self._json(songimport.analyse(raw, lang, int(start) if start.isdigit() else None,

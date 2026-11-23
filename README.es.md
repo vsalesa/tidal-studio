@@ -16,7 +16,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) · [Arreglo](#arreglo) ·
 [Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) · [Maestro descarga sonidos](#maestro-descarga-los-sonidos-que-necesita) · [Loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos) ·
 [Skills y plugins](#skills-y-plugins) · [Cómo decide Maestro](#cómo-decide-maestro-y-su-razonamiento) ·
-[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Abrir y guardar archivos](#abrir-y-guardar-archivos-de-tidal) · [Importar una canción](#importar-una-canción-como-punto-de-partida) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
+[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Abrir y guardar archivos](#abrir-y-guardar-archivos-de-tidal) · [Importar una canción](#importar-una-canción-como-punto-de-partida) · [Generar desde mi MIDI](#genera-desde-tu-midi-en-cualquier-estilo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
 [Novedades](#novedades-versión-a-versión) · [Instalación](#instalación-una-sola-vez)
 
 ## Qué puedes hacer
@@ -603,6 +603,38 @@ en la base de una canción **nueva** tuya.
 
 ![La canción importada como proyecto nuevo, con las ideas de Maestro para hacerla tuya](docs/screenshots/es/importar-estudio.png)
 
+### Genera desde tu MIDI, en cualquier estilo
+
+**Nuevo proyecto → Generar desde mi MIDI** (o **Archivo → Generar desde mi MIDI**) coge un MIDI tuyo, se queda con las
+partes que elijas y escribe el resto en el estilo que quieras. Funciona sin conexión y sin IA, y luego Maestro puede variarlo.
+
+1. **Sube tu MIDI** (expórtalo desde GarageBand, Logic, MuseScore o Ableton) y elige los compases (1-16).
+2. **Elige un estilo**: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass o lo-fi.
+3. **Elige qué te quedas**: tu **melodía** (nota por nota, con un instrumento del estilo), tus **acordes** (tocados como
+   los toca el estilo, con séptimas en jazz, bossa, funk, house y lo-fi), tu **bajo**, tu **batería** y tu **tempo**.
+   Lo que tu MIDI no tiene en ese trozo sale en gris.
+4. **Generar**: la batería sale del curso de género, el bajo y el acompañamiento usan los ritmos medidos en canciones
+   reales tocados sobre tus acordes (el bajo del merengue salta raíz-quinta y se acerca al acorde siguiente, el de la
+   salsa hace el tumbao y se adelanta al acorde siguiente…), y si no te quedas tu melodía, la nueva se escribe como
+   pregunta y respuesta: el compás 1 pregunta, el 2 contesta, el 3 repite la pregunta sobre su acorde y el 4 cierra.
+   Si no te quedas tus acordes, usa la progresión típica del estilo en tu tonalidad (en la relativa menor o mayor
+   cuando el estilo lo pide).
+5. Cada pista dice de dónde sale (**de tu MIDI**, **del estilo**, **nuevo**) y por qué. **Escucha**, prueba **Otra
+   versión** (otra melodía y otra variación del patrón) o **Cambiar estilo**, y **Usar esta versión** cuando te guste.
+   Maestro te cuenta qué ha hecho con cada pista y te ofrece **Conviértela en una canción entera** (intro, estrofa,
+   estribillo, puente y final con un plan) o **Generar otra versión**.
+
+En los cursos por género, **Hacer mi MIDI Merengue** (o el estilo del curso) hace lo mismo con tu MIDI de ejemplo.
+El resultado de importar una canción también tiene **Generar en un estilo…**.
+
+| 1. Sube tu MIDI | 2. Estilo y qué te quedas |
+|---|---|
+| ![Generar desde mi MIDI: subir](docs/screenshots/es/midi-generar-subir.png) | ![Elige un estilo y qué te quedas de tu MIDI](docs/screenshots/es/midi-generar-estilo.png) |
+| **3. Tu versión, pista a pista** | **4. En el estudio, con Maestro** |
+| ![Las pistas generadas: de tu MIDI, del estilo o nuevas, y por qué](docs/screenshots/es/midi-generar-resultado.png) | ![La canción generada en el estudio, explicada por Maestro](docs/screenshots/es/midi-generar-estudio.png) |
+| **Desde un curso de género** | |
+| ![Hacer mi MIDI Merengue en el curso](docs/screenshots/es/midi-generar-curso.png) | |
+
 ### Guardar, exportar y compartir
 
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
@@ -822,7 +854,7 @@ Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architec
 - `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: la biblioteca de instrumentos (catálogo, descargas, importar SoundFont/SFZ, escucha previa). `supercollider/studio-instruments.scd` toca con notas los instrumentos multisample; `studio-synthlib.scd` tiene los synths incluidos; `server/engines.py` + `studio-engines.scd` instalan y cargan Mi-UGens y VSTPlugin (Surge XT, Vital); `server/photos.py` busca fotos en Wikimedia Commons.
 - `web/controls.js`: controles en el chat. `web/blocks.js` + `web/edit.js`: vista de bloques y su edición. `web/card.js`: tarjeta configuradora. `web/mixer.js`: pestaña Mezcla. `web/history.js`: deshacer e historial. `web/samples.js` + `server/samples.py`: biblioteca de samples y Freesound. `server/github.py`: versiones en GitHub.
 - `server/skills.py` + `server/plugins.py` + `web/skills.js`: skills y plugins de Maestro.
-- `server/files.py` + `web/tidalfile.js`: abrir y guardar archivos `.tidal` / `.hs` (menú Archivo). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: importar una canción (MIDI o audio).
+- `server/files.py` + `web/tidalfile.js`: abrir y guardar archivos `.tidal` / `.hs` (menú Archivo). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: importar una canción (MIDI o audio). `server/midigen.py`: generar desde tu MIDI en un estilo (`POST /api/import/generate`); `tools/make_example_midi.py` escribe la canción de prueba `examples/little-tune.mid`.
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro busca y descarga los sonidos que faltan. `web/variants.js`: las opciones de Maestro para escuchar (A/B en directo).
 - `server/loops.py` + `web/loops.js`: biblioteca de loops largos (analiza tempo, compases, tonalidad y golpes, y da el código que encaja con tu canción).
 - `server/ccdetect.py` + `server/llmdiag.py`: detección de Claude Code y panel de Diagnóstico. `web/courses.js`: cursos por género. `web/instruments.js`: instrumentos. `web/tour.js`: tutorial.

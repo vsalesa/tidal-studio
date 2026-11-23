@@ -271,6 +271,7 @@ fieldset { border: 1px solid var(--rule); border-radius: var(--r-sm); margin: 10
 .np-choice .ico { color: var(--accent); }
 .np-choice b { font-family: var(--serif); font-size: 18px; }
 .np-choice span { color: var(--ink-2); font-size: 13px; }
+.np-choices .np-choice:last-child:nth-child(odd) { grid-column: 1 / -1; }
 .np-choice.rec { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .np-choice em { font-style: normal; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
 .np-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; max-height: 300px; overflow: auto; }
@@ -1173,7 +1174,24 @@ dialog label.check input { display: inline-block; width: auto; margin: 0; }
 .imp-track code { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .imp-track.k-percusion { border-left-color: var(--k-percusion); } .imp-track.k-bajo { border-left-color: var(--k-bajo); }
 .imp-track.k-armonia { border-left-color: var(--k-armonia); } .imp-track.k-melodia { border-left-color: var(--k-melodia); }
-@media (max-width: 640px) { .imp-facts { grid-template-columns: 1fr 1fr; } .imp-track { grid-template-columns: auto auto 1fr; } .imp-track code { grid-column: 1 / -1; } }
+/* Generar desde mi MIDI */
+.gen-styles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.gen-styles button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; padding: 8px 10px; border-radius: var(--r-sm); background: var(--card); border-left: 4px solid var(--c); }
+.gen-styles button b { font-family: var(--serif); font-size: 15px; }
+.gen-styles button small { color: var(--ink-3); font-size: 11px; }
+.gen-styles button.on { background: var(--accent-soft); border-color: var(--accent); border-left-color: var(--c); box-shadow: 0 0 0 2px var(--accent); }
+.gen-keep { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 6px; }
+.gen-keep label { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--r-sm); background: var(--card); cursor: pointer; }
+.gen-keep label span { grid-column: 2; font-size: 12px; color: var(--ink-2); }
+.gen-keep label.off { opacity: .55; cursor: default; }
+.gen-tracks { max-height: 330px; }
+.gen-tracks .imp-track { grid-template-columns: auto 150px auto 1fr; }
+.gen-tracks .gen-why { grid-column: 1 / -1; font-size: 12px; color: var(--ink-2); }
+.gen-o { font-style: normal; font-size: 10.5px; font-weight: 600; border-radius: 99px; padding: 1px 8px; white-space: nowrap; }
+.gen-o.gen-midi { background: var(--accent-soft); color: var(--accent); }
+.gen-o.gen-style { background: var(--teal-soft); color: var(--teal); }
+.gen-o.gen-new { background: var(--gold-soft); color: #7a4f00; }
+@media (max-width: 640px) { .gen-tracks .imp-track { grid-template-columns: auto 1fr auto; } .imp-facts { grid-template-columns: 1fr 1fr; } .imp-track { grid-template-columns: auto auto 1fr; } .imp-track code { grid-column: 1 / -1; } }
 
 /* ---------- loops largos (web/loops.js) ---------- */
 .lp-drop { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; border: 2px dashed var(--rule-strong); border-radius: var(--r); padding: 14px 16px; background: var(--sunk); color: var(--ink-2); transition: background .15s, border-color .15s; }

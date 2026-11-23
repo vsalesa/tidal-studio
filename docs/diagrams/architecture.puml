@@ -15,7 +15,7 @@ frame "Your computer  (127.0.0.1)" {
   rectangle "<b>server/samples.py</b> + fetcher.py\nsamples/ library\nMaestro fetches what is missing" as samples
   rectangle "<b>server/loops.py</b>\nlong loops: tempo, bars,\nkey, hits" as loops
   rectangle "<b>server/timeline.py</b>\nits own GHCi: queryArc\nfor the Timeline" as tl #dcefeb
-  rectangle "<b>server/files.py</b> + songimport.py\nopen/save .tidal,\nimport MIDI or audio" as files
+  rectangle "<b>server/files.py</b> + songimport.py\n+ midigen.py: open/save .tidal,\nimport MIDI or audio,\ngenerate from your MIDI" as files
   rectangle "<b>server/ccdetect.py</b> + llmdiag.py\nfinds Claude Code,\nDiagnostics" as diag
   node "Speakers" as out
 }
