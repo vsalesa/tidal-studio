@@ -322,6 +322,15 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   </div>
 </section>
 
+<section id="midi-generate" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker" data-i="kg">Generate from your MIDI</div>
+    <h2 class="sec-title" data-i="tg">Your melody, as merengue. Or bossa, or house.</h2>
+    <p class="sec-lead" data-i="lg">Upload a MIDI of yours, pick one of eleven styles and what to keep: melody, chords, bass, drums or tempo. The studio writes the rest in that style over your chords, without AI: the course's drums, a bass and accompaniment with rhythms measured in real songs, and a new call-and-response melody if you don't keep yours. Every track says where it comes from, and Maestro can turn it into a whole song.</p>
+    <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="gen-img" alt="" width="2880" height="1800"></div>
+  </div>
+</section>
+
 <section>
   <div class="wrap">
     <div class="kicker" data-i="k4">Style recipes</div>
@@ -344,7 +353,7 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <h2 class="sec-title" data-i="tn">Version 0.10.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
-      <li><b>0.10.0</b><span data-i="v10">For big requests Maestro shows a plan first and builds it step by step, saving each step, so a timeout no longer loses work; a Cancel button stops what you sent; plus prompt caching, saved sound searches and a real drummer to hear in nine genre courses.</span></li>
+      <li><b>0.10.0</b><span data-i="v10">For big requests Maestro shows a plan first and builds it step by step, saving each step, so a timeout no longer loses work; generate a new song from your MIDI in 11 styles; a Cancel button stops what you sent; plus prompt caching, saved sound searches and a real drummer to hear in nine genre courses.</span></li>
       <li><b>0.9.1</b><span data-i="v91">Maestro loads mc-tidal-studio, the skills route of your composition plugin made for this app, with every message.</span></li>
       <li><b>0.9.0</b><span data-i="v9">600+ instruments with photos and pre-listen, your own SoundFonts, new synth engines, Latin courses played by real instruments, and plugins that update themselves.</span></li>
       <li><b>0.8.0</b><span data-i="v8">Long loops library: drop loops, folders or a zip, and the studio detects tempo, bars, key and hits and writes code that fits your song.</span></li>
@@ -447,7 +456,7 @@ const ES = {
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Abrir y guardar archivos de Tidal", f18p: "Un menú Archivo abre cualquier .tidal o .hs de tu ordenador y lo convierte en pistas; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
   nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.10.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
-  v10: "En las peticiones grandes Maestro te enseña antes un plan y lo construye paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar detiene lo que envías; además, caché de prompts, búsquedas de sonidos guardadas y un baterista real para escuchar en nueve cursos.",
+  v10: "En las peticiones grandes Maestro te enseña antes un plan y lo construye paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; genera una canción nueva desde tu MIDI en 11 estilos; un botón Cancelar detiene lo que envías; además, caché de prompts, búsquedas de sonidos guardadas y un baterista real para escuchar en nueve cursos.",
   v91: "Maestro carga en cada mensaje mc-tidal-studio, la ruta de skills de tu plugin de composición hecha para esta app.",
   v9: "Más de 600 instrumentos con fotos y escucha previa, tus propios SoundFonts, motores de synth nuevos, cursos latinos tocados con instrumentos reales y plugins que se actualizan solos.",
   v8: "Biblioteca de loops largos: arrastra loops, carpetas o un zip, y el estudio detecta tempo, compases, tonalidad y golpes y escribe el código que encaja con tu canción.",
@@ -463,6 +472,8 @@ const ES = {
   kc: "Cursos por género", tc: "Construye un merengue desde cero.",
   lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo. Los cursos latinos siguen las skills de estilos latinos de tu plugin de composición, dicen qué tradición tocan y usan instrumentos reales: güiro, congas, bongós, contrabajo, trombones, acordeón, guitarra de nailon… Nueve cursos además te dejan escuchar a un baterista real tocando el estilo (MIDI del Groove MIDI Dataset de Google Magenta), con la fuerza y el tiempo de cada golpe en el código.",
   ki: "Importar canción", ti: "Empieza con una canción que te encanta. Termina con una tuya.",
+  kg: "Genera desde tu MIDI", tg: "Tu melodía, en merengue. O en bossa, o en house.",
+  lg: "Sube un MIDI tuyo, elige uno de once estilos y qué te quedas: melodía, acordes, bajo, batería o tempo. El estudio escribe el resto en ese estilo sobre tus acordes, sin IA: la batería del curso, un bajo y un acompañamiento con ritmos medidos en canciones reales, y una melodía nueva de pregunta y respuesta si no te quedas la tuya. Cada pista dice de dónde sale, y Maestro puede convertirla en una canción entera.",
   li: "Suelta un MIDI, o un mp3 o wav, y se convierte en pistas de Tidal y en su receta: tempo, tonalidad, acordes, estructura y groove. Luego Maestro te ayuda a escribir algo nuevo inspirado en ella, conservando lo que funciona y cambiando el resto. Todo se queda en tu ordenador.",
   k4: "Recetas de estilo", t4: "«¿Quieres que suene tipo jazz?»",
   l4: "Pulsa un estilo y tu canción se transforma. Verás el antes y el después con lo nuevo resaltado, y una explicación de cada cambio para que mañana lo hagas tú.",
@@ -566,6 +577,7 @@ wzList.addEventListener("click", (e) => { const b = e.target.closest("button"); 
 
 // ---------- Galería ----------
 const SHOTS = [
+  { en: ["Generate from my MIDI", "midi-generate-style", "Pick a style and what to keep from your MIDI: melody, chords, bass, drums or tempo."], es: ["Generar desde mi MIDI", "midi-generar-estilo", "Elige un estilo y qué te quedas de tu MIDI: melodía, acordes, bajo, batería o tempo."] },
   { en: ["Plan step by step", "plan-running", "Ask for a whole song: Maestro shows a plan, you approve it, and it builds the song step by step, saving each step."], es: ["Plan paso a paso", "plan-en-marcha", "Pide una canción entera: Maestro te enseña un plan, lo apruebas y construye la canción paso a paso, guardando cada paso."] },
   { en: ["Instrument library", "instlib-browse", "634 specific instruments by category, with real photos. Press one to hear the real recordings, then add it as a track."], es: ["Biblioteca de instrumentos", "biblioteca-instrumentos", "634 instrumentos concretos por categorías, con fotos reales. Pulsa uno para oír sus grabaciones y añádelo como pista."] },
   { en: ["Your instruments", "instlib-import", "Drop a SoundFont, an SFZ in a zip or your own recordings: they play with notes like the rest."], es: ["Tus instrumentos", "biblioteca-importar", "Suelta un SoundFont, un SFZ en un zip o tus grabaciones: se tocan con notas como los demás."] },
@@ -647,6 +659,7 @@ function applyLang() {
 }
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
+{ const gi = document.getElementById("gen-img"); gi.src = shotPath(lang === "es" ? "midi-generar-resultado" : "midi-generate-result"); gi.alt = lang === "es" ? "Tu MIDI en bossa nova: pistas de tu MIDI, del estilo y nuevas" : "Your MIDI as bossa nova: tracks from your MIDI, the style and new ones"; }
 { const ii = document.getElementById("import-img"); ii.src = shotPath(lang === "es" ? "importar-resultado" : "import-result"); ii.alt = lang === "es" ? "Canción importada: receta y pistas de Tidal" : "Imported song: recipe and Tidal tracks"; }
 { const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-baterista-real" : "course-real-drummer"); ci.alt = lang === "es" ? "Curso de merengue: escucha a un baterista real tocando el estilo" : "Merengue course: hear a real drummer play the style"; }
 [...SHOTS, ...WZ].forEach((s) => { const p = new Image(); p.src = shotPath((lang === "es" ? s.es : s.en)[1]); });

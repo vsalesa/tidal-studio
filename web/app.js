@@ -27,7 +27,7 @@ import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LET
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { planHTML, planContext, planEnabled, setPlanEnabled, newPlan, nextStep as nextPlanStep, planDone, PLAN_START, PLAN_STEPWISE, PLAN_ALL, PLAN_SPLIT, PLAN_CONTINUE, PLAN_RETRY, planBarHTML } from "./plan.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
-import { openImport, importedSummary, INSPIRE_PROMPT } from "./importsong.js";
+import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
@@ -1573,6 +1573,8 @@ async function send(text) {
   if (text === COURSE_ASK() && state.course) return courseAsk();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
   if (text === INSPIRE_CHIP() && state.reference) text = INSPIRE_PROMPT();
+  if (text === GEN_AGAIN_CHIP()) return openImportSong(false, { generate: true, useLast: true, style: state.generated && state.generated.style });
+  if (text === GEN_SONG_CHIP() && state.generated) text = GEN_SONG_PROMPT(state.generated);
   if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
   {
     const pmi = openPlanIndex();
@@ -2105,11 +2107,13 @@ async function openNewProject() {
       <button class="np-choice rec" data-m="wizard"><em>${L("Recomendado", "Recommended")}</em>${icon("steps", 28)}<b>${L("Con wizard", "With wizard")}</b><span>${L("Vas pulsando opciones paso a paso (estilo, ritmo, bajo, acordes…) y se crea tu proyecto base. Todo suena mientras eliges.", "Click options step by step (style, beat, bass, chords…) and your base project is built. Everything plays while you choose.")}</span></button>
       <button class="np-choice" data-m="ideas">${icon("wand", 28)}<b>${L("Lluvia de ideas", "Brainstorm")}</b><span>${L("Maestro te hace preguntas abiertas sobre lo que quieres sentir y diseña contigo un plan.", "Maestro asks you open questions about what you want to feel and designs a plan with you.")}</span></button>
       <button class="np-choice" data-m="import">${icon("upload", 28)}<b>${L("Desde una canción", "From a song")}</b><span>${L("Importa un MIDI o un audio: lo convierto en pistas y Maestro te ayuda a crear algo nuevo inspirado en ella.", "Import a MIDI or audio file: I turn it into tracks and Maestro helps you create something new inspired by it.")}</span></button>
+      <button class="np-choice" data-m="generate">${icon("wand", 28)}<b>${L("Generar desde mi MIDI", "Generate from my MIDI")}</b><span>${L("Sube tu MIDI, elige un estilo (merengue, salsa, bossa, jazz, house…) y qué te quedas (melodía, acordes, bajo, batería). Escribo el resto en ese estilo.", "Upload your MIDI, pick a style (merengue, salsa, bossa, jazz, house…) and what to keep (melody, chords, bass, drums). I write the rest in that style.")}</span></button>
     </div>`;
   body.querySelector(".np-choices").onclick = (e) => {
     const m = e.target.closest("button")?.dataset.m;
     if (!m) return;
     if (m === "import") return openImportSong(true);
+    if (m === "generate") return openImportSong(true, { generate: true });
     $("#newproj").close();
     if (m === "blank") startBlank();
     if (m === "wizard") openBuilder();
@@ -2118,7 +2122,7 @@ async function openNewProject() {
   $("#newproj").showModal();
 }
 // Importar una canción (MIDI o audio) como punto de partida: ver web/importsong.js
-async function openImportSong(checked = false) {
+async function openImportSong(checked = false, opts = {}) {
   if (!checked && !(await guardUnsaved())) return;
   const dlg = $("#newproj");
   let listening = false, adopted = false;
@@ -2127,9 +2131,13 @@ async function openImportSong(checked = false) {
     body: $("#np-body"), kicker: $("#np-kicker"),
     open: () => { if (!dlg.open) dlg.showModal(); }, close: () => { adopted = true; dlg.close(); }, isOpen: () => dlg.open,
     hush: () => { listening = false; evalCode("hush"); },
-    listen: (tracks, bpm) => { listening = true; evalCode(["hush", cps(bpm), ...tracks.map((t, i) => `d${i + 1} $ ${t.codigo}`)].join("\n\n")); },
+    listen: async (tracks, bpm) => {
+      listening = true;
+      await ensureInstruments(tracks.map((t) => t.codigo));
+      if (listening) evalCode(["hush", cps(bpm), ...tracks.map((t, i) => `d${i + 1} $ ${t.codigo}`)].join("\n\n"));
+    },
     adopt: adoptImport,
-  });
+  }, opts);
 }
 function adoptImport(r) {
   startFresh();
@@ -2139,6 +2147,15 @@ function adoptImport(r) {
   state.reference = r.reference; state.refSummary = r.summary;
   state.step = "libre";
   resetHistory(state);
+  if (r.generated) {
+    // Una versión generada desde tu MIDI en un estilo: Maestro cuenta qué ha hecho con cada pista
+    const { tracks: gt, ...g } = r.generated;
+    state.generated = g;
+    renderAll(); renderHistoryButtons();
+    ensureInstruments(state.tracks.map((t) => t.code)).then(() => { if (live()) playAll(true); });
+    return say(generatedSummary(r.generated, state.name),
+      [GEN_AGAIN_CHIP(), ...(useLLM() ? [GEN_SONG_CHIP()] : []), L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()]);
+  }
   const intro = importedSummary(r.summary, state.tracks.length);
   renderAll(); renderHistoryButtons();
   if (live()) playAll(true);
@@ -3426,6 +3443,7 @@ function renderFilePop() {
   pop.innerHTML = `<button data-f="new" role="menuitem">${icon("plus", 16)} ${L("Nuevo proyecto…", "New project…")}</button>
     <button data-f="open" role="menuitem">${icon("folder", 16)} ${L("Abrir archivo…", "Open file…")} ${k("O")}</button>
     <button data-f="import" role="menuitem">${icon("upload", 16)} ${L("Importar canción (MIDI, audio)…", "Import a song (MIDI, audio)…")}</button>
+    <button data-f="generate" role="menuitem">${icon("wand", 16)} ${L("Generar desde mi MIDI…", "Generate from my MIDI…")}</button>
     <hr>
     <button data-f="save" role="menuitem">${icon("save", 16)} ${L("Guardar", "Save")} ${k("S")}</button>
     <button data-f="saveas" role="menuitem">${icon("save", 16)} ${L("Guardar como…", "Save as…")} ${k(KEY_MOD === "⌘" ? "⇧S" : "Shift+S")}</button>
@@ -3444,7 +3462,7 @@ function toggleFilePop(open) {
   if (show) renderFilePop();
   pop.hidden = !show; btn.setAttribute("aria-expanded", String(show));
 }
-const FILE_CMDS = { new: () => openNewProject(), import: () => openImportSong(), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects() };
+const FILE_CMDS = { new: () => openNewProject(), import: () => openImportSong(), generate: () => openImportSong(false, { generate: true, useLast: hasLastMidi() }), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects() };
 function wireFiles() {
   $("#btn-file").onclick = (e) => { e.stopPropagation(); toggleFilePop(); };
   document.addEventListener("click", (e) => { if (!e.target.closest(".file-menu")) toggleFilePop(false); });
@@ -3672,13 +3690,15 @@ function mineBox(c) {
   const m = state.course && state.course.mine;
   const file = `<input type="file" id="cs-mine-file" accept=".mid,.midi,.rmi,audio/midi" hidden>`;
   if (!m) return `<div class="cs-mine">${file}<span>${L(`¿Tienes un MIDI de una canción de ${c.name} con todos los instrumentos (tuyo o de un pack que hayas comprado)? Cárgalo como ejemplo: lo escuchas aquí y Maestro lo usa como referencia del estilo.`, `Have a MIDI of a ${c.name} song with all the instruments (your own or from a pack you bought)? Load it as an example: you hear it here and Maestro uses it as a style reference.`)}</span>
-    <button data-mine="load">${icon("folder", 14)} ${L("Cargar mi MIDI de ejemplo", "Load my example MIDI")}</button></div>`;
+    <div class="cs-actions"><button data-mine="load">${icon("folder", 14)} ${L("Cargar mi MIDI de ejemplo", "Load my example MIDI")}</button>
+    <button data-mine="gen" title="${esc(L(`Genera una canción de ${c.name} desde tu MIDI (empieza un proyecto nuevo)`, `Generate a ${c.name} song from your MIDI (starts a new project)`))}">${icon("wand", 14)} ${L(`Hacer mi MIDI ${c.name}`, `Make my MIDI ${c.name}`)}</button></div></div>`;
   return `<div class="cs-ref-box cs-mine-box">${file}
     <b>${icon("course", 15)} ${L("Tu ejemplo", "Your example")}</b>
     <span class="cs-ref-style">${esc(m.name)} · ${m.bpm} BPM · ${esc(m.key || "")} · ${esc((m.chords || []).join(" "))}</span>
     <p>${esc(m.instruments.join(", "))}</p>
     <div class="cs-actions">
       <button class="prehear" data-mine="hear">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button>
+      <button data-mine="gen" title="${esc(L(`Genera una canción de ${c.name} desde tu MIDI (empieza un proyecto nuevo)`, `Generate a ${c.name} song from your MIDI (starts a new project)`))}">${icon("wand", 14)} ${L(`Hacer mi MIDI ${c.name}`, `Make my MIDI ${c.name}`)}</button>
       <button data-mine="load">${icon("folder", 14)} ${L("Otro", "Another")}</button>
       <button data-mine="remove">${icon("close", 14)} ${L("Quitar", "Remove")}</button>
     </div></div>`;
@@ -3695,10 +3715,12 @@ function mineCambios() {
 async function courseMineLoad(f) {
   try {
     const q = new URLSearchParams({ name: f.name.replace(/\.[^.]+$/, ""), lang: LANG, bars: "4" });
-    const r = await fetch(`/api/import/midi?${q}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: new Uint8Array(await f.arrayBuffer()) });
+    const bytes = new Uint8Array(await f.arrayBuffer());
+    const r = await fetch(`/api/import/midi?${q}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: bytes });
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || `Error ${r.status}`);
     const s = data.summary;
+    rememberMidi(s.name, bytes);
     state.course.mine = { name: s.name, bpm: s.studio_bpm, key: s.key && s.key.name, chords: s.window.chords, instruments: s.instruments,
       tracks: data.tracks.slice(0, 12).map((t) => ({ nombre: t.nombre, tipo: t.tipo, codigo: t.codigo })), reference: (data.reference || "").slice(0, 3000) };
     save(); renderCourse();
@@ -3815,6 +3837,8 @@ function renderCourse() {
   if (mineFile) mineFile.onchange = () => mineFile.files[0] && courseMineLoad(mineFile.files[0]);
   const mineDrop = dock.querySelector("[data-mine=remove]");
   if (mineDrop) mineDrop.onclick = () => { stopPreHear(); delete state.course.mine; save(); renderCourse(); };
+  const mineGen = dock.querySelector("[data-mine=gen]");
+  if (mineGen) mineGen.onclick = () => { stopPreHear(); openImportSong(false, { generate: true, useLast: hasLastMidi(), style: c.id }); };
   const refAdd = dock.querySelector("[data-ref=add]");
   if (refAdd) refAdd.onclick = () => courseReferenceAdd(c, refAdd);
   dock.querySelectorAll("[data-cs]").forEach((b) => { if (b.dataset.cs !== "hear") b.onclick = () => courseAction(b.dataset.cs); });

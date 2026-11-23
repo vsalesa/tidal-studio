@@ -15,7 +15,7 @@ frame "Tu ordenador  (127.0.0.1)" {
   rectangle "<b>server/samples.py</b> + fetcher.py\nbiblioteca samples/\nMaestro descarga lo que falta" as samples
   rectangle "<b>server/loops.py</b>\nloops largos: tempo, compases,\ntonalidad, golpes" as loops
   rectangle "<b>server/timeline.py</b>\nGHCi aparte: queryArc\npara la Línea de tiempo" as tl #dcefeb
-  rectangle "<b>server/files.py</b> + songimport.py\nabrir/guardar .tidal,\nimportar MIDI o audio" as files
+  rectangle "<b>server/files.py</b> + songimport.py\n+ midigen.py: abrir/guardar .tidal,\nimportar MIDI o audio,\ngenerar desde tu MIDI" as files
   rectangle "<b>server/ccdetect.py</b> + llmdiag.py\ndetecta Claude Code,\nDiagnóstico" as diag
   node "Altavoces" as out
 }

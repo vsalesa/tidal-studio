@@ -16,7 +16,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
 [Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) · [Long loops](#long-loops-a-library-that-knows-what-to-do-with-them) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
-[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Import a song](#import-a-song-as-a-starting-point) · [Save and share](#save-export-and-share) ·
+[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Import a song](#import-a-song-as-a-starting-point) · [Generate from my MIDI](#generate-from-your-midi-in-any-style) · [Save and share](#save-export-and-share) ·
 [What's new](#whats-new-version-by-version) · [Installation](#installation-once)
 
 ## What you can do
@@ -569,6 +569,38 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
 
 ![The imported song as a new project, with Maestro's ideas to make it yours](docs/screenshots/import-studio.png)
 
+### Generate from your MIDI, in any style
+
+**New project → Generate from my MIDI** (or **File → Generate from my MIDI**) takes a MIDI of yours, keeps the parts
+you choose and writes the rest in the style you pick. It works offline, without AI, and Maestro can vary it afterwards.
+
+1. **Upload your MIDI** (export it from GarageBand, Logic, MuseScore or Ableton) and pick the bars to use (1-16).
+2. **Pick a style**: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass or lo-fi.
+3. **Choose what to keep**: your **melody** (note for note, played on one of the style's instruments), your **chords**
+   (played the way the style plays them, with sevenths in jazz, bossa, funk, house and lo-fi), your **bass** line, your
+   **drums** and your **tempo**. Parts your MIDI doesn't have in that section are greyed out.
+4. **Generate**: the drums come from the genre course, the bass and the accompaniment use the rhythms measured in real
+   songs played over your chords (the merengue bass jumps root-fifth and leads into the next chord, the salsa bass
+   plays the tumbao and anticipates the next chord…), and a new melody, if you don't keep yours, is written as
+   call and response: bar 1 asks, bar 2 answers, bar 3 repeats the question over its chord and bar 4 closes.
+   If you don't keep your chords, you get the style's typical progression in your key (relative minor or major when
+   the style needs it).
+5. Each track says where it comes from (**from your MIDI**, **style**, **new**) and why. **Listen**, try **Another
+   version** (a new melody and pattern variation) or **Change style**, and **Use this version** when you like it.
+   Maestro then lists what it did with each track and offers **Turn it into a whole song** (intro, verse, chorus,
+   bridge and ending with a plan) or **Generate another version**.
+
+In the genre courses, **Make my MIDI Merengue** (or the course's style) does the same from your example MIDI.
+The song import's result has **Generate in a style…** too.
+
+| 1. Upload your MIDI | 2. Style and what to keep |
+|---|---|
+| ![Generate from my MIDI: upload](docs/screenshots/midi-generate-upload.png) | ![Pick a style and what to keep from your MIDI](docs/screenshots/midi-generate-style.png) |
+| **3. Your version, track by track** | **4. In the studio, with Maestro** |
+| ![The generated tracks: from your MIDI, style or new, and why](docs/screenshots/midi-generate-result.png) | ![The generated song in the studio, explained by Maestro](docs/screenshots/midi-generate-studio.png) |
+| **From a genre course** | |
+| ![Make my MIDI Merengue in the course](docs/screenshots/midi-generate-course.png) | |
+
 ### Save, export and share
 
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`,
@@ -594,7 +626,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
-| **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. |
+| **0.10.0** | [Generate from your MIDI](#generate-from-your-midi-in-any-style) in 11 styles, keeping your melody, chords, bass or drums; [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. |
 | **0.9.1** | [Tidal Studio route](#plugins): Maestro loads `mc-tidal-studio`, the skills route of your composition plugin made for this app, with every message, plus the genre skill that best fits. |
 | **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |
 | **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |
@@ -791,7 +823,7 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: the Timeline tab. The server asks Tidal (`queryArc`) in its own GHCi; `web/tpat.js` is the approximate in-browser calculator used without the engine.
 - `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: the instrument library (catalog, downloads, SoundFont/SFZ import, pre-listen). `supercollider/studio-instruments.scd` plays multisampled instruments with notes; `studio-synthlib.scd` holds the built-in synths; `server/engines.py` + `studio-engines.scd` install and load Mi-UGens and VSTPlugin (Surge XT, Vital); `server/photos.py` finds photos on Wikimedia Commons.
-- `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio).
+- `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio). `server/midigen.py`: generate from your MIDI in a style (`POST /api/import/generate`); `tools/make_example_midi.py` writes the test song `examples/little-tune.mid`.
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro finds and downloads missing sounds. `web/variants.js`: Maestro's audible options (live A/B).
 - `server/loops.py` + `web/loops.js`: long-loops library (analysis of tempo, bars, key and hits, and the code that fits your song).
 - `server/ccdetect.py` + `server/llmdiag.py`: Claude Code detection and the Diagnostics panel. `web/courses.js`: genre courses. `web/instruments.js`: instruments. `web/tour.js`: tutorial.

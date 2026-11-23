@@ -106,6 +106,35 @@ const scenes = {
     await page.click('#btn-new'); await page.waitForTimeout(700);
     await shot(page, T(lang, 'nuevo-proyecto', 'new-project'), lang);
   },
+  // Generar desde mi MIDI: examples/little-tune.mid (python3 tools/make_example_midi.py)
+  async 'midi-generate'(b, lang) {
+    const MID = require('path').join(__dirname, '..', '..', 'examples', 'little-tune.mid');
+    const { page } = await open(b, { lang, state: sunday(lang) });
+    await page.click('#btn-file'); await page.waitForTimeout(300);
+    await page.click('#file-pop [data-f="generate"]'); await page.waitForTimeout(500);
+    await shot(page, T(lang, 'midi-generar-subir', 'midi-generate-upload'), lang);
+    await page.setInputFiles('#np-body .imp-drop input', MID); await page.waitForSelector('.gen-styles'); await page.waitForTimeout(400);
+    await page.click('.gen-styles [data-style="bossa"]'); await page.waitForTimeout(300);
+    await shot(page, T(lang, 'midi-generar-estilo', 'midi-generate-style'), lang);
+    await page.click('.wz-nav [data-a="go"]'); await page.waitForSelector('.gen-tracks'); await page.waitForTimeout(500);
+    await page.evaluate(() => { const l = document.querySelector('.gen-tracks'); l.scrollTop = l.scrollHeight; });
+    await shot(page, T(lang, 'midi-generar-resultado', 'midi-generate-result'), lang);
+    await page.click('.wz-nav [data-a="use"]'); await page.waitForTimeout(1800);
+    await shot(page, T(lang, 'midi-generar-estudio', 'midi-generate-studio'), lang);
+  },
+  async 'midi-generate-course'(b, lang) {
+    const MID = require('path').join(__dirname, '..', '..', 'examples', 'little-tune.mid');
+    const st = sunday(lang, { tracks: [], name: 'Merengue', course: { id: 'merengue', i: 1, done: [0],
+      mine: { name: 'little-tune', bpm: 110, key: 'C', chords: ['C', 'Am', 'F', 'G'], instruments: ['Melody', 'Piano', 'Bass', 'Kick', 'Snare & claps', 'Hats & cymbals'], tracks: [], reference: '' } } });
+    const { page } = await open(b, { lang, state: st, wait: 1800 });
+    await page.evaluate(() => document.querySelector('.cs-mine-box')?.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(400);
+    await shot(page, T(lang, 'midi-generar-curso', 'midi-generate-course'), lang);
+    await page.click('[data-mine="gen"]'); await page.waitForTimeout(500);
+    await page.setInputFiles('#np-body .imp-drop input', MID); await page.waitForSelector('.gen-styles'); await page.waitForTimeout(400);
+    await page.click('.wz-nav [data-a="go"]'); await page.waitForSelector('.gen-tracks'); await page.waitForTimeout(500);
+    await shot(page, T(lang, 'midi-generar-merengue', 'midi-generate-merengue'), lang);
+  },
   async wizard(b, lang) {
     const { page } = await open(b, { lang, state: sunday(lang) });
     await page.click('#btn-new'); await page.waitForTimeout(400);
