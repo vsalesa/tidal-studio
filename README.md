@@ -16,7 +16,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
 [Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) · [Long loops](#long-loops-a-library-that-knows-what-to-do-with-them) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
-[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Import a song](#import-a-song-as-a-starting-point) · [Save and share](#save-export-and-share) ·
+[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Songs in tabs](#several-songs-open-at-once-in-tabs) · [Import a song](#import-a-song-as-a-starting-point) · [Save and share](#save-export-and-share) ·
 [What's new](#whats-new-version-by-version) · [Installation](#installation-once)
 
 ## What you can do
@@ -453,7 +453,7 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
   mix is written as `# amp … # eqlow …` lines, muted tracks are commented out, and one comment line
   (`-- tidal-studio: {…}`) remembers the name, track types, solo and master, so reopening the file loses nothing.
 - **Recent files**, a **saved / unsaved changes** indicator above the song name (and a dot on the File button), and a
-  **Save changes?** prompt before you open another file or project.
+  **Save changes?** prompt before you close a file with changes.
 - It uses your system's own dialogs: the native panels in the Mac app, the Windows file dialog, and zenity/kdialog on
   Linux. In a plain browser it falls back to the browser's file picker, or lets you type the path to save to.
 
@@ -462,6 +462,31 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
 | ![File menu](docs/screenshots/file-menu.png) | ![Save changes prompt](docs/screenshots/file-unsaved.png) |
 
 ![A Pulsar file opened as tracks, with its let definition kept in Extra code](docs/screenshots/file-open.png)
+
+### Several songs open at once, in tabs
+
+Each song you open gets its **own tab**, like in a browser or a code editor, so you can keep a work in progress, a
+`.tidal` file from your disk and a version from GitHub open side by side and jump between them.
+
+- **Everything opens in a new tab**: File → **Open file…** (from your disk), **Open from GitHub…**, a recent file,
+  **My projects**, **New project**, a genre course or an imported song. Your current song stays open in its own tab.
+  Opening something that is already open (the same file, the same GitHub song) just takes you to its tab.
+- **Each tab keeps its own song**: tracks, code, Blocks, Mix, arrangement, Maestro's chat, undo history and the file it
+  belongs to. Only the tab in front plays: switching tabs stops the old song and, with Live on, plays the new one.
+- **Close** a tab with its **×** (or the middle mouse button, or File → **Close file / Close tab**). If its file has
+  unsaved changes, the tab shows a dot and asks **Save / Don't save / Cancel** first. The song is still kept in
+  My projects, so closing a tab never loses work.
+- Tab icons tell you where each song lives: a page for a file on your disk, a cloud for GitHub, a note for a song kept in
+  this browser. Hover a tab to see its full path. The **+** at the end starts a new song.
+- Shortcuts: `Alt+1…9` jumps to a tab and `Ctrl+Alt+←/→` to the previous or next one. In the Mac app, `⌘T` new tab,
+  `⌘W` close tab and `⌘⇧[` / `⌘⇧]` to move between tabs.
+- Your open tabs come back the next time you open the studio.
+
+![Four songs open in tabs: two projects, a file from the disk and a file with unsaved changes](docs/screenshots/tabs.png)
+
+| File menu: open from disk or GitHub, close the file | Closing a tab with unsaved changes |
+|---|---|
+| ![File menu with Open from GitHub and Close file](docs/screenshots/tabs-file-menu.png) | ![Save changes before closing the tab](docs/screenshots/tabs-close-ask.png) |
 
 ### Import a song as a starting point
 

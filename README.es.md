@@ -16,7 +16,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) · [Arreglo](#arreglo) ·
 [Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) · [Maestro descarga sonidos](#maestro-descarga-los-sonidos-que-necesita) · [Loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos) ·
 [Skills y plugins](#skills-y-plugins) · [Cómo decide Maestro](#cómo-decide-maestro-y-su-razonamiento) ·
-[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Abrir y guardar archivos](#abrir-y-guardar-archivos-de-tidal) · [Importar una canción](#importar-una-canción-como-punto-de-partida) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
+[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Abrir y guardar archivos](#abrir-y-guardar-archivos-de-tidal) · [Canciones en pestañas](#varias-canciones-abiertas-a-la-vez-en-pestañas) · [Importar una canción](#importar-una-canción-como-punto-de-partida) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
 [Novedades](#novedades-versión-a-versión) · [Instalación](#instalación-una-sola-vez)
 
 ## Qué puedes hacer
@@ -465,7 +465,7 @@ así puedes llevar canciones de Tidal Studio a cualquier editor de Tidal (Pulsar
   comentario (`-- tidal-studio: {…}`) recuerda el nombre, el tipo de cada pista, el solo y el master, para que al
   volver a abrirlo no se pierda nada.
 - **Archivos recientes**, un indicador de **guardado / cambios sin guardar** encima del nombre de la canción (y un
-  punto en el botón Archivo) y un aviso **¿Guardar los cambios?** antes de abrir otro archivo o proyecto.
+  punto en el botón Archivo) y un aviso **¿Guardar los cambios?** antes de cerrar un archivo con cambios.
 - Usa los diálogos de tu sistema: los paneles nativos en la app de Mac, el diálogo de archivos de Windows y
   zenity/kdialog en Linux. En un navegador normal usa el selector de archivos del navegador, o te deja escribir la
   ruta donde guardar.
@@ -475,6 +475,34 @@ así puedes llevar canciones de Tidal Studio a cualquier editor de Tidal (Pulsar
 | ![Menú Archivo](docs/screenshots/es/archivo-menu.png) | ![Aviso de guardar cambios](docs/screenshots/es/archivo-sin-guardar.png) |
 
 ![Un archivo de Pulsar abierto como pistas, con su definición let en Código extra](docs/screenshots/es/archivo-abierto.png)
+
+### Varias canciones abiertas a la vez, en pestañas
+
+Cada canción que abres tiene **su propia pestaña**, como en un navegador o un editor de código, así puedes tener abiertos
+a la vez un trabajo a medias, un `.tidal` de tu disco y una versión de GitHub, y saltar de una a otra.
+
+- **Todo se abre en una pestaña nueva**: Archivo → **Abrir archivo…** (de tu disco), **Abrir desde GitHub…**, un archivo
+  reciente, **Mis proyectos**, **Nuevo proyecto**, un curso por género o una canción importada. Tu canción actual sigue
+  abierta en su pestaña. Si abres algo que ya está abierto (el mismo archivo, la misma canción de GitHub), te lleva a su
+  pestaña.
+- **Cada pestaña guarda su canción**: pistas, código, Bloques, Mezcla, arreglo, el chat de Maestro, el historial para
+  deshacer y el archivo al que pertenece. Solo suena la pestaña de delante: al cambiar se para la canción anterior y,
+  con En vivo activado, suena la nueva.
+- **Cierra** una pestaña con su **×** (o con el botón central del ratón, o Archivo → **Cerrar archivo / Cerrar
+  pestaña**). Si su archivo tiene cambios sin guardar, la pestaña muestra un punto y antes pregunta **Guardar / No
+  guardar / Cancelar**. La canción sigue en Mis proyectos, así que cerrar una pestaña nunca pierde trabajo.
+- El icono de cada pestaña dice dónde vive la canción: una hoja si es un archivo de tu disco, una nube si es de GitHub,
+  una nota si está guardada en este navegador. Pasa el ratón por una pestaña para ver su ruta completa. El **+** del
+  final empieza una canción nueva.
+- Atajos: `Alt+1…9` salta a una pestaña y `Ctrl+Alt+←/→` a la anterior o la siguiente. En la app de Mac, `⌘T` pestaña
+  nueva, `⌘W` cerrar pestaña y `⌘⇧[` / `⌘⇧]` para moverte entre pestañas.
+- Las pestañas abiertas vuelven la próxima vez que abras el estudio.
+
+![Cuatro canciones abiertas en pestañas: dos proyectos, un archivo del disco y otro con cambios sin guardar](docs/screenshots/es/pestanas.png)
+
+| Menú Archivo: abrir del disco o de GitHub, cerrar el archivo | Cerrar una pestaña con cambios sin guardar |
+|---|---|
+| ![Menú Archivo con Abrir desde GitHub y Cerrar archivo](docs/screenshots/es/pestanas-menu-archivo.png) | ![Guardar los cambios antes de cerrar la pestaña](docs/screenshots/es/pestanas-cerrar.png) |
 
 ### Importar una canción como punto de partida
 

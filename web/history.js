@@ -77,3 +77,10 @@ export function undo(state) { flushPending(state); return canUndo() ? go(H.idx -
 export function redo(state) { flushPending(state); return canRedo() ? go(H.idx + 1) : null; }
 export function withoutRecording(fn) { paused = true; try { fn(); } finally { paused = false; } }
 export function resetHistory(state) { H = { projectId: state.projectId, list: [], idx: -1 }; push(songOf(state), L("Inicio", "Start")); }
+
+// Pestañas: cada canción abierta conserva su propio historial al cambiar de pestaña
+export function stashHistory(state) { flushPending(state); return H.projectId === state.projectId ? JSON.parse(JSON.stringify(H)) : null; }
+export function restoreHistory(state, h) {
+  clearTimeout(timer); timer = null;
+  if (h && h.projectId === state.projectId && Array.isArray(h.list)) { H = h; persist(); } else { H = { projectId: null, list: [], idx: -1 }; initHistory(state); }
+}
