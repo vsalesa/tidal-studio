@@ -16,7 +16,7 @@ import { songBlocksHTML, blockInfo } from "./blocks.js";
 import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf } from "./edit.js";
 import { mixerHTML, mixCodeHTML, mixBadgeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
-import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory } from "./history.js";
+import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory } from "./history.js";
 import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fixNegatives, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
@@ -82,6 +82,7 @@ function save() {
   record(state, renderHistoryButtons);
   renderHistoryButtons();
   renderFileStatus();
+  renderTabs();
 }
 const PROJ_KEY = "tidal-studio-projects-v1";
 function listProjects() {
@@ -1573,7 +1574,7 @@ async function send(text) {
   if (text === COURSE_ASK() && state.course) return courseAsk();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
   if (text === INSPIRE_CHIP() && state.reference) text = INSPIRE_PROMPT();
-  if (text === GEN_AGAIN_CHIP()) return openImportSong(false, { generate: true, useLast: true, style: state.generated && state.generated.style });
+  if (text === GEN_AGAIN_CHIP()) return openImportSong({ generate: true, useLast: true, style: state.generated && state.generated.style });
   if (text === GEN_SONG_CHIP() && state.generated) text = GEN_SONG_PROMPT(state.generated);
   if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
   {
@@ -2095,13 +2096,13 @@ function renderAll() {
   renderCatalog(); renderTracks(); renderProgress(); renderIdeas(); renderChat(); renderCourse(); renderTimeline();
   $("#code").value = buildCode();
   renderFileStatus();
+  renderTabs();
 }
 async function openNewProject() {
-  if (!(await guardUnsaved())) return;
   $("#np-kicker").innerHTML = icon("plus", 16) + L(" Nuevo proyecto", " New project");
   const body = $("#np-body");
   body.innerHTML = `<h2 class="q" style="font-size:26px;margin:4px 0">${L("¿Cómo quieres empezar?", "How do you want to start?")}</h2>
-    <p class="wz-help">${L("Tu proyecto actual se guarda solo en «Mis proyectos».", "Your current project is saved automatically in «My projects».")}</p>
+    <p class="wz-help">${L("Se abre en una pestaña nueva: tu canción actual sigue abierta en la suya (y guardada en «Mis proyectos»).", "It opens in a new tab: your current song stays open in its own tab (and saved in «My projects»).")}</p>
     <div class="np-choices">
       <button class="np-choice" data-m="blank">${icon("blank", 28)}<b>${L("En blanco", "Blank")}</b><span>${L("Un lienzo vacío. Tú añades cada pieza desde el catálogo o pidiéndosela a Maestro.", "An empty canvas. You add each piece from the catalog or by asking Maestro.")}</span></button>
       <button class="np-choice rec" data-m="wizard"><em>${L("Recomendado", "Recommended")}</em>${icon("steps", 28)}<b>${L("Con wizard", "With wizard")}</b><span>${L("Vas pulsando opciones paso a paso (estilo, ritmo, bajo, acordes…) y se crea tu proyecto base. Todo suena mientras eliges.", "Click options step by step (style, beat, bass, chords…) and your base project is built. Everything plays while you choose.")}</span></button>
@@ -2112,8 +2113,8 @@ async function openNewProject() {
   body.querySelector(".np-choices").onclick = (e) => {
     const m = e.target.closest("button")?.dataset.m;
     if (!m) return;
-    if (m === "import") return openImportSong(true);
-    if (m === "generate") return openImportSong(true, { generate: true });
+    if (m === "import") return openImportSong();
+    if (m === "generate") return openImportSong({ generate: true });
     $("#newproj").close();
     if (m === "blank") startBlank();
     if (m === "wizard") openBuilder();
@@ -2122,8 +2123,8 @@ async function openNewProject() {
   $("#newproj").showModal();
 }
 // Importar una canción (MIDI o audio) como punto de partida: ver web/importsong.js
-async function openImportSong(checked = false, opts = {}) {
-  if (!checked && !(await guardUnsaved())) return;
+// Lo importado se abre en una pestaña nueva (adoptImport → startFresh), así que no hace falta preguntar por cambios sin guardar
+async function openImportSong(opts = {}) {
   const dlg = $("#newproj");
   let listening = false, adopted = false;
   dlg.addEventListener("close", () => { if (listening && !adopted) evalCode("hush"); }, { once: true });
@@ -2170,11 +2171,13 @@ function adoptImport(r) {
 }
 const INSPIRE_CHIP = () => L("Crear algo nuevo inspirado en ella", "Create something new inspired by it");
 
+// Canción nueva en una pestaña nueva (la de antes sigue abierta en la suya)
 function startFresh() {
-  save();
-  evalCode("hush");
+  openTabSlot();
   state = FRESH();
-  renderAll();
+  resetHistory(state);
+  tabOpened();
+  renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons();
 }
 function startBlank() {
   startFresh();
@@ -2194,7 +2197,7 @@ function openProjects(tab = "local") {
     <p class="wz-help">${L("Se guardan en este navegador. Tu progreso de aprendizaje es común a todos.", "Saved in this browser. Your learning progress is shared by all of them.")}</p>
     <div class="np-list">${list.length ? list.map((p) => `<div class="np-item ${p.id === state.projectId ? "current" : ""}" data-id="${esc(p.id)}">
       <span class="n">${esc(p.name)}<span class="d">${p.data.tracks.length} ${L("pistas", "tracks")} · ${p.data.bpm} BPM · ${new Date(p.updated).toLocaleString(L("es-ES", "en-GB"))}</span></span>
-      ${p.id === state.projectId ? `<span class="hint">${L("abierto", "open")}</span>` : `<button data-a="open">${L("Abrir", "Open")}</button>`}
+      ${p.id === state.projectId ? `<span class="hint">${L("abierto", "open")}</span>` : `${tabs.ids.includes(p.id) ? `<span class="hint">${L("en otra pestaña", "in another tab")}</span>` : ""}<button data-a="open">${tabs.ids.includes(p.id) ? L("Ir", "Go") : L("Abrir", "Open")}</button>`}
       <button data-a="del" class="icon-btn" title="${L("Borrar", "Delete")}">${icon("trash", 16)}</button></div>`).join("") : `<p class="hint">${L("Todavía no hay proyectos guardados.", "No saved projects yet.")}</p>`}</div></div>
     <div id="np-github" ${tab === "github" ? "" : "hidden"}>
       <p class="wz-help">${L("Canciones guardadas en tu repositorio. Cada una tiene su historial de versiones (commits).", "Songs saved in your repository. Each one has its version history (commits).")}</p>
@@ -2218,13 +2221,15 @@ function openProjects(tab = "local") {
     }
     if (a === "new") { $("#newproj").close(); return openNewProject(); }
     if (a === "open") {
-      if (!(await guardUnsaved())) return;
-      fileHandle = null;
-      save();
+      $("#newproj").close();
+      if (focusTabIf((s, tid) => tid === id)) return;
+      if (busy) return busyMsg();
       const p = listProjects().find((x) => x.id === id);
-      evalCode("hush");
-      state = { ...FRESH(), ...p.data, trying: null };
-      $("#newproj").close(); renderAll(); if (live()) playAll();
+      if (!p) return;
+      openTabSlot();
+      state = { ...FRESH(), ...p.data, projectId: id, trying: null };
+      restoreHistory(state, null); tabOpened();
+      renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons(); if (live()) playAll();
       sysMsg(L(`Proyecto «${state.name}» abierto.`, `Project «${state.name}» opened.`));
     }
     if (a === "del" && confirmDelete(id)) openProjects();
@@ -2897,14 +2902,18 @@ async function renderVersions(box, slug) {
 }
 async function openGitHubSong(slug, ref) {
   const data = await api("/api/github/load", { slug, ref });
-  save(); evalCode("hush");
+  if (!ref && focusTabIf((s, tid) => (s.github && s.github.slug === slug && !s.github.ref) || (data.projectId && tid === data.projectId),
+    L(`«${slug}» ya estaba abierta en una pestaña.`, `«${slug}» was already open in a tab.`))) { $("#newproj").close(); return; }
+  if (busy) { $("#newproj").close(); return busyMsg(); }
+  openTabSlot();
   const local = listProjects().find((x) => x.id === data.projectId);
   state = { ...FRESH(), ...(local ? local.data : {}), name: data.name || slug, bpm: data.bpm || 120, style: data.style || "",
     tracks: (data.tracks || []).map((t) => ({ ...t })), projectId: data.projectId || "p" + Date.now(),
     github: { slug, ref: ref || null }, trying: null };
   // Una versión antigua se abre como copia para no pisar la actual
   if (ref) { state.projectId = "p" + Date.now(); state.name = `${state.name} (${ref.slice(0, 7)})`; }
-  $("#newproj").close(); renderAll(); if (live()) playAll();
+  restoreHistory(state, null); tabOpened();
+  $("#newproj").close(); renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons(); if (live()) playAll();
   sysMsg(ref ? L(`Abierta la versión ${ref.slice(0, 7)} de «${slug}». Si la guardas en GitHub, pasará a ser la versión más nueva.`, `Opened version ${ref.slice(0, 7)} of «${slug}». If you save it to GitHub, it becomes the newest version.`)
     : L(`Abierta «${slug}» desde GitHub.`, `Opened «${slug}» from GitHub.`));
 }
@@ -3197,10 +3206,11 @@ function importSharedSong() {
     const d = JSON.parse(unb64url(m[1]));
     const tracks = (d.tracks || []).filter((t) => Array.isArray(t) && /^d([1-9]|1[0-2])$/.test(t[0])).map(([id, name, kind, code, muted]) => ({ id, name: String(name || id).slice(0, 60), kind: String(kind || "textura"), code: String(code || "").slice(0, 2000), muted: !!muted }));
     if (!tracks.length) return;
-    save();
+    openTabSlot();
     state = { ...FRESH(), name: String(d.name || L("Canción compartida", "Shared song")).slice(0, 80), bpm: Math.max(40, Math.min(220, +d.bpm || 120)), style: STYLES[d.style] ? d.style : "", tracks, step: "libre" };
-    state.chat = [{ role: "assistant", content: L(`Has abierto «${state.name}», una canción compartida (${tracks.length} pistas, ${state.bpm} BPM). Se ha guardado como proyecto nuevo; tu proyecto anterior sigue en Mis proyectos. Pulsa Tocar todo para escucharla, o pídeme que te explique cómo está hecha.`, `You opened «${state.name}», a shared song (${tracks.length} tracks, ${state.bpm} BPM). It's saved as a new project; your previous one is still in My projects. Press Play all to hear it, or ask me how it's made.`) }];
+    state.chat = [{ role: "assistant", content: L(`Has abierto «${state.name}», una canción compartida (${tracks.length} pistas, ${state.bpm} BPM). Está en una pestaña nueva; tu canción anterior sigue abierta en la suya. Pulsa Tocar todo para escucharla, o pídeme que te explique cómo está hecha.`, `You opened «${state.name}», a shared song (${tracks.length} tracks, ${state.bpm} BPM). It's open in a new tab; your previous song is still open in its own tab. Press Play all to hear it, or ask me how it's made.`) }];
     state.options = [L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()];
+    resetHistory(state); tabOpened();
     save();
   } catch { /* enlace roto: seguimos con lo que había */ }
 }
@@ -3222,6 +3232,170 @@ async function toggleRecord() {
   const name = b.dataset.file;
   setTimeout(() => say(L(`Grabación lista: ${name} (carpeta recordings/). Es un WAV de lo que sonaba por la salida de SuperCollider.`, `Recording ready: ${name} (recordings/ folder). It's a WAV of whatever came out of SuperCollider.`), state.options,
     { links: [{ href: `/api/recordings/file?name=${encodeURIComponent(name)}`, label: L("Descargar WAV", "Download WAV") }] }), 600);
+}
+
+// ------------------------------------------------------------------ pestañas (varias canciones abiertas a la vez)
+// Cada pestaña es un proyecto (su código, pistas, chat, historial y archivo). Solo suena la pestaña activa.
+// Las demás viven en memoria (docs) y en «Mis proyectos», así que sobreviven a recargar la página.
+const TABS_KEY = "tidal-studio-tabs-v1";
+let tabs = { ids: [], active: 0 };
+const docs = new Map();  // projectId → { state, handle, hist }
+function saveTabs() { try { localStorage.setItem(TABS_KEY, JSON.stringify(tabs)); } catch { /* nada */ } }
+function syncTab() {
+  if (!tabs.ids.length) tabs.ids = [state.projectId];
+  tabs.active = Math.max(0, Math.min(tabs.active, tabs.ids.length - 1));
+  if (tabs.ids[tabs.active] !== state.projectId) { const dup = tabs.ids.indexOf(state.projectId); if (dup >= 0 && dup !== tabs.active) { tabs.ids.splice(dup, 1); if (dup < tabs.active) tabs.active--; } tabs.ids[tabs.active] = state.projectId; }
+  saveTabs();
+}
+// Estado de una pestaña (la activa es «state»)
+function tabState(id) {
+  if (id === state.projectId) return state;
+  const d = docs.get(id);
+  if (d) return d.state;
+  const p = listProjects().find((x) => x.id === id);
+  if (!p) return null;
+  const s = { ...FRESH(), ...p.data, projectId: id, trying: null };
+  docs.set(id, { state: s, handle: null, hist: null });
+  return s;
+}
+// ¿Tiene cambios sin guardar en su archivo? (fileText lee «state», así que lo cambiamos un momento)
+function dirtyOf(s) {
+  if (!s || !s.file) return false;
+  if (s === state) return isDirty();
+  const keep = state; state = s;
+  try { return isDirty(); } finally { state = keep; }
+}
+const tabTitle = (s) => (s && (s.name || (s.file && s.file.name.replace(/\.(tidal|hs|txt)$/i, "")))) || L("Sin título", "Untitled");
+function tabWhere(s) {
+  if (!s) return "";
+  if (s.file) return s.file.path ? shortPath(s.file.path) : s.file.name;
+  if (s.github && s.github.slug) return "GitHub · " + s.github.slug + (s.github.ref ? " @ " + s.github.ref.slice(0, 7) : "");
+  return L("En este navegador (Mis proyectos)", "In this browser (My projects)");
+}
+const tabIcon = (s) => s && s.file ? "file" : s && s.github && s.github.slug ? "cloud" : s && s.course ? "course" : "melodia";
+function renderTabs() {
+  const bar = $("#doc-tabs"); if (!bar) return;
+  syncTab();
+  const html = tabs.ids.map((id, i) => {
+    const s = tabState(id), on = i === tabs.active, dirty = dirtyOf(s);
+    return `<div class="doc-tab ${on ? "active" : ""} ${dirty ? "dirty" : ""}" role="tab" aria-selected="${on}" data-i="${i}" title="${esc(tabTitle(s) + " — " + tabWhere(s))}">
+      ${icon(tabIcon(s), 14)}<span class="dt-name">${esc(tabTitle(s))}</span>
+      ${dirty ? `<span class="dirty-dot" title="${esc(L("Cambios sin guardar", "Unsaved changes"))}"></span>` : ""}
+      <button class="dt-close" data-close-tab="${i}" title="${esc(L("Cerrar pestaña", "Close tab"))}" aria-label="${esc(L("Cerrar pestaña", "Close tab"))}">${icon("close", 12)}</button></div>`;
+  }).join("") + `<button class="dt-new" data-a="new-tab" title="${esc(L("Nueva pestaña: canción nueva, abrir un archivo o un proyecto", "New tab: new song, open a file or a project"))}">${icon("plus", 14)}</button>`;
+  if (bar.dataset.html !== html) { bar.innerHTML = html; bar.dataset.html = html; }
+}
+// Una pestaña que no tiene nada: la reutilizamos en vez de abrir otra
+const blankDoc = (s) => !s.tracks.length && !(s.extra || "").trim() && !s.file && !s.name && !(s.github && s.github.slug) && !s.course;
+function stashCurrent() {
+  flushPending(state);
+  save();
+  docs.set(state.projectId, { state, handle: fileHandle, hist: stashHistory(state) });
+}
+// Antes de poner otra canción en «state»: deja la actual en su pestaña y abre un hueco nuevo a su derecha
+function openTabSlot() {
+  if (audition) stopAudition(false);
+  stopPreHear();
+  evalCode("hush");
+  if (blankDoc(state)) { docs.delete(state.projectId); fileHandle = null; return; }
+  stashCurrent();
+  syncTab();
+  tabs.active += 1;
+  tabs.ids.splice(tabs.active, 0, "");
+  fileHandle = null;
+}
+// Después de poner la canción nueva en «state»
+function tabOpened() { syncTab(); renderTabs(); }
+function busyMsg() { toast(L("Maestro está respondiendo en esta pestaña. Espera a que termine (o cancélalo) antes de cambiar de canción.", "Maestro is answering in this tab. Wait for it to finish (or cancel it) before switching songs.")); }
+// Pone en «state» la pestaña i (la canción de antes ya está guardada o descartada)
+function activate(i) {
+  const id = tabs.ids[i], d = docs.get(id), s = tabState(id);
+  if (!s) {
+    tabs.ids.splice(i, 1);
+    if (!tabs.ids.length) return blankOnly();
+    return activate(Math.min(i, tabs.ids.length - 1));
+  }
+  tabs.active = i;
+  state = s; fileHandle = d ? d.handle : null;
+  docs.delete(id);
+  restoreHistory(state, d && d.hist);
+  bkSel = null;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch { /* nada */ }
+  syncTab();
+  renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons();
+  if (live() && state.tracks.length) playAll();
+}
+function blankOnly() {
+  fileHandle = null; state = FRESH(); tabs = { ids: [state.projectId], active: 0 };
+  resetHistory(state); renderAll(); renderHistoryButtons(); greet();
+}
+async function switchTab(i) {
+  if (i === tabs.active || i < 0 || i >= tabs.ids.length) return;
+  if (busy) return busyMsg();
+  if (audition) await stopAudition(true);
+  stopPreHear();
+  stashCurrent();
+  evalCode("hush");
+  activate(i);
+}
+async function closeTab(i = tabs.active) {
+  if (i < 0 || i >= tabs.ids.length) return;
+  if (i !== tabs.active) {
+    // Una pestaña de fondo con cambios sin guardar: la traemos delante para preguntar
+    if (dirtyOf(tabState(tabs.ids[i]))) { await switchTab(i); if (tabs.active === i) return closeTab(i); return; }
+    docs.delete(tabs.ids[i]);
+    tabs.ids.splice(i, 1);
+    if (i < tabs.active) tabs.active--;
+    saveTabs(); return renderTabs();
+  }
+  if (busy) return busyMsg();
+  if (!(await guardUnsaved())) return;
+  if (audition) await stopAudition(false);
+  stopPreHear();
+  flushPending(state);
+  save();
+  evalCode("hush");
+  docs.delete(state.projectId);
+  tabs.ids.splice(i, 1);
+  if (!tabs.ids.length) return blankOnly();
+  activate(Math.min(i, tabs.ids.length - 1));
+}
+// ¿Ya está abierta en alguna pestaña? (mismo archivo del disco / misma canción de GitHub / mismo proyecto)
+function findTab(pred) { return tabs.ids.findIndex((id) => { const s = tabState(id); return s && pred(s, id); }); }
+function focusTabIf(pred, msg) {
+  const i = findTab(pred);
+  if (i < 0) return false;
+  if (i !== tabs.active) switchTab(i);
+  if (msg) toastSoft(msg);
+  return true;
+}
+function initTabs() {
+  try { const t = JSON.parse(localStorage.getItem(TABS_KEY) || "null"); if (t && Array.isArray(t.ids)) tabs = { ids: t.ids.filter((x) => typeof x === "string" && x), active: +t.active || 0 }; } catch { /* nada */ }
+  // Quitamos pestañas cuyo proyecto ya no existe (borrado o en blanco sin guardar)
+  const known = new Set(listProjects().map((p) => p.id));
+  tabs.ids = tabs.ids.filter((id, i, a) => a.indexOf(id) === i && (id === state.projectId || known.has(id)));
+  const at = tabs.ids.indexOf(state.projectId);
+  if (at >= 0) tabs.active = at; else { tabs.ids.splice(Math.min(tabs.active, tabs.ids.length), 0, state.projectId); tabs.active = tabs.ids.indexOf(state.projectId); }
+  saveTabs();
+  const bar = $("#doc-tabs");
+  bar.onclick = (e) => {
+    const x = e.target.closest("[data-close-tab]");
+    if (x) { e.stopPropagation(); return closeTab(+x.dataset.closeTab); }
+    if (e.target.closest("[data-a=new-tab]")) return openNewProject();
+  };
+  // Se cambia al pulsar (como en el navegador): si un campo pierde el foco y guarda, la barra se repinta antes del «click»
+  bar.onpointerdown = (e) => {
+    if (e.button !== 0 || e.target.closest("[data-close-tab]")) return;
+    const t = e.target.closest(".doc-tab"); if (t) { const i = +t.dataset.i; setTimeout(() => switchTab(i), 0); }
+  };
+  bar.onauxclick = (e) => { const t = e.target.closest(".doc-tab"); if (t && e.button === 1) { e.preventDefault(); closeTab(+t.dataset.i); } };
+  bar.onmousedown = (e) => { if (e.button === 1) e.preventDefault(); };
+  // Alt+1…9 salta a esa pestaña; Ctrl+Alt+←/→ a la anterior o la siguiente
+  document.addEventListener("keydown", (e) => {
+    if (e.altKey && !e.ctrlKey && !e.metaKey && /^Digit[1-9]$/.test(e.code)) { e.preventDefault(); switchTab(Math.min(+e.code.slice(5), tabs.ids.length) - 1); }
+    if (e.altKey && (e.ctrlKey || e.metaKey) && (e.key === "ArrowLeft" || e.key === "ArrowRight")) { e.preventDefault(); switchTab((tabs.active + (e.key === "ArrowRight" ? 1 : tabs.ids.length - 1)) % tabs.ids.length); }
+  });
+  renderTabs();
 }
 
 // ------------------------------------------------------------------ archivos .tidal (Archivo › Abrir / Guardar)
@@ -3311,7 +3485,6 @@ async function pickPath(mode) {
 async function openFile() {
   if (fileBusy) return; fileBusy = true;
   try {
-    if (!(await guardUnsaved())) return;
     const r = await pickPath("open");
     if (r.cancelled) return;
     if (r.path) return await openPath(r.path);
@@ -3326,6 +3499,8 @@ async function openFile() {
   } finally { fileBusy = false; }
 }
 async function openPath(path) {
+  if (focusTabIf((s) => s.file && s.file.path === path, L(`«${baseName(path)}» ya estaba abierto en una pestaña.`, `«${baseName(path)}» was already open in a tab.`))) return;
+  if (busy) return busyMsg();
   try {
     const r = await api("/api/file/read", { path });
     loadFileText(r.content, { path: r.path, name: r.name });
@@ -3338,10 +3513,11 @@ function loadFileText(text, file, handle = null) {
   const meta = readMeta(text);
   const p = parseCode(text, meta && meta.master);
   if (!p.tracks.length && !p.extra) return toast(L(`«${file.name}» no tiene código de Tidal que pueda leer.`, `«${file.name}» has no Tidal code I can read.`));
-  save();
-  evalCode("hush");
+  if (file.path && focusTabIf((s) => s.file && s.file.path === file.path, L(`«${file.name}» ya estaba abierto en una pestaña.`, `«${file.name}» was already open in a tab.`))) return;
+  if (busy) return busyMsg();
+  openTabSlot();
   // Si ya habías abierto este archivo, seguimos con ese proyecto (su chat y su historia)
-  const prev = file.path && listProjects().find((x) => x.data && x.data.file && x.data.file.path === file.path);
+  const prev = file.path && listProjects().find((x) => x.data && x.data.file && x.data.file.path === file.path && !tabs.ids.includes(x.id));
   const base = prev ? { ...FRESH(), ...prev.data, projectId: prev.id } : FRESH();
   state = { ...base, trying: null, selected: null,
     name: (meta && meta.name) || file.name.replace(/\.(tidal|hs|txt)$/i, ""),
@@ -3353,12 +3529,13 @@ function loadFileText(text, file, handle = null) {
   state.file.hash = hashText(fileText());
   addRecent(file.path, file.name);
   resetHistory(state);
+  tabOpened();
   const n = p.tracks.length;
   say(L(`He abierto «${file.name}»: ${n} ${n === 1 ? "pista" : "pistas"} a ${state.bpm} BPM.`, `I opened «${file.name}»: ${n} ${n === 1 ? "track" : "tracks"} at ${state.bpm} BPM.`)
     + (p.extra ? L(" El código que no es una pista (definiciones, let, once…) está intacto en «Código extra», arriba de las pistas.", " Code that isn't a track (definitions, let, once…) is kept intact in «Extra code», above the tracks.") : "")
     + (p.skipped.length ? L(` He quitado ${p.skipped.join(", ")}: aquí se para con el botón Silencio.`, ` I left out ${p.skipped.join(", ")}: here you stop with the Hush button.`) : ""),
     [L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()]);
-  renderAll(); renderHistoryButtons(); renderFileStatus();
+  renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons(); renderFileStatus();
   if (live() && n) playAll(true);
 }
 
@@ -3442,12 +3619,14 @@ function renderFilePop() {
   const k = (x) => `<kbd>${KEY_MOD}${x}</kbd>`;
   pop.innerHTML = `<button data-f="new" role="menuitem">${icon("plus", 16)} ${L("Nuevo proyecto…", "New project…")}</button>
     <button data-f="open" role="menuitem">${icon("folder", 16)} ${L("Abrir archivo…", "Open file…")} ${k("O")}</button>
+    <button data-f="github" role="menuitem">${icon("cloud", 16)} ${L("Abrir desde GitHub…", "Open from GitHub…")}</button>
     <button data-f="import" role="menuitem">${icon("upload", 16)} ${L("Importar canción (MIDI, audio)…", "Import a song (MIDI, audio)…")}</button>
     <button data-f="generate" role="menuitem">${icon("wand", 16)} ${L("Generar desde mi MIDI…", "Generate from my MIDI…")}</button>
     <hr>
     <button data-f="save" role="menuitem">${icon("save", 16)} ${L("Guardar", "Save")} ${k("S")}</button>
     <button data-f="saveas" role="menuitem">${icon("save", 16)} ${L("Guardar como…", "Save as…")} ${k(KEY_MOD === "⌘" ? "⇧S" : "Shift+S")}</button>
     <button data-f="download" role="menuitem">${icon("download", 16)} ${L("Descargar .tidal", "Download .tidal")}</button>
+    <button data-f="close" role="menuitem">${icon("close", 16)} ${state.file ? L("Cerrar archivo", "Close file") : L("Cerrar pestaña", "Close tab")} ${macPanels() ? k("W") : ""}</button>
     <hr>
     <div class="fp-title">${L("Recientes", "Recent")}</div>
     ${rec.length ? rec.map((r, i) => `<button data-f="recent" data-i="${i}" class="fp-recent" role="menuitem"><span>${esc(r.name)}</span><small>${esc(shortPath(dirOf(r.path)))}</small></button>`).join("")
@@ -3462,7 +3641,8 @@ function toggleFilePop(open) {
   if (show) renderFilePop();
   pop.hidden = !show; btn.setAttribute("aria-expanded", String(show));
 }
-const FILE_CMDS = { new: () => openNewProject(), import: () => openImportSong(), generate: () => openImportSong(false, { generate: true, useLast: hasLastMidi() }), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects() };
+const FILE_CMDS = { new: () => openNewProject(), import: () => openImportSong(), generate: () => openImportSong({ generate: true, useLast: hasLastMidi() }), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects(), github: () => openProjects("github"), close: () => closeTab(), newtab: () => openNewProject(),
+  nexttab: () => switchTab((tabs.active + 1) % tabs.ids.length), prevtab: () => switchTab((tabs.active + tabs.ids.length - 1) % tabs.ids.length) };
 function wireFiles() {
   $("#btn-file").onclick = (e) => { e.stopPropagation(); toggleFilePop(); };
   document.addEventListener("click", (e) => { if (!e.target.closest(".file-menu")) toggleFilePop(false); });
@@ -3472,7 +3652,7 @@ function wireFiles() {
     toggleFilePop(false);
     if (f === "recent") {
       const r = recentFiles()[+b.dataset.i];
-      if (r && !fileBusy && (await guardUnsaved())) openPath(r.path);
+      if (r && !fileBusy) openPath(r.path);
       return;
     }
     if (f === "clear-recent") { try { localStorage.removeItem(RECENT_KEY); } catch { /* nada */ } return; }
@@ -3491,7 +3671,7 @@ function wireFiles() {
   });
   // La app de Mac llama aquí desde su menú Archivo
   window.tsFileCommand = (cmd) => { if (FILE_CMDS[cmd]) FILE_CMDS[cmd](); };
-  window.addEventListener("beforeunload", (e) => { if (isDirty()) { e.preventDefault(); e.returnValue = ""; } });
+  window.addEventListener("beforeunload", (e) => { if (isDirty() || tabs.ids.some((id) => id !== state.projectId && dirtyOf(tabState(id)))) { e.preventDefault(); e.returnValue = ""; } });
   api("/api/file/info", {}).then((r) => { fileInfo = r; renderFileStatus(); }).catch(() => {});
   renderFileStatus();
 }
@@ -3838,7 +4018,7 @@ function renderCourse() {
   const mineDrop = dock.querySelector("[data-mine=remove]");
   if (mineDrop) mineDrop.onclick = () => { stopPreHear(); delete state.course.mine; save(); renderCourse(); };
   const mineGen = dock.querySelector("[data-mine=gen]");
-  if (mineGen) mineGen.onclick = () => { stopPreHear(); openImportSong(false, { generate: true, useLast: hasLastMidi(), style: c.id }); };
+  if (mineGen) mineGen.onclick = () => { stopPreHear(); openImportSong({ generate: true, useLast: hasLastMidi(), style: c.id }); };
   const refAdd = dock.querySelector("[data-ref=add]");
   if (refAdd) refAdd.onclick = () => courseReferenceAdd(c, refAdd);
   dock.querySelectorAll("[data-cs]").forEach((b) => { if (b.dataset.cs !== "hear") b.onclick = () => courseAction(b.dataset.cs); });
@@ -3934,6 +4114,7 @@ function runTour() {
 
 function init() {
   load();
+  initTabs();
   importSharedSong();
   // Si cambió el idioma, Maestro vuelve a saludar en el nuevo idioma (las pistas se mantienen)
   if (state.lang !== LANG) { state.chat = []; state.options = []; state.ideas = []; state.lang = LANG; }
