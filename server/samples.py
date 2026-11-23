@@ -21,6 +21,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 
+import mcache
 import net
 
 AUDIO_EXT = (".wav", ".aif", ".aiff", ".flac", ".ogg", ".mp3")
@@ -270,6 +271,11 @@ def pack_index(url):
     url = normalize_pack_url(url)
     if url in _index_cache:
         return _index_cache[url]
+    # Guardado en disco una semana: Maestro no vuelve a descargar los índices de los packs cada vez que arranca
+    disk = mcache.get("pack-index", url, ttl=7 * mcache.DAY)
+    if isinstance(disk, dict) and disk.get("sounds") is not None:
+        _index_cache[url] = disk
+        return disk
     check_remote(url)
     try:
         data = json.loads(_fetch(url, 4 * 1024 * 1024).decode("utf-8"))
@@ -288,6 +294,7 @@ def pack_index(url):
             sounds.append({"name": k, "files": files})
     out = {"url": url, "count": len(sounds), "sounds": sounds}
     _index_cache[url] = out
+    mcache.put("pack-index", url, out)
     return out
 
 

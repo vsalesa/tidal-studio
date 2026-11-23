@@ -21,6 +21,7 @@ import os
 import re
 import urllib.request
 
+import mcache
 import net
 from samples import SampleError, safe_name, pack_index
 
@@ -98,6 +99,10 @@ def _score(query_tokens, name):
 
 
 def _head_size(url):
+    return mcache.cached("head-size", url, lambda: _head_size_net(url), ttl=7 * mcache.DAY, keep=bool)
+
+
+def _head_size_net(url):
     try:
         req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": "tidal-studio"})
         with net.urlopen(req, timeout=8) as r:
@@ -151,10 +156,14 @@ def search_freesound(lib, key, api, query, loop=False, limit=3, bpm=None, tonali
         return []
     if loop and "loop" not in query.lower():
         query = f"{query} loop"
-    try:
-        res = lib.freesound_search(key, query, "libre", not loop, 1, api)
-    except SampleError:
-        return []
+    ck = f"{api}|{query.lower().strip()}|{'loop' if loop else 'hit'}"
+    res = mcache.get("freesound", ck)  # misma búsqueda en las últimas 24 h: no se repite
+    if res is None:
+        try:
+            res = lib.freesound_search(key, query, "libre", not loop, 1, api)
+        except SampleError:
+            return []
+        mcache.put("freesound", ck, res)
     results = res.get("results", [])
     if loop and (bpm or tonality):
         try:

@@ -25,6 +25,7 @@ import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
 import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS } from "./variants.js";
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
+import { planHTML, planContext, planEnabled, setPlanEnabled, newPlan, nextStep as nextPlanStep, planDone, PLAN_START, PLAN_STEPWISE, PLAN_ALL, PLAN_SPLIT, PLAN_CONTINUE, PLAN_RETRY, planBarHTML } from "./plan.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { openImport, importedSummary, INSPIRE_PROMPT } from "./importsong.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
@@ -88,14 +89,15 @@ function listProjects() {
 }
 
 // ------------------------------------------------------------------ API
-async function api(path, body) {
+async function api(path, body, signal) {
   if (path === "/api/eval" && body && body.code) noteEval(body.code); // para saber qué pistas suenan (y iluminarlas)
   const opts = body === undefined ? {} : {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: LANG, ...body }),
   };
+  if (signal) opts.signal = signal;
   const r = await fetch(path, opts);
   const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || `Error ${r.status}`);
+  if (!r.ok) { const e = new Error(data.error || `Error ${r.status}`); e.data = data; throw e; }
   return data;
 }
 
@@ -1058,6 +1060,33 @@ function undoPick() {
   changed();
   return true;
 }
+function wirePlan() {
+  $("#chat").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pl]"); if (!b) return;
+    const mi = +b.dataset.mi, a = b.dataset.pl;
+    const m = state.chat[mi]; if (!m || !m.plan) return;
+    const p = m.plan;
+    if (a === "goto") { const el = $(`#chat .msg[data-mi="${mi}"] .plan`); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+    if (a === "pause") { if (planRun) planRun.stop = true; b.disabled = true; b.textContent = L("Pararé al acabar este paso…", "I'll stop after this step…"); return; }
+    if (busy) return;
+    if (a === "start") { state.options = []; return runPlan(mi, true); }
+    if (a === "stepwise" || a === "next" || a === "retry") { state.options = []; return runPlan(mi, a === "stepwise" ? false : a === "retry" ? p.auto : false); }
+    if (a === "rest") { state.options = []; return runPlan(mi, true); }
+    if (a === "all") { p.estado = "reemplazado"; save(); return send(PLAN_ALL()); }
+    if (a === "stop") { p.estado = "parado"; state.options = []; save(); return renderChat(); }
+    if (a === "drop" && p.estado === "propuesto") { p.pasos.splice(+b.dataset.k, 1); save(); return renderChat(); }
+    if (a === "skip") { p.pasos[+b.dataset.k].estado = "saltado"; if (planDone(p)) p.estado = "terminado"; save(); return renderChat(); }
+    if (a === "change") { const f = b.closest(".plan").querySelector(".pl-change"); f.hidden = !f.hidden; if (!f.hidden) f.querySelector("input").focus(); }
+  });
+  $("#chat").addEventListener("submit", (e) => {
+    const f = e.target.closest(".pl-change"); if (!f) return;
+    e.preventDefault();
+    const txt = f.querySelector("input").value.trim(); if (!txt) return;
+    send(L(`Cambia el plan: ${txt}`, `Change the plan: ${txt}`));
+  });
+  const t = $("#plan-on");
+  if (t) { t.checked = planEnabled(); t.onchange = () => setPlanEnabled(t.checked); }
+}
 function wireVariants() {
   $("#chat").addEventListener("click", (e) => {
     const b = e.target.closest("[data-va]"); if (!b) return;
@@ -1462,11 +1491,17 @@ function teachAbout(comp, t) {
 function renderChat() {
   const box = $("#chat");
   box.innerHTML = "";
+  {
+    const pmi = state.chat.map((m) => !!(m.plan && (m.plan.estado === "en_marcha" || m.plan.estado === "pausado"))).lastIndexOf(true);
+    if (pmi >= 0) box.insertAdjacentHTML("beforeend", planBarHTML(state.chat[pmi], pmi, planRun && planRun.mi === pmi));
+  }
   state.chat.forEach((m, mi) => {
     const el = document.createElement("div");
     el.className = "msg " + m.role;
     el.dataset.mi = mi;
     el.textContent = m.content;
+    if (m.planTag) el.insertAdjacentHTML("afterbegin", `<div class="pl-tag">${icon("steps", 12)} ${esc(m.planTag)}</div>`);
+    if (m.plan) el.insertAdjacentHTML("beforeend", planHTML(m, mi, planRun && planRun.mi === mi));
     // Cómo ha usado Maestro las skills para decidir (justo debajo del texto, para que se vea)
     if (m.skills && m.skills.decisions && m.skills.decisions.length) el.insertAdjacentHTML("beforeend", decisionsHTML(m.skills.decisions, mi === state.chat.length - 1));
     if (m.explicacion && m.explicacion.length) {
@@ -1490,9 +1525,18 @@ function renderChat() {
   });
   // Mientras hay opciones por elegir, ocupan el sitio de las Ideas de Maestro
   const last = state.chat[state.chat.length - 1];
-  $(".panel.assistant").classList.toggle("va-open", !!(last && last.variantes && last.picked == null && !last.dismissed));
-  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${L("Maestro está pensando…", "Maestro is thinking…")}${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
+  // …y lo mismo mientras hay un plan por aprobar o en marcha
+  const planOpen = state.chat.some((m) => m.plan && ["propuesto", "en_marcha", "pausado"].includes(m.plan.estado));
+  $(".panel.assistant").classList.toggle("va-open", !!(last && last.variantes && last.picked == null && !last.dismissed) || planOpen);
+  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${planRun && planRun.label ? `<div class="pl-tag">${icon("steps", 12)} ${esc(planRun.label)}</div>` : ""}${L("Maestro está pensando…", "Maestro is thinking…")} <button class="link chat-cancel" data-cancel="1" title="${esc(L("Cancelar lo que has enviado (Esc)", "Cancel what you sent (Esc)"))}">${icon("stop", 12)} ${L("Cancelar", "Cancel")}</button>${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
   box.scrollTop = box.scrollHeight;
+  // Mientras Maestro piensa, el botón de enviar se convierte en «Cancelar»
+  const sb = $("#chat-form button[type=submit]");
+  if (sb && sb.classList.contains("is-stop") !== busy) {
+    sb.classList.toggle("is-stop", busy);
+    sb.innerHTML = icon(busy ? "stop" : "send", 18);
+    sb.title = busy ? L("Cancelar (Esc)", "Cancel (Esc)") : L("Enviar", "Send");
+  }
   const chips = $("#chips");
   chips.innerHTML = "";
   for (const o of state.options || []) {
@@ -1526,6 +1570,20 @@ async function send(text) {
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
   if (text === INSPIRE_CHIP() && state.reference) text = INSPIRE_PROMPT();
   if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
+  {
+    const pmi = openPlanIndex();
+    if (pmi >= 0 && text === PLAN_RETRY()) { state.options = []; renderChat(); return runPlan(pmi, state.chat[pmi].plan.auto); }
+    if (pmi >= 0 && (text === PLAN_START() || text === PLAN_STEPWISE() || text === PLAN_CONTINUE())) {
+      state.options = []; renderChat();
+      return runPlan(pmi, text !== PLAN_STEPWISE() && !(text === PLAN_CONTINUE() && !state.chat[pmi].plan.auto));
+    }
+    if (pmi >= 0 && text === PLAN_ALL()) state.chat[pmi].plan.estado = "reemplazado";
+    if (text === PLAN_SPLIT() && server.llm && !state.offline) {
+      const req = lastRealRequest();
+      state.chat.push({ role: "user", content: text }); state.options = []; save(); renderChat();
+      return askLLM({ forcePlan: true, request: req });
+    }
+  }
   if (text === L("Recuperar el chat", "Bring the chat back") && clearedChat) { state.chat = clearedChat.chat; state.options = clearedChat.options; clearedChat = null; save(); return renderChat(); }
   if (text.startsWith(L("Empieza tú con un ritmo", "You start with a beat"))) { const c = byId[state.style ? (state.style === "hiphop" || state.style === "lofi" ? "kickhh" : "kick4") : "kick4"]; const t = addComponent(c); if (t) teachAbout(c, t); return; }
   // «Descárgalo» / «Download it» con un paquete grande pendiente: se descarga sin pasar por la IA
@@ -1594,15 +1652,87 @@ function keepTrace(t) {
   return { events, seconds: t.seconds, done: true };
 }
 
-async function askLLM() {
-  busy = true; renderChat();
+// Plan por pasos en marcha: { mi, label, stop }
+let planRun = null;
+function openPlanIndex() {
+  for (let i = state.chat.length - 1; i >= 0; i--) {
+    const p = state.chat[i].plan;
+    if (p) return p.estado === "propuesto" || p.estado === "pausado" ? i : -1;
+  }
+  return -1;
+}
+function lastRealRequest() {
+  const skip = new Set([PLAN_SPLIT(), PLAN_START(), PLAN_STEPWISE(), PLAN_CONTINUE(), PLAN_ALL()]);
+  return ([...state.chat].reverse().find((m) => m.role === "user" && !skip.has(m.content)) || {}).content || "";
+}
+
+async function runPlan(mi, auto) {
+  const m = state.chat[mi]; if (!m || !m.plan || busy || planRun) return;
+  const p = m.plan;
+  p.auto = auto; p.estado = "en_marcha";
+  planRun = { mi, label: "", stop: false };
+  save(); renderChat();
+  while (true) {
+    const i = nextPlanStep(p);
+    if (i < 0) break;
+    const step = p.pasos[i];
+    step.estado = "haciendo"; delete step.error;
+    planRun.label = L(`Paso ${i + 1} de ${p.pasos.length} · ${step.titulo}`, `Step ${i + 1} of ${p.pasos.length} · ${step.titulo}`);
+    save(); renderChat();
+    const res = await askLLM({ planStep: { titulo: p.titulo, resumen: p.resumen, peticion: p.peticion, i, pasos: p.pasos.map((x) => ({ titulo: x.titulo, que: x.que, estado: x.estado })) }, planTag: planRun.label });
+    if (!res.ok && res.cancelled) {
+      step.estado = "pendiente";
+      p.estado = "pausado";
+      sysMsg(L(`Plan en pausa: cancelaste el paso ${i + 1}. Lo hecho hasta aquí sigue guardado.`, `Plan paused: you cancelled step ${i + 1}. Everything done so far is still saved.`));
+      break;
+    }
+    if (!res.ok) {
+      step.estado = "error";
+      step.error = res.timeout ? L("La IA tardó demasiado en este paso. Lo hecho hasta aquí está guardado: reinténtalo.", "The AI took too long on this step. Everything done so far is saved: retry it.") : res.error;
+      p.estado = "pausado";
+      break;
+    }
+    step.estado = "hecho";
+    save();
+    if (planRun.stop || !p.auto) { if (nextPlanStep(p) >= 0) { p.estado = "pausado"; } break; }
+  }
+  if (planDone(p)) p.estado = "terminado";
+  planRun = null;
+  if (p.estado === "terminado") {
+    say(L(`¡Plan «${p.titulo}» terminado! Escucha la canción entera. Puedes deshacer cualquier paso en el Historial o pedirme retoques.`, `Plan «${p.titulo}» finished! Listen to the whole song. You can undo any step in History or ask me for tweaks.`),
+      [L("Dame ideas para mejorarla", "Give me ideas to improve it"), L("Explícame la canción", "Explain the song to me")]);
+  } else {
+    const ni = nextPlanStep(p);
+    state.options = p.estado !== "pausado" || ni < 0 ? [] : p.pasos[ni].estado === "error" ? [PLAN_RETRY()] : [PLAN_CONTINUE()];
+    save(); renderChat();
+  }
+}
+
+// Petición en curso al chat, para poder cancelarla: { controller, trace, text }
+let inflight = null;
+function cancelChat() {
+  if (!inflight) return;
+  const f = inflight; inflight = null;
+  f.cancelled = true;
+  f.controller.abort();
+  api("/api/chat/cancel", { trace: f.trace }).catch(() => {});
+}
+
+async function askLLM(opts = {}) {
+  busy = true;
   const trace = startTrace();
+  const me = { controller: new AbortController(), trace: trace.id, text: opts.planStep ? "" : lastRealRequest() };
+  inflight = me;
+  renderChat();
   try {
-    const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) + fetchContext(m) }));
+    let history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) + fetchContext(m) + planContext(m) }));
+    if (opts.planStep) history.push({ role: "user", content: L(`Haz el paso ${opts.planStep.i + 1} del plan: ${opts.planStep.pasos[opts.planStep.i].titulo}`, `Do step ${opts.planStep.i + 1} of the plan: ${opts.planStep.pasos[opts.planStep.i].titulo}`) });
+    if (opts.forcePlan && opts.request) history.push({ role: "user", content: L(`Hazlo por pasos con un plan: ${opts.request}`, `Do it in steps with a plan: ${opts.request}`) });
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
       curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1 } : undefined; })() : undefined,
       bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
+      plan_modo: planEnabled() && !state.course, ...(opts.planStep ? { plan_paso: opts.planStep } : {}), ...(opts.forcePlan ? { plan_forzar: true } : {}),
       referencia: state.reference || undefined,
       master: state.master || undefined,
       ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
@@ -1610,7 +1740,9 @@ async function askLLM() {
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
     state.tracks.forEach((t) => delete t.edited);
-    const r = await api("/api/chat", { messages: history, session, trace: trace.id });
+    const r = await api("/api/chat", { messages: history, session, trace: trace.id }, me.controller.signal);
+    if (me.cancelled) throw Object.assign(new Error("cancelled"), { data: { cancelled: true } });
+    inflight = null;
     const lastTrace = trace.end();
     busy = false;
     if ((r.descargas || []).some((d) => d.estado === "descargado")) { server.samples = null; sm.mine = null; }
@@ -1621,18 +1753,43 @@ async function askLLM() {
     if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias.filter((x) => !isDismissed(x));
     let controles = normalizeControls(r.controles, state.tracks);
     const lastUser = (state.chat.filter((m) => m.role === "user").pop() || {}).content || "";
-    if (!controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
+    if (!opts.planStep && !controles.length && CTL_RE.test(lastUser) && selectedTrack()) controles = controlsFor(selectedTrack(), { bpm: /bpm|tempo|velocidad|speed/i.test(lastUser), samples: server.samples || [] });
     countUse(r.skills);
     if (r.variantes && r.variantes.length) {
       stopAudition();
       state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
     }
-    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), ...(r.descargas && r.descargas.length ? { descargas: r.descargas } : {}), ...(r.instrumentos && r.instrumentos.length ? { instrumentos: r.instrumentos } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
+    let plan;
+    if (r.plan && !opts.planStep) {
+      // Un plan nuevo sustituye al que hubiera sin terminar
+      state.chat.forEach((m) => { if (m.plan && (m.plan.estado === "propuesto" || m.plan.estado === "pausado")) m.plan.estado = "reemplazado"; });
+      plan = newPlan(r.plan, opts.request || lastRealRequest());
+    }
+    const options = plan ? [PLAN_START(), PLAN_STEPWISE(), PLAN_ALL()] : opts.planStep ? [] : (r.opciones || []);
+    say(r.mensaje || "…", options, { ...(plan ? { plan } : {}), ...(opts.planTag ? { planTag: opts.planTag } : {}), ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), ...(r.descargas && r.descargas.length ? { descargas: r.descargas } : {}), ...(r.instrumentos && r.instrumentos.length ? { instrumentos: r.instrumentos } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
+    return { ok: true, r };
   } catch (e) {
     trace.end();
     busy = false;
+    if (inflight === me) inflight = null;
+    if (me.cancelled || e.name === "AbortError" || (e.data && e.data.cancelled)) {
+      // Cancelado: no se aplica nada. Lo que escribiste vuelve a la caja para que lo cambies si quieres
+      if (opts.planStep) { renderChat(); return { ok: false, cancelled: true }; }
+      const inp = $("#chat-input");
+      if (inp && !inp.value && me.text && !opts.forcePlan) inp.value = me.text;
+      sysMsg(L("Cancelado: no he cambiado nada en tu canción. Tu mensaje está otra vez en la caja por si quieres cambiarlo.", "Cancelled: I didn't change anything in your song. Your message is back in the box in case you want to change it."));
+      return { ok: false, cancelled: true };
+    }
+    const timeout = !!(e.data && e.data.timeout);
+    if (opts.planStep) { renderChat(); return { ok: false, timeout, error: e.message }; }
+    if (timeout) {
+      say(L("La IA ha tardado demasiado: lo que has pedido es grande para una sola respuesta. Lo hago por pasos: primero te enseño un plan y luego voy paso a paso, guardando cada uno.", "The AI took too long: what you asked for is big for a single answer. Let me do it in steps: first I'll show you a plan, then go step by step, saving each one."),
+        [PLAN_SPLIT(), L("Inténtalo otra vez", "Try again")]);
+      return { ok: false, timeout };
+    }
     say(L("Uy, no he podido hablar con la IA: ", "Oops, I couldn't reach the AI: ") + e.message + L("\n\nRevisa los Ajustes. Mientras tanto te sigo guiando sin IA.", "\n\nCheck Settings. Meanwhile I'll keep guiding you without AI."), [L("Seguir sin IA", "Continue without AI")]);
+    return { ok: false, error: e.message };
   }
 }
 
@@ -3670,8 +3827,12 @@ function init() {
   $("#btn-hush").onclick = hushAll;
   $("#style-filter").onchange = (e) => { state.style = e.target.value; save(); renderCatalog(); renderIdeas(); };
   wireVariants();
+  wirePlan();
   wireFetch();
-  $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
+  $("#chat-form").onsubmit = (e) => { e.preventDefault(); if (busy && inflight) return cancelChat(); const i = $("#chat-input"); send(i.value); i.value = ""; };
+  // Cancelar: el botón del mensaje «pensando…», el de enviar (se vuelve un cuadrado) o la tecla Esc
+  $("#chat").addEventListener("click", (e) => { if (e.target.closest("[data-cancel]")) cancelChat(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && inflight && !audition) { e.preventDefault(); cancelChat(); } });
   $("#btn-more-ideas").onclick = () => {
     if (state.trying) return;
     if (server.llm && !state.offline) return send(L("Dame otra idea para mejorar la canción, y explícame qué concepto musical enseña.", "Give me another idea to improve the song, and explain what musical concept it teaches."));

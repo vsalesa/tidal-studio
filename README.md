@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.9.1** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.10.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -110,6 +110,49 @@ asks you **one** question with answers to click.
 
 It works with every AI provider, and without AI too (type «give me options» and it builds them from its own ideas and
 style recipes). Turn it off with the **Options** switch at the top of the chat to have Maestro apply changes directly.
+
+### Big requests: Maestro makes a plan and goes step by step
+
+Ask for something big («make me a whole salsa song with piano, bass and trumpets», «turn the song into jazz») and
+Maestro works like a brainstorming session with a producer: instead of composing everything in one go, it first
+**designs a plan of 3 to 6 steps** (rhythm, bass, harmony, melody, effects, structure) and **shows it to you before
+touching your song**. If it's missing something important (style, mood…) it asks you one question first.
+
+- **Review the plan**: remove the steps you don't want (×), or **Change the plan…** («add a bridge, no trumpet») and it
+  sends you a new one. **All at once** skips the plan.
+- **Start** does every step in a row; **Step by step** stops after each one so you can listen and **Continue** when you
+  like. Every step is applied to your song, explained like any other answer and **saved as soon as it's done**.
+- A bar at the top of the chat shows where you are (2/5, the step it's working on) while the plan runs.
+
+![Maestro shows a plan before touching your song](docs/screenshots/plan-proposed.png)
+
+![The plan running: step 3 of 5 while the first two already play](docs/screenshots/plan-running.png)
+
+**No more lost work when the AI takes too long.** If a step times out, the steps already done stay in your song (even
+if you close the studio) and the plan pauses on that step: **Retry step 3** repeats only that one, or **Skip** it.
+And if a normal request is too big and times out, Maestro offers **Do it in steps** to turn it into a plan.
+
+![A step took too long: the rest is saved, retry only that step](docs/screenshots/plan-retry.png)
+
+Faster answers, too:
+
+- The AI is only cut off after it **stops sending anything** for 5 minutes (`"ai_timeout"` in `config.json`), not
+  while it's still thinking or writing a long answer (before, Claude with your subscription was cut at 3 minutes).
+- **Maestro caches what it already loaded or found**: its instructions and the plan's skills are identical in every
+  step, so Claude (API key or subscription) and OpenAI-compatible providers reuse them from their prompt cache instead
+  of reprocessing them; the Reasoning panel says «Reusing N tokens…». Skills are not re-read from disk on every
+  message, and sound searches on the internet (pack indexes, Freesound results, file sizes) are kept in a `cache/`
+  folder for a day or a week, so a step or a later session doesn't search again.
+
+Turn it off with the **Plan** switch at the top of the chat. Plans are not used inside genre courses, which already go
+step by step.
+
+**Cancel what you sent.** Changed your mind, or it's taking too long? While Maestro is thinking, press **Cancel** in its
+message, the send button (it turns into a square) or **Esc**. The AI call stops right away (with Claude on your
+subscription, the `claude` process is closed), nothing is applied or downloaded, and your message goes back into the box
+so you can change it. Cancelling a plan step pauses the plan with every finished step kept.
+
+![While Maestro thinks: Cancel, or the square send button, or Esc](docs/screenshots/chat-cancel.png)
 
 ### Help with your code and code palette
 
@@ -423,13 +466,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.9.1; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.10.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.9.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.9.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/tidal-studio_0.9.1_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.10.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/TidalStudio-0.10.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.10.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/TidalStudio-0.10.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.10.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/tidal-studio_0.10.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Interactive tutorial
 
@@ -533,6 +576,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. [Audio import](#import-a-song-as-a-starting-point) now separates instruments with MSST (SCNet XL) plus Demucs for the bass, with Quality or Fast per song. |
 | **0.9.1** | [Tidal Studio route](#plugins): Maestro loads `mc-tidal-studio`, the skills route of your composition plugin made for this app, with every message, plus the genre skill that best fits. |
 | **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |
 | **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |

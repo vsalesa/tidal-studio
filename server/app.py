@@ -23,10 +23,10 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from engine import Engine, find_ghci, find_sclang  # noqa: E402
 from timeline import TimelineQuery  # noqa: E402
-from llm import chat_completion, LLMError, claude_cli  # noqa: E402
+from llm import chat_completion, LLMError, LLMTimeout, LLMCancelled, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix,
-                       variants_on, fetch_on)  # noqa: E402
+                       variants_on, fetch_on, plan_on, plan_step)  # noqa: E402
 import fetcher  # noqa: E402
 import github  # noqa: E402
 import skills as skillset  # noqa: E402
@@ -100,6 +100,8 @@ DEFAULT_CONFIG = {
         "auto_update": True,
     },
     "temperature": 0.7,
+    # Segundos que la IA puede pasar SIN mandar nada antes de darla por perdida (si va respondiendo, no se corta)
+    "ai_timeout": 300,
     "language": "es",
 }
 
@@ -163,6 +165,13 @@ def llm_configured(cfg):
 
 def with_skills(cfg, system, query, session):
     """Añade al prompt la lista de skills y el contenido de las que encajan con el mensaje."""
+    text, sk = skills_text(cfg, query, session)
+    return system + text, sk
+
+
+def skills_text(cfg, query, session):
+    """(texto de skills para el prompt, (activas, cargadas)) o ("", None). Va aparte del prompt fijo de Maestro
+    para que la caché de prompts del proveedor reutilice la parte fija aunque cambien las skills."""
     extra = " ".join(str(x) for x in (session.get("step"), session.get("style")) if x)
     curso = session.get("curso") if isinstance(session.get("curso"), dict) else {}
     force = (str(curso["skill"]),) if curso.get("skill") else ()   # los cursos latinos se basan en una skill del plugin
@@ -171,10 +180,10 @@ def with_skills(cfg, system, query, session):
         active, loaded, text = skillset.select(cfg, query or "", extra, force)
     except Exception as e:  # una skill rota no debe romper el chat
         print(f"[skills] {e}")
-        return system, None
+        return "", None
     if not active:
-        return system, None
-    return system + text, (active, loaded)
+        return "", None
+    return text, (active, loaded)
 
 
 def skills_report(sk, raw):
@@ -244,6 +253,7 @@ class Trace:
         self.t0 = _t.time()
         self.events = []  # [{"kind": "step"|"thinking", "text": …, "t": segundos}]
         self.done = False
+        self.cancel = threading.Event()  # el alumno pulsó Cancelar
         if tid:
             with _traces_lock:
                 for k in [k for k, v in TRACES.items() if self.t0 - v.t0 > 900]:
@@ -717,6 +727,8 @@ class Handler(SimpleHTTPRequestHandler):
                         cfg["github"][k] = v.strip()
                 if "temperature" in data:
                     cfg["temperature"] = float(data["temperature"])
+                if "ai_timeout" in data:
+                    cfg["ai_timeout"] = max(30, min(1800, int(float(data["ai_timeout"]))))
                 save_config(cfg)
                 return self._json(public_config(cfg))
 
@@ -737,6 +749,16 @@ class Handler(SimpleHTTPRequestHandler):
                 if cfg["provider"] != "claudecode":
                     return self._json(llmdiag.diagnose_api(cfg, data.get("lang", "es")))
                 return self._json(llmdiag.test_models(cfg, data.get("lang", "es")))
+
+            if path == "/api/chat/cancel":
+                # Cancelar lo que se ha mandado al chat: corta la llamada a la IA en curso (mata `claude`,
+                # deja de leer el streaming) y no se aplica ni descarga nada
+                with _traces_lock:
+                    tr = TRACES.get(str(data.get("trace") or ""))
+                if tr:
+                    tr.cancel.set()
+                    tr.add("step", tr.L("Cancelado por ti", "Cancelled by you"))
+                return self._json({"ok": bool(tr)})
 
             if path == "/api/chat":
                 cfg = load_config()
@@ -770,8 +792,16 @@ class Handler(SimpleHTTPRequestHandler):
                     sess["instrument_lines"] = instlib.maestro_lines(INSTLIB, last)
                 except Exception:  # noqa: BLE001
                     sess["instrument_lines"] = []
+                ps = plan_step(sess)
+                if ps:
+                    tr.add("step", tr.L(f"Plan «{ps.get('titulo', '')}» · paso {int(ps.get('i') or 0) + 1} de {len(ps['pasos'])}",
+                                        f"Plan «{ps.get('titulo', '')}» · step {int(ps.get('i') or 0) + 1} of {len(ps['pasos'])}"))
                 system, messages = build_messages(msgs, sess)
-                system, sk = with_skills(cfg, system, last, sess)
+                # En los pasos de un plan, las skills se eligen con la petición original: son las mismas en cada paso,
+                # así el prompt no cambia y el proveedor lo reutiliza de su caché (más rápido y sin repetir trabajo)
+                skill_query = str(ps.get("peticion") or last) if ps else last
+                stext, sk = skills_text(cfg, skill_query, sess)
+                system = [with_lang(system, data.get("lang")), stext]
                 if sk:
                     active, loaded = sk
                     names = [x["name"] + (f" (+{', '.join(r.split('/')[-1] for r in x['refs'])})" if x["refs"] else "")
@@ -779,10 +809,27 @@ class Handler(SimpleHTTPRequestHandler):
                     tr.add("step", tr.L(f"Elijo skills entre {len(active)}: ", f"Picking skills out of {len(active)}: ")
                            + (", ".join(names) if names else tr.L("ninguna encaja", "none match")))
                 tr.add("step", tr.L(f"Pregunto a {provider_label(cfg)}…", f"Asking {provider_label(cfg)}…"))
+                def _ev(kind, text):
+                    if kind == "cache":
+                        tr.add("step", tr.L(f"Reutilizo {text} tokens de instrucciones y skills que ya tenía en caché",
+                                            f"Reusing {text} tokens of instructions and skills already cached"))
+                    else:
+                        tr.add(kind, text)
+                llmmod.set_cancel(tr.cancel)
                 try:
-                    raw = chat_completion(cfg, with_lang(system, data.get("lang")), messages,
-                                          max_tokens=3500 if variants_on(sess) else 1800,
-                                          on_event=tr.add if tr.id else None)
+                    try:
+                        raw = chat_completion(cfg, system, messages,
+                                              max_tokens=1800 if ps else (3500 if variants_on(sess) or plan_on(sess) else 1800),
+                                              on_event=_ev if tr.id else None)
+                    except LLMTimeout as e:
+                        # Demasiado grande para una sola respuesta: se propone hacerlo por pasos (o reintentar solo este paso)
+                        tr.add("step", tr.L("La IA ha tardado demasiado", "The AI took too long"))
+                        return self._json({"error": str(e), "timeout": True, "plan_paso": bool(ps),
+                                           "seconds": tr.public()["seconds"]}, 504)
+                    except LLMCancelled:
+                        return self._json({"error": "Cancelado", "cancelled": True}, 409)
+                    if tr.cancel.is_set():  # canceló justo cuando llegaba la respuesta: no se descarga nada
+                        return self._json({"error": "Cancelado", "cancelled": True}, 409)
                     tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
                     reply = parse_reply(raw)
                     if reply.get("descargar") and fetch_on(sess):
@@ -801,6 +848,7 @@ class Handler(SimpleHTTPRequestHandler):
                     if inst_items:
                         reply["instrumentos"] = inst_items
                 finally:
+                    llmmod.set_cancel(None)
                     tr.finish()
                 return self._json({**reply, "skills": skills_report(sk, raw),
                                    **({"command": command} if command else {}),
