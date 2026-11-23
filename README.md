@@ -7,15 +7,17 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
+**Latest version: 0.8.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+
 ![Tidal Studio](docs/screenshots/studio.png)
 
 **Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) · [Maestro's options](#hear-maestros-options-and-pick-one) ·
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
-[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) ·
+[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) · [Long loops](#long-loops-a-library-that-knows-what-to-do-with-them) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
-[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Save and share](#save-export-and-share) ·
-[Installation](#installation-once)
+[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Import a song](#import-a-song-as-a-starting-point) · [Save and share](#save-export-and-share) ·
+[What's new](#whats-new-version-by-version) · [Installation](#installation-once)
 
 ## What you can do
 
@@ -449,6 +451,21 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
   or Claude (Anthropic). It also works without AI: button-guided flow, explanations and local ideas.
 - **macOS, Windows and Linux**: the installer detects your system.
 
+## What's new, version by version
+
+Each version has its installers for Mac, Windows and Linux on the [releases page](https://github.com/vsalesa/tidal-studio/releases).
+
+| Version | What's new |
+|---|---|
+| **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |
+| **0.7.0** | [Import a song](#import-a-song-as-a-starting-point) (MIDI, or audio with optional tools) as the starting point for a new one. |
+| **0.6.0** | [Maestro downloads the sounds it needs](#maestro-downloads-the-sounds-it-needs) from free sample packs and Freesound. |
+| **0.5.0** | [Open and save Tidal files](#open-and-save-tidal-files): a File menu for any `.tidal` / `.hs`, with native dialogs. |
+| **0.4.1** | [Each track shows its mix](#mix-tab) (volume and EQ) in Tracks and Blocks. |
+| **0.4.0** | [Hear Maestro's options and pick one](#hear-maestros-options-and-pick-one), the [Timeline](#timeline-when-each-sound-plays), [effects on/off](#blocks-view-and-live-highlighting) and old errors that clear by themselves. |
+| **0.3.0** | [A real app](#a-real-app-on-your-computer) for Mac, Windows and Linux; [AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics); [how Maestro decides and its reasoning](#how-maestro-decides-and-its-reasoning); [plugins](#skills-and-plugins). |
+| **0.2.0 and before** | Wizard, brainstorm, genre courses, Blocks, Mix, instruments, sample library, skills, GitHub versions and the tutorial. |
+
 ## Installation (once)
 
 ### Easiest: the all-in-one Mac installer
@@ -610,6 +627,10 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `server/plugins.py`: Claude Code plugins and marketplaces (`my-plugins/`): download, manifests, skills and `/commands`.
 - `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: the Timeline tab. The server asks Tidal (`queryArc`) in its own GHCi; `web/tpat.js` is the approximate in-browser calculator used without the engine.
+- `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio).
+- `server/fetcher.py` + `web/fetchcard.js`: Maestro finds and downloads missing sounds. `web/variants.js`: Maestro's audible options (live A/B).
+- `server/loops.py` + `web/loops.js`: long-loops library (analysis of tempo, bars, key and hits, and the code that fits your song).
+- `server/ccdetect.py` + `server/llmdiag.py`: Claude Code detection and the Diagnostics panel. `web/courses.js`: genre courses. `web/instruments.js`: instruments. `web/tour.js`: tutorial.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).
