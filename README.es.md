@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.9.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.9.1** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -434,13 +434,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.9.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.9.1; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.9.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.9.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/TidalStudio-0.9.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.0/tidal-studio_0.9.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.9.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.9.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/tidal-studio_0.9.1_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tutorial interactivo
 
@@ -530,6 +530,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.9.1** | [Ruta de Tidal Studio](#plugins): Maestro carga en cada mensaje `mc-tidal-studio`, la ruta de skills de tu plugin de composición hecha para esta app, más la skill de género que mejor encaje. |
 | **0.9.0** | [Biblioteca de instrumentos](#biblioteca-de-instrumentos-más-de-600-instrumentos-concretos): más de 600 instrumentos concretos con fotos, escucha previa y tus propios SoundFonts, motores de synth nuevos (Mi-UGens, Surge XT, Vital), cursos latinos que siguen tu plugin de composición con instrumentos reales, y plugins que se actualizan solos. |
 | **0.8.0** | [Biblioteca de loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos): arrastra loops, carpetas o un zip; detecta tempo, compases, tonalidad y golpes y te da código que encaja con tu canción, con variaciones. |
 | **0.7.0** | [Importar una canción](#importar-una-canción-como-punto-de-partida) (MIDI, o audio con herramientas opcionales) como punto de partida de otra nueva. |
