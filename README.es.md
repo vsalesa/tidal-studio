@@ -76,6 +76,42 @@ descargan solos al empezar el curso.
 | **«Lo que dice la skill» en cada paso, con instrumentos reales** | |
 | ![Paso con la regla de la skill](docs/screenshots/es/curso-skill-paso.png) | |
 
+**Escucha a un baterista real tocar el estilo.** Nueve cursos (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass y lo-fi) traen una interpretación real en MIDI del [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+(Google Magenta, CC BY 4.0): bateristas profesionales grabados tocando merengue dominicano, reggaeton, bossa nova, songo
+cubano, swing, funk, disco, breakbeat y hip hop. La primera vez que pulsas **Escuchar**, el estudio descarga el paquete de
+MIDI (3 MB) y convierte cuatro compases en pistas de Tidal que conservan lo que lo hace humano: la fuerza de cada golpe
+(`# gain`) y lo que se adelanta o se atrasa (`# nudge`, en segundos), con rejilla de tresillos para el swing. El baterista
+del merengue toca el bloque de madera y las congas del curso, y el del reggaeton un bombo 808. Cada curso explica qué
+escuchar, y **Añadirlo a mi canción** pone al baterista en las pistas d9 a d12 para que silencies las tuyas y compares. El
+curso de reggaeton ahora acentúa el charles y adelanta el dembow como lo hace este baterista. Cumbia y techno aún no tienen
+MIDI con licencia libre, así que siguen con sus patrones escritos.
+
+| Los cursos con baterista real lo indican | Qué escuchar, con Escuchar y Añadirlo a mi canción |
+|---|---|
+| ![Cursos con baterista real](docs/screenshots/es/cursos-baterista-real.png) | ![Baterista real en un curso](docs/screenshots/es/curso-baterista-real.png) |
+| **El baterista en tu canción: la fuerza y el tiempo de cada golpe, en código** | |
+| ![Baterista real en la canción](docs/screenshots/es/baterista-real-en-cancion.png) | |
+
+**Estilos aprendidos de canciones reales, no solo de reglas escritas.** Con reglas de estilo escritas los cursos latinos no
+acababan de sonar bien, así que ahora el estudio también aprende de música real. `tools/learn_style.py` ha medido 31
+canciones latinas en MIDI (3 merengues, 7 salsas, 9 cumbias y 12 bossas nova, del Lakh MIDI Dataset y de PDMX) en una
+rejilla de 16 semicorcheas por compás: cuándo tocan el bajo, el piano, la guitarra y los metales, qué nota del acorde
+elige el bajo en cada sitio, qué hace cada percusión y qué progresiones se repiten. Solo se guarda esa estadística
+(`server/data/style_profiles.json`). No se copia ni se incluye ninguna canción. Maestro lee el perfil del género del curso
+(o del estilo de tu proyecto), así sus partes siguen cómo se tocan las canciones de verdad. El curso de merengue se ha
+reescrito con los datos: el bajo toca en el 1, el «y» del 2, el 3, el 4 y el «y» del 4, el piano no para de tocar
+corcheas con semicorcheas de enganche, y el grave de la tambora cae en el «y» del 2 y del 4. Los bajos de salsa, cumbia
+y bossa ya coincidían con lo que hacen las canciones. Para enseñarle un género con tus MIDI:
+`python3 tools/learn_style.py merengue ~/mis-midi/merengue/`.
+
+**Tu propio ejemplo.** Cada curso tiene **Cargar mi MIDI de ejemplo**: carga una canción del estilo que sea tuya o que hayas
+comprado, escucha cuatro compases con todos sus instrumentos, y Maestro compara cada paso con ella.
+
+| Tu ejemplo en el curso, junto al baterista real | |
+|---|---|
+| ![Tu ejemplo](docs/screenshots/es/curso-mi-ejemplo.png) | |
+
 ### Maestro, tu profesor
 
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.

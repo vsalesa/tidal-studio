@@ -961,10 +961,14 @@ function wirePreHear(btn, cambios) {
     btn.dataset.loading = "1";
     const label = btn.innerHTML;
     btn.innerHTML = icon("speaker", 13) + " " + L("Preparando…", "Getting ready…");
-    await ensureInstruments((cambios.pistas || []).map((p) => p.codigo));
+    let ch = cambios;
+    if (typeof cambios === "function") {
+      try { ch = await cambios(); } catch (err) { delete btn.dataset.loading; btn.innerHTML = label; toast(err.message); return; }
+    }
+    await ensureInstruments((ch.pistas || []).map((p) => p.codigo));
     delete btn.dataset.loading; btn.innerHTML = label;
     document.querySelectorAll(".prehear.playing").forEach((b) => { b.classList.remove("playing"); b.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
-    const secs = preHear(cambios, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
+    const secs = preHear(ch, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
     btn.classList.add("playing");
     btn.innerHTML = icon("stop", 12) + ` ${L("Escuchando…", "Listening…")} ${Math.round(secs)} s`;
   };
@@ -1730,7 +1734,7 @@ async function askLLM(opts = {}) {
     if (opts.forcePlan && opts.request) history.push({ role: "user", content: L(`Hazlo por pasos con un plan: ${opts.request}`, `Do it in steps with a plan: ${opts.request}`) });
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1 } : undefined; })() : undefined,
+      curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
       bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       plan_modo: planEnabled() && !state.course, ...(opts.planStep ? { plan_paso: opts.planStep } : {}), ...(opts.forcePlan ? { plan_forzar: true } : {}),
       referencia: state.reference || undefined,
@@ -3611,11 +3615,13 @@ function openCourses() {
         <p>${esc(c.blurb)}</p>
         ${c.skill ? `<p class="cs-trad"><b>${L("Tradición:", "Tradition:")}</b> ${esc(c.tradition)}</p>
           <div class="cs-skill" title="${esc(L("Este curso sigue las reglas de esta skill de tu plugin de composición. Maestro la carga al explicarte cada paso.", "This course follows the rules of this skill from your composition plugin. Maestro loads it when explaining each step."))}">${icon("skill", 13)} ${L("Skill", "Skill")} · ${esc(c.skill)}</div>` : ""}
+        ${c.ref ? `<div class="cs-ref" title="${esc(L("Una interpretación de un baterista profesional en MIDI (Groove MIDI Dataset, CC BY 4.0). Se descarga y suena con los instrumentos del curso.", "A professional drummer's performance in MIDI (Groove MIDI Dataset, CC BY 4.0). It downloads and plays with the course's instruments."))}">${icon("percusion", 13)} ${L("Baterista real", "Real drummer")} · ${esc(c.ref.style)}</div>` : ""}
         <div class="cs-learn">${c.learn.map((x) => `<span>${esc(x)}</span>`).join("")}</div>
         <div class="cs-prog"><div class="bar"><div style="width:${Math.round((done / total) * 100)}%"></div></div><small>${done}/${total} ${L("pasos", "steps")}</small></div>
         <div class="cs-actions">
           <button class="primary" data-start="${c.id}">${icon(active ? "arrow" : "play", 13)} ${active ? L("Continuar", "Continue") : done ? L("Empezar de nuevo", "Start again") : L("Empezar curso", "Start course")}</button>
           <button class="prehear" data-hear="${c.id}">${icon("speaker", 13)} ${L("Escuchar el resultado", "Hear the result")}</button>
+          ${c.ref ? `<button class="prehear" data-hear-ref="${c.id}">${icon("speaker", 13)} ${L("Baterista real", "Real drummer")}</button>` : ""}
         </div></article>`;
     }).join("")}</div>
     <p class="hint cs-foot">${L("Los patrones son reconstrucciones propias de ritmos tradicionales, escritas para este estudio. Cada curso enlaza sus fuentes como lectura recomendada.", "The patterns are original reconstructions of traditional rhythms, written for this studio. Each course links its sources as further reading.")}</p>`;
@@ -3629,7 +3635,93 @@ function openCourses() {
     const c = courseById(b.dataset.hear);
     wirePreHear(b, { bpm: c.bpm, pistas: finalTracks(c) });
   });
+  body.querySelectorAll("[data-hear-ref]").forEach((b) => {
+    const c = courseById(b.dataset.hearRef);
+    wirePreHear(b, async () => ({ bpm: c.bpm, pistas: (await courseReference(c)).tracks }));
+  });
   $("#courses").showModal();
+}
+
+// ------------------------------------------------------------------ baterista real (Groove MIDI Dataset)
+const refCache = {};
+async function courseReference(c) {
+  const key = `${c.id}:${state.course && state.course.id === c.id ? state.bpm : c.bpm}`;
+  if (!refCache[key]) {
+    refCache[key] = api("/api/courses/reference", { ref: c.ref, bpm: state.course && state.course.id === c.id ? state.bpm : c.bpm })
+      .catch((e) => { delete refCache[key]; throw e; });
+  }
+  return refCache[key];
+}
+
+function refBox(c) {
+  const r = c.ref;
+  return `<div class="cs-ref-box">
+    <b>${icon("percusion", 15)} ${L("Así lo toca un baterista de verdad", "How a real drummer plays it")}</b>
+    <span class="cs-ref-style">${esc(r.style)}</span>
+    <p>${esc(r.note)}</p>
+    <div class="cs-actions">
+      <button class="prehear" data-ref="hear">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button>
+      <button data-ref="add">${icon("plus", 14)} ${L("Añadirlo a mi canción", "Add it to my song")}</button>
+    </div>
+    <small class="cs-ref-credit">${L("MIDI de", "MIDI from")} <a href="https://magenta.tensorflow.org/datasets/groove" target="_blank" rel="noopener">Groove MIDI Dataset</a> (Google Magenta) · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> · ${esc(r.file.split("/")[0])}</small>
+  </div>`;
+}
+
+// Tu propio ejemplo: un MIDI de una canción del estilo (tuyo o comprado). Suena solo y Maestro lo usa de referencia.
+function mineBox(c) {
+  const m = state.course && state.course.mine;
+  const file = `<input type="file" id="cs-mine-file" accept=".mid,.midi,.rmi,audio/midi" hidden>`;
+  if (!m) return `<div class="cs-mine">${file}<span>${L(`¿Tienes un MIDI de una canción de ${c.name} con todos los instrumentos (tuyo o de un pack que hayas comprado)? Cárgalo como ejemplo: lo escuchas aquí y Maestro lo usa como referencia del estilo.`, `Have a MIDI of a ${c.name} song with all the instruments (your own or from a pack you bought)? Load it as an example: you hear it here and Maestro uses it as a style reference.`)}</span>
+    <button data-mine="load">${icon("folder", 14)} ${L("Cargar mi MIDI de ejemplo", "Load my example MIDI")}</button></div>`;
+  return `<div class="cs-ref-box cs-mine-box">${file}
+    <b>${icon("course", 15)} ${L("Tu ejemplo", "Your example")}</b>
+    <span class="cs-ref-style">${esc(m.name)} · ${m.bpm} BPM · ${esc(m.key || "")} · ${esc((m.chords || []).join(" "))}</span>
+    <p>${esc(m.instruments.join(", "))}</p>
+    <div class="cs-actions">
+      <button class="prehear" data-mine="hear">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button>
+      <button data-mine="load">${icon("folder", 14)} ${L("Otro", "Another")}</button>
+      <button data-mine="remove">${icon("close", 14)} ${L("Quitar", "Remove")}</button>
+    </div></div>`;
+}
+
+function mineCambios() {
+  const m = state.course.mine;
+  const ids = m.tracks.map((_, k) => `d${k + 1}`);
+  // Suena solo el ejemplo: lo demás de la canción calla mientras lo escuchas
+  const quiet = state.tracks.filter((t) => !ids.includes(t.id)).map((t) => ({ id: t.id, codigo: "silence" }));
+  return { bpm: m.bpm, pistas: [...m.tracks.map((t, k) => ({ ...t, id: ids[k] })), ...quiet] };
+}
+
+async function courseMineLoad(f) {
+  try {
+    const q = new URLSearchParams({ name: f.name.replace(/\.[^.]+$/, ""), lang: LANG, bars: "4" });
+    const r = await fetch(`/api/import/midi?${q}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: new Uint8Array(await f.arrayBuffer()) });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || `Error ${r.status}`);
+    const s = data.summary;
+    state.course.mine = { name: s.name, bpm: s.studio_bpm, key: s.key && s.key.name, chords: s.window.chords, instruments: s.instruments,
+      tracks: data.tracks.slice(0, 12).map((t) => ({ nombre: t.nombre, tipo: t.tipo, codigo: t.codigo })), reference: (data.reference || "").slice(0, 3000) };
+    save(); renderCourse();
+    say(L(`He cargado «${s.name}» como ejemplo del curso: ${s.bpm} BPM, ${s.meter}, ${s.key ? s.key.name : "?"}, acordes ${s.progression.slice(0, 4).join(" → ")}. Pulsa Escuchar en el panel del curso para oír cuatro compases con todos sus instrumentos. Cuando me preguntes por un paso, lo compararé con este ejemplo.`,
+      `I loaded «${s.name}» as the course example: ${s.bpm} BPM, ${s.meter}, ${s.key ? s.key.name : "?"}, chords ${s.progression.slice(0, 4).join(" → ")}. Press Listen in the course panel to hear four bars with all its instruments. When you ask me about a step, I'll compare it with this example.`), [COURSE_ASK()]);
+  } catch (e) { toast(e.message); }
+}
+
+async function courseReferenceAdd(c, btn) {
+  btn.disabled = true;
+  try {
+    stopPreHear();
+    const ex = await courseReference(c);
+    await ensureInstruments(ex.tracks.map((t) => t.codigo));
+    const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
+    const changes = applyChanges({ pistas: ex.tracks });
+    const diff = diffFor(before, { pistas: ex.tracks });
+    say(L(`${c.ref.style}: el baterista real ya está en tu canción (${ex.tracks.map((t) => t.id).join(", ")}). ${c.ref.note}\n\nLos números de gain son la fuerza de cada golpe y los de nudge, lo que se adelanta o se atrasa (en segundos). Silencia tus pistas de ritmo para compararlo, o quédate con lo que te guste.\n\nMIDI: ${ex.credit.text}.`,
+      `${c.ref.style}: the real drummer is now in your song (${ex.tracks.map((t) => t.id).join(", ")}). ${c.ref.note}\n\nThe gain numbers are the strength of each hit and the nudge numbers how early or late it is (in seconds). Mute your rhythm tracks to compare, or keep whatever you like.\n\nMIDI: ${ex.credit.text}.`),
+      [COURSE_ASK()], { changes, diff });
+    save();
+  } catch (e) { toast(e.message); }
+  btn.disabled = false;
 }
 
 function startCourse(id) {
@@ -3688,6 +3780,7 @@ function renderCourse() {
     </div>
     <div class="cs-dots">${dots}</div>
     ${c.skill && i === 0 ? `<div class="cs-trad-box"><b>${L("La tradición que vamos a tocar", "The tradition we'll play")}</b><span>${esc(c.tradition)}</span><span class="cs-lens">${esc(c.lens)}</span></div>` : ""}
+    ${i <= 1 ? (c.ref ? refBox(c) : "") + mineBox(c) : ""}
     <div class="cs-step">
       <h3>${icon(stepIcon(st), 18)} ${esc(st.t)}</h3>
       <p>${esc(st.why)}</p>
@@ -3713,6 +3806,17 @@ function renderCourse() {
   dock.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => courseGo(+b.dataset.go));
   const hear = dock.querySelector("[data-cs=hear]");
   if (hear) wirePreHear(hear, { pistas: st.tracks });
+  const refHear = dock.querySelector("[data-ref=hear]");
+  if (refHear) wirePreHear(refHear, async () => ({ pistas: (await courseReference(c)).tracks }));
+  const mineHear = dock.querySelector("[data-mine=hear]");
+  if (mineHear) wirePreHear(mineHear, mineCambios);
+  dock.querySelectorAll("[data-mine=load]").forEach((b) => b.onclick = () => dock.querySelector("#cs-mine-file").click());
+  const mineFile = dock.querySelector("#cs-mine-file");
+  if (mineFile) mineFile.onchange = () => mineFile.files[0] && courseMineLoad(mineFile.files[0]);
+  const mineDrop = dock.querySelector("[data-mine=remove]");
+  if (mineDrop) mineDrop.onclick = () => { stopPreHear(); delete state.course.mine; save(); renderCourse(); };
+  const refAdd = dock.querySelector("[data-ref=add]");
+  if (refAdd) refAdd.onclick = () => courseReferenceAdd(c, refAdd);
   dock.querySelectorAll("[data-cs]").forEach((b) => { if (b.dataset.cs !== "hear") b.onclick = () => courseAction(b.dataset.cs); });
 }
 

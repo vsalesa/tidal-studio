@@ -75,6 +75,41 @@ when you start the course.
 | **«What the skill says» on every step, played by real instruments** | |
 | ![Course step with the skill's rule](docs/screenshots/course-skill-step.png) | |
 
+**Hear a real drummer play the style.** Nine courses (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass and lo-fi) come with a real performance in MIDI from the [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+(Google Magenta, CC BY 4.0): professional drummers recorded playing Dominican merengue, reggaeton, bossa nova, Cuban
+songo, swing, funk, disco, breakbeat and hip hop. The first time you press **Listen** the studio downloads the MIDI pack
+(3 MB) and turns four bars into Tidal tracks that keep what makes it human: the strength of every hit (`# gain`) and how
+early or late it lands (`# nudge`, in seconds), on a triplet grid for swing. The merengue drummer plays the course's wood
+block and congas, the reggaeton one an 808 kick. Each course explains what to listen for, and **Add it to my song** puts
+the drummer on tracks d9 to d12 so you can mute yours and compare. The reggaeton course now accents its hi-hats and pushes
+its dembow the way this drummer does. Cumbia and techno have no openly licensed MIDI yet, so they keep their written patterns.
+
+| The courses that have a real drummer say so | What to listen for, with Listen and Add it to my song |
+|---|---|
+| ![Courses with a real drummer](docs/screenshots/courses-real-drummer.png) | ![Real drummer in a course](docs/screenshots/course-real-drummer.png) |
+| **The drummer in your song: every hit's strength and timing as code** | |
+| ![Real drummer in the song](docs/screenshots/real-drummer-in-song.png) | |
+
+**Styles learned from real songs, not just written rules.** Written style rules alone didn't make the Latin courses sound
+right, so the studio now also learns from real music. `tools/learn_style.py` measured 31 Latin songs in MIDI (3 merengue,
+7 salsa, 9 cumbia, 12 bossa nova, from the Lakh MIDI Dataset and PDMX) on a grid of 16 sixteenths per bar:
+when the bass, piano, guitar and horns play, which chord note the bass picks at each spot, what every percussion
+instrument does, and the chord progressions that repeat. Only these statistics are kept
+(`server/data/style_profiles.json`). No song is copied or included. Maestro reads the profile of the course's genre
+(or your project's style), so its parts follow how real songs are played. The merengue course was rewritten from the data:
+the bass plays on 1, the «and» of 2, 3, 4 and the «and» of 4, the piano never stops on eighth notes with sixteenth
+pickups, and the tambora's low tone falls on the «and» of 2 and 4. The salsa, cumbia and bossa bass lines already
+matched what the songs do. To teach it a genre from your own MIDI files:
+`python3 tools/learn_style.py merengue ~/my-midi/merengue/`.
+
+**Your own example.** Each course has **Load my example MIDI**: load a song of that style that you own or bought,
+listen to four bars with all its instruments, and Maestro compares each step with it.
+
+| Your example in the course, next to the real drummer | |
+|---|---|
+| ![Your example](docs/screenshots/course-my-example.png) | |
+
 ### Maestro, your teacher
 
 - **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.
