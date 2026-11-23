@@ -29,6 +29,29 @@ class LLMTimeout(LLMError):
     """La IA se quedó callada demasiado tiempo. Maestro propone entonces partir la petición en un plan."""
 
 
+class LLMCancelled(LLMError):
+    """El alumno pulsó Cancelar: se corta la llamada a la IA y no se aplica nada."""
+
+
+# Evento de cancelación de la petición en curso en este hilo (lo pone app.py antes de llamar a la IA)
+import threading as _threading
+_local = _threading.local()
+
+
+def set_cancel(ev):
+    _local.cancel = ev
+
+
+def _cancelled():
+    ev = getattr(_local, "cancel", None)
+    return bool(ev and ev.is_set())
+
+
+def _check_cancel():
+    if _cancelled():
+        raise LLMCancelled("Cancelado")
+
+
 DEFAULT_TIMEOUT = 300  # segundos que la IA puede estar SIN mandar nada (si va respondiendo, no se corta)
 
 
@@ -141,6 +164,7 @@ def _openai_stream(url, headers, body, on_event, timeout):
                 except (ValueError, KeyError, IndexError, TypeError):
                     raise _NoStream()
             for raw in resp:
+                _check_cancel()
                 line = raw.decode("utf-8", "replace").strip()
                 if not line.startswith("data:"):
                     continue
@@ -237,6 +261,7 @@ def _anthropic_stream(headers, body, on_event, timeout=180):
     try:
         with net.urlopen(req, timeout=timeout) as resp:
             for raw in resp:
+                _check_cancel()
                 line = raw.decode("utf-8", "replace").strip()
                 if not line.startswith("data:"):
                     continue
@@ -488,10 +513,18 @@ def _run_streaming(cmd, prompt, cwd, env, timeout, on_event, res):
     start = last = time.time()
     killed = []
     done = threading.Event()
+    cancel_ev = getattr(_local, "cancel", None)
 
     def watchdog():
-        while not done.wait(1):
+        while not done.wait(0.3):
             now = time.time()
+            if cancel_ev is not None and cancel_ev.is_set():
+                killed.append("cancel")
+                try:
+                    p.kill()
+                except OSError:
+                    pass
+                return
             if now - last > timeout or now - start > timeout * HARD_CAP:
                 killed.append("idle" if now - last > timeout else "total")
                 try:
@@ -514,8 +547,11 @@ def _run_streaming(cmd, prompt, cwd, env, timeout, on_event, res):
         p.wait()
     finally:
         done.set()
-    timed_out = bool(killed)
+    timed_out = bool(killed) and killed[0] != "cancel"
     t_err.join(timeout=2)
+    if killed and killed[0] == "cancel":
+        res.update(rc=p.returncode, stdout="".join(out), stderr="".join(err), error="cancelled")
+        return
     res.update(rc=p.returncode, stdout="".join(out), stderr="".join(err))
     if timed_out:
         res["error"] = "timeout"
@@ -539,6 +575,8 @@ def _claudecode(cfg, system, messages, max_tokens, on_event=None):
         raise LLMError("No encuentro el comando «claude». Instala Claude Code (https://claude.com/claude-code), "
                        "ejecuta «claude» una vez para iniciar sesión con tu suscripción y vuelve a probar. "
                        "Si ya lo tienes, pon su ruta en Ajustes (en una terminal: which claude).")
+    if r["error"] == "cancelled":
+        raise LLMCancelled("Cancelado")
     if r["error"] == "timeout":
         raise LLMTimeout("Claude Code tardó demasiado en responder")
     if r["error"].startswith("oserror"):
@@ -561,6 +599,7 @@ def chat_completion(cfg, system, messages, max_tokens=1500, on_event=None):
     """on_event(tipo, texto), opcional: recibe el razonamiento de la IA («thinking») y pasos («step»)
     mientras responde, para enseñarlo en el chat."""
     p = cfg["provider"]
+    _check_cancel()
     try:
         if p == "claudecode":
             return _claudecode(cfg, system, messages, max_tokens, on_event)

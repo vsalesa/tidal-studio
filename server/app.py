@@ -23,7 +23,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from engine import Engine, find_ghci, find_sclang  # noqa: E402
 from timeline import TimelineQuery  # noqa: E402
-from llm import chat_completion, LLMError, LLMTimeout, claude_cli  # noqa: E402
+from llm import chat_completion, LLMError, LLMTimeout, LLMCancelled, claude_cli  # noqa: E402
 from assistant import (build_messages, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix,
                        variants_on, fetch_on, plan_on, plan_step)  # noqa: E402
@@ -253,6 +253,7 @@ class Trace:
         self.t0 = _t.time()
         self.events = []  # [{"kind": "step"|"thinking", "text": …, "t": segundos}]
         self.done = False
+        self.cancel = threading.Event()  # el alumno pulsó Cancelar
         if tid:
             with _traces_lock:
                 for k in [k for k, v in TRACES.items() if self.t0 - v.t0 > 900]:
@@ -749,6 +750,16 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json(llmdiag.diagnose_api(cfg, data.get("lang", "es")))
                 return self._json(llmdiag.test_models(cfg, data.get("lang", "es")))
 
+            if path == "/api/chat/cancel":
+                # Cancelar lo que se ha mandado al chat: corta la llamada a la IA en curso (mata `claude`,
+                # deja de leer el streaming) y no se aplica ni descarga nada
+                with _traces_lock:
+                    tr = TRACES.get(str(data.get("trace") or ""))
+                if tr:
+                    tr.cancel.set()
+                    tr.add("step", tr.L("Cancelado por ti", "Cancelled by you"))
+                return self._json({"ok": bool(tr)})
+
             if path == "/api/chat":
                 cfg = load_config()
                 if not llm_configured(cfg):
@@ -804,6 +815,7 @@ class Handler(SimpleHTTPRequestHandler):
                                             f"Reusing {text} tokens of instructions and skills already cached"))
                     else:
                         tr.add(kind, text)
+                llmmod.set_cancel(tr.cancel)
                 try:
                     try:
                         raw = chat_completion(cfg, system, messages,
@@ -814,6 +826,10 @@ class Handler(SimpleHTTPRequestHandler):
                         tr.add("step", tr.L("La IA ha tardado demasiado", "The AI took too long"))
                         return self._json({"error": str(e), "timeout": True, "plan_paso": bool(ps),
                                            "seconds": tr.public()["seconds"]}, 504)
+                    except LLMCancelled:
+                        return self._json({"error": "Cancelado", "cancelled": True}, 409)
+                    if tr.cancel.is_set():  # canceló justo cuando llegaba la respuesta: no se descarga nada
+                        return self._json({"error": "Cancelado", "cancelled": True}, 409)
                     tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
                     reply = parse_reply(raw)
                     if reply.get("descargar") and fetch_on(sess):
@@ -832,6 +848,7 @@ class Handler(SimpleHTTPRequestHandler):
                     if inst_items:
                         reply["instrumentos"] = inst_items
                 finally:
+                    llmmod.set_cancel(None)
                     tr.finish()
                 return self._json({**reply, "skills": skills_report(sk, raw),
                                    **({"command": command} if command else {}),

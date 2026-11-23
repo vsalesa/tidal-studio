@@ -89,11 +89,12 @@ function listProjects() {
 }
 
 // ------------------------------------------------------------------ API
-async function api(path, body) {
+async function api(path, body, signal) {
   if (path === "/api/eval" && body && body.code) noteEval(body.code); // para saber qué pistas suenan (y iluminarlas)
   const opts = body === undefined ? {} : {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ lang: LANG, ...body }),
   };
+  if (signal) opts.signal = signal;
   const r = await fetch(path, opts);
   const data = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(data.error || `Error ${r.status}`); e.data = data; throw e; }
@@ -1527,8 +1528,15 @@ function renderChat() {
   // …y lo mismo mientras hay un plan por aprobar o en marcha
   const planOpen = state.chat.some((m) => m.plan && ["propuesto", "en_marcha", "pausado"].includes(m.plan.estado));
   $(".panel.assistant").classList.toggle("va-open", !!(last && last.variantes && last.picked == null && !last.dismissed) || planOpen);
-  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${planRun && planRun.label ? `<div class="pl-tag">${icon("steps", 12)} ${esc(planRun.label)}</div>` : ""}${L("Maestro está pensando…", "Maestro is thinking…")}${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
+  if (busy) box.insertAdjacentHTML("beforeend", `<div class="msg assistant typing">${planRun && planRun.label ? `<div class="pl-tag">${icon("steps", 12)} ${esc(planRun.label)}</div>` : ""}${L("Maestro está pensando…", "Maestro is thinking…")} <button class="link chat-cancel" data-cancel="1" title="${esc(L("Cancelar lo que has enviado (Esc)", "Cancel what you sent (Esc)"))}">${icon("stop", 12)} ${L("Cancelar", "Cancel")}</button>${liveTrace ? traceHTML(liveTrace, { live: true, open: traceOpen }) : ""}</div>`);
   box.scrollTop = box.scrollHeight;
+  // Mientras Maestro piensa, el botón de enviar se convierte en «Cancelar»
+  const sb = $("#chat-form button[type=submit]");
+  if (sb && sb.classList.contains("is-stop") !== busy) {
+    sb.classList.toggle("is-stop", busy);
+    sb.innerHTML = icon(busy ? "stop" : "send", 18);
+    sb.title = busy ? L("Cancelar (Esc)", "Cancel (Esc)") : L("Enviar", "Send");
+  }
   const chips = $("#chips");
   chips.innerHTML = "";
   for (const o of state.options || []) {
@@ -1672,6 +1680,12 @@ async function runPlan(mi, auto) {
     planRun.label = L(`Paso ${i + 1} de ${p.pasos.length} · ${step.titulo}`, `Step ${i + 1} of ${p.pasos.length} · ${step.titulo}`);
     save(); renderChat();
     const res = await askLLM({ planStep: { titulo: p.titulo, resumen: p.resumen, peticion: p.peticion, i, pasos: p.pasos.map((x) => ({ titulo: x.titulo, que: x.que, estado: x.estado })) }, planTag: planRun.label });
+    if (!res.ok && res.cancelled) {
+      step.estado = "pendiente";
+      p.estado = "pausado";
+      sysMsg(L(`Plan en pausa: cancelaste el paso ${i + 1}. Lo hecho hasta aquí sigue guardado.`, `Plan paused: you cancelled step ${i + 1}. Everything done so far is still saved.`));
+      break;
+    }
     if (!res.ok) {
       step.estado = "error";
       step.error = res.timeout ? L("La IA tardó demasiado en este paso. Lo hecho hasta aquí está guardado: reinténtalo.", "The AI took too long on this step. Everything done so far is saved: retry it.") : res.error;
@@ -1694,9 +1708,22 @@ async function runPlan(mi, auto) {
   }
 }
 
+// Petición en curso al chat, para poder cancelarla: { controller, trace, text }
+let inflight = null;
+function cancelChat() {
+  if (!inflight) return;
+  const f = inflight; inflight = null;
+  f.cancelled = true;
+  f.controller.abort();
+  api("/api/chat/cancel", { trace: f.trace }).catch(() => {});
+}
+
 async function askLLM(opts = {}) {
-  busy = true; renderChat();
+  busy = true;
   const trace = startTrace();
+  const me = { controller: new AbortController(), trace: trace.id, text: opts.planStep ? "" : lastRealRequest() };
+  inflight = me;
+  renderChat();
   try {
     let history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) + fetchContext(m) + planContext(m) }));
     if (opts.planStep) history.push({ role: "user", content: L(`Haz el paso ${opts.planStep.i + 1} del plan: ${opts.planStep.pasos[opts.planStep.i].titulo}`, `Do step ${opts.planStep.i + 1} of the plan: ${opts.planStep.pasos[opts.planStep.i].titulo}`) });
@@ -1713,7 +1740,9 @@ async function askLLM(opts = {}) {
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
     state.tracks.forEach((t) => delete t.edited);
-    const r = await api("/api/chat", { messages: history, session, trace: trace.id });
+    const r = await api("/api/chat", { messages: history, session, trace: trace.id }, me.controller.signal);
+    if (me.cancelled) throw Object.assign(new Error("cancelled"), { data: { cancelled: true } });
+    inflight = null;
     const lastTrace = trace.end();
     busy = false;
     if ((r.descargas || []).some((d) => d.estado === "descargado")) { server.samples = null; sm.mine = null; }
@@ -1743,6 +1772,15 @@ async function askLLM(opts = {}) {
   } catch (e) {
     trace.end();
     busy = false;
+    if (inflight === me) inflight = null;
+    if (me.cancelled || e.name === "AbortError" || (e.data && e.data.cancelled)) {
+      // Cancelado: no se aplica nada. Lo que escribiste vuelve a la caja para que lo cambies si quieres
+      if (opts.planStep) { renderChat(); return { ok: false, cancelled: true }; }
+      const inp = $("#chat-input");
+      if (inp && !inp.value && me.text && !opts.forcePlan) inp.value = me.text;
+      sysMsg(L("Cancelado: no he cambiado nada en tu canción. Tu mensaje está otra vez en la caja por si quieres cambiarlo.", "Cancelled: I didn't change anything in your song. Your message is back in the box in case you want to change it."));
+      return { ok: false, cancelled: true };
+    }
     const timeout = !!(e.data && e.data.timeout);
     if (opts.planStep) { renderChat(); return { ok: false, timeout, error: e.message }; }
     if (timeout) {
@@ -3791,7 +3829,10 @@ function init() {
   wireVariants();
   wirePlan();
   wireFetch();
-  $("#chat-form").onsubmit = (e) => { e.preventDefault(); const i = $("#chat-input"); send(i.value); i.value = ""; };
+  $("#chat-form").onsubmit = (e) => { e.preventDefault(); if (busy && inflight) return cancelChat(); const i = $("#chat-input"); send(i.value); i.value = ""; };
+  // Cancelar: el botón del mensaje «pensando…», el de enviar (se vuelve un cuadrado) o la tecla Esc
+  $("#chat").addEventListener("click", (e) => { if (e.target.closest("[data-cancel]")) cancelChat(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && inflight && !audition) { e.preventDefault(); cancelChat(); } });
   $("#btn-more-ideas").onclick = () => {
     if (state.trying) return;
     if (server.llm && !state.offline) return send(L("Dame otra idea para mejorar la canción, y explícame qué concepto musical enseña.", "Give me another idea to improve the song, and explain what musical concept it teaches."));

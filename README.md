@@ -147,6 +147,13 @@ Faster answers, too:
 Turn it off with the **Plan** switch at the top of the chat. Plans are not used inside genre courses, which already go
 step by step.
 
+**Cancel what you sent.** Changed your mind, or it's taking too long? While Maestro is thinking, press **Cancel** in its
+message, the send button (it turns into a square) or **Esc**. The AI call stops right away (with Claude on your
+subscription, the `claude` process is closed), nothing is applied or downloaded, and your message goes back into the box
+so you can change it. Cancelling a plan step pauses the plan with every finished step kept.
+
+![While Maestro thinks: Cancel, or the square send button, or Esc](docs/screenshots/chat-cancel.png)
+
 ### Help with your code and code palette
 
 **Help**: edited a track and it errors or doesn't sound how you wanted? Press **Help** (it also opens by itself when Tidal
@@ -552,7 +559,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
-| **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. |
+| **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. |
 | **0.9.1** | [Tidal Studio route](#plugins): Maestro loads `mc-tidal-studio`, the skills route of your composition plugin made for this app, with every message, plus the genre skill that best fits. |
 | **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |
 | **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |

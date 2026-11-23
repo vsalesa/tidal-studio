@@ -110,6 +110,30 @@ class IdleTimeoutTest(unittest.TestCase):
         res = self.run_script("import time; time.sleep(30)", 2)
         self.assertEqual(res.get("error"), "timeout")
 
+    def test_cancel_kills_claude(self):
+        import threading
+        ev = threading.Event()
+        threading.Timer(0.8, ev.set).start()
+        llm.set_cancel(ev)
+        try:
+            t0 = time.time()
+            res = self.run_script("import time,sys\nfor i in range(50):\n print('{}', flush=True); time.sleep(0.2)", 30)
+        finally:
+            llm.set_cancel(None)
+        self.assertEqual(res.get("error"), "cancelled")
+        self.assertLess(time.time() - t0, 3)
+
+    def test_cancel_before_call(self):
+        import threading
+        ev = threading.Event()
+        ev.set()
+        llm.set_cancel(ev)
+        try:
+            with self.assertRaises(llm.LLMCancelled):
+                llm.chat_completion({"provider": "openai", "openai": {"base_url": "http://127.0.0.1:9", "model": "x"}}, "s", [])
+        finally:
+            llm.set_cancel(None)
+
     def test_timeout_config(self):
         self.assertEqual(llm.timeout_for({"provider": "openai", "openai": {}}), llm.DEFAULT_TIMEOUT)
         self.assertEqual(llm.timeout_for({"provider": "openai", "openai": {}, "ai_timeout": 90}), 90)

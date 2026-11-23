@@ -151,6 +151,13 @@ Y respuestas más rápidas:
 
 Apágalo con el interruptor **Plan** arriba del chat. Los cursos por género no usan planes: ya van paso a paso.
 
+**Cancela lo que has enviado.** ¿Te lo has pensado mejor o tarda demasiado? Mientras Maestro piensa, pulsa **Cancelar**
+en su mensaje, el botón de enviar (se convierte en un cuadrado) o **Esc**. La llamada a la IA se corta al momento (con
+Claude con tu suscripción, se cierra el proceso `claude`), no se aplica ni se descarga nada y tu mensaje vuelve a la caja
+para que lo cambies. Si cancelas un paso de un plan, el plan se pausa con todos los pasos hechos guardados.
+
+![Mientras Maestro piensa: Cancelar, el botón cuadrado o Esc](docs/screenshots/es/chat-cancelar.png)
+
 ### Ayuda con tu código y paleta de código
 
 **Ayuda**: ¿has editado una pista y da error o no suena como querías? Pulsa **Ayuda** (se abre sola si Tidal da error).
@@ -568,7 +575,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
-| **0.10.0** | [Plan paso a paso](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso): en las peticiones grandes Maestro te enseña antes un plan y lo hace paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; la IA solo se corta si se queda callada, y Maestro guarda en caché sus instrucciones, skills y búsquedas de sonidos. |
+| **0.10.0** | [Plan paso a paso](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso): en las peticiones grandes Maestro te enseña antes un plan y lo hace paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar (o Esc) detiene lo que has enviado; la IA solo se corta si se queda callada, y Maestro guarda en caché sus instrucciones, skills y búsquedas de sonidos. |
 | **0.9.1** | [Ruta de Tidal Studio](#plugins): Maestro carga en cada mensaje `mc-tidal-studio`, la ruta de skills de tu plugin de composición hecha para esta app, más la skill de género que mejor encaje. |
 | **0.9.0** | [Biblioteca de instrumentos](#biblioteca-de-instrumentos-más-de-600-instrumentos-concretos): más de 600 instrumentos concretos con fotos, escucha previa y tus propios SoundFonts, motores de synth nuevos (Mi-UGens, Surge XT, Vital), cursos latinos que siguen tu plugin de composición con instrumentos reales, y plugins que se actualizan solos. |
 | **0.8.0** | [Biblioteca de loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos): arrastra loops, carpetas o un zip; detecta tempo, compases, tonalidad y golpes y te da código que encaja con tu canción, con variaciones. |

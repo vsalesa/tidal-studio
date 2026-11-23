@@ -306,6 +306,19 @@ const scenes = {
     await shot(page, T(lang, 'plan-reintentar', 'plan-retry'), lang);
   },
 
+  // Cancelar lo enviado: mientras Maestro piensa, «Cancelar» en el mensaje y el botón de enviar hecho cuadrado
+  async cancel(b, lang) {
+    const st = sunday(lang);
+    const { page, ctx } = await open(b, { lang, state: st, routes: { '/api/chat': () => ({ __delay: 20000, body: { mensaje: 'late' } }), '/api/trace': () => ({ events: [
+      { kind: 'step', text: T(lang, 'Leo tu mensaje y tu canción: 5 pistas, 124 bpm', 'Reading your message and your song: 5 tracks, 124 bpm'), t: 0.1 },
+      { kind: 'step', text: T(lang, 'Elijo skills entre 54: mc-tidal-studio · siempre, mc-style-house', 'Picking skills out of 54: mc-tidal-studio · always, mc-style-house'), t: 0.2 },
+      { kind: 'step', text: T(lang, 'Pregunto a Claude (tu suscripción)…', 'Asking Claude (your subscription)…'), t: 0.3 }], done: false, seconds: 14 }) } });
+    await page.fill('#chat-input', T(lang, 'Rehaz toda la canción en estilo drum & bass', 'Redo the whole song as drum & bass')); await page.press('#chat-input', 'Enter');
+    await page.waitForSelector('.chat-cancel'); await page.waitForTimeout(1500);
+    await shot(page, T(lang, 'chat-cancelar', 'chat-cancel'), lang);
+    await ctx.close();
+  },
+
   async settings(b, lang) {
     const { page } = await open(b, { lang, state: sunday(lang) });
     await page.click('#btn-settings'); await page.waitForTimeout(800);
