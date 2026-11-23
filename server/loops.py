@@ -845,7 +845,15 @@ def loop_meta(lib, ref):
 def for_maestro(lib, song_bpm):
     """Una línea por loop para el contexto de Maestro (con el código ya calculado)."""
     out = []
-    for x in listing(lib, song_bpm)["loops"][:30]:
+    items = listing(lib, song_bpm)["loops"]
+
+    def _age(x):   # del más nuevo al más viejo: un loop recién descargado nunca se queda fuera
+        try:
+            return -os.path.getmtime(os.path.join(lib.dir, x["name"], x["file"]))
+        except OSError:
+            return 0
+    items.sort(key=_age)
+    for x in items[:30]:
         p = x["plan"]
         bits = [f'{x["ref"]}: {x.get("kind") or "?"}', f'{fmt(x.get("bpm") or 0)} BPM' if x.get("bpm") else "BPM ?",
                 f'{fmt(x.get("bars") or 0)} compases' if x.get("bars") else "", x.get("key") or "", f'{x["duration"]:.1f}s',

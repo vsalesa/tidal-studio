@@ -77,7 +77,7 @@ def parse_midi(data):
                 elif typ == 0x01:
                     texts.append(body.decode("latin-1", "replace"))
                 elif typ in (0x03, 0x04) and not name:
-                    name = body.decode("latin-1", "replace").strip()
+                    name = body.decode("latin-1", "replace").replace("\x00", "").strip()
                 elif typ == 0x2F:
                     break
                 continue
@@ -467,7 +467,8 @@ def analyse(data, lang="es", start_bar=None, bars=4, name=""):
             strs = [chord_symbol(chords[start_bar - 1 + b]) if start_bar - 1 + b < len(chords) else "~" for b in range(bars)]
             strs = [x.replace("'", "4'") if x != "~" else x for x in strs]
         tracks.append({"nombre": label[:40], "tipo": kind, "codigo": f'note "{multi_bar(strs)}" # s "{snd}"{extra}',
-                       "notas": len(notes), "origen": p["name"] or f"ch {p['ch'] + 1}", "low": low})
+                       "notas": len(notes), "origen": p["name"] or f"ch {p['ch'] + 1}", "low": low,
+                       "avg": round(sum(n[2] for n in notes) / len(notes), 1)})
     if len(tracks) > MAX_TRACKS:
         keep = sorted(tracks, key=lambda t: -t["notas"])[:MAX_TRACKS]
         dropped = [t["nombre"] for t in tracks if t not in keep]
@@ -503,7 +504,8 @@ def analyse(data, lang="es", start_bar=None, bars=4, name=""):
         "name": name, "bpm": round(bpm, 1), "studio_bpm": max(40, min(220, studio_bpm)),
         "meter": f"{num}/{den}", "key": key, "bars": total_bars,
         "progression": prog[:16], "roman": _roman_prog(chords, key),
-        "window": {"start": start_bar, "bars": bars, "chords": win_chords},
+        "window": {"start": start_bar, "bars": bars, "chords": win_chords,
+                   "chord_data": [chords[i] if 0 <= i < len(chords) else None for i in range(start_bar - 1, start_bar - 1 + bars)]},
         "sections": sections, "groove": groove,
         "instruments": sorted({(DRUM_GROUPS[g][0 if es else 1]) for g in drum_groups} | {t["nombre"] for t in tracks if t["tipo"] != "percusion"}),
         "dropped": dropped, "from_audio": loose,
