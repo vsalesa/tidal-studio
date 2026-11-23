@@ -537,15 +537,15 @@ ITEMS = build()
 BY_ID = {i["id"]: i for i in ITEMS}
 
 # Palabras en español/inglés que no salen en los nombres (para el buscador y para Maestro)
-SYNONYMS = {
-    "clavicordio": "harpsichord clavecín", "clavicembalo": "harpsichord", "clave": "harpsichord", "chelo": "cello violonchelo",
-    "contrabajo": "double bass contrabass", "violonchelo": "cello", "fagot": "bassoon", "trompa": "horn", "gaita": "bagpipe",
+SYNONYMS = {   # palabra en español → frases en inglés separadas por comas (cada frase tiene que aparecer entera)
+    "clavicordio": "harpsichord, clavecín", "clavicembalo": "harpsichord", "clave": "harpsichord", "chelo": "cello, violonchelo",
+    "contrabajo": "double bass, contrabass", "violonchelo": "cello", "fagot": "bassoon", "trompa": "horn", "gaita": "bagpipe",
     "zampoña": "pan flute", "órgano": "organ", "organo": "organ", "rhodes": "electric piano", "wurlitzer": "electric piano",
-    "hammond": "drawbar organ", "moog": "lead synth bass", "orquesta": "strings ensemble", "cuerdas": "strings",
-    "metales": "brass", "vientos": "woodwinds", "coro": "choir", "voz": "voice choir", "arpa": "harp", "flauta": "flute recorder",
-    "guitarra": "guitar", "bajo": "bass", "batería": "drum percussion", "percusión": "percussion", "campanas": "bells",
-    "xilófono": "xylophone", "vibráfono": "vibraphone", "piano": "piano", "steinway": "steinway grand", "yamaha": "yamaha",
-    "barroco": "harpsichord recorder baroque early", "medieval": "psaltery recorder early", "japonés": "koto shamisen shakuhachi taiko",
-    "india": "sitar shehnai tabla", "áfrica": "kalimba mbira balafon", "africano": "kalimba mbira balafon",
-    "latino": "congas bongos claves guiro", "flamenco": "nylon guitar cajon claps", "jazz": "upright bass vibraphone sax electric piano",
+    "hammond": "drawbar organ", "moog": "lead, synth bass", "orquesta": "strings, ensemble", "cuerdas": "strings",
+    "metales": "brass", "vientos": "woodwinds", "coro": "choir", "voz": "voice, choir", "arpa": "harp", "flauta": "flute, recorder",
+    "guitarra": "guitar", "bajo": "bass", "batería": "drum, percussion", "percusión": "percussion", "campanas": "bells",
+    "xilófono": "xylophone", "vibráfono": "vibraphone", "piano": "piano", "steinway": "steinway", "yamaha": "yamaha",
+    "barroco": "harpsichord, recorder, baroque, early", "medieval": "psaltery, recorder, early", "japonés": "koto, shamisen, shakuhachi, taiko",
+    "india": "sitar, shehnai, tabla", "áfrica": "kalimba, mbira, balafon", "africano": "kalimba, mbira, balafon",
+    "latino": "conga, bongo, claves, guiro", "flamenco": "nylon guitar, cajon, claps", "jazz": "upright bass, vibraphone, sax, electric piano",
 }

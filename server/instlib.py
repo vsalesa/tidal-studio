@@ -746,7 +746,7 @@ def for_maestro(il, text, limit=36):
     extra = []
     for w in words:
         if w in cat.SYNONYMS:
-            extra += cat.SYNONYMS[w].split()
+            extra += [x.strip() for x in cat.SYNONYMS[w].split(",") if x.strip()]
     q = set(words + extra)
     if not q:
         return []

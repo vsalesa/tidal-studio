@@ -45,8 +45,9 @@ def _get(url, limit=8 * 1024 * 1024, retry=True):
     return data
 
 
-def _clean(html):
-    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", html or "")).strip()[:120]
+def _clean(text):
+    import html
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", "", text or ""))).strip()[:120]
 
 
 def search(query, limit=12):

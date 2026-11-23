@@ -98,7 +98,7 @@ function matches(it, q) {
   if (!q) return true;
   const syn = S.data.synonyms || {};
   const hay = `${it.id} ${it.es} ${it.en} ${it.tags || ""} ${srcOf(it).name || ""}`.toLowerCase();
-  return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w) || (syn[w] || "").split(" ").some((x) => x && hay.includes(x)));
+  return q.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w) || (syn[w] || "").split(",").some((x) => x.trim() && hay.includes(x.trim())));
 }
 function visible() {
   let items = S.data.items;
