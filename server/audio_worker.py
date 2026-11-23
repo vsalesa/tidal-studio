@@ -1,8 +1,8 @@
 """Convierte una canción en audio (mp3, wav, flac, m4a…) en un MIDI aproximado.
 
 Se ejecuta con el Python de las herramientas de audio (~/.tidal-studio/audio-tools), NO con el del
-estudio, porque necesita Demucs (separar instrumentos), basic-pitch (pasar a notas) y librosa (tempo).
-Uso: python audio_worker.py entrada.mp3 salida.mid carpeta_temporal
+estudio, porque necesita MSST o Demucs (separar instrumentos), basic-pitch (pasar a notas) y librosa (tempo).
+Uso: python audio_worker.py entrada.mp3 salida.mid carpeta_temporal [auto|msst|demucs] [carpeta_de_modelos]
 Va escribiendo «PROGRESS <0-100> <texto>» para que el estudio enseñe por dónde va.
 """
 import os
@@ -11,20 +11,136 @@ import sys
 
 import numpy as np
 
+os.environ.setdefault("TQDM_DISABLE", "1")  # sin barras de progreso de texto: el estudio enseña la suya
+
 
 def progress(p, es, en):
     print(f"PROGRESS {int(p)} {es}|{en}", flush=True)
 
 
-def separate(path, work):
-    """Demucs: batería, bajo, voz y el resto. Devuelve {nombre: ruta.wav}."""
+# Separadores, del mejor al de respaldo. MSST (Music-Source-Separation-Training, de ZFTurbo, licencia MIT)
+# con su modelo SCNet XL: en canciones reales separa mejor que Demucs, sobre todo bajo y batería.
+MSST_MODEL = {
+    "type": "scnet",
+    "config": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.15/config_musdb18_scnet_xl_more_wide_v5.yaml",
+    "weights": "https://github.com/ZFTurbo/Music-Source-Separation-Training/releases/download/v1.0.15/model_scnet_ep_36_sdr_10.0891.ckpt",
+    "size_mb": 214,
+}
+STEMS = ("drums", "bass", "other", "vocals")
+
+
+def _download(url, dest, pct0, pct1, es, en):
+    """Descarga con progreso (una sola vez: luego se queda en la carpeta de modelos)."""
+    import urllib.request
+    if os.path.exists(dest) and os.path.getsize(dest) > 0:
+        return dest
+    tmp = dest + ".part"
+    with urllib.request.urlopen(url, timeout=60) as r, open(tmp, "wb") as f:
+        total = int(r.headers.get("Content-Length") or 0)
+        got, last = 0, -1
+        while True:
+            b = r.read(1 << 20)
+            if not b:
+                break
+            f.write(b)
+            got += len(b)
+            if total:
+                p = pct0 + (pct1 - pct0) * got / total
+                if int(p) != last:
+                    last = int(p)
+                    progress(p, f"{es} ({got >> 20}/{total >> 20} MB)…", f"{en} ({got >> 20}/{total >> 20} MB)…")
+    os.replace(tmp, dest)
+    return dest
+
+
+def separate_msst(path, work, models_dir):
+    """MSST: descarga el modelo la primera vez y separa batería, bajo, voz y el resto."""
+    os.environ.setdefault("PYTORCH_ENABLE_MPS_FALLBACK", "1")  # Apple Silicon: lo que MPS no sepa hacer va a la CPU
+    import soundfile as sf
+    from msst import Separator
+    os.makedirs(models_dir, exist_ok=True)
+    cfg = _download(MSST_MODEL["config"], os.path.join(models_dir, os.path.basename(MSST_MODEL["config"])), 3, 4,
+                    "Descargando la configuración del modelo", "Downloading the model configuration")
+    ckpt = _download(MSST_MODEL["weights"], os.path.join(models_dir, os.path.basename(MSST_MODEL["weights"])), 4, 20,
+                     f"Descargando el modelo SCNet XL de MSST (solo la primera vez, {MSST_MODEL['size_mb']} MB)",
+                     f"Downloading MSST's SCNet XL model (first time only, {MSST_MODEL['size_mb']} MB)")
+    import re
+    import torch
+    gpu = torch.cuda.is_available() or (hasattr(torch.backends, "mps") and torch.backends.mps.is_available())
+    if not gpu:
+        # Sin tarjeta gráfica (ni Apple Silicon) va lento: solapamos menos los trozos (2 en vez de 4).
+        # Pierde muy poca calidad y tarda la mitad.
+        fast = cfg[:-5] + "-cpu.yaml"
+        with open(cfg, encoding="utf-8") as f:
+            txt = re.sub(r"(num_overlap:\s*)\d+", r"\g<1>2", f.read())
+        with open(fast, "w", encoding="utf-8") as f:
+            f.write(txt)
+        cfg = fast
+    progress(22, "Separando instrumentos con MSST (SCNet XL)…", "Separating instruments with MSST (SCNet XL)…")
+    import threading
+    import soundfile as _sf
+    done = threading.Event()
+    secs = _sf.info(path).duration * (1.5 if gpu else 6.0)  # lo que suele tardar (medido en CPU de 4 núcleos)
+
+    def tick():  # MSST no dice por dónde va: avanzamos la barra con lo que suele tardar
+        t = 0
+        while not done.wait(2):
+            t += 2
+            p = 22 + 22 * min(0.97, t / max(secs, 1))
+            progress(p, f"Separando instrumentos con MSST (SCNet XL)… {int(t // 60)}:{int(t % 60):02d}",
+                     f"Separating instruments with MSST (SCNet XL)… {int(t // 60)}:{int(t % 60):02d}")
+    threading.Thread(target=tick, daemon=True).start()
+    try:
+        with Separator(model_type=MSST_MODEL["type"], config_path=cfg, checkpoint_path=ckpt) as sep:
+            print(f"DEVICE {sep.device}", flush=True)
+            out = sep.separate_file(path)
+            sr = sep.sample_rate
+    finally:
+        done.set()
+    stems = {}
+    for k in STEMS:
+        if k in out:
+            p = os.path.join(work, k + ".wav")
+            a = out[k]
+            sf.write(p, a.T if a.ndim == 2 and a.shape[0] <= 2 else a, sr)
+            stems[k] = p
+    return stems
+
+
+def separate_demucs(path, work, announce=True):
+    """Demucs (htdemucs): rápido; el separador de respaldo."""
     import demucs.separate
-    progress(5, "Separando instrumentos con Demucs (la primera vez descarga el modelo, ~80 MB)…",
-             "Separating instruments with Demucs (first time downloads the model, ~80 MB)…")
+    if announce:
+        progress(22, "Separando instrumentos con Demucs (la primera vez descarga el modelo, ~80 MB)…",
+                 "Separating instruments with Demucs (first time downloads the model, ~80 MB)…")
     demucs.separate.main(["-n", "htdemucs", "-o", work, "--jobs", "0", path])
     base = os.path.splitext(os.path.basename(path))[0]
     d = os.path.join(work, "htdemucs", base)
-    return {k: os.path.join(d, k + ".wav") for k in ("drums", "bass", "other", "vocals") if os.path.exists(os.path.join(d, k + ".wav"))}
+    return {k: os.path.join(d, k + ".wav") for k in STEMS if os.path.exists(os.path.join(d, k + ".wav"))}
+
+
+def separate(path, work, engine="auto", models_dir=None):
+    """Devuelve {nombre: ruta.wav}.
+    msst/auto: batería, voz y resto con MSST (SCNet XL) y el bajo con Demucs, que en nuestras pruebas con
+    canciones reales (MUSDB18) separa mejor el bajo; si MSST falla, todo con Demucs.
+    demucs: todo con Demucs (rápido)."""
+    models_dir = models_dir or os.path.join(os.path.dirname(os.path.dirname(sys.executable)), "..", "models")
+    if engine in ("auto", "msst"):
+        try:
+            stems = separate_msst(path, work, os.path.abspath(models_dir))
+        except Exception as e:  # noqa: BLE001
+            print(f"MSST falló, uso Demucs: {e}", flush=True)
+            progress(20, "MSST no ha funcionado aquí: uso Demucs…", "MSST didn't work here: using Demucs…")
+            return separate_demucs(path, work)
+        try:
+            progress(45, "Sacando el bajo con Demucs…", "Getting the bass with Demucs…")
+            dem = separate_demucs(path, os.path.join(work, "demucs"), announce=False)
+            if "bass" in dem:
+                stems["bass"] = dem["bass"]
+        except Exception as e:  # noqa: BLE001  el bajo de MSST también sirve
+            print(f"Demucs falló, me quedo con el bajo de MSST: {e}", flush=True)
+        return stems
+    return separate_demucs(path, work)
 
 
 def beat_grid(path):
@@ -145,8 +261,8 @@ def write_midi(out, tempo, parts, ppq=480):
         f.write(b"MThd" + struct.pack(">IHHH", 6, 1, len(tracks), ppq) + b"".join(tracks))
 
 
-def main(src, out, work):
-    stems = separate(src, work)
+def main(src, out, work, engine="auto", models_dir=None):
+    stems = separate(src, work, engine, models_dir)
     progress(55, "Buscando el pulso y el tempo…", "Finding the beat and tempo…")
     tempo, beats, dur = beat_grid(src)
     import librosa
@@ -184,4 +300,4 @@ def main(src, out, work):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1], sys.argv[2], sys.argv[3])
+    main(sys.argv[1], sys.argv[2], sys.argv[3], *(sys.argv[4:6]))
