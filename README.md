@@ -558,9 +558,26 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
   borrowed and what it changed. Without AI you get a step-by-step list of ways to make it yours. **Study it as is**
   just loads the tracks so you can press Explain on each one.
 - **Audio (mp3, wav, flac, ogg, m4a, aiff)**, approximate: the first time it offers to install free offline tools
-  (~1-2 GB, in `~/.tidal-studio/audio-tools`): **Demucs** separates drums, bass, vocals and the rest, **basic-pitch**
+  (~1-2 GB, in `~/.tidal-studio/audio-tools`). First it separates drums, bass, vocals and the rest, then **basic-pitch**
   (Spotify) turns each one into notes and **librosa** finds the beat. The result is aligned to the bars, and chords are
   written as Tidal chord names (`a4'minor f4'major`). It's a skeleton to study and reinvent, not an exact copy.
+- **Two separators, you pick per song:**
+  - **Quality: MSST** ([Music-Source-Separation-Training](https://github.com/ZFTurbo/Music-Source-Separation-Training)
+    by ZFTurbo, MIT) with its **SCNet XL** model for drums, vocals and the rest, plus Demucs for the bass. The model
+    (214 MB) downloads the first time you use it. Recommended on Apple Silicon (it runs on the GPU through MPS) and on
+    computers with an NVIDIA card.
+  - **Fast: Demucs** (Meta) for everything. Recommended on computers without a graphics card, where MSST takes about 6×
+    the song's length.
+  - If MSST fails on your computer, it falls back to Demucs on its own. If you already had the audio tools installed, Tidal Studio offers to update them.
+
+  How we chose: on 8 songs from the MUSDB18 test set (median SDR in dB, higher is better), compared with Demucs, SCNet XL
+  separated drums better (9.0 vs 6.8), as well as vocals (11.9 vs 9.5) and the rest (5.5 vs 4.8), but the bass worse
+  (6.2 vs 8.8). That's why the bass comes from Demucs. BS-RoFormer scored a little higher (avg 8.5 vs 8.1), but its
+  model is 527 MB and it's 40% slower.
+
+  | Pick the separator | Separating with MSST |
+  |---|---|
+  | ![Choose MSST or Demucs, with the expected time](docs/screenshots/import-separator.png) | ![MSST separating the instruments, with its progress](docs/screenshots/import-audio-msst.png) |
 - Everything stays on your computer. If the song isn't yours, use it to study and publish what you create, not the copy.
 
 | The song's recipe and its Tidal tracks | From an mp3 or wav |
