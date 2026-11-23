@@ -1,4 +1,10 @@
-## What's new in 0.11.0 / Novedades
+## What's new in 0.12.0 / Novedades
+
+- **Play your MIDI keyboard**: plug in your USB piano and press **MIDI keyboard**. It sounds right away with the instrument you pick (SuperCollider listens to it, so it works in the Mac app too), the keys light up on screen, and what you play **turns into Tidal tracks**, one per hand, snapped to a grid, with the key and chords. Record with a count-in and metronome or in time with your song from its next bar; the code is written live while you play; or turn your last phrase into code without having pressed Record. Then add it to your song, ask Maestro to explain it and continue it, generate it in a style, or download the .mid. No keyboard? Use the on-screen keys or your computer keys.
+
+**Español:** **Toca tu teclado MIDI**: enchufa tu piano USB y pulsa **Teclado MIDI**. Suena al momento con el instrumento que elijas (lo escucha SuperCollider, así que funciona también en la app de Mac), las teclas se iluminan en pantalla y lo que tocas **se convierte en pistas de Tidal**, una por mano, cuadradas a una rejilla, con la tonalidad y los acordes. Graba con cuenta atrás y metrónomo o a compás con tu canción desde su siguiente compás; el código se escribe mientras tocas; o convierte tu última frase sin haber pulsado Grabar. Luego añádela a tu canción, pide a Maestro que te la explique y la continúe, genérala en un estilo o descarga el .mid. ¿Sin teclado? Usa las teclas de la pantalla o las del ordenador.
+
+## 0.11.0
 
 - **Tidal Studio updates itself**: at startup and every 12 hours it checks GitHub for a new version and shows a card with what's new. **Update now** downloads the installer for your computer with a progress bar and verifies it (SHA-256); **Install and restart** closes the app, installs the new version (your Mac asks for your password, Windows for permission) and opens it again. Your songs, samples, plugins and settings are left alone.
 - **Check by hand or turn it off** in Settings › Updates, and **Skip this version** if you'd rather wait. On the Mac also from **Tidal Studio › Check for Updates…**. This is the last version you install by hand.

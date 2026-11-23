@@ -686,6 +686,36 @@ El resultado de importar una canción también tiene **Generar en un estilo…**
 | **Desde un curso de género** | |
 | ![Hacer mi MIDI Merengue en el curso](docs/screenshots/es/midi-generar-curso.png) | |
 
+### Toca tu teclado MIDI: suena y se convierte en código de Tidal
+
+Enchufa tu piano o teclado MIDI (USB; uno «class compliant» con cable USB-B a USB-C no necesita drivers) y pulsa
+**Teclado MIDI** en la barra de arriba. Se abre un panel abajo del estudio:
+
+- **Suena al momento** con el sonido que elijas (superpiano, Rhodes, órgano, pads, sintes, los instrumentos que has
+  fijado en la biblioteca o cualquier sonido que ya use tu canción). SuperCollider escucha el teclado y toca cada nota
+  por SuperDirt, así que funciona también en la app de Mac. Elige el **teclado**, el **canal**, la **octava** (− / +,
+  o Z y X) y quita **Que suene** si tu piano ya suena por sí mismo.
+- **¿Sin teclado a mano?** Pulsa las teclas de la pantalla o toca con las del ordenador (A W S E D F T G Y H U J K = do a do).
+- **Grabar**: con cuenta atrás y metrónomo o, si tu canción está sonando, desde su siguiente compás y a su tempo, para
+  que lo que tocas encaje. **Mientras tocas, el código de Tidal se va escribiendo** debajo del teclado.
+- **Parar y traducir**: tu toma se convierte en pistas de Tidal, una por mano (**Mano izquierda** y **Mano derecha**,
+  o todo en una pista), cuadradas a la rejilla más sencilla que encaja (negras, corcheas, semicorcheas o tresillos;
+  puedes cambiarla, y el BPM), con la tonalidad y los acordes que ha encontrado. El pedal de sustain alarga las notas
+  como en un piano de verdad.
+- **Convertir lo que acabo de tocar**: no hace falta haber pulsado Grabar. Coge tu última frase.
+- Después: **Escuchar**, **Añadir a mi canción**, **Pregúntale a Maestro** (añade las pistas y Maestro te explica lo
+  que has tocado, en música y en código, y te propone cómo seguir), **Generar en un estilo…** (tu toma pasa a
+  [Genera desde tu MIDI](#genera-desde-tu-midi-en-cualquier-estilo)), **Canción nueva con esto** o descárgala en **.mid**.
+
+¿Todavía sin piano? `python3 tools/virtual_midi.py` toca una frase con un teclado virtual (con `--fake-song` simula
+además una canción sonando, y con `--port` crea un puerto MIDI virtual de verdad, con `pip install mido python-rtmidi`).
+
+| 1. Tu teclado, en directo | 2. Grabando, el código mientras tocas |
+|---|---|
+| ![El panel del teclado MIDI ilumina las notas que tocas](docs/screenshots/es/midi-teclado.png) | ![Grabando a compás con la canción, con el código de Tidal en directo](docs/screenshots/es/midi-grabando.png) |
+| **3. Traducido a Tidal, mano a mano** | **4. Maestro te lo explica y propone cómo seguir** |
+| ![Mano izquierda y derecha como pistas de Tidal, con tonalidad y acordes](docs/screenshots/es/midi-traducido.png) | ![Las pistas en la canción y Maestro explicando lo que has tocado](docs/screenshots/es/midi-maestro.png) |
+
 ### Guardar, exportar y compartir
 
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
@@ -711,6 +741,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.12.0** | [Toca tu teclado MIDI](#toca-tu-teclado-midi-suena-y-se-convierte-en-código-de-tidal): tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal (mano izquierda y derecha), grabado a compás con tu canción; Maestro te lo explica y te propone cómo seguir. |
 | **0.11.0** | [Tidal Studio se actualiza solo](#tidal-studio-se-actualiza-solo): te avisa de las versiones nuevas, descarga y comprueba el instalador de tu ordenador y lo instala con un clic. |
 | **0.10.0** | [Plan paso a paso](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso): en las peticiones grandes Maestro te enseña antes un plan y lo hace paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar (o Esc) detiene lo que has enviado; la IA solo se corta si se queda callada, y Maestro guarda en caché sus instrucciones, skills y búsquedas de sonidos. [Genera desde tu MIDI](#genera-desde-tu-midi-en-cualquier-estilo) en 11 estilos, quedándote con tu melodía, acordes, bajo o batería. [Canciones en pestañas](#varias-canciones-abiertas-a-la-vez-en-pestañas), abriendo y cerrando `.tidal` de tu disco además de GitHub. [Cursos por género](#cursos-por-género) con un baterista real para escuchar en nueve estilos y estilos latinos aprendidos de canciones reales. La [importación de audio](#importar-una-canción-como-punto-de-partida) separa los instrumentos con MSST (SCNet XL) y el bajo con Demucs. [Maestro ve lo que descargas](#maestro-descarga-los-sonidos-que-necesita) al momento: tu biblioteca se lee del disco en cada mensaje. |
 | **0.9.1** | [Ruta de Tidal Studio](#plugins): Maestro carga en cada mensaje `mc-tidal-studio`, la ruta de skills de tu plugin de composición hecha para esta app, más la skill de género que mejor encaje. |

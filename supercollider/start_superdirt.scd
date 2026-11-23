@@ -37,6 +37,8 @@ if(\SuperDirt.asClass.isNil) {
             (~studioDir +/+ "studio-instruments.scd").load;
             // Motores de synth opcionales (Mi-UGens, VSTPlugin con Surge XT / Vital): ver studio-engines.scd
             (~studioDir +/+ "studio-engines.scd").load;
+            // Teclado MIDI (piano USB…): suena al momento y la web lo traduce a Tidal. Ver studio-midi.scd
+            try { (~studioDir +/+ "studio-midi.scd").load } { |e| ("MIDI no disponible: " ++ e.errorString).postln };
             // Lista de sonidos disponibles: la web marca en rojo los que falten en tu código
             ~studioListSounds = {
                 var names = ~dirt.soundLibrary.buffers.keys ++ ~dirt.soundLibrary.synthEvents.keys ++ SynthDescLib.global.synthDescs.keys;
@@ -65,7 +67,11 @@ if(\SuperDirt.asClass.isNil) {
                             // Instrumentos VST (Surge XT, Vital…): ver studio-engines.scd
                             "vstadd", { ~studioVstAdd.(msg[2], msg[3].asString, msg[4].asString); 2.wait; ~studioListSounds.value },
                             "vsteditor", { ~studioVstEditor.(msg[2]) },
-                            "vstsave", { ~studioVstSave.(msg[2], msg[3].asString) }
+                            "vstsave", { ~studioVstSave.(msg[2], msg[3].asString) },
+                            // Teclado MIDI: ver studio-midi.scd
+                            "midiscan", { ~studioMidiScan.value },
+                            "midiset", { ~studioMidiSet.(msg[2], msg[3]) },
+                            "midinote", { ~studioMidiPlay.(msg[2].asString.asInteger, msg[3].asString.asInteger) }
                         );
                     };
                 };

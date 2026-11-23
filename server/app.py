@@ -40,6 +40,7 @@ import files as tfiles  # noqa: E402
 import ccdetect  # noqa: E402
 import songimport  # noqa: E402
 import midigen  # noqa: E402
+import midilive  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
 import appupdate  # noqa: E402
@@ -358,6 +359,10 @@ def app_update_loop():
 
 
 ENGINE = Engine(ROOT)
+# Teclado MIDI (piano USB): las notas llegan de SuperCollider por OSC o de la web. Ver midilive.py
+MIDI = midilive.MidiHub(ENGINE)
+ENGINE.midi_handler = MIDI.on_osc
+ENGINE.on_ready.append(MIDI.on_engine_ready)
 TIMELINE = TimelineQuery(ROOT)
 llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
 LIBRARY = Library(ROOT)
@@ -452,6 +457,28 @@ class Handler(SimpleHTTPRequestHandler):
     def _err(self, msg, lang, status=400):
         es, _, en = str(msg).partition("|")
         return self._json({"error": en if lang == "en" and en else es}, status)
+
+    def _midi(self, path, data):
+        """Teclado MIDI: notas de la web, ajustes, buscar teclados, grabar una toma y traducirla a Tidal."""
+        if not self._same_origin():
+            return self._json({"error": "forbidden"}, 403)
+        if path == "/api/midi/note":
+            return self._json(MIDI.web_note(str(data.get("type", "on")), int(data.get("note", 60)), int(data.get("vel", 90)),
+                                            int(data.get("ch", 0)), str(data.get("src", "web"))[:40]))
+        if path == "/api/midi/settings":
+            return self._json({"settings": MIDI.set_settings(data)})
+        if path == "/api/midi/scan":
+            return self._json({"ok": MIDI.scan()})
+        if path == "/api/midi/record":
+            if data.get("action") == "stop":
+                return self._json(MIDI.record_stop())
+            if data.get("action") == "capture":
+                return self._json(MIDI.capture(data.get("bpm", 120), sync=bool(data.get("sync", True))))
+            return self._json(MIDI.record_start(data.get("bpm", 120), int(data.get("countin", 0) or 0), bool(data.get("sync", True)),
+                                                bool(data.get("start_now"))))
+        if path == "/api/midi/translate":
+            return self._json(MIDI.translate_take(data))
+        return self._json({"error": "not found"}, 404)
 
     def _import(self, path):
         """Importar una canción: MIDI (al momento) o audio (en segundo plano, con herramientas opcionales)."""
@@ -644,6 +671,13 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(ENGINE.events_since(since))
             if path == "/api/sounds":
                 return self._json(ENGINE.sound_list())
+            if path == "/api/midi/state":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    since = int(q.get("since", ["0"])[0])
+                except ValueError:
+                    since = 0
+                return self._json(MIDI.state(since))
             if path == "/api/instruments":
                 return self._json(instrument_listing())
             if path == "/api/instruments/photo":
@@ -736,6 +770,8 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(r)
         data = self._body()
         try:
+            if path.startswith("/api/midi/"):
+                return self._midi(path, data)
             if path == "/api/config":
                 cfg = load_config()
                 if data.get("provider") in ("openai", "anthropic", "claudecode"):
