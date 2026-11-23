@@ -13,6 +13,7 @@ const KIND_ICON = { percusion: "percusion", bajo: "bajo", armonia: "armonia", me
 let ctx = null; // {body, kicker, open, close, adopt, evalCode, hush}
 let cur = null; // {name, midi: Uint8Array, start, bars, result, fromAudio, off:Set}
 let polling = null;
+let skipUpgrade = false; // ya tiene las herramientas viejas (Demucs) y prefiere seguir con ellas
 
 export function openImport(c) {
   ctx = c; cur = null; stopPoll();
@@ -76,17 +77,48 @@ async function analyse() {
 
 // ---------------------------------------------------------------- audio
 
-async function audioFlow(file, name) {
+async function audioFlow(file, name, engine = null) {
   let st;
   try { st = await (await fetch("/api/import/audio/status")).json(); } catch { st = { ready: false }; }
-  if (!st.ready) return toolsView(file, name, st);
+  if (!st.ready || (st.upgrade && !skipUpgrade)) return toolsView(file, name, st);
+  if (st.msst && !engine) return engineView(file, name, st);
   busyView(name, 2, L("Subiendo el audio al estudio (sigue en tu ordenador)…", "Handing the audio to the studio (it stays on your computer)…"));
   try {
-    const r = await fetch(`/api/import/audio?${new URLSearchParams({ filename: file.name, lang: LANG })}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: file });
+    const r = await fetch(`/api/import/audio?${new URLSearchParams({ filename: file.name, lang: LANG, ...(engine ? { engine } : {}) })}`, { method: "POST", headers: { "Content-Type": "application/octet-stream" }, body: file });
     const job = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(job.error || `Error ${r.status}`);
     pollJob(job.id, name);
   } catch (e) { pickView(e.message); }
+}
+
+// Duración del audio (para calcular cuánto tardará), sin subirlo a ningún sitio
+function audioSeconds(file) {
+  return new Promise((resolve) => {
+    const a = new Audio(); const url = URL.createObjectURL(file);
+    const done = (v) => { URL.revokeObjectURL(url); resolve(v); };
+    a.preload = "metadata"; a.onloadedmetadata = () => done(isFinite(a.duration) ? a.duration : 0); a.onerror = () => done(0);
+    setTimeout(() => done(0), 4000); a.src = url;
+  });
+}
+const mins = (s) => s < 90 ? L("1-2 minutos", "1-2 minutes") : L(`unos ${Math.round(s / 60)} minutos`, `about ${Math.round(s / 60)} minutes`);
+
+// Elegir separador: MSST (más calidad) o Demucs (rápido). Con Apple Silicon o tarjeta gráfica recomendamos MSST.
+async function engineView(file, name, st) {
+  const secs = await audioSeconds(file);
+  const gpu = st.accel && st.accel !== "cpu";
+  const tM = secs ? mins(secs * (gpu ? 1.5 : 6.5)) : "", tD = secs ? mins(secs * 0.7) : "";
+  const rec = gpu ? "msst" : "demucs";
+  ctx.body.innerHTML = `<h2 class="q" style="font-size:24px;margin:4px 0">${esc(name)}</h2>
+    <p class="wz-help">${L("¿Cómo separo los instrumentos?", "How should I separate the instruments?")}</p>
+    <div class="np-choices">
+      <button class="np-choice ${rec === "msst" ? "rec" : ""}" data-e="msst">${rec === "msst" ? `<em>${L("Recomendado", "Recommended")}</em>` : ""}${icon("wand", 26)}<b>${L("Calidad: MSST", "Quality: MSST")}</b>
+        <span>${L("Modelo SCNet XL de MSST para batería, voz y el resto, y Demucs para el bajo. Notas más limpias, sobre todo en la batería.", "MSST's SCNet XL model for drums, vocals and the rest, plus Demucs for the bass. Cleaner notes, above all on drums.")}${tM ? `<br><b class="imp-time">${L("Tardará", "Takes")} ${tM}${gpu ? "" : L(" (sin tarjeta gráfica)", " (no graphics card)")}</b>` : ""}</span></button>
+      <button class="np-choice ${rec === "demucs" ? "rec" : ""}" data-e="demucs">${rec === "demucs" ? `<em>${L("Recomendado", "Recommended")}</em>` : ""}${icon("play", 26)}<b>${L("Rápido: Demucs", "Fast: Demucs")}</b>
+        <span>${L("Todo con Demucs. Algo menos limpio, pero mucho más rápido en ordenadores sin tarjeta gráfica.", "Everything with Demucs. A bit less clean, but much faster on computers without a graphics card.")}${tD ? `<br><b class="imp-time">${L("Tardará", "Takes")} ${tD}</b>` : ""}</span></button>
+    </div>
+    <div class="wz-nav"><button data-a="back">${icon("back", 16)} ${L("Elegir otro archivo", "Choose another file")}</button></div>`;
+  ctx.body.querySelector(".np-choices").onclick = (e) => { const b = e.target.closest("button[data-e]"); if (b) audioFlow(file, name, b.dataset.e); };
+  ctx.body.querySelector(".wz-nav").onclick = (e) => { if (e.target.closest("button")?.dataset.a === "back") pickView(); };
 }
 
 function pollJob(id, name) {
@@ -102,7 +134,7 @@ function pollJob(id, name) {
       cur = { name, midi: bytes, start: null, bars: 4, fromAudio: true, off: new Set() };
       return analyse();
     }
-    busyView(name, j.pct, msg(j.msg), `<p class="hint">${L("Separar instrumentos tarda más o menos lo que dura la canción (algo más en ordenadores sin tarjeta gráfica). Puedes dejar esta ventana abierta.", "Separating the instruments takes about as long as the song (a bit more on computers without a graphics card). You can leave this window open.")}</p>`);
+    busyView(name, j.pct, msg(j.msg), `<p class="hint">${L("Separar instrumentos tarda de 1 a 6 veces lo que dura la canción, según el separador y si tu ordenador tiene tarjeta gráfica o Apple Silicon. Puedes dejar esta ventana abierta.", "Separating the instruments takes 1 to 6 times the song's length, depending on the separator and whether your computer has a graphics card or Apple Silicon. You can leave this window open.")}</p>`);
     polling = setTimeout(tick, 1000);
   };
   tick();
@@ -111,10 +143,17 @@ function pollJob(id, name) {
 function toolsView(file, name, st) {
   const inst = st.install || {};
   const running = inst.state === "running";
-  ctx.body.innerHTML = `<h2 class="q" style="font-size:24px;margin:4px 0">${L("Para leer audio hacen falta unas herramientas extra", "Reading audio needs a few extra tools")}</h2>
+  const upg = st.ready && st.upgrade;
+  ctx.body.innerHTML = upg ? `<h2 class="q" style="font-size:24px;margin:4px 0">${L("Hay un separador mejor: MSST", "There's a better separator: MSST")}</h2>
+    <p class="wz-help">${L("Tus herramientas de audio usan Demucs. MSST (con el modelo SCNet XL) separa mejor el bajo y la batería, así que las notas salen más limpias. Actualizar descarga MSST y una versión de PyTorch compatible (unos minutos), y el modelo (214 MB) la primera vez que lo uses.", "Your audio tools use Demucs. MSST (with the SCNet XL model) separates bass and drums better, so the notes come out cleaner. Updating downloads MSST and a compatible PyTorch (a few minutes), plus the model (214 MB) the first time you use it.")}</p>
+    ${running ? `<div class="imp-bar"><div style="width:${Math.max(2, inst.pct || 0)}%"></div></div><p class="wz-help">${esc(msg(inst.msg))}</p>` : ""}
+    ${inst.state === "error" ? `<p class="imp-err">${esc(msg(inst.msg))}</p>` : ""}
+    <div class="wz-nav"><button data-a="keep" ${running ? "disabled" : ""}>${L("Seguir con Demucs", "Keep using Demucs")}</button>
+      <div class="right"><button data-a="install" class="primary" ${running ? "disabled" : ""}>${icon("download", 14)} ${running ? L("Actualizando…", "Updating…") : L("Actualizar y convertir", "Update and convert")}</button></div></div>`
+  : `<h2 class="q" style="font-size:24px;margin:4px 0">${L("Para leer audio hacen falta unas herramientas extra", "Reading audio needs a few extra tools")}</h2>
     <p class="wz-help">${L("Con un MIDI no hacen falta. Para un mp3 o wav instalo, una sola vez, tres programas libres que funcionan sin internet en tu ordenador:", "With a MIDI you don't need them. For an mp3 or wav I install, just once, three free programs that run offline on your computer:")}</p>
     <ul class="imp-list">
-      <li><b>Demucs</b> ${L("(Meta): separa batería, bajo, voz y el resto.", "(Meta): splits drums, bass, vocals and the rest.")}</li>
+      <li><b>MSST</b> ${L("(ZFTurbo) con su modelo SCNet XL: separa batería, bajo, voz y el resto. El modelo (214 MB) se descarga la primera vez que importas un audio. Si no funciona en tu ordenador, uso <b>Demucs</b> (Meta).", "(ZFTurbo) with its SCNet XL model: splits drums, bass, vocals and the rest. The model (214 MB) downloads the first time you import audio. If it doesn't work on your computer, I use <b>Demucs</b> (Meta).")}</li>
       <li><b>basic-pitch</b> ${L("(Spotify): pasa cada instrumento a notas.", "(Spotify): turns each instrument into notes.")}</li>
       <li><b>librosa</b>: ${L("encuentra el pulso y el tempo.", "finds the beat and the tempo.")}</li>
     </ul>
@@ -126,6 +165,7 @@ function toolsView(file, name, st) {
   ctx.body.querySelector(".wz-nav").onclick = async (e) => {
     const a = e.target.closest("button")?.dataset.a;
     if (a === "back") { stopPoll(); pickView(); }
+    if (a === "keep") { skipUpgrade = true; audioFlow(file, name); }
     if (a === "install") {
       try { await fetch("/api/import/audio/install", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }); } catch { /* lo enseña el estado */ }
       waitTools(file, name);
@@ -139,7 +179,7 @@ function waitTools(file, name) {
   polling = setTimeout(async () => {
     if (!ctx.isOpen()) return;
     let st; try { st = await (await fetch("/api/import/audio/status")).json(); } catch { st = {}; }
-    if (st.ready) return audioFlow(file, name);
+    if (st.ready && !st.upgrade) return audioFlow(file, name);
     toolsView(file, name, st);
   }, 1500);
 }

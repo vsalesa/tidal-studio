@@ -1,6 +1,6 @@
 """Importar canciones en audio (mp3, wav…): herramientas opcionales y trabajos en segundo plano.
 
-Las herramientas (Demucs + PyTorch, basic-pitch, librosa) pesan mucho (~1-2 GB), así que no van con el
+Las herramientas (MSST + PyTorch, Demucs de respaldo, basic-pitch, librosa) pesan mucho (~1-2 GB), así que no van con el
 estudio: se instalan la primera vez que alguien importa un audio, en un entorno de Python aparte
 (~/.tidal-studio/audio-tools) que no toca nada más. Todo corre en este ordenador; no se sube nada.
 """
@@ -16,15 +16,21 @@ import uuid
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TOOLS = os.environ.get("TIDAL_STUDIO_AUDIO_TOOLS") or os.path.join(os.path.expanduser("~"), ".tidal-studio", "audio-tools")
-MARKER = os.path.join(TOOLS, "ready-v1")
+MARKER = os.path.join(TOOLS, "ready-v2")   # v2: MSST (SCNet XL) para separar; v1 solo tenía Demucs
+OLD_MARKER = os.path.join(TOOLS, "ready-v1")
+MODELS = os.path.join(TOOLS, "models")
+# auto = MSST y, si falla, Demucs. Se puede forzar uno con TIDAL_STUDIO_SEPARATOR=msst|demucs
+SEPARATOR = os.environ.get("TIDAL_STUDIO_SEPARATOR", "auto")
 AUDIO_EXTS = (".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aiff", ".aif")
 MAX_AUDIO = 80 * 1024 * 1024
 
 # basic-pitch pide versiones viejas de numpy/tensorflow: lo instalamos sin dependencias y usamos su
 # modelo ONNX con onnxruntime, que funciona en Mac (Apple Silicon), Windows y Linux.
 PIP_STEPS = [
-    (15, "PyTorch (el más grande, ~200-800 MB)", "PyTorch (the biggest one, ~200-800 MB)", ["torch", "torchaudio"]),
-    (55, "Demucs (separa batería, bajo, voz…)", "Demucs (splits drums, bass, vocals…)", ["demucs"]),
+    # MSST pide torch < 2.12
+    (15, "PyTorch (el más grande, ~200-800 MB)", "PyTorch (the biggest one, ~200-800 MB)", ["torch<2.12", "torchaudio<2.12"]),
+    (45, "MSST (separa batería, bajo, voz y el resto)", "MSST (splits drums, bass, vocals and the rest)", ["msst[scnet]"]),
+    (60, "Demucs (separador de respaldo)", "Demucs (backup separator)", ["demucs"]),
     (75, "librosa y onnxruntime (tempo y notas)", "librosa and onnxruntime (tempo and notes)",
      ["onnxruntime", "librosa", "pretty_midi", "mir_eval", "resampy", "scipy", "soundfile"]),
     (90, "basic-pitch (pasa el audio a notas)", "basic-pitch (turns audio into notes)", ["--no-deps", "basic-pitch"]),
@@ -41,11 +47,19 @@ def tools_python():
 
 
 def status():
-    ready = os.path.exists(MARKER) and os.path.exists(tools_python())
+    has_py = os.path.exists(tools_python())
+    # Con las herramientas viejas (solo Demucs) se sigue pudiendo importar: el trabajador usa Demucs si no
+    # encuentra MSST. «upgrade» hace que la web ofrezca actualizarlas.
+    upgrade = has_py and os.path.exists(OLD_MARKER) and not os.path.exists(MARKER)
+    ready = has_py and (os.path.exists(MARKER) or upgrade)
     with _lock:
         inst = {k: v for k, v in _install.items() if k != "log"}
         inst["log"] = _install["log"][-8:]
-    return {"ready": ready, "install": inst, "dir": TOOLS, "size_hint": "1-2 GB"}
+    out = {"ready": ready, "upgrade": upgrade, "install": inst, "dir": TOOLS, "size_hint": "1-2 GB", "separator": SEPARATOR}
+    if ready and os.path.exists(MARKER):
+        out["msst"] = True
+        out["accel"] = accel()
+    return out
 
 
 def _set(**kw):
@@ -96,11 +110,11 @@ def install():
             for pct, es, en, pkgs in PIP_STEPS:
                 _set(pct=pct, msg=f"Instalando {es}…|Installing {en}…")
                 extra = []
-                if pkgs[0] == "torch" and platform.system() != "Darwin":
+                if pkgs[0].startswith("torch") and platform.system() != "Darwin":
                     extra = ["--index-url", "https://download.pytorch.org/whl/cpu"]  # sin CUDA: 5 veces menos
                 _run([py, "-m", "pip", "install", "--progress-bar", "off", *pkgs, *extra])
             _set(pct=97, msg="Comprobando…|Checking…")
-            _run([py, "-c", "import demucs.separate, librosa, onnxruntime; from basic_pitch import ICASSP_2022_MODEL_PATH"])
+            _run([py, "-c", "import msst, demucs.separate, librosa, onnxruntime; from basic_pitch import ICASSP_2022_MODEL_PATH"])
             with open(MARKER, "w") as f:
                 f.write(time.strftime("%Y-%m-%d %H:%M"))
             _set(state="done", pct=100, msg="Listo|Ready")
@@ -111,7 +125,23 @@ def install():
     return status()
 
 
-def start_job(filename, data):
+_accel = {}
+
+
+def accel():
+    """¿Las herramientas tienen tarjeta gráfica o Apple Silicon (MPS)? Se mira una vez (tarda un par de segundos)."""
+    if "v" not in _accel:
+        try:
+            out = subprocess.run([tools_python(), "-c", "import torch;print('cuda' if torch.cuda.is_available() else 'mps' if "
+                                  "getattr(torch.backends,'mps',None) and torch.backends.mps.is_available() else 'cpu')"],
+                                 capture_output=True, text=True, timeout=60).stdout.strip().splitlines()
+            _accel["v"] = out[-1] if out else "cpu"
+        except Exception:  # noqa: BLE001
+            _accel["v"] = "cpu"
+    return _accel["v"]
+
+
+def start_job(filename, data, engine=None):
     """Guarda el audio en una carpeta temporal y lo convierte a MIDI en segundo plano."""
     ext = os.path.splitext(filename or "")[1].lower()
     if ext not in AUDIO_EXTS:
@@ -120,6 +150,7 @@ def start_job(filename, data):
         raise ValueError("El audio es demasiado grande (máx. 80 MB)|The audio file is too big (max 80 MB)")
     if not status()["ready"]:
         raise ValueError("Faltan las herramientas de audio|The audio tools aren't installed")
+    eng = engine if engine in ("msst", "demucs") else SEPARATOR
     jid = uuid.uuid4().hex[:12]
     work = tempfile.mkdtemp(prefix="tidal-import-")
     src = os.path.join(work, "song" + ext)
@@ -133,10 +164,10 @@ def start_job(filename, data):
         out = os.path.join(work, "song.mid")
         try:
             def line(l):
-                if l.startswith("PROGRESS "):
-                    _, pct, msg = l.split(" ", 2)
+                if "PROGRESS " in l:  # a veces llega pegado detrás de una barra de progreso
+                    _, pct, msg = l[l.rfind("PROGRESS "):].split(" ", 2)
                     job.update(pct=int(pct), msg=msg)
-            _run([tools_python(), os.path.join(HERE, "audio_worker.py"), src, out, work], line)
+            _run([tools_python(), os.path.join(HERE, "audio_worker.py"), src, out, work, eng, MODELS], line)
             with open(out, "rb") as f:
                 job["midi"] = f.read()
             job.update(state="done", pct=100)
