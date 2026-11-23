@@ -69,8 +69,11 @@ jobs:
           WANT="$(key "$GITHUB_SHA")" || { echo "could not read this commit's tree; building"; exit 0; }
           echo "content key of $GITHUB_SHA: $WANT"
           NEED='TidalStudio-Linux TidalStudio-Windows TidalStudio-macOS-AppleSilicon'
-          gh api "repos/$REPO/actions/workflows/installers.yml/runs?status=success&event=push&per_page=50" \
-            --jq '.workflow_runs[] | select(.head_branch != "main") | "\(.id) \(.head_sha) \(.head_branch)"' |
+          # filter the conclusion here: the API's ?status=success filter lags and missed a run that had
+          # finished green 25 s earlier (0.10.0), so that release was built again
+          gh api "repos/$REPO/actions/workflows/installers.yml/runs?event=push&per_page=60" \
+            --jq '.workflow_runs[] | select(.head_branch != "main" and .conclusion == "success")
+                  | "\(.id) \(.head_sha) \(.head_branch)"' |
           while read -r RUN SHA BRANCH; do
             [ "$(key "$SHA" 2>/dev/null)" = "$WANT" ] || continue
             HAVE="$(gh api "repos/$REPO/actions/runs/$RUN/artifacts?per_page=100" \
