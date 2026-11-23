@@ -60,6 +60,19 @@ for the full list and sources.
 | **Arrangement step: intro, band, mambo** | **Mix step and course complete** |
 | ![Course arrangement](docs/screenshots/course-arrangement.png) | ![Course complete](docs/screenshots/course-complete.png) |
 
+**Latin courses that follow your composition plugin.** Merengue, salsa, cumbia, reggaeton and bossa nova follow the Latin
+style skills of the [music-composition plugin](https://github.com/vsalesa/music-composition-skills): each course names
+the tradition it plays (for example 1970s New York salsa dura on a 2-3 son clave), each step shows «What the skill says»,
+and Maestro loads that skill when you ask about the step. The parts are played by real instruments from the library
+(güiro, congas, bongos, claves, upright bass, trombones, accordion, nylon guitar, flute…), which download by themselves
+when you start the course.
+
+| Each Latin course names its tradition and its skill | The tradition and the artist lens, before the first step |
+|---|---|
+| ![Latin courses](docs/screenshots/courses-latin.png) | ![Course tradition](docs/screenshots/course-tradition.png) |
+| **«What the skill says» on every step, played by real instruments** | |
+| ![Course step with the skill's rule](docs/screenshots/course-skill-step.png) | |
+
 ### Maestro, your teacher
 
 - **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.

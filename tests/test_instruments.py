@@ -209,6 +209,40 @@ class ImportTest(unittest.TestCase):
         with self.assertRaises(Exception):
             self.il.upload("x.sf2", b"RIFF\0\0\0\0WAVE")
 
+    def test_normalize_folder_keeps_dynamics(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            quiet = struct.pack("<%dh" % SR, *([300] * SR))      # ~ −40 dB (como el güiro de VCSL)
+            louder = struct.pack("<%dh" % SR, *([1200] * SR))    # 4 veces más fuerte
+            for name, pcm in (("00_soft.wav", quiet), ("01_hard.wav", louder)):
+                with open(os.path.join(tmp, name), "wb") as f:
+                    f.write(wav_bytes(pcm))
+            boost = instlib.normalize_folder(tmp)
+            self.assertGreater(boost, 20)
+            with open(os.path.join(tmp, "00_soft.wav"), "rb") as f:
+                soft = instlib.wav_peak16(f.read())
+            with open(os.path.join(tmp, "01_hard.wav"), "rb") as f:
+                hard = instlib.wav_peak16(f.read())
+            self.assertAlmostEqual(20 * math.log10(hard), instlib.LEVEL_DB, delta=0.2)
+            self.assertAlmostEqual(hard / soft, 4, delta=0.05)   # misma ganancia para todos
+            self.assertEqual(instlib.normalize_folder(tmp), 0.0)   # ya está a buen nivel: no se toca
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
+
+class CourseNeedsTest(unittest.TestCase):
+    def test_missing_in_course_code(self):
+        tmp = tempfile.mkdtemp()
+        try:
+            il = instlib.InstLib(Library(tmp))
+            codes = ['s "<[~ claves:1 claves:1 ~] [claves:1 ~ ~ claves:1 ~ ~ claves:1 ~]>"',
+                     'n "c3" # s "acoustic_bass_fluid" # legato 3',
+                     's "[bd ~ ~ ~ bd ~ bd ~, ~ ~ concert_tom_hi:2 ~ ~ ~ concert_tom_hi:2 ~]"',
+                     's "ts_sub"']
+            self.assertEqual(il.missing_in(codes), ["claves", "acoustic_bass_fluid", "concert_tom_hi"])
+        finally:
+            shutil.rmtree(tmp, ignore_errors=True)
+
 
 class MaestroTest(unittest.TestCase):
     def test_used_instruments(self):

@@ -927,10 +927,40 @@ function stopPreHear() {
   api("/api/eval", { code: revert.join("\n\n") }).catch(() => {});
   if (onEnd) onEnd();
 }
+// Instrumentos de la biblioteca que usa un código (cursos): se descargan antes de sonar.
+// Una sola descarga a la vez: las siguientes esperan a la anterior (no se pisan las carpetas).
+let ensuring = Promise.resolve();
+function ensureInstruments(codes, { quiet = false } = {}) {
+  const run = async () => {
+    if (!codes.length || !live()) return { failed: [] };
+    let job;
+    try { job = await api("/api/instruments/ensure", { codes }); } catch { return { failed: [] }; }
+    if (job.ready) return { failed: [] };
+    if (!quiet) toastSoft(L("Descargando los instrumentos de este paso…", "Downloading this step's instruments…"));
+    while (job.state === "running") {
+      await new Promise((r) => setTimeout(r, 600));
+      try { job = await api(`/api/instruments/job?id=${job.id}`); } catch { break; }
+    }
+    const failed = (job.result && job.result.failed) || [];
+    if (failed.length) toast(L(`No he podido descargar: ${failed.map((f) => f.es).join(", ")}. Esas pistas sonarán en silencio hasta que los instales en Instrumentos (¿hay conexión a internet?).`,
+      `Couldn't download: ${failed.map((f) => f.en).join(", ")}. Those tracks will be silent until you install them from Instruments (are you online?).`));
+    else if (job.result && job.result.installed && job.result.installed.length && !quiet) toastSoft(L("Instrumentos listos", "Instruments ready"));
+    return { failed };
+  };
+  ensuring = ensuring.then(run, run);
+  return ensuring;
+}
+
 function wirePreHear(btn, cambios) {
-  btn.onclick = (e) => {
+  btn.onclick = async (e) => {
     e.stopPropagation();
     if (btn.classList.contains("playing")) { stopPreHear(); return; }
+    if (btn.dataset.loading) return;
+    btn.dataset.loading = "1";
+    const label = btn.innerHTML;
+    btn.innerHTML = icon("speaker", 13) + " " + L("Preparando…", "Getting ready…");
+    await ensureInstruments((cambios.pistas || []).map((p) => p.codigo));
+    delete btn.dataset.loading; btn.innerHTML = label;
     document.querySelectorAll(".prehear.playing").forEach((b) => { b.classList.remove("playing"); b.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
     const secs = preHear(cambios, () => { btn.classList.remove("playing"); btn.innerHTML = icon("speaker", 13) + " " + L("Escuchar", "Listen"); });
     btn.classList.add("playing");
@@ -1571,6 +1601,7 @@ async function askLLM() {
     const history = state.chat.filter((m) => m.role !== "system").map((m) => ({ role: m.role, content: m.content + variantsContext(m) + fetchContext(m) }));
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
+      curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1 } : undefined; })() : undefined,
       bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       referencia: state.reference || undefined,
       master: state.master || undefined,
@@ -3421,6 +3452,8 @@ function openCourses() {
         <header><b>${esc(c.name)}</b><span>${esc(c.origin)}</span></header>
         <div class="cs-meta"><span>${c.bpm} BPM</span>${levelDots(c.level)}<span>${esc(c.key)}</span></div>
         <p>${esc(c.blurb)}</p>
+        ${c.skill ? `<p class="cs-trad"><b>${L("Tradición:", "Tradition:")}</b> ${esc(c.tradition)}</p>
+          <div class="cs-skill" title="${esc(L("Este curso sigue las reglas de esta skill de tu plugin de composición. Maestro la carga al explicarte cada paso.", "This course follows the rules of this skill from your composition plugin. Maestro loads it when explaining each step."))}">${icon("skill", 13)} ${L("Skill", "Skill")} · ${esc(c.skill)}</div>` : ""}
         <div class="cs-learn">${c.learn.map((x) => `<span>${esc(x)}</span>`).join("")}</div>
         <div class="cs-prog"><div class="bar"><div style="width:${Math.round((done / total) * 100)}%"></div></div><small>${done}/${total} ${L("pasos", "steps")}</small></div>
         <div class="cs-actions">
@@ -3449,9 +3482,13 @@ function startCourse(id) {
   state.name = L(`${c.name} desde cero`, `${c.name} from scratch`);
   state.bpm = c.bpm; $("#bpm").value = c.bpm; $("#proj-name").value = state.name;
   if (live()) evalCode(cps(c.bpm));
+  // Los instrumentos reales del curso (congas, bajo acústico, trombones…) se van bajando mientras lees
+  ensureInstruments(finalTracks(c).map((t) => t.codigo), { quiet: true });
   state.step = "libre";
-  say(L(`¡Vamos a construir un ${c.name} desde cero! (${c.origin})\n\n${c.blurb}\n\nHe puesto el tempo a ${c.bpm} BPM. El curso está en el panel de la izquierda: lee cada paso, pulsa «Escuchar» para oírlo antes y «Añadir a mi canción» cuando quieras. Yo te explico el código de cada pieza aquí.`,
-    `Let's build ${/^[aeiou]/i.test(c.name) ? "an" : "a"} ${c.name} track from scratch! (${c.origin})\n\n${c.blurb}\n\nI set the tempo to ${c.bpm} BPM. The course is in the left panel: read each step, press «Listen» to hear it first and «Add to my song» when you're ready. I'll explain each piece's code here.`), []);
+  const trad = c.skill ? L(`\n\nTradición: ${c.tradition} ${c.lens} El curso sigue la skill ${c.skill} de tu plugin de composición; los instrumentos reales se descargan solos.`,
+    `\n\nTradition: ${c.tradition} ${c.lens} The course follows the ${c.skill} skill from your composition plugin; the real instruments download by themselves.`) : "";
+  say(L(`¡Vamos a construir un ${c.name} desde cero! (${c.origin})\n\n${c.blurb}${trad}\n\nHe puesto el tempo a ${c.bpm} BPM. El curso está en el panel de la izquierda: lee cada paso, pulsa «Escuchar» para oírlo antes y «Añadir a mi canción» cuando quieras. Yo te explico el código de cada pieza aquí.`,
+    `Let's build ${/^[aeiou]/i.test(c.name) ? "an" : "a"} ${c.name} track from scratch! (${c.origin})\n\n${c.blurb}${trad}\n\nI set the tempo to ${c.bpm} BPM. The course is in the left panel: read each step, press «Listen» to hear it first and «Add to my song» when you're ready. I'll explain each piece's code here.`), []);
   save();
   renderCourse();
 }
@@ -3493,9 +3530,11 @@ function renderCourse() {
       <button class="icon-btn" data-cs="leave" title="${esc(L("Salir del curso (tu canción se queda)", "Leave the course (your song stays)"))}">${icon("close", 17)}</button>
     </div>
     <div class="cs-dots">${dots}</div>
+    ${c.skill && i === 0 ? `<div class="cs-trad-box"><b>${L("La tradición que vamos a tocar", "The tradition we'll play")}</b><span>${esc(c.tradition)}</span><span class="cs-lens">${esc(c.lens)}</span></div>` : ""}
     <div class="cs-step">
       <h3>${icon(stepIcon(st), 18)} ${esc(st.t)}</h3>
       <p>${esc(st.why)}</p>
+      ${st.rule ? `<div class="cs-rule">${icon("skill", 15)} <span><b>${L("Lo que dice la skill", "What the skill says")} <code>${esc(c.skill)}</code></b>${esc(st.rule)}</span></div>` : ""}
       ${st.listen ? `<div class="cs-listen">${icon("speaker", 15)} <span><b>${L("Escucha:", "Listen for:")}</b> ${esc(st.listen)}</span></div>` : ""}
       ${what}
       ${missing ? `<p class="hint">${L("Faltan pistas de pasos anteriores: se aplicará a las que existan.", "Some tracks from earlier steps are missing: it will apply to the ones that exist.")}</p>` : ""}
@@ -3540,9 +3579,10 @@ function courseAction(a) {
   if (a === "apply") return courseApply();
 }
 
-function courseApply() {
+async function courseApply() {
   const c = courseById(state.course.id), i = state.course.i, st = c.steps[i];
   stopPreHear();
+  if (st.tracks) await ensureInstruments(st.tracks.map((t) => t.codigo));
   const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
   let changes = "", diff = [];
   if (state.bpm !== c.bpm) { state.bpm = c.bpm; $("#bpm").value = c.bpm; if (live()) evalCode(cps(c.bpm)); }
@@ -3572,7 +3612,7 @@ function courseApply() {
   if (!state.course.done.includes(i)) state.course.done.push(i);
   markStepDone(c.id, i);
   const last = i === c.steps.length - 1;
-  const intro = `${L("Paso", "Step")} ${i + 1}/${c.steps.length} · ${st.t}\n\n${st.why}${st.listen ? `\n\n${L("Escucha:", "Listen for:")} ${st.listen}` : ""}`;
+  const intro = `${L("Paso", "Step")} ${i + 1}/${c.steps.length} · ${st.t}\n\n${st.why}${st.rule ? `\n\n${L("Según la skill", "Per the skill")} ${c.skill}: ${st.rule}` : ""}${st.listen ? `\n\n${L("Escucha:", "Listen for:")} ${st.listen}` : ""}`;
   const opts = [...(last ? [] : [COURSE_NEXT()]), COURSE_ASK(), ...(last ? [COURSE_OPEN()] : [])];
   say(intro, opts, { explicacion: st.parts, reto: st.try, changes, diff });
   save();
