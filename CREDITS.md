@@ -26,6 +26,20 @@ Product and brand names visible on the instruments belong to their owners and do
 - [VCSL](https://github.com/sgossner/VCSL) (Versilian Community Sample Library), CC0, for marimba and kalimba.
 - Sounds you find through the in-app [Freesound](https://freesound.org/) search keep the license shown next to each one.
 
+### Instrument library (downloaded only when you ask)
+
+Tidal Studio does not ship these recordings: it downloads each instrument from its source when you ask for it, and writes
+its credit to `samples/CREDITS.md`.
+
+- [VSCO 2 Community Edition](https://github.com/sgossner/VSCO-2-CE) by Sam Gossner / Versilian Studios, CC0 1.0 (orchestral strings, brass, woodwinds, percussion, keys).
+- [VCSL](https://github.com/sgossner/VCSL) (Versilian Community Sample Library), CC0 1.0 (early music, world, percussion, keys, mallets).
+- [Salamander Grand Piano](https://archive.org/details/SalamanderGrandPianoV3) by Alexander Holm, CC BY 3.0 (via the [Strudel / dough-samples](https://github.com/felixroos/dough-samples) mirror).
+- General MIDI sound sets rendered by [midi-js-soundfonts](https://github.com/gleitz/midi-js-soundfonts) (Benjamin Gleitzman):
+  FluidR3 GM by Frank Wen (CC BY 3.0), Musyng Kite (CC BY-SA 3.0) and FatBoy (CC BY-SA 3.0).
+- Synth engines you install from the app keep their own licenses: [sc3-plugins](https://github.com/supercollider/sc3-plugins) (GPL-3.0),
+  [Mi-UGens](https://github.com/v7b1/mi-UGens) (GPL-3.0, Émilie Gillet's Mutable Instruments modules ported by Volker Böhm), [VSTPlugin](https://git.iem.at/pd/vstplugin) (GPL-3.0),
+  [Surge XT](https://surge-synthesizer.github.io/) (GPL-3.0) and [Vital](https://vital.audio/) (its own license). They are installed on your computer, not bundled.
+
 ## Maestro's skills
 
 - [`skills/livecoding`](skills/livecoding) from [broomva/skills](https://github.com/broomva/skills), MIT License, © Carlos D. Escobar-Valbuena (broomva).

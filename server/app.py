@@ -41,6 +41,9 @@ import ccdetect  # noqa: E402
 import songimport  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
+import instlib  # noqa: E402
+import engines as synthengines  # noqa: E402
+import photos as instphotos  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -300,6 +303,32 @@ TIMELINE = TimelineQuery(ROOT)
 llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
 LIBRARY = Library(ROOT)
 LIBRARY.on_add = lambda name, fname, info: loops.maybe_analyse(LIBRARY, name, fname, info)
+INSTLIB = instlib.InstLib(LIBRARY, ENGINE)
+PHOTOS = instphotos.Photos(LIBRARY.dir)
+
+
+def instrument_listing():
+    """La biblioteca de instrumentos tal y como la ve la interfaz (con los motores y Surge XT si están)."""
+    try:
+        sounds = (ENGINE.sound_list() or {}).get("sounds") or []
+    except Exception:  # noqa: BLE001
+        sounds = []
+    st = synthengines.status(sounds)
+    out = INSTLIB.listing({"mi": {"ready": st["mi"]["installed"]}, "surge": {"ready": st["surge"]["ready"]},
+                           "vital": {"ready": st["vital"]["ready"]}})
+    active = {v.get("name") for v in synthengines.vst_list(LIBRARY.dir)}
+    extra = synthengines.surge_items() if st["surge"]["installed"] else []
+    for it in extra:
+        out["items"].append({**{k: it.get(k) for k in ("id", "cat", "es", "en", "src", "photo", "group", "tags", "voice", "sound", "extra")},
+                             "kind": "engine", "engine": "surge", "installed": it["id"] in active, "program": True})
+    for it in out["items"]:
+        if it["kind"] == "engine" and it["id"] in ("surge", "vital"):
+            it["installed"] = it["id"] in active
+    for c in out["categories"]:
+        c["n"] = sum(1 for i in out["items"] if i["cat"] == c["id"])
+    out["engines"] = st
+    out["photos"] = PHOTOS.meta()   # fotos de Wikimedia que has elegido tú (sustituyen a la de la categoría)
+    return out
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -393,6 +422,23 @@ class Handler(SimpleHTTPRequestHandler):
             self._body()
             return self._json(audioimport.install())
         return self._json({"error": "not found"}, 404)
+
+    def _instrument_upload(self):
+        """Añadir tus instrumentos: SoundFont (.sf2), .zip con un SFZ o con grabaciones por nota, o audio suelto."""
+        if not self._origin_ok():
+            return self._json({"error": "forbidden"}, 403)
+        q = parse_qs(urlparse(self.path).query)
+        arg = lambda k, d="": q.get(k, [d])[0]  # noqa: E731
+        length = int(self.headers.get("Content-Length") or 0)
+        if length > 400 * 1024 * 1024:
+            return self._err("El archivo es demasiado grande (máx. 400 MB)|The file is too big (max. 400 MB)", arg("lang"), 413)
+        raw = self.rfile.read(length)
+        try:
+            return self._json(INSTLIB.upload(arg("filename"), raw, arg("name") or None, arg("root") or None))
+        except SampleError as e:
+            return self._err(e, arg("lang"))
+        except Exception as e:  # noqa: BLE001  un archivo raro no debe tumbar el estudio
+            return self._err(f"No he podido leer el archivo: {e}|Couldn't read the file: {e}", arg("lang"))
 
     def _loops(self, path):
         """Loops largos: cargador (archivos sueltos o zip), análisis y correcciones."""
@@ -532,6 +578,42 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(ENGINE.events_since(since))
             if path == "/api/sounds":
                 return self._json(ENGINE.sound_list())
+            if path == "/api/instruments":
+                return self._json(instrument_listing())
+            if path == "/api/instruments/photo":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    body = PHOTOS.read(q.get("id", [""])[0])
+                except SampleError as e:
+                    return self._json({"error": str(e)}, 404)
+                self.send_response(200)
+                self.send_header("Content-Type", "image/png" if body[:4] == b"\x89PNG" else "image/jpeg")
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "max-age=86400")
+                self.end_headers()
+                self.wfile.write(body)
+                return
+            if path == "/api/instruments/job":
+                q = parse_qs(urlparse(self.path).query)
+                job = instlib.InstLib.job(q.get("id", [""])[0])
+                return self._json(job or {"state": "unknown"})
+            if path == "/api/instruments/sample":
+                # Escuchar un instrumento (instalado o no): la grabación más cercana a la nota pedida
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    body, mime, root = INSTLIB.preview(q.get("id", [""])[0], int(q.get("midi", ["60"])[0] or 60))
+                except (SampleError, ValueError) as e:
+                    return self._json({"error": str(e)}, 404)
+                except Exception as e:  # noqa: BLE001  sin red…
+                    return self._json({"error": str(e)}, 502)
+                self.send_response(200)
+                self.send_header("Content-Type", mime)
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("X-Root-Midi", "" if root is None else str(root))
+                self.send_header("Cache-Control", "max-age=3600")
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path == "/api/log":
                 return self._json({"log": ENGINE.log_tail(200)})
             if path == "/api/skills":
@@ -568,6 +650,8 @@ class Handler(SimpleHTTPRequestHandler):
             return
         if path.startswith("/api/import/"):
             return self._import(path)
+        if path == "/api/instruments/upload":
+            return self._instrument_upload()
         if path.startswith("/api/loops/"):
             return self._loops(path)
         if path == "/api/samples/upload":
@@ -654,8 +738,12 @@ class Handler(SimpleHTTPRequestHandler):
                                             f"You have {len(sess['loops_lines'])} analysed long loops: passing them on with their tempo and code"))
                 except Exception:  # noqa: BLE001
                     sess["loops_lines"] = []
-                system, messages = build_messages(msgs, sess)
                 last = next((m.get("content", "") for m in reversed(msgs) if m.get("role") == "user"), "")
+                try:
+                    sess["instrument_lines"] = instlib.maestro_lines(INSTLIB, last)
+                except Exception:  # noqa: BLE001
+                    sess["instrument_lines"] = []
+                system, messages = build_messages(msgs, sess)
                 system, sk = with_skills(cfg, system, last, sess)
                 if sk:
                     active, loaded = sk
@@ -673,6 +761,18 @@ class Handler(SimpleHTTPRequestHandler):
                     if reply.get("descargar") and fetch_on(sess):
                         reply["descargas"] = fetch_samples(cfg, reply, sess, tr)
                     loops.fix_reply(LIBRARY, reply, float(sess.get("bpm") or 120))
+                    # Instrumentos de la biblioteca que usa Maestro: los pequeños se descargan ya
+                    def _ilog(item):
+                        name = tr.L(item["es"], item["en"])
+                        tr.add("step", {"descargado": tr.L(f"Descargo el instrumento «{name}» ({item['mb']} MB) de la biblioteca", f"Downloading the «{name}» instrument ({item['mb']} MB) from the library"),
+                                        "permiso": tr.L(f"«{name}» pesa {item['mb']} MB: te pido permiso antes de descargarlo", f"«{name}» is {item['mb']} MB: asking before downloading it"),
+                                        "error": tr.L(f"No he podido descargar «{name}»: {item.get('error')}", f"Couldn't download «{name}»: {item.get('error')}")}.get(item["estado"], ""))
+                    try:
+                        inst_items = instlib.auto_install(INSTLIB, reply, _ilog)
+                    except Exception:  # noqa: BLE001
+                        inst_items = []
+                    if inst_items:
+                        reply["instrumentos"] = inst_items
                 finally:
                     tr.finish()
                 return self._json({**reply, "skills": skills_report(sk, raw),
@@ -710,6 +810,40 @@ class Handler(SimpleHTTPRequestHandler):
                 if sk:
                     out["skills"] = skills_report(sk, raw)
                 return self._json(out)
+
+            if path.startswith("/api/instruments/") or path.startswith("/api/engines/"):
+                try:
+                    if path == "/api/instruments/install":
+                        iid = str(data.get("id") or "")
+                        it = INSTLIB.get(iid) or next((x for x in synthengines.surge_items() if x["id"] == iid), None)
+                        if not it:
+                            return self._json({"error": "Instrumento desconocido"}, 404)
+                        if it["kind"] == "engine" and it.get("engine") in ("surge", "vital"):
+                            return self._json(synthengines.vst_activate(LIBRARY.dir, ENGINE, it["sound"], it["engine"], it.get("program", "")))
+                        if it["kind"] in ("synth", "engine"):
+                            return self._json({"id": iid, "ready": True})
+                        return self._json(INSTLIB.start_job("install", lambda prog: INSTLIB.install(iid, prog)))
+                    if path == "/api/instruments/remove":
+                        iid = str(data.get("id") or "")
+                        if iid.startswith("surge") or iid == "vital":
+                            return self._json(synthengines.vst_deactivate(LIBRARY.dir, iid))
+                        return self._json(INSTLIB.remove(iid))
+                    if path == "/api/instruments/photos":
+                        return self._json({"photos": instphotos.search(str(data.get("q") or ""))})
+                    if path == "/api/instruments/photo":
+                        return self._json(PHOTOS.save(data.get("id"), data.get("pick")))
+                    if path == "/api/instruments/photo-remove":
+                        return self._json(PHOTOS.remove(data.get("id")))
+                    if path == "/api/instruments/sf2":
+                        return self._json(INSTLIB.start_job("sf2", lambda prog: INSTLIB.import_sf2(data.get("file", ""), data.get("presets") or [], prog)))
+                    if path == "/api/engines/install":
+                        eid = str(data.get("id") or "")
+                        return self._json(INSTLIB.start_job("engine", lambda prog: synthengines.install(eid)))
+                    if path == "/api/engines/editor":
+                        return self._json({"ok": ENGINE.sc_cmd("vsteditor", str(data.get("name") or "vital"))})
+                except (SampleError, synthengines.EngineError) as e:
+                    return self._json({"error": str(e)}, 400)
+                return self._json({"error": "Ruta no encontrada"}, 404)
 
             if path.startswith("/api/samples/"):
                 cfg = load_config()

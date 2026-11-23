@@ -251,6 +251,55 @@ código. Cada componente del catálogo tiene además su propio icono.
 |---|---|
 | ![Batería](docs/screenshots/es/instrumentos-bateria.png) | ![Saxo](docs/screenshots/es/instrumentos-saxo.png) |
 
+### Biblioteca de instrumentos: más de 600 instrumentos concretos
+
+Como GarageBand, pero para Tidal: un clavecín, un contrabajo en pizzicato, un Steinway B, una celesta, un sitar, un
+theremin, un órgano de iglesia, un koto… **634 instrumentos concretos** en 21 categorías (pianos, teclados, órganos,
+música antigua, láminas, guitarras, bajos, cuerdas, metales, maderas, voces, del mundo, percusión, synths
+solistas/pads/bajos/teclados/efectos, motores de synth, efectos de sonido y los tuyos). Ábrela con el botón del altavoz
+de arriba o con la tarjeta **600+ Biblioteca**. Busca en español o en inglés, filtra por descargados o por fuente, y pulsa
+cualquier tarjeta para **escuchar las grabaciones de verdad** antes de descargar nada. Cada instrumento pesa unos pocos MB
+y solo se descarga cuando lo pides.
+
+Elige una versión (el mismo instrumento de distintos juegos de sonidos, o articulaciones como arco y pizzicato), toca el
+teclado para escribir una melodía y pulsa **Añadir como pista**: tienes el código de Tidal
+(`n "c5 e5 g5" # s "harpsichord_fluid"`) y se toca con notas igual que un synth, porque cada nota usa la grabación real
+más cercana. Las grabaciones vienen solo de juegos con licencia libre: VSCO 2 Community Edition y VCSL (CC0), el piano
+de cola Salamander (CC BY) y los juegos General MIDI FluidR3, MusyngKite y FatBoy (CC BY / CC BY-SA). Los créditos se
+escriben en `samples/CREDITS.md` al descargar.
+
+| Por categorías: escúchalo y añádelo | Busca con tus palabras |
+|---|---|
+| ![Biblioteca de instrumentos](docs/screenshots/es/biblioteca-instrumentos.png) | ![Buscar: contrabajo](docs/screenshots/es/biblioteca-buscar.png) |
+
+**Tus propios instrumentos.** Arrastra un **SoundFont (.sf2)** y elige qué sonidos importar (las notas sostenidas se
+desenrollan para que duren), un **.zip con un SFZ**, una carpeta de **grabaciones con la nota en el nombre**
+(`Violin_C4.wav`, `060.wav`) o **un solo sonido** afinado desde la nota que elijas. Aparecen en **Mis instrumentos** y
+también se tocan con notas.
+
+**Motores de synth.** Además de 15 synths nuevos incluidos (Rhodes, órgano, cuerdas, pad, metales, coro, Juno, acid,
+wobble…), la página **Motores de synth** instala plugins gratuitos con un botón: **sc3-plugins**, **Mi-UGens**
+(Plaits, Braids y Rings de Mutable Instruments: 16 + 16 + 6 modelos en la biblioteca) y **VSTPlugin**, con el que
+SuperDirt toca **Surge XT** (sus sonidos de fábrica aparecen en la biblioteca) y **Vital**. Tidal tiene los parámetros
+que necesitan: `d1 $ n "c e g" # s "plaits" # engine 5 # timbre 0.3 # harm 0.5 # morph 0.6`.
+
+| Añade los tuyos: SoundFont, SFZ, grabaciones | Motores de synth con un botón |
+|---|---|
+| ![Importar un SoundFont](docs/screenshots/es/biblioteca-importar.png) | ![Motores de synth](docs/screenshots/es/biblioteca-motores.png) |
+
+**Una foto para cada instrumento, y fíjalo como componente.** Cada instrumento muestra una foto real de Wikimedia
+Commons. Pulsa **Foto de Wikimedia** para buscar otra en Commons: solo salen fotos con licencia libre (CC0, dominio
+público, CC BY, CC BY-SA) y la que elijas se guarda con su autor y licencia, que siempre se muestran debajo. Pulsa
+**★ Fijar** y el instrumento se convierte en una tarjeta de la fila de instrumentos del estudio, junto al piano y la
+batería, lista para abrirla con un clic.
+
+| Elige una foto de Wikimedia Commons | Fijado como tarjeta en el estudio |
+|---|---|
+| ![Buscar foto en Wikimedia](docs/screenshots/es/biblioteca-wikimedia.png) | ![Instrumento fijado](docs/screenshots/es/biblioteca-fijado.png) |
+
+**Maestro también los conoce.** Pide «un clavecín en los acordes» o «un contrabajo en pizzicato» y Maestro usa el
+instrumento exacto de la biblioteca. Si es pequeño lo descarga al momento; si es grande, te pregunta antes.
+
 ### Biblioteca de samples
 
 Sonidos por tipo (bombos, cajas, platos, percusión, breaks, bajos, melódicos, pads, voces, FX, sintes). Escúchalos,
@@ -616,6 +665,7 @@ Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architec
 - `web/builder.js`: wizard de proyecto base. `web/wizard.js`: preguntas de la lluvia de ideas y plan sin IA. `web/flavors.js`: recetas de estilo (jazz, latino, techno, lo-fi, ambient).
 - `web/doctor.js`: revisión y arreglos sin IA del panel Ayuda (`/api/fix` con IA). `web/palette.js`: bloques de la paleta.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: la pestaña Línea de tiempo. El servidor le pregunta a Tidal (`queryArc`) en su propio GHCi; `web/tpat.js` es la calculadora aproximada del navegador que se usa sin motor.
+- `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: la biblioteca de instrumentos (catálogo, descargas, importar SoundFont/SFZ, escucha previa). `supercollider/studio-instruments.scd` toca con notas los instrumentos multisample; `studio-synthlib.scd` tiene los synths incluidos; `server/engines.py` + `studio-engines.scd` instalan y cargan Mi-UGens y VSTPlugin (Surge XT, Vital); `server/photos.py` busca fotos en Wikimedia Commons.
 - `web/i18n.js`: cambio de idioma. `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».
 
 Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit).

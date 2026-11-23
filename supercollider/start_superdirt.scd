@@ -29,8 +29,14 @@ if(\SuperDirt.asClass.isNil) {
             s.sync;
             // Piano sin plugins, el resto de sintes "super…" y la trompeta (ver studio-synths.scd)
             (~studioDir +/+ "studio-synths.scd").load;
+            // Biblioteca de sintetizadores propios (ts_rhodes, ts_pad, ts_acid…): ver studio-synthlib.scd
+            (~studioDir +/+ "studio-synthlib.scd").load;
             s.sync;
             ~dirt.start(57120, 0 ! 12);   // 12 "orbits": una por pista d1..d12
+            // Instrumentos de la biblioteca (una grabación por nota): ver studio-instruments.scd
+            (~studioDir +/+ "studio-instruments.scd").load;
+            // Motores de synth opcionales (Mi-UGens, VSTPlugin con Surge XT / Vital): ver studio-engines.scd
+            (~studioDir +/+ "studio-engines.scd").load;
             // Lista de sonidos disponibles: la web marca en rojo los que falten en tu código
             ~studioListSounds = {
                 var names = ~dirt.soundLibrary.buffers.keys ++ ~dirt.soundLibrary.synthEvents.keys ++ SynthDescLib.global.synthDescs.keys;
@@ -46,15 +52,20 @@ if(\SuperDirt.asClass.isNil) {
                         switch(cmd,
                             "reload", {
                                 ~dirt.freeSoundFiles([msg[2].asSymbol]);
+                                ~studioMultiForget.(msg[2]);
                                 ~dirt.loadSoundFiles(msg[3].asString);
                                 s.sync;
                                 ("Sample recargado: " ++ msg[2]).postln;
                                 ~studioListSounds.value;
                             },
-                            "free", { ~dirt.freeSoundFiles([msg[2].asSymbol]); ~studioListSounds.value },
+                            "free", { ~dirt.freeSoundFiles([msg[2].asSymbol]); ~studioMultiForget.(msg[2]); ~studioListSounds.value },
                             "record", { s.record(msg[2].asString); ("Grabando en " ++ msg[2]).postln },
                             "stoprecord", { s.stopRecording; "Grabación terminada".postln },
-                            "list", { ~studioListSounds.value }
+                            "list", { ~studioListSounds.value },
+                            // Instrumentos VST (Surge XT, Vital…): ver studio-engines.scd
+                            "vstadd", { ~studioVstAdd.(msg[2], msg[3].asString, msg[4].asString); 2.wait; ~studioListSounds.value },
+                            "vsteditor", { ~studioVstEditor.(msg[2]) },
+                            "vstsave", { ~studioVstSave.(msg[2], msg[3].asString) }
                         );
                     };
                 };

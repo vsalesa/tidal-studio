@@ -27,6 +27,7 @@ import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LET
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { openImport, importedSummary, INSPIRE_PROMPT } from "./importsong.js";
+import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -1252,8 +1253,8 @@ function renderCatalog() {
   const style = sel.value;
   const box = $("#catalog");
   box.innerHTML = `<div class="inst-strip"><div class="inst-head">${icon("speaker", 15)} ${L("Instrumentos", "Instruments")}<span>${L("pulsa uno para tocarlo", "press one to play it")}</span></div>
-    <div class="inst-row">${INSTRUMENTS.map((i) => `<button class="inst-card" data-i="${i.id}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span><span>${esc(L(i.es, i.en))}</span></button>`).join("")}</div></div>`;
-  box.querySelectorAll(".inst-card").forEach((b) => b.onclick = () => openInstrument(b.dataset.i));
+    <div class="inst-row">${INSTRUMENTS.map((i) => `<button class="inst-card" data-i="${i.id}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span><span>${esc(L(i.es, i.en))}</span></button>`).join("")}${pinnedInstruments().map((p) => `<button class="inst-card inst-pinned" data-pin="${esc(p.id)}" title="${esc(L(p.es, p.en))} · s &quot;${esc(p.id)}&quot;"><span class="inst-art"><img src="${esc(p.photo)}" alt="" draggable="false"></span><span>${esc(L(p.es, p.en).split(/: | \(/)[0])}</span></button>`).join("")}<button class="inst-card inst-more" data-lib="1" title="${L("Biblioteca de instrumentos: cientos de instrumentos concretos", "Instrument library: hundreds of specific instruments")}"><span class="inst-art inst-more-art"><b>600+</b></span><span>${L("Biblioteca", "Library")}</span></button></div></div>`;
+  box.querySelectorAll(".inst-card").forEach((b) => b.onclick = () => (b.dataset.pin ? openInstLib({ id: b.dataset.pin }) : b.dataset.lib ? openInstLib() : openInstrument(b.dataset.i)));
   for (const cat of CATEGORIES) {
     let items = COMPONENTS.filter((c) => c.cat === cat.id);
     if (style && items[0] && items[0].estilos) {
@@ -1314,7 +1315,7 @@ function instCode(ins) {
 }
 function renderInstrument() {
   const ins = instById[inst.id];
-  const tabs = `<div class="inst-tabs">${INSTRUMENTS.map((i) => `<button data-i="${i.id}" class="${i.id === ins.id ? "active" : ""}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span>${esc(L(i.es, i.en))}</button>`).join("")}</div>`;
+  const tabs = `<div class="inst-tabs">${INSTRUMENTS.map((i) => `<button data-i="${i.id}" class="${i.id === ins.id ? "active" : ""}" style="--k:${KIND_COLOR[i.kind]}"><span class="inst-art">${instThumb(i)}</span>${esc(L(i.es, i.en))}</button>`).join("")}<button data-lib="1" class="inst-tab-more"><span class="inst-art inst-more-art"><b>600+</b></span>${L("Más instrumentos", "More instruments")}</button></div>`;
   let art, side;
   if (ins.id === "drums") {
     const P = DRUM_PIECES[inst.piece], steps = inst.steps[inst.piece] || P.steps;
@@ -1371,6 +1372,7 @@ function instPlaySeq(ins) {
 function wireInstrument() {
   $("#inst-body").addEventListener("click", async (e) => {
     const ins = instById[inst.id];
+    if (e.target.closest(".inst-tabs [data-lib]")) { $("#instrument").close(); return openInstLib({ cat: ({ piano: "pianos", bass: "basses", guitar: "guitars", sax: "woodwinds", trumpet: "brass", marimba: "mallets", kalimba: "world", drums: "percussion" })[inst.id] || "pianos" }); }
     const tab = e.target.closest(".inst-tabs [data-i]");
     if (tab) { inst.id = tab.dataset.i; return renderInstrument(); }
     const piece = e.target.closest("[data-p]");
@@ -1443,6 +1445,9 @@ function renderChat() {
     }
     if (m.diff && m.diff.length) el.insertAdjacentHTML("beforeend", diffHTML(m.diff));
     if (m.descargas && m.descargas.length) el.insertAdjacentHTML("beforeend", fetchHTML(m, mi, fxPlaying));
+    if (m.instrumentos && m.instrumentos.length) el.insertAdjacentHTML("beforeend", `<div class="inst-fetch">${m.instrumentos.map((x) => x.estado === "descargado"
+      ? `<span class="ok">${icon("check", 13)} ${L("Instrumento descargado", "Instrument downloaded")}: <b>${esc(L(x.es, x.en))}</b> <code>${esc(x.id)}</code></span>`
+      : `<button data-instlib="${esc(x.id)}">${icon("download", 13)} ${x.estado === "error" ? L("Reintentar", "Retry") : L("Descargar", "Download")} ${esc(L(x.es, x.en))}${x.mb ? ` · ${x.mb} MB` : ""}</button>`).join("")}</div>`);
     if (m.variantes && m.variantes.length) el.insertAdjacentHTML("beforeend", variantsHTML(m, mi, audition, (k) => variantDiff(m.variantes[k])));
     if (m.reto) el.insertAdjacentHTML("beforeend", `<div class="reto"><b>${L("Reto.", "Challenge.")}</b> ${esc(m.reto.replace(/^Reto:\s*/i, ""))}</div>`);
     if (m.changes) el.insertAdjacentHTML("beforeend", `<div class="changes">${esc(m.changes)}</div>`);
@@ -1591,7 +1596,7 @@ async function askLLM() {
       stopAudition();
       state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
     }
-    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), ...(r.descargas && r.descargas.length ? { descargas: r.descargas } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
+    say(r.mensaje || "…", r.opciones || [], { ...(r.variantes && r.variantes.length ? { variantes: r.variantes } : {}), ...(r.descargas && r.descargas.length ? { descargas: r.descargas } : {}), ...(r.instrumentos && r.instrumentos.length ? { instrumentos: r.instrumentos } : {}), explicacion: r.explicacion, reto: r.reto, changes: summary, diff, ...(controles.length ? { controles } : {}), ...(r.skills ? { skills: { ...r.skills, ...(r.command ? { command: r.command } : {}) } } : {}), ...(keepTrace(r.trace || lastTrace) ? { trace: keepTrace(r.trace || lastTrace) } : {}) });
     renderIdeas();
   } catch (e) {
     trace.end();
@@ -2467,6 +2472,18 @@ function wireSamples() {
       say(L(`Subido: «${last.name}» con ${files.length} archivo(s). Pruébalo con s "${last.name}" o s "${last.name}:1" para la segunda variante.`, `Uploaded: «${last.name}» with ${files.length} file(s). Try it with s "${last.name}" or s "${last.name}:1" for the second variant.`), state.options);
     }
   });
+}
+// --- biblioteca de instrumentos (web/instlib.js)
+function wireInstLib() {
+  initInstLib({
+    api, state, toast, beep, isSim, evalCode,
+    addTrack: (name, kind, code) => addTrack(name, kind, code),
+    say: (text, code) => say(text, state.options, { explicacion: explainLocal(code).partes }),
+    onPinsChanged: () => renderCatalog(),
+    restartEngine: async () => { await api("/api/engine/stop", {}); await api("/api/engine/start", {}); refreshStatus(); },
+  });
+  mountInstLib();
+  $("#btn-instlib").onclick = () => openInstLib();
 }
 // --- loops largos (web/loops.js): el cargador, el navegador y cómo entran en la canción
 function wireLoops() {
@@ -3681,10 +3698,13 @@ function init() {
   $("#btn-courses").onclick = openCourses;
   $("#btn-skills").onclick = () => openSkills();
   $("#chat").addEventListener("click", (e) => { const b = e.target.closest("[data-skill],[data-plugin]"); if (b) openSkills(b.dataset.skill || b.dataset.plugin); });
+  // Instrumento grande que Maestro quiere usar: se abre en la biblioteca para descargarlo
+  $("#chat").addEventListener("click", (e) => { const b = e.target.closest("[data-instlib]"); if (b) openInstLib({ id: b.dataset.instlib }); });
   wireSkills();
   refreshSkillCount();
   wireInstrument();
   wireSamples();
+  wireInstLib();
   wireLoops();
   wireControls();
   wireArrange();

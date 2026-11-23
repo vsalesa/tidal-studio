@@ -247,6 +247,52 @@ Every component in the catalog also has its own icon.
 |---|---|
 | ![Drum kit](docs/screenshots/instruments-drums.png) | ![Sax](docs/screenshots/instruments-sax.png) |
 
+### Instrument library: 600+ specific instruments
+
+Like GarageBand, but for Tidal: a harpsichord, a double bass played pizzicato, a Steinway B, a celesta, a sitar, a
+theremin, a church organ, a koto… **634 specific instruments** in 21 categories (pianos, keys, organs, early music,
+mallets, guitars, basses, strings, brass, woodwinds, voices, world, percussion, synth leads/pads/basses/keys/FX, synth
+engines, sound FX and your own). Open it with the speaker button at the top or the **600+ Library** card. Search in
+English or Spanish («clavecín» finds the harpsichord), filter by downloaded or by source, and press any card to **hear
+the real recordings** before downloading anything. Each instrument is a few MB and is only downloaded when you ask for it.
+
+Pick a version (the same instrument from different sound sets, or articulations like arco and pizzicato), play the
+keyboard to write a melody, and **Add as a track**: you get the Tidal code (`n "c5 e5 g5" # s "harpsichord_fluid"`), and
+it plays with notes just like a synth, because each note is mapped to the nearest real recording. Recordings come only
+from freely licensed sets: VSCO 2 Community Edition and VCSL (CC0), Salamander grand piano (CC BY), and the FluidR3,
+MusyngKite and FatBoy General MIDI sound sets (CC BY / CC BY-SA). Credits go to `samples/CREDITS.md` on download.
+
+| Browse by category, hear it, add it | Search in your own words |
+|---|---|
+| ![Instrument library](docs/screenshots/instlib-browse.png) | ![Search: double bass](docs/screenshots/instlib-search.png) |
+
+**Your own instruments.** Drop a **SoundFont (.sf2)** and pick which of its sounds to import (looped notes are unrolled
+so they last), a **.zip with an SFZ**, a folder of **recordings with the note in the name** (`Violin_C4.wav`, `060.wav`),
+or **a single sound** tuned from the note you choose. They show up in **My instruments** and play with notes too.
+
+**Synth engines.** Besides 15 new built-in synths (Rhodes, organ, strings, pad, brass, choir, Juno, acid, wobble…), the
+**Synth engines** page installs free plugins with one button: **sc3-plugins**, **Mi-UGens** (Mutable Instruments
+Plaits, Braids and Rings: 16 + 16 + 6 models in the library) and **VSTPlugin**, which lets SuperDirt play **Surge XT**
+(its factory sounds appear in the library) and **Vital**. Tidal gets the parameters it needs:
+`d1 $ n "c e g" # s "plaits" # engine 5 # timbre 0.3 # harm 0.5 # morph 0.6`.
+
+| Add your own: SoundFont, SFZ, recordings | Synth engines with one button |
+|---|---|
+| ![Import a SoundFont](docs/screenshots/instlib-import.png) | ![Synth engines](docs/screenshots/instlib-engines.png) |
+
+**A photo for every instrument, and pin it as a component.** Every instrument shows a real photo from Wikimedia
+Commons. Press **Wikimedia photo** to search Commons for another one: only freely licensed photos (CC0, public domain,
+CC BY, CC BY-SA) are shown, and the one you pick is saved with its author and license, which are always shown under it.
+Press **★ Pin** and the instrument becomes a card in the studio's instrument row, next to the piano and drums, ready
+to open with one click.
+
+| Pick a photo from Wikimedia Commons | Pinned as a card in the studio |
+|---|---|
+| ![Wikimedia photo picker](docs/screenshots/instlib-wikimedia.png) | ![Pinned instrument card](docs/screenshots/instlib-pinned.png) |
+
+**Maestro knows them too.** Ask for «a harpsichord on the chords» or «a double bass in pizzicato» and Maestro uses the
+exact instrument from the library. If it is small it is downloaded right away; if it is big, Maestro asks first.
+
 ### Sample library
 
 Sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths). Listen to them, use
@@ -610,6 +656,7 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `server/plugins.py`: Claude Code plugins and marketplaces (`my-plugins/`): download, manifests, skills and `/commands`.
 - `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: the Timeline tab. The server asks Tidal (`queryArc`) in its own GHCi; `web/tpat.js` is the approximate in-browser calculator used without the engine.
+- `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: the instrument library (catalog, downloads, SoundFont/SFZ import, pre-listen). `supercollider/studio-instruments.scd` plays multisampled instruments with notes; `studio-synthlib.scd` holds the built-in synths; `server/engines.py` + `studio-engines.scd` install and load Mi-UGens and VSTPlugin (Surge XT, Vital); `server/photos.py` finds photos on Wikimedia Commons.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.
 
 Each track is a Tidal `dN` (d1…d12) with its own effects channel (orbit).
