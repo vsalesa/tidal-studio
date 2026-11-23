@@ -1,0 +1,11 @@
+#!/bin/bash
+case "$1" in
+  --version) echo "2.1.0 (Claude Code)"; exit 0;;
+  auth) echo '{"loggedIn":true,"authMethod":"claude.ai","apiProvider":"firstParty","email":"you@example.com","subscriptionType":"max"}'; exit 0;;
+esac
+model=opus; prev=""
+for a in "$@"; do [ "$prev" = "--model" ] && model="$a"; prev="$a"; done
+case "$model" in opus|*opus*) id=claude-opus-5-5;; sonnet|*sonnet*) id=claude-sonnet-5-5;; haiku|*haiku*) id=claude-haiku-5-5;; fable|*fable*) id=claude-fable-5-2;; *) id="$model";; esac
+cat > /dev/null
+sleep 0.6
+printf '{"type":"result","subtype":"success","is_error":false,"result":"{\\"mensaje\\":\\"ok\\"}","modelUsage":{"%s":{"inputTokens":12,"outputTokens":5}}}\n' "$id"
