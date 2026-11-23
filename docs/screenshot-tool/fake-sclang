@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "SuperDirt: listening to Tidal on port 57120"
+echo "TIDAL_STUDIO_SOUNDS: amencutup drumtraks hc hh27 lc mc supergong superkick supersnare superhat 808 808cy 808hc 808ht 808lc 808lt 808mc 808mt 808oh 808sd clak click cb tabla2 perc bongo conga sid moog juno bd sn hh ho cp rm lt mt ht cr 808bd 808sd clubkick hardkick drum bass bass1 bass3 jvbass arpy pad gtr sax superpiano supersaw supersquare superfm superchip supertrumpet superpwm superhammond superfork supervibe superpiano sine sawtooth square triangle tri pulse sinewave casio jazz house techno future glitch wind birds rain noise feel east tabla odx"
+exec sleep 100000

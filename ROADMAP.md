@@ -55,3 +55,8 @@ Ideas and next steps for Tidal Studio, roughly in priority order.
 - Illustrated instruments: clickable drum kit; piano, bass, guitar, sax, trumpet, marimba, kalimba with an on-screen keyboard.
 - An icon for every component; compact component families.
 - Claude with your Pro/Max subscription through the Claude Code CLI (no API key).
+- Maestro offers 3-4 audible options over your song (live A/B) and you keep one; effects on/off (bypass keeps the value); old errors clear by themselves.
+- Maestro downloads missing sounds by itself (free packs and Freesound).
+- Import a song (MIDI or audio) as the starting point for a new one.
+- Long-loops library: loader for files, folders and zips; tempo, bars, key and hits detection; code that fits your tempo, with variations.
+- Native apps and offline installers for Mac (.pkg), Windows (Setup.exe) and Linux (.deb); AI detection and Diagnostics panel.

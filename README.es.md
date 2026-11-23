@@ -7,15 +7,17 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
+**Última versión: 0.9.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
 **Contenido:** [Empezar una canción](#empezar-una-canción) · [Cursos por género](#cursos-por-género) · [Maestro, tu profesor](#maestro-tu-profesor) · [Opciones de Maestro](#escucha-las-opciones-de-maestro-y-elige-una) ·
 [Ayuda con tu código](#ayuda-con-tu-código-y-paleta-de-código) · [Bloques y resaltado en directo](#vista-de-bloques-y-resaltado-en-directo) ·
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) · [Arreglo](#arreglo) ·
-[Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) · [Maestro descarga sonidos](#maestro-descarga-los-sonidos-que-necesita) ·
+[Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) · [Maestro descarga sonidos](#maestro-descarga-los-sonidos-que-necesita) · [Loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos) ·
 [Skills y plugins](#skills-y-plugins) · [Cómo decide Maestro](#cómo-decide-maestro-y-su-razonamiento) ·
-[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
-[Instalación](#instalación-una-sola-vez)
+[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Abrir y guardar archivos](#abrir-y-guardar-archivos-de-tidal) · [Importar una canción](#importar-una-canción-como-punto-de-partida) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
+[Novedades](#novedades-versión-a-versión) · [Instalación](#instalación-una-sola-vez)
 
 ## Qué puedes hacer
 
@@ -522,6 +524,22 @@ en la base de una canción **nueva** tuya.
   o Claude (Anthropic). Sin IA también funciona: guía con botones, explicaciones e ideas locales.
 - **macOS, Windows y Linux**: el instalador detecta tu sistema.
 
+## Novedades, versión a versión
+
+Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de versiones](https://github.com/vsalesa/tidal-studio/releases).
+
+| Versión | Novedades |
+|---|---|
+| **0.9.0** | [Biblioteca de instrumentos](#biblioteca-de-instrumentos-más-de-600-instrumentos-concretos): más de 600 instrumentos concretos con fotos, escucha previa y tus propios SoundFonts, motores de synth nuevos (Mi-UGens, Surge XT, Vital), cursos latinos que siguen tu plugin de composición con instrumentos reales, y plugins que se actualizan solos. |
+| **0.8.0** | [Biblioteca de loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos): arrastra loops, carpetas o un zip; detecta tempo, compases, tonalidad y golpes y te da código que encaja con tu canción, con variaciones. |
+| **0.7.0** | [Importar una canción](#importar-una-canción-como-punto-de-partida) (MIDI, o audio con herramientas opcionales) como punto de partida de otra nueva. |
+| **0.6.0** | [Maestro descarga los sonidos que necesita](#maestro-descarga-los-sonidos-que-necesita) de packs libres y de Freesound. |
+| **0.5.0** | [Abrir y guardar archivos de Tidal](#abrir-y-guardar-archivos-de-tidal): menú Archivo para cualquier `.tidal` / `.hs`, con diálogos nativos. |
+| **0.4.1** | [Cada pista muestra su mezcla](#pestaña-mezcla) (volumen y ecualización) en Pistas y Bloques. |
+| **0.4.0** | [Escucha las opciones de Maestro y elige una](#escucha-las-opciones-de-maestro-y-elige-una), la [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido), [efectos on/off](#vista-de-bloques-y-resaltado-en-directo) y errores viejos que se borran solos. |
+| **0.3.0** | [Una app de verdad](#una-app-de-verdad-en-tu-ordenador) para Mac, Windows y Linux; [detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico); [cómo decide Maestro y su razonamiento](#cómo-decide-maestro-y-su-razonamiento); [plugins](#skills-y-plugins). |
+| **0.2.0 y anteriores** | Wizard, lluvia de ideas, cursos por género, Bloques, Mezcla, instrumentos, biblioteca de samples, skills, versiones en GitHub y el tutorial. |
+
 ## Instalación (una sola vez)
 
 ### Lo más fácil: el instalador para Mac con todo dentro
@@ -692,6 +710,12 @@ Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architec
 - `web/doctor.js`: revisión y arreglos sin IA del panel Ayuda (`/api/fix` con IA). `web/palette.js`: bloques de la paleta.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: la pestaña Línea de tiempo. El servidor le pregunta a Tidal (`queryArc`) en su propio GHCi; `web/tpat.js` es la calculadora aproximada del navegador que se usa sin motor.
 - `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: la biblioteca de instrumentos (catálogo, descargas, importar SoundFont/SFZ, escucha previa). `supercollider/studio-instruments.scd` toca con notas los instrumentos multisample; `studio-synthlib.scd` tiene los synths incluidos; `server/engines.py` + `studio-engines.scd` instalan y cargan Mi-UGens y VSTPlugin (Surge XT, Vital); `server/photos.py` busca fotos en Wikimedia Commons.
+- `web/controls.js`: controles en el chat. `web/blocks.js` + `web/edit.js`: vista de bloques y su edición. `web/card.js`: tarjeta configuradora. `web/mixer.js`: pestaña Mezcla. `web/history.js`: deshacer e historial. `web/samples.js` + `server/samples.py`: biblioteca de samples y Freesound. `server/github.py`: versiones en GitHub.
+- `server/skills.py` + `server/plugins.py` + `web/skills.js`: skills y plugins de Maestro.
+- `server/files.py` + `web/tidalfile.js`: abrir y guardar archivos `.tidal` / `.hs` (menú Archivo). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: importar una canción (MIDI o audio).
+- `server/fetcher.py` + `web/fetchcard.js`: Maestro busca y descarga los sonidos que faltan. `web/variants.js`: las opciones de Maestro para escuchar (A/B en directo).
+- `server/loops.py` + `web/loops.js`: biblioteca de loops largos (analiza tempo, compases, tonalidad y golpes, y da el código que encaja con tu canción).
+- `server/ccdetect.py` + `server/llmdiag.py`: detección de Claude Code y panel de Diagnóstico. `web/courses.js`: cursos por género. `web/instruments.js`: instrumentos. `web/tour.js`: tutorial.
 - `web/i18n.js`: cambio de idioma. `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».
 
 Cada pista es un `dN` de Tidal (d1…d12) con su propio canal de efectos (orbit).

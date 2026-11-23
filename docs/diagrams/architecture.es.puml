@@ -3,7 +3,7 @@
 title <size:20><b>Cómo funciona Tidal Studio</b></size>
 
 actor "Tú" as you
-rectangle "<b>Navegador</b>\nweb/ (vanilla JS)\nPistas · Bloques · Mezcla · Código\nchat con Maestro" as web #fbe3db
+rectangle "<b>Navegador</b>\nweb/ (vanilla JS)\nPistas · Bloques · Mezcla · Línea de tiempo\nArreglo · Código · chat con Maestro" as web #fbe3db
 
 frame "Tu ordenador  (127.0.0.1)" {
   rectangle "<b>server/app.py</b>\nservidor web local\n(biblioteca estándar de Python)" as app
@@ -12,7 +12,11 @@ frame "Tu ordenador  (127.0.0.1)" {
   rectangle "<b>SuperCollider + SuperDirt</b>\nsupercollider/start_superdirt.scd\nsamples · sintes · ecualizador" as sc #f8ecd2
   rectangle "<b>server/llm.py</b> + assistant.py\ninstrucciones y respuestas de Maestro" as llm
   rectangle "<b>server/skills.py</b> + plugins.py\nskills/ · my-skills/ · my-plugins/" as skills
-  rectangle "<b>server/samples.py</b>\nbiblioteca samples/" as samples
+  rectangle "<b>server/samples.py</b> + fetcher.py\nbiblioteca samples/\nMaestro descarga lo que falta" as samples
+  rectangle "<b>server/loops.py</b>\nloops largos: tempo, compases,\ntonalidad, golpes" as loops
+  rectangle "<b>server/timeline.py</b>\nGHCi aparte: queryArc\npara la Línea de tiempo" as tl #dcefeb
+  rectangle "<b>server/files.py</b> + songimport.py\nabrir/guardar .tidal,\nimportar MIDI o audio" as files
+  rectangle "<b>server/ccdetect.py</b> + llmdiag.py\ndetecta Claude Code,\nDiagnóstico" as diag
   node "Altavoces" as out
 }
 
@@ -33,4 +37,9 @@ app --> samples
 samples --> sc : recarga sonidos\n(OSC /tidalstudio)
 samples ..> gh
 skills ..> gh
+app --> loops
+loops --> samples : cada sonido nuevo\nse analiza
+app --> tl : ¿dónde suena\ncada golpe?
+app --> files
+llm --> diag
 @enduml
