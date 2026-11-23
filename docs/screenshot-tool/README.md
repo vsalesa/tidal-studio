@@ -27,5 +27,6 @@ OUT=../screenshots node scenes.js studio mixer     # just some scenes
   started with a clean environment: `HOME` pointing to a folder with `.claude/settings.json` and `fake-claude` copied
   to `~/.local/bin/claude`, `provider: "claudecode"` in its `config.json`, then `BASE=http://127.0.0.1:<port> node scenes.js settings`.
 - Paths of the temporary folders are replaced with `~` before each shot.
+- `tabs.js` checks the tabs (open from disk, switch, close with unsaved changes, reload) and takes `tabs*.png`: put two `.tidal` files in `$SONGS`, then `OUT=../screenshots node tabs.js` (`L=es` for Spanish, then rename to `pestanas*.png`).
 - The Timeline, long loops, files, import, web samples and Maestro options screenshots were taken with their own
   scenes when those features shipped and are not in this script yet.

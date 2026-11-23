@@ -321,6 +321,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
     @objc func fileOpen(_ sender: Any?) { fileCommand("open") }
     @objc func fileSave(_ sender: Any?) { fileCommand("save") }
     @objc func fileSaveAs(_ sender: Any?) { fileCommand("saveas") }
+    @objc func fileNewTab(_ sender: Any?) { fileCommand("newtab") }
+    @objc func fileClose(_ sender: Any?) { fileCommand("close") }
+    @objc func fileGitHub(_ sender: Any?) { fileCommand("github") }
+    @objc func tabNext(_ sender: Any?) { fileCommand("nexttab") }
+    @objc func tabPrev(_ sender: Any?) { fileCommand("prevtab") }
 
     @objc func reloadPage(_ sender: Any?) {
         if studioURL != nil { webView.reload() }
@@ -501,7 +506,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate,
         }
         _ = add(T("File", "Archivo")) { m in
             item(m, T("New Project…", "Nuevo proyecto…"), #selector(fileNew(_:)), "", [], target: self)
+            item(m, T("New Tab", "Nueva pestaña"), #selector(fileNewTab(_:)), "t", target: self)
             item(m, T("Open…", "Abrir…"), #selector(fileOpen(_:)), "o", target: self)
+            item(m, T("Open from GitHub…", "Abrir desde GitHub…"), #selector(fileGitHub(_:)), "", [], target: self)
+            m.addItem(.separator())
+            item(m, T("Close Tab", "Cerrar pestaña"), #selector(fileClose(_:)), "w", target: self)
+            item(m, T("Show Next Tab", "Mostrar la pestaña siguiente"), #selector(tabNext(_:)), "]", [.command, .shift], target: self)
+            item(m, T("Show Previous Tab", "Mostrar la pestaña anterior"), #selector(tabPrev(_:)), "[", [.command, .shift], target: self)
             m.addItem(.separator())
             item(m, T("Save", "Guardar"), #selector(fileSave(_:)), "s", target: self)
             item(m, T("Save As…", "Guardar como…"), #selector(fileSaveAs(_:)), "s", [.command, .shift], target: self)

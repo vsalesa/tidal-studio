@@ -36,7 +36,7 @@ async function open(browser, { lang = 'en', state = null, local = {}, routes = {
       const r = await fn(body, route.request());
       if (r === undefined) return route.continue();
       if (r && r.__delay) await new Promise((ok) => setTimeout(ok, r.__delay));
-      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(r && r.__delay ? r.body : r) });
+      await route.fulfill({ status: (r && r.__status) || 200, contentType: 'application/json', body: JSON.stringify(r && r.__delay ? r.body : r) });
     });
   }
   await page.goto(BASE + path);

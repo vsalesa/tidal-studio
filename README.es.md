@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.9.1** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.11.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -16,7 +16,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 [Controles en el chat](#controles-y-tarjetas-en-el-chat) · [Mezcla](#pestaña-mezcla) · [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) · [Arreglo](#arreglo) ·
 [Deshacer y chat ordenado](#deshacer-historial-y-un-chat-ordenado) · [Instrumentos](#instrumentos) · [Biblioteca de samples](#biblioteca-de-samples) · [Maestro descarga sonidos](#maestro-descarga-los-sonidos-que-necesita) · [Loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos) ·
 [Skills y plugins](#skills-y-plugins) · [Cómo decide Maestro](#cómo-decide-maestro-y-su-razonamiento) ·
-[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Abrir y guardar archivos](#abrir-y-guardar-archivos-de-tidal) · [Importar una canción](#importar-una-canción-como-punto-de-partida) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
+[Detección de IA y Diagnóstico](#conecta-tu-ia-con-detección-automática-y-diagnóstico) · [App nativa](#una-app-de-verdad-en-tu-ordenador) · [Tutorial](#tutorial-interactivo) · [Abrir y guardar archivos](#abrir-y-guardar-archivos-de-tidal) · [Canciones en pestañas](#varias-canciones-abiertas-a-la-vez-en-pestañas) · [Importar una canción](#importar-una-canción-como-punto-de-partida) · [Generar desde mi MIDI](#genera-desde-tu-midi-en-cualquier-estilo) · [Guardar y compartir](#guardar-exportar-y-compartir) ·
 [Novedades](#novedades-versión-a-versión) · [Instalación](#instalación-una-sola-vez)
 
 ## Qué puedes hacer
@@ -76,6 +76,42 @@ descargan solos al empezar el curso.
 | **«Lo que dice la skill» en cada paso, con instrumentos reales** | |
 | ![Paso con la regla de la skill](docs/screenshots/es/curso-skill-paso.png) | |
 
+**Escucha a un baterista real tocar el estilo.** Nueve cursos (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass y lo-fi) traen una interpretación real en MIDI del [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+(Google Magenta, CC BY 4.0): bateristas profesionales grabados tocando merengue dominicano, reggaeton, bossa nova, songo
+cubano, swing, funk, disco, breakbeat y hip hop. La primera vez que pulsas **Escuchar**, el estudio descarga el paquete de
+MIDI (3 MB) y convierte cuatro compases en pistas de Tidal que conservan lo que lo hace humano: la fuerza de cada golpe
+(`# gain`) y lo que se adelanta o se atrasa (`# nudge`, en segundos), con rejilla de tresillos para el swing. El baterista
+del merengue toca el bloque de madera y las congas del curso, y el del reggaeton un bombo 808. Cada curso explica qué
+escuchar, y **Añadirlo a mi canción** pone al baterista en las pistas d9 a d12 para que silencies las tuyas y compares. El
+curso de reggaeton ahora acentúa el charles y adelanta el dembow como lo hace este baterista. Cumbia y techno aún no tienen
+MIDI con licencia libre, así que siguen con sus patrones escritos.
+
+| Los cursos con baterista real lo indican | Qué escuchar, con Escuchar y Añadirlo a mi canción |
+|---|---|
+| ![Cursos con baterista real](docs/screenshots/es/cursos-baterista-real.png) | ![Baterista real en un curso](docs/screenshots/es/curso-baterista-real.png) |
+| **El baterista en tu canción: la fuerza y el tiempo de cada golpe, en código** | |
+| ![Baterista real en la canción](docs/screenshots/es/baterista-real-en-cancion.png) | |
+
+**Estilos aprendidos de canciones reales, no solo de reglas escritas.** Con reglas de estilo escritas los cursos latinos no
+acababan de sonar bien, así que ahora el estudio también aprende de música real. `tools/learn_style.py` ha medido 31
+canciones latinas en MIDI (3 merengues, 7 salsas, 9 cumbias y 12 bossas nova, del Lakh MIDI Dataset y de PDMX) en una
+rejilla de 16 semicorcheas por compás: cuándo tocan el bajo, el piano, la guitarra y los metales, qué nota del acorde
+elige el bajo en cada sitio, qué hace cada percusión y qué progresiones se repiten. Solo se guarda esa estadística
+(`server/data/style_profiles.json`). No se copia ni se incluye ninguna canción. Maestro lee el perfil del género del curso
+(o del estilo de tu proyecto), así sus partes siguen cómo se tocan las canciones de verdad. El curso de merengue se ha
+reescrito con los datos: el bajo toca en el 1, el «y» del 2, el 3, el 4 y el «y» del 4, el piano no para de tocar
+corcheas con semicorcheas de enganche, y el grave de la tambora cae en el «y» del 2 y del 4. Los bajos de salsa, cumbia
+y bossa ya coincidían con lo que hacen las canciones. Para enseñarle un género con tus MIDI:
+`python3 tools/learn_style.py merengue ~/mis-midi/merengue/`.
+
+**Tu propio ejemplo.** Cada curso tiene **Cargar mi MIDI de ejemplo**: carga una canción del estilo que sea tuya o que hayas
+comprado, escucha cuatro compases con todos sus instrumentos, y Maestro compara cada paso con ella.
+
+| Tu ejemplo en el curso, junto al baterista real | |
+|---|---|
+| ![Tu ejemplo](docs/screenshots/es/curso-mi-ejemplo.png) | |
+
 ### Maestro, tu profesor
 
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.
@@ -112,6 +148,51 @@ canción**, cada una con un título, la idea musical que enseña y su código. S
 Funciona con todos los proveedores de IA, y también sin IA (escribe «dame opciones» y las crea con sus propias ideas y
 recetas de estilo). Apágalo con el interruptor **Opciones** arriba del chat si prefieres que Maestro aplique los cambios
 directamente.
+
+### Peticiones grandes: Maestro hace un plan y va paso a paso
+
+Pide algo grande («hazme una canción de salsa entera con piano, bajo y trompetas», «convierte la canción en jazz») y
+Maestro trabaja como en una lluvia de ideas con un productor: en lugar de componerlo todo de golpe, primero **diseña un
+plan de 3 a 6 pasos** (ritmo, bajo, armonía, melodía, efectos, estructura) y **te lo enseña antes de tocar tu
+canción**. Si le falta algo importante (estilo, ambiente…) te hace antes una pregunta.
+
+- **Revisa el plan**: quita los pasos que no quieras (×) o pulsa **Cambiar el plan…** («añade un puente, sin trompeta»)
+  y te manda otro. **Todo de golpe** se salta el plan.
+- **Empezar** hace todos los pasos seguidos; **Paso a paso** se para después de cada uno para que lo escuches y
+  **Sigas** cuando quieras. Cada paso se aplica a tu canción, se explica como cualquier otra respuesta y **se guarda en
+  cuanto termina**.
+- Mientras el plan avanza, una barra arriba del chat te dice por dónde va (2/5, el paso en el que está).
+
+![Maestro te enseña un plan antes de tocar tu canción](docs/screenshots/es/plan-propuesto.png)
+
+![El plan en marcha: paso 3 de 5 mientras los dos primeros ya suenan](docs/screenshots/es/plan-en-marcha.png)
+
+**Ya no se pierde trabajo cuando la IA tarda demasiado.** Si un paso da timeout, los pasos hechos siguen en tu canción
+(aunque cierres el estudio) y el plan se pausa en ese paso: **Reintentar el paso 3** repite solo ese, o **Saltar**.
+Y si una petición normal es demasiado grande y da timeout, Maestro te ofrece **Hazlo por pasos** para convertirla en un
+plan.
+
+![Un paso tardó demasiado: lo demás está guardado, reintenta solo ese paso](docs/screenshots/es/plan-reintentar.png)
+
+Y respuestas más rápidas:
+
+- La IA solo se corta cuando lleva 5 minutos **sin mandar nada** (`"ai_timeout"` en `config.json`), no mientras sigue
+  pensando o escribiendo una respuesta larga (antes, Claude con tu suscripción se cortaba a los 3 minutos).
+- **Maestro guarda en caché lo que ya ha cargado o encontrado**: sus instrucciones y las skills del plan son idénticas
+  en cada paso, así que Claude (con clave o con tu suscripción) y los proveedores compatibles con OpenAI las reutilizan
+  de su caché de prompts en lugar de procesarlas otra vez; el panel de Razonamiento lo dice («Reutilizo N tokens…»).
+  Las skills no se releen del disco en cada mensaje, y las búsquedas de sonidos en internet (índices de packs,
+  resultados de Freesound, tamaños de archivo) se guardan en la carpeta `cache/` un día o una semana, así un paso o una
+  sesión posterior no vuelve a buscar.
+
+Apágalo con el interruptor **Plan** arriba del chat. Los cursos por género no usan planes: ya van paso a paso.
+
+**Cancela lo que has enviado.** ¿Te lo has pensado mejor o tarda demasiado? Mientras Maestro piensa, pulsa **Cancelar**
+en su mensaje, el botón de enviar (se convierte en un cuadrado) o **Esc**. La llamada a la IA se corta al momento (con
+Claude con tu suscripción, se cierra el proceso `claude`), no se aplica ni se descarga nada y tu mensaje vuelve a la caja
+para que lo cambies. Si cancelas un paso de un plan, el plan se pausa con todos los pasos hechos guardados.
+
+![Mientras Maestro piensa: Cancelar, el botón cuadrado o Esc](docs/screenshots/es/chat-cancelar.png)
 
 ### Ayuda con tu código y paleta de código
 
@@ -434,13 +515,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.9.1; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.11.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.9.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.9.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/tidal-studio_0.9.1_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.11.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.11.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.11.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/tidal-studio_0.11.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -488,7 +569,7 @@ así puedes llevar canciones de Tidal Studio a cualquier editor de Tidal (Pulsar
   comentario (`-- tidal-studio: {…}`) recuerda el nombre, el tipo de cada pista, el solo y el master, para que al
   volver a abrirlo no se pierda nada.
 - **Archivos recientes**, un indicador de **guardado / cambios sin guardar** encima del nombre de la canción (y un
-  punto en el botón Archivo) y un aviso **¿Guardar los cambios?** antes de abrir otro archivo o proyecto.
+  punto en el botón Archivo) y un aviso **¿Guardar los cambios?** antes de cerrar un archivo con cambios.
 - Usa los diálogos de tu sistema: los paneles nativos en la app de Mac, el diálogo de archivos de Windows y
   zenity/kdialog en Linux. En un navegador normal usa el selector de archivos del navegador, o te deja escribir la
   ruta donde guardar.
@@ -498,6 +579,34 @@ así puedes llevar canciones de Tidal Studio a cualquier editor de Tidal (Pulsar
 | ![Menú Archivo](docs/screenshots/es/archivo-menu.png) | ![Aviso de guardar cambios](docs/screenshots/es/archivo-sin-guardar.png) |
 
 ![Un archivo de Pulsar abierto como pistas, con su definición let en Código extra](docs/screenshots/es/archivo-abierto.png)
+
+### Varias canciones abiertas a la vez, en pestañas
+
+Cada canción que abres tiene **su propia pestaña**, como en un navegador o un editor de código, así puedes tener abiertos
+a la vez un trabajo a medias, un `.tidal` de tu disco y una versión de GitHub, y saltar de una a otra.
+
+- **Todo se abre en una pestaña nueva**: Archivo → **Abrir archivo…** (de tu disco), **Abrir desde GitHub…**, un archivo
+  reciente, **Mis proyectos**, **Nuevo proyecto**, un curso por género o una canción importada. Tu canción actual sigue
+  abierta en su pestaña. Si abres algo que ya está abierto (el mismo archivo, la misma canción de GitHub), te lleva a su
+  pestaña.
+- **Cada pestaña guarda su canción**: pistas, código, Bloques, Mezcla, arreglo, el chat de Maestro, el historial para
+  deshacer y el archivo al que pertenece. Solo suena la pestaña de delante: al cambiar se para la canción anterior y,
+  con En vivo activado, suena la nueva.
+- **Cierra** una pestaña con su **×** (o con el botón central del ratón, o Archivo → **Cerrar archivo / Cerrar
+  pestaña**). Si su archivo tiene cambios sin guardar, la pestaña muestra un punto y antes pregunta **Guardar / No
+  guardar / Cancelar**. La canción sigue en Mis proyectos, así que cerrar una pestaña nunca pierde trabajo.
+- El icono de cada pestaña dice dónde vive la canción: una hoja si es un archivo de tu disco, una nube si es de GitHub,
+  una nota si está guardada en este navegador. Pasa el ratón por una pestaña para ver su ruta completa. El **+** del
+  final empieza una canción nueva.
+- Atajos: `Alt+1…9` salta a una pestaña y `Ctrl+Alt+←/→` a la anterior o la siguiente. En la app de Mac, `⌘T` pestaña
+  nueva, `⌘W` cerrar pestaña y `⌘⇧[` / `⌘⇧]` para moverte entre pestañas.
+- Las pestañas abiertas vuelven la próxima vez que abras el estudio.
+
+![Cuatro canciones abiertas en pestañas: dos proyectos, un archivo del disco y otro con cambios sin guardar](docs/screenshots/es/pestanas.png)
+
+| Menú Archivo: abrir del disco o de GitHub, cerrar el archivo | Cerrar una pestaña con cambios sin guardar |
+|---|---|
+| ![Menú Archivo con Abrir desde GitHub y Cerrar archivo](docs/screenshots/es/pestanas-menu-archivo.png) | ![Guardar los cambios antes de cerrar la pestaña](docs/screenshots/es/pestanas-cerrar.png) |
 
 ### Importar una canción como punto de partida
 
@@ -545,6 +654,38 @@ en la base de una canción **nueva** tuya.
 
 ![La canción importada como proyecto nuevo, con las ideas de Maestro para hacerla tuya](docs/screenshots/es/importar-estudio.png)
 
+### Genera desde tu MIDI, en cualquier estilo
+
+**Nuevo proyecto → Generar desde mi MIDI** (o **Archivo → Generar desde mi MIDI**) coge un MIDI tuyo, se queda con las
+partes que elijas y escribe el resto en el estilo que quieras. Funciona sin conexión y sin IA, y luego Maestro puede variarlo.
+
+1. **Sube tu MIDI** (expórtalo desde GarageBand, Logic, MuseScore o Ableton) y elige los compases (1-16).
+2. **Elige un estilo**: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass o lo-fi.
+3. **Elige qué te quedas**: tu **melodía** (nota por nota, con un instrumento del estilo), tus **acordes** (tocados como
+   los toca el estilo, con séptimas en jazz, bossa, funk, house y lo-fi), tu **bajo**, tu **batería** y tu **tempo**.
+   Lo que tu MIDI no tiene en ese trozo sale en gris.
+4. **Generar**: la batería sale del curso de género, el bajo y el acompañamiento usan los ritmos medidos en canciones
+   reales tocados sobre tus acordes (el bajo del merengue salta raíz-quinta y se acerca al acorde siguiente, el de la
+   salsa hace el tumbao y se adelanta al acorde siguiente…), y si no te quedas tu melodía, la nueva se escribe como
+   pregunta y respuesta: el compás 1 pregunta, el 2 contesta, el 3 repite la pregunta sobre su acorde y el 4 cierra.
+   Si no te quedas tus acordes, usa la progresión típica del estilo en tu tonalidad (en la relativa menor o mayor
+   cuando el estilo lo pide).
+5. Cada pista dice de dónde sale (**de tu MIDI**, **del estilo**, **nuevo**) y por qué. **Escucha**, prueba **Otra
+   versión** (otra melodía y otra variación del patrón) o **Cambiar estilo**, y **Usar esta versión** cuando te guste.
+   Maestro te cuenta qué ha hecho con cada pista y te ofrece **Conviértela en una canción entera** (intro, estrofa,
+   estribillo, puente y final con un plan) o **Generar otra versión**.
+
+En los cursos por género, **Hacer mi MIDI Merengue** (o el estilo del curso) hace lo mismo con tu MIDI de ejemplo.
+El resultado de importar una canción también tiene **Generar en un estilo…**.
+
+| 1. Sube tu MIDI | 2. Estilo y qué te quedas |
+|---|---|
+| ![Generar desde mi MIDI: subir](docs/screenshots/es/midi-generar-subir.png) | ![Elige un estilo y qué te quedas de tu MIDI](docs/screenshots/es/midi-generar-estilo.png) |
+| **3. Tu versión, pista a pista** | **4. En el estudio, con Maestro** |
+| ![Las pistas generadas: de tu MIDI, del estilo o nuevas, y por qué](docs/screenshots/es/midi-generar-resultado.png) | ![La canción generada en el estudio, explicada por Maestro](docs/screenshots/es/midi-generar-estudio.png) |
+| **Desde un curso de género** | |
+| ![Hacer mi MIDI Merengue en el curso](docs/screenshots/es/midi-generar-curso.png) | |
+
 ### Guardar, exportar y compartir
 
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
@@ -571,6 +712,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 | Versión | Novedades |
 |---|---|
 | **0.11.0** | [Tidal Studio se actualiza solo](#tidal-studio-se-actualiza-solo): te avisa de las versiones nuevas, descarga y comprueba el instalador de tu ordenador y lo instala con un clic. |
+| **0.10.0** | [Plan paso a paso](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso): en las peticiones grandes Maestro te enseña antes un plan y lo hace paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; un botón Cancelar (o Esc) detiene lo que has enviado; la IA solo se corta si se queda callada, y Maestro guarda en caché sus instrucciones, skills y búsquedas de sonidos. [Genera desde tu MIDI](#genera-desde-tu-midi-en-cualquier-estilo) en 11 estilos, quedándote con tu melodía, acordes, bajo o batería. [Canciones en pestañas](#varias-canciones-abiertas-a-la-vez-en-pestañas), abriendo y cerrando `.tidal` de tu disco además de GitHub. [Cursos por género](#cursos-por-género) con un baterista real para escuchar en nueve estilos y estilos latinos aprendidos de canciones reales. La [importación de audio](#importar-una-canción-como-punto-de-partida) separa los instrumentos con MSST (SCNet XL) y el bajo con Demucs. [Maestro ve lo que descargas](#maestro-descarga-los-sonidos-que-necesita) al momento: tu biblioteca se lee del disco en cada mensaje. |
 | **0.9.1** | [Ruta de Tidal Studio](#plugins): Maestro carga en cada mensaje `mc-tidal-studio`, la ruta de skills de tu plugin de composición hecha para esta app, más la skill de género que mejor encaje. |
 | **0.9.0** | [Biblioteca de instrumentos](#biblioteca-de-instrumentos-más-de-600-instrumentos-concretos): más de 600 instrumentos concretos con fotos, escucha previa y tus propios SoundFonts, motores de synth nuevos (Mi-UGens, Surge XT, Vital), cursos latinos que siguen tu plugin de composición con instrumentos reales, y plugins que se actualizan solos. |
 | **0.8.0** | [Biblioteca de loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos): arrastra loops, carpetas o un zip; detecta tempo, compases, tonalidad y golpes y te da código que encaja con tu canción, con variaciones. |
@@ -764,7 +906,7 @@ Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architec
 - `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: la biblioteca de instrumentos (catálogo, descargas, importar SoundFont/SFZ, escucha previa). `supercollider/studio-instruments.scd` toca con notas los instrumentos multisample; `studio-synthlib.scd` tiene los synths incluidos; `server/engines.py` + `studio-engines.scd` instalan y cargan Mi-UGens y VSTPlugin (Surge XT, Vital); `server/photos.py` busca fotos en Wikimedia Commons.
 - `web/controls.js`: controles en el chat. `web/blocks.js` + `web/edit.js`: vista de bloques y su edición. `web/card.js`: tarjeta configuradora. `web/mixer.js`: pestaña Mezcla. `web/history.js`: deshacer e historial. `web/samples.js` + `server/samples.py`: biblioteca de samples y Freesound. `server/github.py`: versiones en GitHub.
 - `server/skills.py` + `server/plugins.py` + `web/skills.js`: skills y plugins de Maestro.
-- `server/files.py` + `web/tidalfile.js`: abrir y guardar archivos `.tidal` / `.hs` (menú Archivo). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: importar una canción (MIDI o audio).
+- `server/files.py` + `web/tidalfile.js`: abrir y guardar archivos `.tidal` / `.hs` (menú Archivo). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: importar una canción (MIDI o audio). `server/midigen.py`: generar desde tu MIDI en un estilo (`POST /api/import/generate`); `tools/make_example_midi.py` escribe la canción de prueba `examples/little-tune.mid`.
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro busca y descarga los sonidos que faltan. `web/variants.js`: las opciones de Maestro para escuchar (A/B en directo).
 - `server/loops.py` + `web/loops.js`: biblioteca de loops largos (analiza tempo, compases, tonalidad y golpes, y da el código que encaja con tu canción).
 - `server/ccdetect.py` + `server/llmdiag.py`: detección de Claude Code y panel de Diagnóstico. `web/courses.js`: cursos por género. `web/instruments.js`: instrumentos. `web/tour.js`: tutorial.

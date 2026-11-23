@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.9.1** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.11.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -16,7 +16,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
 [Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) · [Long loops](#long-loops-a-library-that-knows-what-to-do-with-them) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
-[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Import a song](#import-a-song-as-a-starting-point) · [Save and share](#save-export-and-share) ·
+[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Songs in tabs](#several-songs-open-at-once-in-tabs) · [Import a song](#import-a-song-as-a-starting-point) · [Generate from my MIDI](#generate-from-your-midi-in-any-style) · [Save and share](#save-export-and-share) ·
 [What's new](#whats-new-version-by-version) · [Installation](#installation-once)
 
 ## What you can do
@@ -75,6 +75,41 @@ when you start the course.
 | **«What the skill says» on every step, played by real instruments** | |
 | ![Course step with the skill's rule](docs/screenshots/course-skill-step.png) | |
 
+**Hear a real drummer play the style.** Nine courses (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass and lo-fi) come with a real performance in MIDI from the [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+(Google Magenta, CC BY 4.0): professional drummers recorded playing Dominican merengue, reggaeton, bossa nova, Cuban
+songo, swing, funk, disco, breakbeat and hip hop. The first time you press **Listen** the studio downloads the MIDI pack
+(3 MB) and turns four bars into Tidal tracks that keep what makes it human: the strength of every hit (`# gain`) and how
+early or late it lands (`# nudge`, in seconds), on a triplet grid for swing. The merengue drummer plays the course's wood
+block and congas, the reggaeton one an 808 kick. Each course explains what to listen for, and **Add it to my song** puts
+the drummer on tracks d9 to d12 so you can mute yours and compare. The reggaeton course now accents its hi-hats and pushes
+its dembow the way this drummer does. Cumbia and techno have no openly licensed MIDI yet, so they keep their written patterns.
+
+| The courses that have a real drummer say so | What to listen for, with Listen and Add it to my song |
+|---|---|
+| ![Courses with a real drummer](docs/screenshots/courses-real-drummer.png) | ![Real drummer in a course](docs/screenshots/course-real-drummer.png) |
+| **The drummer in your song: every hit's strength and timing as code** | |
+| ![Real drummer in the song](docs/screenshots/real-drummer-in-song.png) | |
+
+**Styles learned from real songs, not just written rules.** Written style rules alone didn't make the Latin courses sound
+right, so the studio now also learns from real music. `tools/learn_style.py` measured 31 Latin songs in MIDI (3 merengue,
+7 salsa, 9 cumbia, 12 bossa nova, from the Lakh MIDI Dataset and PDMX) on a grid of 16 sixteenths per bar:
+when the bass, piano, guitar and horns play, which chord note the bass picks at each spot, what every percussion
+instrument does, and the chord progressions that repeat. Only these statistics are kept
+(`server/data/style_profiles.json`). No song is copied or included. Maestro reads the profile of the course's genre
+(or your project's style), so its parts follow how real songs are played. The merengue course was rewritten from the data:
+the bass plays on 1, the «and» of 2, 3, 4 and the «and» of 4, the piano never stops on eighth notes with sixteenth
+pickups, and the tambora's low tone falls on the «and» of 2 and 4. The salsa, cumbia and bossa bass lines already
+matched what the songs do. To teach it a genre from your own MIDI files:
+`python3 tools/learn_style.py merengue ~/my-midi/merengue/`.
+
+**Your own example.** Each course has **Load my example MIDI**: load a song of that style that you own or bought,
+listen to four bars with all its instruments, and Maestro compares each step with it.
+
+| Your example in the course, next to the real drummer | |
+|---|---|
+| ![Your example](docs/screenshots/course-my-example.png) | |
+
 ### Maestro, your teacher
 
 - **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.
@@ -110,6 +145,49 @@ asks you **one** question with answers to click.
 
 It works with every AI provider, and without AI too (type «give me options» and it builds them from its own ideas and
 style recipes). Turn it off with the **Options** switch at the top of the chat to have Maestro apply changes directly.
+
+### Big requests: Maestro makes a plan and goes step by step
+
+Ask for something big («make me a whole salsa song with piano, bass and trumpets», «turn the song into jazz») and
+Maestro works like a brainstorming session with a producer: instead of composing everything in one go, it first
+**designs a plan of 3 to 6 steps** (rhythm, bass, harmony, melody, effects, structure) and **shows it to you before
+touching your song**. If it's missing something important (style, mood…) it asks you one question first.
+
+- **Review the plan**: remove the steps you don't want (×), or **Change the plan…** («add a bridge, no trumpet») and it
+  sends you a new one. **All at once** skips the plan.
+- **Start** does every step in a row; **Step by step** stops after each one so you can listen and **Continue** when you
+  like. Every step is applied to your song, explained like any other answer and **saved as soon as it's done**.
+- A bar at the top of the chat shows where you are (2/5, the step it's working on) while the plan runs.
+
+![Maestro shows a plan before touching your song](docs/screenshots/plan-proposed.png)
+
+![The plan running: step 3 of 5 while the first two already play](docs/screenshots/plan-running.png)
+
+**No more lost work when the AI takes too long.** If a step times out, the steps already done stay in your song (even
+if you close the studio) and the plan pauses on that step: **Retry step 3** repeats only that one, or **Skip** it.
+And if a normal request is too big and times out, Maestro offers **Do it in steps** to turn it into a plan.
+
+![A step took too long: the rest is saved, retry only that step](docs/screenshots/plan-retry.png)
+
+Faster answers, too:
+
+- The AI is only cut off after it **stops sending anything** for 5 minutes (`"ai_timeout"` in `config.json`), not
+  while it's still thinking or writing a long answer (before, Claude with your subscription was cut at 3 minutes).
+- **Maestro caches what it already loaded or found**: its instructions and the plan's skills are identical in every
+  step, so Claude (API key or subscription) and OpenAI-compatible providers reuse them from their prompt cache instead
+  of reprocessing them; the Reasoning panel says «Reusing N tokens…». Skills are not re-read from disk on every
+  message, and sound searches on the internet (pack indexes, Freesound results, file sizes) are kept in a `cache/`
+  folder for a day or a week, so a step or a later session doesn't search again.
+
+Turn it off with the **Plan** switch at the top of the chat. Plans are not used inside genre courses, which already go
+step by step.
+
+**Cancel what you sent.** Changed your mind, or it's taking too long? While Maestro is thinking, press **Cancel** in its
+message, the send button (it turns into a square) or **Esc**. The AI call stops right away (with Claude on your
+subscription, the `claude` process is closed), nothing is applied or downloaded, and your message goes back into the box
+so you can change it. Cancelling a plan step pauses the plan with every finished step kept.
+
+![While Maestro thinks: Cancel, or the square send button, or Esc](docs/screenshots/chat-cancel.png)
 
 ### Help with your code and code palette
 
@@ -423,13 +501,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.9.1; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.11.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.9.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.9.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/tidal-studio_0.9.1_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.11.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.11.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.11.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/tidal-studio_0.11.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -475,7 +553,7 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
   mix is written as `# amp … # eqlow …` lines, muted tracks are commented out, and one comment line
   (`-- tidal-studio: {…}`) remembers the name, track types, solo and master, so reopening the file loses nothing.
 - **Recent files**, a **saved / unsaved changes** indicator above the song name (and a dot on the File button), and a
-  **Save changes?** prompt before you open another file or project.
+  **Save changes?** prompt before you close a file with changes.
 - It uses your system's own dialogs: the native panels in the Mac app, the Windows file dialog, and zenity/kdialog on
   Linux. In a plain browser it falls back to the browser's file picker, or lets you type the path to save to.
 
@@ -484,6 +562,31 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
 | ![File menu](docs/screenshots/file-menu.png) | ![Save changes prompt](docs/screenshots/file-unsaved.png) |
 
 ![A Pulsar file opened as tracks, with its let definition kept in Extra code](docs/screenshots/file-open.png)
+
+### Several songs open at once, in tabs
+
+Each song you open gets its **own tab**, like in a browser or a code editor, so you can keep a work in progress, a
+`.tidal` file from your disk and a version from GitHub open side by side and jump between them.
+
+- **Everything opens in a new tab**: File → **Open file…** (from your disk), **Open from GitHub…**, a recent file,
+  **My projects**, **New project**, a genre course or an imported song. Your current song stays open in its own tab.
+  Opening something that is already open (the same file, the same GitHub song) just takes you to its tab.
+- **Each tab keeps its own song**: tracks, code, Blocks, Mix, arrangement, Maestro's chat, undo history and the file it
+  belongs to. Only the tab in front plays: switching tabs stops the old song and, with Live on, plays the new one.
+- **Close** a tab with its **×** (or the middle mouse button, or File → **Close file / Close tab**). If its file has
+  unsaved changes, the tab shows a dot and asks **Save / Don't save / Cancel** first. The song is still kept in
+  My projects, so closing a tab never loses work.
+- Tab icons tell you where each song lives: a page for a file on your disk, a cloud for GitHub, a note for a song kept in
+  this browser. Hover a tab to see its full path. The **+** at the end starts a new song.
+- Shortcuts: `Alt+1…9` jumps to a tab and `Ctrl+Alt+←/→` to the previous or next one. In the Mac app, `⌘T` new tab,
+  `⌘W` close tab and `⌘⇧[` / `⌘⇧]` to move between tabs.
+- Your open tabs come back the next time you open the studio.
+
+![Four songs open in tabs: two projects, a file from the disk and a file with unsaved changes](docs/screenshots/tabs.png)
+
+| File menu: open from disk or GitHub, close the file | Closing a tab with unsaved changes |
+|---|---|
+| ![File menu with Open from GitHub and Close file](docs/screenshots/tabs-file-menu.png) | ![Save changes before closing the tab](docs/screenshots/tabs-close-ask.png) |
 
 ### Import a song as a starting point
 
@@ -530,6 +633,38 @@ you can move songs between Tidal Studio and any Tidal editor (Pulsar, VS Code, V
 
 ![The imported song as a new project, with Maestro's ideas to make it yours](docs/screenshots/import-studio.png)
 
+### Generate from your MIDI, in any style
+
+**New project → Generate from my MIDI** (or **File → Generate from my MIDI**) takes a MIDI of yours, keeps the parts
+you choose and writes the rest in the style you pick. It works offline, without AI, and Maestro can vary it afterwards.
+
+1. **Upload your MIDI** (export it from GarageBand, Logic, MuseScore or Ableton) and pick the bars to use (1-16).
+2. **Pick a style**: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass or lo-fi.
+3. **Choose what to keep**: your **melody** (note for note, played on one of the style's instruments), your **chords**
+   (played the way the style plays them, with sevenths in jazz, bossa, funk, house and lo-fi), your **bass** line, your
+   **drums** and your **tempo**. Parts your MIDI doesn't have in that section are greyed out.
+4. **Generate**: the drums come from the genre course, the bass and the accompaniment use the rhythms measured in real
+   songs played over your chords (the merengue bass jumps root-fifth and leads into the next chord, the salsa bass
+   plays the tumbao and anticipates the next chord…), and a new melody, if you don't keep yours, is written as
+   call and response: bar 1 asks, bar 2 answers, bar 3 repeats the question over its chord and bar 4 closes.
+   If you don't keep your chords, you get the style's typical progression in your key (relative minor or major when
+   the style needs it).
+5. Each track says where it comes from (**from your MIDI**, **style**, **new**) and why. **Listen**, try **Another
+   version** (a new melody and pattern variation) or **Change style**, and **Use this version** when you like it.
+   Maestro then lists what it did with each track and offers **Turn it into a whole song** (intro, verse, chorus,
+   bridge and ending with a plan) or **Generate another version**.
+
+In the genre courses, **Make my MIDI Merengue** (or the course's style) does the same from your example MIDI.
+The song import's result has **Generate in a style…** too.
+
+| 1. Upload your MIDI | 2. Style and what to keep |
+|---|---|
+| ![Generate from my MIDI: upload](docs/screenshots/midi-generate-upload.png) | ![Pick a style and what to keep from your MIDI](docs/screenshots/midi-generate-style.png) |
+| **3. Your version, track by track** | **4. In the studio, with Maestro** |
+| ![The generated tracks: from your MIDI, style or new, and why](docs/screenshots/midi-generate-result.png) | ![The generated song in the studio, explained by Maestro](docs/screenshots/midi-generate-studio.png) |
+| **From a genre course** | |
+| ![Make my MIDI Merengue in the course](docs/screenshots/midi-generate-course.png) | |
+
 ### Save, export and share
 
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`,
@@ -556,6 +691,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 | Version | What's new |
 |---|---|
 | **0.11.0** | [Tidal Studio updates itself](#tidal-studio-updates-itself): it tells you about new versions, downloads and verifies the installer for your computer and installs it with one click. |
+| **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. [Generate from your MIDI](#generate-from-your-midi-in-any-style) in 11 styles, keeping your melody, chords, bass or drums. [Songs in tabs](#several-songs-open-at-once-in-tabs), opening and closing `.tidal` files from your disk next to GitHub. [Genre courses](#genre-courses) with a real drummer to hear in nine styles and Latin styles learned from real songs. [Audio import](#import-a-song-as-a-starting-point) separates instruments with MSST (SCNet XL) plus Demucs for the bass. [Maestro sees new downloads](#maestro-downloads-the-sounds-it-needs) right away: your library is read from disk with every message. |
 | **0.9.1** | [Tidal Studio route](#plugins): Maestro loads `mc-tidal-studio`, the skills route of your composition plugin made for this app, with every message, plus the genre skill that best fits. |
 | **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |
 | **0.8.0** | [Long loops library](#long-loops-a-library-that-knows-what-to-do-with-them): drop loops, folders or a zip; tempo, bars, key and hits are detected and you get code that fits your song, with variations. |
@@ -752,7 +888,7 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: the Timeline tab. The server asks Tidal (`queryArc`) in its own GHCi; `web/tpat.js` is the approximate in-browser calculator used without the engine.
 - `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: the instrument library (catalog, downloads, SoundFont/SFZ import, pre-listen). `supercollider/studio-instruments.scd` plays multisampled instruments with notes; `studio-synthlib.scd` holds the built-in synths; `server/engines.py` + `studio-engines.scd` install and load Mi-UGens and VSTPlugin (Surge XT, Vital); `server/photos.py` finds photos on Wikimedia Commons.
-- `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio).
+- `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio). `server/midigen.py`: generate from your MIDI in a style (`POST /api/import/generate`); `tools/make_example_midi.py` writes the test song `examples/little-tune.mid`.
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro finds and downloads missing sounds. `web/variants.js`: Maestro's audible options (live A/B).
 - `server/loops.py` + `web/loops.js`: long-loops library (analysis of tempo, bars, key and hits, and the code that fits your song).
 - `server/ccdetect.py` + `server/llmdiag.py`: Claude Code detection and the Diagnostics panel. `web/courses.js`: genre courses. `web/instruments.js`: instruments. `web/tour.js`: tutorial.

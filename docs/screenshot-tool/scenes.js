@@ -106,6 +106,35 @@ const scenes = {
     await page.click('#btn-new'); await page.waitForTimeout(700);
     await shot(page, T(lang, 'nuevo-proyecto', 'new-project'), lang);
   },
+  // Generar desde mi MIDI: examples/little-tune.mid (python3 tools/make_example_midi.py)
+  async 'midi-generate'(b, lang) {
+    const MID = require('path').join(__dirname, '..', '..', 'examples', 'little-tune.mid');
+    const { page } = await open(b, { lang, state: sunday(lang) });
+    await page.click('#btn-file'); await page.waitForTimeout(300);
+    await page.click('#file-pop [data-f="generate"]'); await page.waitForTimeout(500);
+    await shot(page, T(lang, 'midi-generar-subir', 'midi-generate-upload'), lang);
+    await page.setInputFiles('#np-body .imp-drop input', MID); await page.waitForSelector('.gen-styles'); await page.waitForTimeout(400);
+    await page.click('.gen-styles [data-style="bossa"]'); await page.waitForTimeout(300);
+    await shot(page, T(lang, 'midi-generar-estilo', 'midi-generate-style'), lang);
+    await page.click('.wz-nav [data-a="go"]'); await page.waitForSelector('.gen-tracks'); await page.waitForTimeout(500);
+    await page.evaluate(() => { const l = document.querySelector('.gen-tracks'); l.scrollTop = l.scrollHeight; });
+    await shot(page, T(lang, 'midi-generar-resultado', 'midi-generate-result'), lang);
+    await page.click('.wz-nav [data-a="use"]'); await page.waitForTimeout(1800);
+    await shot(page, T(lang, 'midi-generar-estudio', 'midi-generate-studio'), lang);
+  },
+  async 'midi-generate-course'(b, lang) {
+    const MID = require('path').join(__dirname, '..', '..', 'examples', 'little-tune.mid');
+    const st = sunday(lang, { tracks: [], name: 'Merengue', course: { id: 'merengue', i: 1, done: [0],
+      mine: { name: 'little-tune', bpm: 110, key: 'C', chords: ['C', 'Am', 'F', 'G'], instruments: ['Melody', 'Piano', 'Bass', 'Kick', 'Snare & claps', 'Hats & cymbals'], tracks: [], reference: '' } } });
+    const { page } = await open(b, { lang, state: st, wait: 1800 });
+    await page.evaluate(() => document.querySelector('.cs-mine-box')?.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(400);
+    await shot(page, T(lang, 'midi-generar-curso', 'midi-generate-course'), lang);
+    await page.click('[data-mine="gen"]'); await page.waitForTimeout(500);
+    await page.setInputFiles('#np-body .imp-drop input', MID); await page.waitForSelector('.gen-styles'); await page.waitForTimeout(400);
+    await page.click('.wz-nav [data-a="go"]'); await page.waitForSelector('.gen-tracks'); await page.waitForTimeout(500);
+    await shot(page, T(lang, 'midi-generar-merengue', 'midi-generate-merengue'), lang);
+  },
   async wizard(b, lang) {
     const { page } = await open(b, { lang, state: sunday(lang) });
     await page.click('#btn-new'); await page.waitForTimeout(400);
@@ -260,6 +289,63 @@ const scenes = {
     await page.evaluate(() => { document.querySelector('#chat .msg.assistant:last-child details.decisions')?.removeAttribute('open'); const t = document.querySelector('#chat .msg.assistant:last-child details.trace'); if (t) { t.open = true; t.scrollIntoView({ block: 'start' }); } window.scrollTo(0, 0); });
     await page.waitForTimeout(500);
     await shot(page, T(lang, 'razonamiento', 'reasoning'), lang);
+  },
+
+  // Plan por pasos: Maestro presenta un plan, lo aprobamos y lo hace paso a paso; el paso 3 tarda demasiado
+  // (timeout) y se reintenta sin perder los dos primeros
+  async plan(b, lang) {
+    const P = {
+      titulo: T(lang, 'Noche de salsa', 'Salsa night'),
+      resumen: T(lang, 'Construimos una salsa como lo haría una orquesta: primero la clave y la percusión, luego el bajo tumbao, el montuno de piano y las trompetas encima.',
+        'We build a salsa song the way a band would: clave and percussion first, then the tumbao bass, the piano montuno and the trumpets on top.'),
+      pasos: [
+        { titulo: T(lang, 'Clave y percusión', 'Clave and percussion'), que: T(lang, 'Clave de son 3-2 con congas: el corazón de la salsa.', 'Son clave 3-2 with congas: the heartbeat of salsa.'), aspecto: 'ritmo', pistas: ['d1', 'd2'] },
+        { titulo: T(lang, 'Bajo tumbao', 'Tumbao bass'), que: T(lang, 'El bajo se adelanta al cambio de acorde: el empuje típico de la salsa.', 'The bass anticipates the chord change, the classic salsa push.'), aspecto: 'bajo', pistas: ['d3'] },
+        { titulo: T(lang, 'Montuno de piano', 'Piano montuno'), que: T(lang, 'Un patrón sincopado de piano que se repite sobre Am - D7.', 'A repeating syncopated piano pattern over Am - D7.'), aspecto: 'armonia', pistas: ['d4'] },
+        { titulo: T(lang, 'Mambo de trompetas', 'Trumpet mambo'), que: T(lang, 'Golpes cortos de trompeta que responden al piano (pregunta y respuesta).', 'Short trumpet stabs answering the piano (call and response).'), aspecto: 'melodia', pistas: ['d5'] },
+        { titulo: T(lang, 'Arreglo: intro y mambo', 'Arrangement: intro and mambo'), que: T(lang, 'Con mask, las trompetas entran a los 8 compases.', 'Mask so the trumpets come in after 8 bars.'), aspecto: 'estructura', pistas: ['d5'] }],
+    };
+    const STEPS = [
+      { mensaje: T(lang, 'Paso 1 hecho: clave de son 3-2 y congas. Fíjate en cómo la clave se repite cada compás.', 'Step 1 done: the 3-2 son clave plus congas. Listen to how the clave repeats every bar.'), cambios: { bpm: 96, pistas: [
+        { id: 'd1', nombre: 'Clave', tipo: 'percusion', codigo: 's "rm(5,16,2)" # gain 1' }, { id: 'd2', nombre: 'Congas', tipo: 'percusion', codigo: 's "~ lt ~ [mt lt]" # gain 0.9' }] },
+      explicacion: [{ fragmento: 'rm(5,16,2)', explicacion: T(lang, '5 golpes repartidos en 16 pasos: suena a clave.', '5 hits spread over 16 steps: a clave feel.') }] },
+      { mensaje: T(lang, 'Paso 2 hecho: el bajo tumbao cae justo antes del primer tiempo.', 'Step 2 done: the tumbao bass lands just before the downbeat.'), cambios: { pistas: [
+        { id: 'd3', nombre: 'Tumbao', tipo: 'bajo', codigo: 'n "~ ~ ~ a2 ~ ~ e2 ~" # s "superfm" # lpf 900' }] },
+      explicacion: [{ fragmento: '~ ~ ~ a2', explicacion: T(lang, 'El bajo espera y empuja: eso es el tumbao.', "The bass waits, then pushes: that's the tumbao.") }] },
+    ];
+    let failed = false;
+    const reply = (body) => {
+      const ps = body.session && body.session.plan_paso;
+      if (!ps) return { __delay: 500, body: { mensaje: T(lang, 'Este es mi plan para tu salsa. ¿Te parece bien o quieres cambiar algo?', "Here's my plan for your salsa. Does it look right, or do you want to change something?"), plan: P, skills: SK(lang) } };
+      if (ps.i === 2 && !failed) { failed = true; return { __delay: 4000, __status: 504, body: { error: T(lang, 'La IA tardó demasiado en responder', 'The AI took too long to answer'), timeout: true, plan_paso: true } }; }
+      return { __delay: 900, body: STEPS[ps.i] || { mensaje: 'ok' } };
+    };
+    const { page } = await open(b, { lang, state: { bpm: 120, tracks: [], chat: [], options: [], ideas: [], offline: false, step: 'libre' }, routes: { '/api/chat': reply } });
+    await page.fill('#chat-input', T(lang, 'Hazme una canción de salsa entera, con piano, bajo y trompetas', 'Make me a whole salsa song with piano, bass and trumpets')); await page.press('#chat-input', 'Enter');
+    await page.waitForSelector('.plan.propuesto'); await page.waitForTimeout(600);
+    await page.evaluate(() => { document.querySelector('#chat .msg.user:last-of-type')?.scrollIntoView({ block: 'start' }); window.scrollTo(0, 0); });
+    await shot(page, T(lang, 'plan-propuesto', 'plan-proposed'), lang);
+    await page.click('[data-pl="start"]');
+    await page.waitForSelector('.pl-step.haciendo >> nth=0'); await page.waitForFunction(() => document.querySelectorAll('.plan .pl-step.hecho').length === 2);
+    await page.waitForTimeout(1200);
+    await shot(page, T(lang, 'plan-en-marcha', 'plan-running'), lang);
+    await page.waitForSelector('.pl-step.error'); await page.waitForTimeout(500);
+    await page.evaluate(() => { document.querySelector('#chat .plan').scrollIntoView({ block: 'start' }); document.querySelector('#chat').scrollTop -= 70; window.scrollTo(0, 0); });
+    await page.waitForTimeout(300);
+    await shot(page, T(lang, 'plan-reintentar', 'plan-retry'), lang);
+  },
+
+  // Cancelar lo enviado: mientras Maestro piensa, «Cancelar» en el mensaje y el botón de enviar hecho cuadrado
+  async cancel(b, lang) {
+    const st = sunday(lang);
+    const { page, ctx } = await open(b, { lang, state: st, routes: { '/api/chat': () => ({ __delay: 20000, body: { mensaje: 'late' } }), '/api/trace': () => ({ events: [
+      { kind: 'step', text: T(lang, 'Leo tu mensaje y tu canción: 5 pistas, 124 bpm', 'Reading your message and your song: 5 tracks, 124 bpm'), t: 0.1 },
+      { kind: 'step', text: T(lang, 'Elijo skills entre 54: mc-tidal-studio · siempre, mc-style-house', 'Picking skills out of 54: mc-tidal-studio · always, mc-style-house'), t: 0.2 },
+      { kind: 'step', text: T(lang, 'Pregunto a Claude (tu suscripción)…', 'Asking Claude (your subscription)…'), t: 0.3 }], done: false, seconds: 14 }) } });
+    await page.fill('#chat-input', T(lang, 'Rehaz toda la canción en estilo drum & bass', 'Redo the whole song as drum & bass')); await page.press('#chat-input', 'Enter');
+    await page.waitForSelector('.chat-cancel'); await page.waitForTimeout(1500);
+    await shot(page, T(lang, 'chat-cancelar', 'chat-cancel'), lang);
+    await ctx.close();
   },
 
   async settings(b, lang) {

@@ -80,10 +80,18 @@ the studio only links to the new release. Log: `~/.tidal-studio/updates/install.
 To release: bump `packaging/VERSION` on `main` (see below), or run the workflow by hand with **publish**,
 or push a tag such as `v0.1.0`.
 
-The GHC + Tidal build (~15 min) is cached between runs.
+The GHC + Tidal build (~15 min) is cached between runs, on macOS, Linux and Windows.
 
 ### Automatic releases
 
 Every push to `main` that touches `packaging/` builds and tests the installer. If there is no Release yet for
 `v<packaging/VERSION>`, it is published automatically. So **to publish a new version, bump `packaging/VERSION` on
 `main`** (for example `0.1.0` → `0.2.0`). Pushes that keep the same version only build and test.
+
+**Build once.** A branch (PR) build and a release build are the same build: same scripts, no debug info,
+same ad-hoc signing, version taken from `packaging/VERSION`. So when you merge, the push to `main` first looks
+for a green branch build of the same shipped files (same git tree, ignoring `docs/`, `tests/`, `tools/`,
+`examples/` and `ROADMAP.md`) whose installers haven't expired (30 days). If it finds one, it skips the three
+build jobs and publishes those exact installers, the ones that passed the smoke tests. If not (for example,
+`main` moved on with other app changes, or you merged before the PR build went green), it builds as before.
+Tip: wait for the PR build to go green before merging.

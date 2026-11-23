@@ -1,5 +1,34 @@
 # Credits
 
+## Real drummer examples in the genre courses
+
+The courses' «real drummer» examples are performances from the
+[Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove) by Jon Gillick, Adam Roberts, Jesse Engel,
+Mark Wilson and Peter Bilski (Google Magenta, 2019), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The MIDI is not bundled: the studio downloads the dataset's MIDI pack the first time you listen, converts a few bars to
+Tidal patterns (quantized, with velocity as `gain` and timing as `nudge`) and may play them with other sounds. The app
+shows this credit under every example.
+
+| Course | Performance (file in the dataset) |
+|---|---|
+| Merengue | `drummer5/session1/9_latin-dominican-merengue_130_beat_4-4.mid` |
+| Salsa | `drummer5/session1/14_latin-brazilian-songo_112_beat_4-4.mid` |
+| Reggaeton | `drummer1/session1/79_latin-reggaeton_90_beat_4-4.mid` |
+| Bossa nova | `drummer5/session1/1_latin-brazilian-bossa_127_beat_4-4.mid` |
+| Jazz | `drummer10/session1/1_jazz-swing_124_beat_4-4.mid` |
+| Funk | `drummer7/session1/12_funk_102_beat_4-4.mid` |
+| House | `drummer1/session3/6_dance-disco_120_beat_4-4.mid` |
+| Drum & bass | `drummer1/session1/80_dance-breakbeat_170_beat_4-4.mid` |
+| Lo-fi hip hop | `drummer8/session2/10_hiphop_86_beat_4-4.mid` |
+
+## Style profiles learned from songs
+
+`server/data/style_profiles.json` holds statistics measured with `tools/learn_style.py`: rhythm grids, bass chord degrees,
+percussion patterns and chord progression counts. It contains no notes or melodies from any song. They were measured from
+MIDI files in the [Lakh MIDI Dataset](https://colinraffel.com/projects/lmd/) (Colin Raffel, CC BY 4.0) and
+[PDMX](https://zenodo.org/records/15571083) (Long, Novack, Berg-Kirkpatrick and McAuley, CC BY 4.0), plus the
+reggaeton drummer of the Groove MIDI Dataset.
+
 ## Instrument photos
 
 The instrument photos in `web/img/instruments/` come from [Wikimedia Commons](https://commons.wikimedia.org/).
