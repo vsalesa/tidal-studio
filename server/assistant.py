@@ -137,6 +137,69 @@ SAMPLES DE INTERNET (activado): si a la canción le vendría bien un sonido que 
 - Si el alumno ya tiene un sonido con ese nombre en su biblioteca, úsalo sin pedirlo otra vez."""
 
 
+PLAN_PROMPT = """
+
+MODO PLAN POR PASOS (activado; tiene prioridad sobre el modo opciones cuando choque): trabajas como en una sesión de lluvia de ideas con un productor. Si el alumno pide algo GRANDE, que toca muchas cosas a la vez (una canción entera o casi, «hazme un tema de…», 3 o más pistas nuevas o cambiadas, cambiar todo el estilo de la canción, un arreglo completo con intro/subida/drop, «mejórala entera»…), NO lo compongas todo de golpe: primero diseña un PLAN y preséntaselo para que lo apruebe o lo cambie. Así no se pierde nada, cada paso se escucha y se aprende.
+  "plan": {"titulo": "nombre corto del plan", "resumen": "1-2 frases: qué vamos a construir y por qué así", "pasos": [{"titulo": "Ritmo base de salsa", "que": "1-2 frases: qué se hará y qué se oirá al terminar este paso", "aspecto": "ritmo|tempo|bajo|armonia|melodia|instrumentos|efectos|mezcla|estructura|otro", "pistas": ["d1", "d2"]}]}
+- De 3 a 6 pasos, en el orden en que un productor lo haría (normalmente: tempo y ritmo → bajo → armonía → melodía → efectos y mezcla → estructura). Cada paso toca 1-2 pistas como mucho y se puede escuchar al acabarlo. "pistas": ids previstos (libres si son nuevas).
+- En la respuesta del plan NO incluyas "cambios", "variantes" ni "sugerencias": solo "mensaje" (1-2 frases que presenten el plan y pregunten si le parece bien o quiere cambiar algo), "plan" y "opciones" (p. ej. «Empezar», «Cambiar el plan», «Hazlo todo de golpe»).
+- Si para un buen plan te falta un dato importante (estilo, ambiente, tempo…), haz ANTES UNA sola pregunta con 3-5 "opciones" para contestar con un clic, como en una lluvia de ideas. No más de una pregunta antes del plan.
+- Si el alumno pide cambiar el plan, devuelve el "plan" entero corregido. Si pide «hazlo todo de golpe», hazlo sin plan.
+- Peticiones pequeñas (una pista, un efecto, una duda, un arreglo): responde normal, sin plan."""
+
+
+PLAN_STEP_PROMPT = """
+
+EJECUTANDO UN PLAN APROBADO (tiene prioridad sobre todo lo anterior): el alumno aprobó un plan y vamos paso a paso. Su último mensaje trae el plan, los pasos hechos y el paso que toca AHORA.
+- Haz SOLO ese paso y aplícalo directamente en "cambios" (sin "variantes", sin "plan" y sin preguntas): el alumno lo escuchará al momento y puede deshacerlo.
+- Construye sobre lo que ya suena (los pasos hechos ya están en la canción: ver ESTADO DE LA SESIÓN). No rehagas pasos anteriores salvo que haga falta para que encaje.
+- "mensaje": 1-3 frases: qué has hecho en este paso y en qué fijarse al escucharlo. "explicacion" del código nuevo como siempre. "sugerencias": como mucho 1, o ninguna. "opciones": vacío (la app ya ofrece seguir, repetir o parar)."""
+
+# El paso concreto va en el mensaje del alumno, no en el prompt de sistema: así el prompt de sistema es
+# idéntico en todos los pasos y el proveedor lo reutiliza de su caché.
+PLAN_STEP_NOTE = """PLAN APROBADO: {titulo}. {resumen}
+{lista}
+AHORA haz SOLO el paso {n} de {total}: «{paso}» ({que})."""
+
+
+def plan_on(session):
+    return (session or {}).get("plan_modo", True) is not False
+
+
+def plan_step(session):
+    ps = (session or {}).get("plan_paso")
+    return ps if isinstance(ps, dict) and isinstance(ps.get("pasos"), list) and ps.get("pasos") else None
+
+
+def plan_step_prompt(ps):
+    pasos = [p for p in ps["pasos"] if isinstance(p, dict)][:8]
+    try:
+        i = max(0, min(len(pasos) - 1, int(ps.get("i") or 0)))
+    except (TypeError, ValueError):
+        i = 0
+    marks = {"hecho": "HECHO", "saltado": "SALTADO"}
+    lista = "\n".join(f"{k + 1}. [{marks.get(p.get('estado'), 'AHORA' if k == i else 'PENDIENTE')}] {str(p.get('titulo') or '')[:120]}: {str(p.get('que') or '')[:300]}"
+                      for k, p in enumerate(pasos))
+    cur = pasos[i]
+    return PLAN_STEP_NOTE.format(titulo=str(ps.get("titulo") or "")[:120], resumen=str(ps.get("resumen") or "")[:400], lista=lista,
+                                   n=i + 1, total=len(pasos), paso=str(cur.get("titulo") or "")[:120], que=str(cur.get("que") or "")[:300])
+
+
+def parse_plan(data):
+    pl = data.get("plan")
+    if not isinstance(pl, dict):
+        return None
+    pasos = []
+    for p in (pl.get("pasos") or [])[:8]:
+        if isinstance(p, dict) and p.get("titulo"):
+            pasos.append({"titulo": str(p["titulo"])[:120], "que": str(p.get("que") or "")[:400],
+                          "aspecto": str(p.get("aspecto") or "otro")[:20],
+                          "pistas": [str(x) for x in (p.get("pistas") or []) if re.fullmatch(r"d([1-9]|1[0-2])", str(x))][:4]})
+    if len(pasos) < 2:
+        return None
+    return {"titulo": str(pl.get("titulo") or "Plan")[:120], "resumen": str(pl.get("resumen") or "")[:500], "pasos": pasos}
+
+
 def fetch_on(session):
     return (session or {}).get("descargas", True) is not False
 
@@ -146,7 +209,9 @@ def build_messages(history, session):
     La sesión actual se añade al último mensaje del usuario.
     Con session["variantes"] (por defecto sí) Maestro propone opciones para escuchar y elegir."""
     msgs = []
-    for m in history[-24:]:  # memoria corta para no gastar tokens
+    ps = plan_step(session)
+    # En un paso de un plan basta con lo último: el plan y la canción ya resumen todo lo anterior
+    for m in history[-(6 if ps else 24):]:  # memoria corta para no gastar tokens
         role = "assistant" if m.get("role") == "assistant" else "user"
         content = str(m.get("content", ""))[:4000]
         if content:
@@ -155,10 +220,20 @@ def build_messages(history, session):
         msgs.append({"role": "user", "content": "Empecemos."})
     msgs[-1] = {
         "role": "user",
-        "content": f"{msgs[-1]['content']}\n\n---\nESTADO DE LA SESIÓN:\n{session_summary(session)}",
+        "content": f"{msgs[-1]['content']}\n\n" + (plan_step_prompt(ps) + "\n\n" if ps else "")
+                   + f"---\nESTADO DE LA SESIÓN:\n{session_summary(session)}",
     }
-    system = SYSTEM_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "") + (FETCH_PROMPT if fetch_on(session) else "")
+    if ps:
+        system = SYSTEM_PROMPT + (FETCH_PROMPT if fetch_on(session) else "") + PLAN_STEP_PROMPT
+    else:
+        system = (SYSTEM_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "") + (FETCH_PROMPT if fetch_on(session) else "")
+                  + (PLAN_PROMPT if plan_on(session) else "")
+                  + (FORCE_PLAN if (session or {}).get("plan_forzar") else ""))
     return system, msgs
+
+
+FORCE_PLAN = """
+El alumno ha pedido hacerlo POR PASOS (la última vez la respuesta era demasiado grande y la IA tardó demasiado): responde SIEMPRE con un "plan" de 3 a 6 pasos, sin "cambios" ni "variantes"."""
 
 
 def variants_on(session):
@@ -247,8 +322,13 @@ def parse_reply(raw):
             variantes.append({"titulo": str(v.get("titulo") or "Opción"),
                               "descripcion": str(v.get("descripcion") or v.get("porque") or ""),
                               "concepto": str(v.get("concepto") or ""), "cambios": c})
+    plan = parse_plan(data)
+    if plan:  # con un plan no se aplica nada todavía: primero lo aprueba el alumno
+        variantes = []
+        data["cambios"] = {}
     return {
         "mensaje": str(data.get("mensaje") or ""),
+        "plan": plan,
         "variantes": variantes,
         "explicacion": _parse_explain(data.get("explicacion")),
         "reto": str(data.get("reto") or ""),

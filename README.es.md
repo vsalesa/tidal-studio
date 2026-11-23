@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.9.1** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.10.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -112,6 +112,44 @@ canción**, cada una con un título, la idea musical que enseña y su código. S
 Funciona con todos los proveedores de IA, y también sin IA (escribe «dame opciones» y las crea con sus propias ideas y
 recetas de estilo). Apágalo con el interruptor **Opciones** arriba del chat si prefieres que Maestro aplique los cambios
 directamente.
+
+### Peticiones grandes: Maestro hace un plan y va paso a paso
+
+Pide algo grande («hazme una canción de salsa entera con piano, bajo y trompetas», «convierte la canción en jazz») y
+Maestro trabaja como en una lluvia de ideas con un productor: en lugar de componerlo todo de golpe, primero **diseña un
+plan de 3 a 6 pasos** (ritmo, bajo, armonía, melodía, efectos, estructura) y **te lo enseña antes de tocar tu
+canción**. Si le falta algo importante (estilo, ambiente…) te hace antes una pregunta.
+
+- **Revisa el plan**: quita los pasos que no quieras (×) o pulsa **Cambiar el plan…** («añade un puente, sin trompeta»)
+  y te manda otro. **Todo de golpe** se salta el plan.
+- **Empezar** hace todos los pasos seguidos; **Paso a paso** se para después de cada uno para que lo escuches y
+  **Sigas** cuando quieras. Cada paso se aplica a tu canción, se explica como cualquier otra respuesta y **se guarda en
+  cuanto termina**.
+- Mientras el plan avanza, una barra arriba del chat te dice por dónde va (2/5, el paso en el que está).
+
+![Maestro te enseña un plan antes de tocar tu canción](docs/screenshots/es/plan-propuesto.png)
+
+![El plan en marcha: paso 3 de 5 mientras los dos primeros ya suenan](docs/screenshots/es/plan-en-marcha.png)
+
+**Ya no se pierde trabajo cuando la IA tarda demasiado.** Si un paso da timeout, los pasos hechos siguen en tu canción
+(aunque cierres el estudio) y el plan se pausa en ese paso: **Reintentar el paso 3** repite solo ese, o **Saltar**.
+Y si una petición normal es demasiado grande y da timeout, Maestro te ofrece **Hazlo por pasos** para convertirla en un
+plan.
+
+![Un paso tardó demasiado: lo demás está guardado, reintenta solo ese paso](docs/screenshots/es/plan-reintentar.png)
+
+Y respuestas más rápidas:
+
+- La IA solo se corta cuando lleva 5 minutos **sin mandar nada** (`"ai_timeout"` en `config.json`), no mientras sigue
+  pensando o escribiendo una respuesta larga (antes, Claude con tu suscripción se cortaba a los 3 minutos).
+- **Maestro guarda en caché lo que ya ha cargado o encontrado**: sus instrucciones y las skills del plan son idénticas
+  en cada paso, así que Claude (con clave o con tu suscripción) y los proveedores compatibles con OpenAI las reutilizan
+  de su caché de prompts en lugar de procesarlas otra vez; el panel de Razonamiento lo dice («Reutilizo N tokens…»).
+  Las skills no se releen del disco en cada mensaje, y las búsquedas de sonidos en internet (índices de packs,
+  resultados de Freesound, tamaños de archivo) se guardan en la carpeta `cache/` un día o una semana, así un paso o una
+  sesión posterior no vuelve a buscar.
+
+Apágalo con el interruptor **Plan** arriba del chat. Los cursos por género no usan planes: ya van paso a paso.
 
 ### Ayuda con tu código y paleta de código
 
@@ -434,13 +472,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.9.1; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.10.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.9.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.9.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/TidalStudio-0.9.1-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.9.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.9.1/tidal-studio_0.9.1_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.10.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/TidalStudio-0.10.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.10.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/TidalStudio-0.10.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.10.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/tidal-studio_0.10.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tutorial interactivo
 
@@ -530,6 +568,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.10.0** | [Plan paso a paso](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso): en las peticiones grandes Maestro te enseña antes un plan y lo hace paso a paso, guardando cada paso, así un timeout ya no pierde trabajo; la IA solo se corta si se queda callada, y Maestro guarda en caché sus instrucciones, skills y búsquedas de sonidos. |
 | **0.9.1** | [Ruta de Tidal Studio](#plugins): Maestro carga en cada mensaje `mc-tidal-studio`, la ruta de skills de tu plugin de composición hecha para esta app, más la skill de género que mejor encaje. |
 | **0.9.0** | [Biblioteca de instrumentos](#biblioteca-de-instrumentos-más-de-600-instrumentos-concretos): más de 600 instrumentos concretos con fotos, escucha previa y tus propios SoundFonts, motores de synth nuevos (Mi-UGens, Surge XT, Vital), cursos latinos que siguen tu plugin de composición con instrumentos reales, y plugins que se actualizan solos. |
 | **0.8.0** | [Biblioteca de loops largos](#loops-largos-una-biblioteca-que-sabe-qué-hacer-con-ellos): arrastra loops, carpetas o un zip; detecta tempo, compases, tonalidad y golpes y te da código que encaja con tu canción, con variaciones. |

@@ -142,6 +142,24 @@ def _source(folder):
     return src
 
 
+_FOLDER_CACHE = {}
+
+
+def _folder_info(folder, path):
+    """SKILL.md, lista de referencias y origen de una skill, guardados mientras no cambie la carpeta:
+    Maestro elige skills en cada mensaje y así no relee decenas de archivos cada vez."""
+    try:
+        key = (folder, os.path.getmtime(path), os.path.getmtime(folder))
+    except OSError:
+        return _read(path), _refs(folder), _source(folder)
+    hit = _FOLDER_CACHE.get(folder)
+    if hit and hit[0] == key:
+        return hit[1]
+    val = (_read(path), _refs(folder), _source(folder))
+    _FOLDER_CACHE[folder] = (key, val)
+    return val
+
+
 def scan(cfg=None):
     """Todas las skills instaladas, con su estado (activada / fijada)."""
     sk = (cfg or {}).get("skills") or {}
@@ -164,7 +182,7 @@ def scan(cfg=None):
         path = os.path.join(folder, "SKILL.md")
         if not os.path.isfile(path):
             continue
-        text = _read(path)
+        text, refs, src0 = _folder_info(folder, path)
         meta, body = _parse_frontmatter(text)
         name = re.sub(r"[^a-z0-9-]+", "-", str(meta.get("name") or entry).lower()).strip("-") or entry
         orig = name
@@ -175,7 +193,7 @@ def scan(cfg=None):
             continue
         seen.add(name)
         desc = re.sub(r"\s+", " ", str(meta.get("description") or meta.get("when_to_use") or "")).strip()
-        src = _source(folder)
+        src = dict(src0)
         if plugin and not src.get("license"):
             src = {**pluginset.source_of(plugin), **src}
         low = (name + " " + desc).lower()
@@ -187,7 +205,7 @@ def scan(cfg=None):
             "description": desc[:600],
             "keywords": _as_list(meta.get("trigger_keywords") or meta.get("triggers"))[:40] + _as_list(meta.get("tags"))[:20],
             "language": "strudel" if "strudel" in low and "tidal" not in name else "tidal",
-            "refs": _refs(folder),
+            "refs": refs,
             "chars": len(text),
             "license": src.get("license") or str(meta.get("license") or ""),
             "url": src.get("url") or "",
