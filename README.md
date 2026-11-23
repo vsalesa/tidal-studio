@@ -643,6 +643,16 @@ jtydhr88's 30-skill composition plugin, MIT) into `my-plugins/`. It is marked **
 groove, form…). It is downloaded instead of shipped in the installer because its reference files quote copyrighted
 books (see its `NOTICE`). If you remove it, it doesn't come back; untick «Always use» to make it an ordinary plugin.
 
+**Tidal Studio route.** From v1.2.0 the plugin brings `mc-tidal-studio`, a skills route written for this app
+(compose first, choose the sound second, plus Maestro's JSON, `variantes`, `descargar` and the real synths and samples).
+When an «Always use» plugin has it, Maestro loads `mc-tidal-studio` with every message **instead of** the plugin's
+generic `music-composition` index, and the guaranteed slot still goes to the genre or craft skill that best fits your
+request (for example `mc-style-latin-bachata` for «a modern bachata with R&B»). The plugin card says
+**Tidal Studio route: mc-tidal-studio** and the skill shows first with a **Tidal Studio route** tag. With an older copy
+of the plugin nothing changes: the main skill keeps loading until the plugin updates.
+
+![The Tidal Studio route in the Skills panel](docs/screenshots/skill-route.png)
+
 **Plugins stay up to date.** Every time Tidal Studio starts it asks GitHub whether each plugin you installed from a link
 has changed (the last commit that touched the plugin's folder, so a fix counts even if `version` in `plugin.json` wasn't
 bumped) and, with **Update plugins automatically at startup** on (the default), downloads the new version and tells you

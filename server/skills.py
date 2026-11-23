@@ -34,6 +34,10 @@ USER_DIR = os.path.join(ROOT, "my-skills")
 MAX_LOADED = 2          # skills cargadas enteras por respuesta
 BUDGET = 24000          # caracteres de skills que entran en el prompt
 MAX_FILE = 9000         # tope por archivo
+# Ruta propia de Tidal Studio dentro de un plugin «usar siempre» (p. ej. vsalesa/music-composition-skills
+# trae «mc-tidal-studio»): si existe, se carga en cada mensaje EN LUGAR de la skill principal del plugin,
+# que es un índice genérico; la principal sigue disponible si el mensaje encaja con ella.
+APP_ROUTES = ("mc-tidal-studio",)
 
 STOP = set("""a al algo como con cual cuando de del donde el ella en era es esa ese esta este eso
 esto ha hay la las le lo los mas me mi mis muy no nos o para pero por que quiero se si sin
@@ -194,8 +198,23 @@ def scan(cfg=None):
             "_path": path,
             "_folder": folder,
             "_body": body,
+            "_orig": orig,
         })
+    _apply_routes(out, pinned)
     return out
+
+
+def _apply_routes(skills, user_pinned):
+    """Si un plugin «usar siempre» trae la ruta de Tidal Studio, esa ruta pasa a ser la fijada."""
+    for s in skills:
+        s["route"] = False
+    for s in skills:
+        if s.get("preferred") and s["_orig"] in APP_ROUTES:
+            s["route"] = True
+            s["pinned"] = True
+            for main in skills:
+                if main["plugin"] == s["plugin"] and main["_orig"] == s["plugin"] and main["name"] not in user_pinned:
+                    main["pinned"] = False
 
 
 def public(skills):

@@ -656,6 +656,16 @@ skill principal `music-composition` en cada mensaje y siempre reserva un hueco p
 (armonía, jazz, groove, forma…). Se descarga en vez de ir dentro del instalador porque sus referencias citan libros con
 copyright (ver su `NOTICE`). Si lo quitas, no vuelve; desmarca «Usar siempre» para que sea un plugin normal.
 
+**Ruta de Tidal Studio.** Desde la v1.2.0 el plugin trae `mc-tidal-studio`, una ruta de skills escrita para esta app
+(primero componer, luego elegir el sonido, más el JSON de Maestro, `variantes`, `descargar` y los sintes y samples
+reales). Cuando un plugin con «Usar siempre» la tiene, Maestro carga `mc-tidal-studio` en cada mensaje **en lugar del**
+índice genérico `music-composition`, y el hueco reservado sigue siendo para la skill de género o de oficio que mejor
+encaje con lo que pides (por ejemplo `mc-style-latin-bachata` para «una bachata moderna con R&B»). La ficha del plugin
+dice **Ruta para Tidal Studio: mc-tidal-studio** y la skill sale la primera con la etiqueta **Ruta Tidal Studio**. Con
+una copia antigua del plugin no cambia nada: se sigue cargando la skill principal hasta que el plugin se actualiza.
+
+![La ruta de Tidal Studio en el panel de Skills](docs/screenshots/es/ruta-tidal-studio.png)
+
 **Los plugins se mantienen al día.** Cada vez que Tidal Studio arranca pregunta a GitHub si ha cambiado cada plugin que
 instalaste desde un enlace (el último commit que tocó la carpeta del plugin, así que un arreglo cuenta aunque no subas
 `version` en `plugin.json`) y, con **Actualizar los plugins solos al arrancar** activado (viene así), descarga la versión

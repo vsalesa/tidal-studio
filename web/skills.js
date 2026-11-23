@@ -37,7 +37,7 @@ export function skillsLineHTML(report) {
   return `<div class="skills-line" data-skills>${icon("skill", 13)} <span>${L("Skills", "Skills")}</span>${chips.join("")}</div>`;
 }
 
-function pluginCardHTML(p, focus) {
+function pluginCardHTML(p, focus, route = null) {
   const src = p.url ? `<a href="${esc(p.url)}" target="_blank" rel="noopener">${icon("link", 12)} ${L("origen", "source")}</a>` : "";
   const parts = [];
   if (p.skills.length) parts.push(`<span><b>${p.skills.length}</b> ${L("skills", "skills")}</span>`);
@@ -61,11 +61,12 @@ function pluginCardHTML(p, focus) {
       </header>
       <p>${esc(p.description)}</p>
       <div class="sk-meta">${parts.join("")}${p.author ? `<span>${esc(L("por ", "by ") + p.author)}</span>` : ""}${p.marketplace ? `<span>${L("marketplace", "marketplace")} ${esc(p.marketplace)}</span>` : ""}${src}</div>
+      ${route ? `<div class="pl-update ok" title="${esc(L("Una ruta de skills hecha para esta app: Maestro la carga en cada mensaje en lugar de la skill principal del plugin", "A skills route made for this app: Maestro loads it with every message instead of the plugin's main skill"))}">${icon("check", 13)} ${L("Ruta para Tidal Studio:", "Tidal Studio route:")} <b>${esc(route.name)}</b> ${L("(se carga en cada mensaje)", "(loaded with every message)")}</div>` : ""}
       ${upd}${cmds}${note}
       ${p.notice ? `<p class="pl-note">${L("Trae un aviso (NOTICE) con condiciones de uso: está en su carpeta, léelo antes de compartir su contenido.", "It ships a NOTICE with terms of use: it's in its folder, read it before sharing its content.")}</p>` : ""}
       <footer>
         <label class="toggle"><input type="checkbox" data-a="plugin-enable" ${p.enabled ? "checked" : ""}> ${L("Activo", "On")}</label>
-        <label class="toggle" title="${esc(L("Maestro carga su skill principal en cada mensaje y prefiere sus skills cuando encajan", "Maestro loads its main skill with every message and prefers its skills when they match"))}"><input type="checkbox" data-a="plugin-prefer" ${p.preferred ? "checked" : ""} ${p.enabled ? "" : "disabled"}> ${L("Usar siempre", "Always use")}</label>
+        <label class="toggle" title="${esc(L("Maestro carga en cada mensaje su ruta para Tidal Studio (o su skill principal si no la tiene) y prefiere sus skills cuando encajan", "Maestro loads its Tidal Studio route (or its main skill if it has none) with every message and prefers its skills when they match"))}"><input type="checkbox" data-a="plugin-prefer" ${p.preferred ? "checked" : ""} ${p.enabled ? "" : "disabled"}> ${L("Usar siempre", "Always use")}</label>
         <button class="sk-btn danger" data-a="plugin-remove">${icon("trash", 14)} ${L("Quitar plugin", "Remove plugin")}</button>
       </footer>
     </article>`;
@@ -109,6 +110,7 @@ export function skillsDialogHTML(list, opts = {}) {
         <b>${esc(s.name)}</b>
         <span class="sk-tag">${s.origin === "plugin" ? `${icon("plugin", 11)} ${esc(s.plugin)}` : s.origin === "user" ? L("Instalada por ti", "Installed by you") : L("Incluida", "Included")}</span>
         ${s.license ? `<span class="sk-tag lic">${esc(s.license)}</span>` : `<span class="sk-tag warn">${L("sin licencia", "no license")}</span>`}
+        ${s.route ? `<span class="sk-tag lic" title="${esc(L("Ruta de este plugin pensada para Tidal Studio: Maestro la carga en cada mensaje", "This plugin's route made for Tidal Studio: Maestro loads it with every message"))}">${L("Ruta Tidal Studio", "Tidal Studio route")}</span>` : ""}
         ${s.language === "strudel" ? `<span class="sk-tag" title="${esc(L("Escrita para Strudel (JavaScript): Maestro traduce sus ideas a Tidal", "Written for Strudel (JavaScript): Maestro translates its ideas to Tidal"))}">Strudel</span>` : ""}
       </header>
       <p>${esc(s.description)}</p>
@@ -130,9 +132,10 @@ export function skillsDialogHTML(list, opts = {}) {
   const own = list.filter((s) => s.origin !== "plugin");
   const cards = own.map(card).join("");
   const pluginBlocks = plugins.map((p) => {
-    const sk = list.filter((s) => s.plugin === p.name);
+    const sk = list.filter((s) => s.plugin === p.name).sort((a, b) => (b.route ? 1 : 0) - (a.route ? 1 : 0));
     const open = focus === p.name || sk.some((s) => s.name === focus);
-    return pluginCardHTML(p, focus) + (sk.length ? `<details class="pl-skills" ${open ? "open" : ""}><summary>${esc(L(`Skills de ${p.title} (${sk.length})`, `${p.title} skills (${sk.length})`))}</summary><div class="sk-grid">${sk.map(card).join("")}</div></details>` : "");
+    const route = p.preferred ? sk.find((s) => s.route) : null;
+    return pluginCardHTML(p, focus, route) + (sk.length ? `<details class="pl-skills" ${open ? "open" : ""}><summary>${esc(L(`Skills de ${p.title} (${sk.length})`, `${p.title} skills (${sk.length})`))}</summary><div class="sk-grid">${sk.map(card).join("")}</div></details>` : "");
   }).join("");
   return `<div class="sk-intro">
       <h2>${L("Skills de Maestro", "Maestro's skills")}</h2>
