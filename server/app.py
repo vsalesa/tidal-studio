@@ -44,6 +44,7 @@ import audioimport  # noqa: E402
 import loops  # noqa: E402
 import instlib  # noqa: E402
 import references  # noqa: E402
+import inventory  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
@@ -795,8 +796,21 @@ class Handler(SimpleHTTPRequestHandler):
                 except Exception:  # noqa: BLE001
                     sess["loops_lines"] = []
                 last = next((m.get("content", "") for m in reversed(msgs) if m.get("role") == "user"), "")
+                # Lo que hay de verdad en el ordenador, leído ahora (no la lista que la web guardó hace rato)
+                inv = None
                 try:
-                    sess["instrument_lines"] = instlib.maestro_lines(INSTLIB, last)
+                    inv = inventory.summary(LIBRARY, INSTLIB, ENGINE, synthengines.status, synthengines.vst_list)
+                    sess["inventario"] = inventory.maestro_text(inv)
+                    sess["samples"] = [{"name": x["name"], "type": x["type"], "n": x["n"]} for x in inv["samples"]]
+                    nuevos = [x["name"] for x in inv["samples"] if x["nuevo"]] + [x["id"] for x in inv["instrumentos"] if x["nuevo"]]
+                    tr.add("step", tr.L(f"Miro tu biblioteca: {len(inv['samples'])} samples y {len(inv['instrumentos'])} instrumentos"
+                                        + (f" (nuevos: {', '.join(nuevos[:6])})" if nuevos else ""),
+                                        f"Checking your library: {len(inv['samples'])} samples and {len(inv['instrumentos'])} instruments"
+                                        + (f" (new: {', '.join(nuevos[:6])})" if nuevos else "")))
+                except Exception:  # noqa: BLE001
+                    inv = None
+                try:
+                    sess["instrument_lines"] = instlib.maestro_lines(INSTLIB, last, with_mine=inv is None)
                 except Exception:  # noqa: BLE001
                     sess["instrument_lines"] = []
                 ps = plan_step(sess)

@@ -876,11 +876,12 @@ BIBLIOTECA DE INSTRUMENTOS (más de 600, al estilo de GarageBand): además de Di
 {lista}"""
 
 
-def maestro_lines(il, text, limit=24):
-    """Instrumentos descargados + los que encajan con el mensaje (para que Maestro elija bien)."""
+def maestro_lines(il, text, limit=24, with_mine=True):
+    """Instrumentos descargados + los que encajan con el mensaje (para que Maestro elija bien).
+    with_mine=False: los descargados ya van en el inventario (inventory.py), aquí solo los que encajan."""
     lines = []
     mine = [it for it in il.all_items() if it["kind"] in ("multi", "kit") and il.installed(it["id"])]
-    if mine:
+    if mine and with_mine:
         lines.append("Ya descargados: " + ", ".join(f'{it["id"]} ({it["es"]})' for it in mine[:40]))
     hits = [it for it in for_maestro(il, text, limit) if it not in mine]
     if hits:

@@ -167,6 +167,9 @@ class Engine:
         self.sclang = None
         self.superdirt_ready = False
         self.sounds, self.missing, self.sounds_rev = set(), set(), 0
+        # Sonidos descargados mientras SuperDirt arrancaba: se cargan en cuanto esté listo
+        self.pending_reloads = {}
+        self.osc_ready = False
         self.simulation = False
         self.starting = False
         # Notas que están sonando (las manda SuperDirt, ver start_superdirt.scd): para iluminar el código
@@ -225,6 +228,10 @@ class Engine:
             line = raw.decode("utf-8", errors="replace")
             if source == "sc" and ("SuperDirt: listening" in line or "SuperDirt listo" in line):
                 self.superdirt_ready = True
+                if "SuperDirt listo" in line:
+                    # Las órdenes por OSC (/tidalstudio) solo funcionan desde aquí: antes se perdían
+                    self.osc_ready = True
+                    self._flush_reloads()
             if source == "sc" and line.startswith("TIDAL_STUDIO_SOUNDS:"):
                 with self.lock:
                     self.sounds = set(line.split(":", 1)[1].split())
@@ -289,6 +296,7 @@ class Engine:
                     cmd = ["pw-jack"] + cmd
                 self._add("studio", "Arrancando SuperCollider + SuperDirt…")
                 self.superdirt_ready = False
+                self.osc_ready = False
                 with self.lock:
                     self.sounds, self.missing = set(), set()
                     self.sounds_rev += 1
@@ -313,7 +321,7 @@ class Engine:
     def sc_cmd(self, *args):
         """Manda una orden a sclang por OSC (/tidalstudio, ver start_superdirt.scd).
         sclang no lee órdenes por stdin cuando lo lanzamos así, por eso usamos OSC."""
-        if not (self.sclang and self.sclang.poll() is None and self.superdirt_ready):
+        if not (self.sclang and self.sclang.poll() is None and self.osc_ready):
             return False
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
@@ -324,11 +332,26 @@ class Engine:
             return False
 
     def reload_sample(self, folder, name):
-        """Vuelve a cargar un sonido de la biblioteca sin reiniciar SuperDirt."""
+        """Vuelve a cargar un sonido de la biblioteca sin reiniciar SuperDirt.
+        Si SuperDirt está arrancando todavía, se apunta y se carga en cuanto esté listo
+        (si no, un sonido descargado justo durante el arranque no se oía hasta reiniciar)."""
         ok = self.sc_cmd("reload", name, folder.replace("\\", "/"))
         if ok:
             self._add("studio", f"Cargando «{name}» en SuperDirt…")
+            with self.lock:
+                self.missing.discard(name)
+                self.sounds_rev += 1
+        elif self.sclang and self.sclang.poll() is None:
+            with self.lock:
+                self.pending_reloads[name] = folder
+            self._add("studio", f"«{name}» se cargará en cuanto SuperDirt termine de arrancar")
         return ok
+
+    def _flush_reloads(self):
+        with self.lock:
+            todo, self.pending_reloads = dict(self.pending_reloads), {}
+        for name, folder in todo.items():
+            self.reload_sample(folder, name)
 
     def free_sample(self, name):
         return self.sc_cmd("free", name)
@@ -356,6 +379,7 @@ class Engine:
                     proc.kill()
             setattr(self, name, None)
         self.superdirt_ready = False
+        self.osc_ready = False
 
     # ---------- evaluar código ----------
     def eval(self, code):
