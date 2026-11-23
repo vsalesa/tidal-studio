@@ -27,6 +27,7 @@ import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LET
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { planHTML, planContext, planEnabled, setPlanEnabled, newPlan, nextStep as nextPlanStep, planDone, PLAN_START, PLAN_STEPWISE, PLAN_ALL, PLAN_SPLIT, PLAN_CONTINUE, PLAN_RETRY, planBarHTML } from "./plan.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
+import { initAppUpdate } from "./appupdate.js";
 import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
@@ -4209,6 +4210,7 @@ function init() {
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };
 
   $("#btn-settings").onclick = openSettings;
+  initAppUpdate();
   $("#btn-new").onclick = openNewProject;
   $("#btn-projects").onclick = () => openProjects();
   wireFiles();

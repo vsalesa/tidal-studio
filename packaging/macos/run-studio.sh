@@ -17,6 +17,8 @@ export GHC_ENVIRONMENT="$RT/tidal.env"
 export TIDAL_SCLANG="$RT/SuperCollider.app/Contents/MacOS/sclang"
 export TIDAL_SCLANG_CONF="$RT/sclang_conf.yaml"
 export PYTHONUNBUFFERED=1
+# lets the studio find its version and install updates (server/appupdate.py)
+export TIDAL_STUDIO_RUNTIME="$RT"
 # shims/: lets GHCi run on Macs without the Xcode Command Line Tools.
 # Apps opened from the Finder get a minimal PATH and no shell profile, so add the usual places
 # where tools such as the `claude` command (Claude subscription provider) live.

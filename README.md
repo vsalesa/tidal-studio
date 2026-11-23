@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.10.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.11.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -501,13 +501,35 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.10.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.11.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.10.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/TidalStudio-0.10.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.10.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/TidalStudio-0.10.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.10.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.10.0/tidal-studio_0.10.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.11.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.11.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.11.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/tidal-studio_0.11.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+
+### Tidal Studio updates itself
+
+When a new version comes out, the app tells you: at startup and every 12 hours it checks the
+[releases on GitHub](https://github.com/vsalesa/tidal-studio/releases) and shows a card with what's new. **Update now**
+downloads the installer for your computer (the Apple Silicon `.pkg` on a Mac, `Setup.exe` on Windows, the `.deb` on
+Linux) with a progress bar and checks it against the SHA-256 that GitHub publishes. **Install and restart** closes
+Tidal Studio, runs the installer (your Mac asks for your password, Windows for permission) and opens the new version.
+Your songs, samples, plugins and settings are left alone. **Later** hides the card until tomorrow and **Skip this
+version** until the next one.
+
+| A new version is out | Downloading, with progress |
+|---|---|
+| ![Update available](docs/screenshots/app-update.png) | ![Downloading the update](docs/screenshots/app-update-download.png) |
+
+| Ready: one click installs and reopens | Settings › Updates |
+|---|---|
+| ![Ready to install, with what's new](docs/screenshots/app-update-ready.png) | ![Update settings](docs/screenshots/app-update-settings.png) |
+
+In **Settings › Updates** you see your version, can **Check for updates** by hand (on the Mac also from the menu
+**Tidal Studio › Check for Updates…**) and untick **Check for new versions automatically** so it never looks by itself.
+If you run Tidal Studio from the source folder, it only tells you about the new version: update with `git pull`.
 
 ### Interactive tutorial
 
@@ -668,6 +690,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.11.0** | [Tidal Studio updates itself](#tidal-studio-updates-itself): it tells you about new versions, downloads and verifies the installer for your computer and installs it with one click. |
 | **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. [Generate from your MIDI](#generate-from-your-midi-in-any-style) in 11 styles, keeping your melody, chords, bass or drums. [Songs in tabs](#several-songs-open-at-once-in-tabs), opening and closing `.tidal` files from your disk next to GitHub. [Genre courses](#genre-courses) with a real drummer to hear in nine styles and Latin styles learned from real songs. [Audio import](#import-a-song-as-a-starting-point) separates instruments with MSST (SCNet XL) plus Demucs for the bass. [Maestro sees new downloads](#maestro-downloads-the-sounds-it-needs) right away: your library is read from disk with every message. |
 | **0.9.1** | [Tidal Studio route](#plugins): Maestro loads `mc-tidal-studio`, the skills route of your composition plugin made for this app, with every message, plus the genre skill that best fits. |
 | **0.9.0** | [Instrument library](#instrument-library-600-specific-instruments): 600+ specific instruments with photos, pre-listen and your own SoundFonts, new synth engines (Mi-UGens, Surge XT, Vital), Latin courses that follow your composition plugin with real instruments, and plugins that update themselves. |

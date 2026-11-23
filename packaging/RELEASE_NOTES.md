@@ -1,4 +1,11 @@
-## What's new in 0.10.0 / Novedades
+## What's new in 0.11.0 / Novedades
+
+- **Tidal Studio updates itself**: at startup and every 12 hours it checks GitHub for a new version and shows a card with what's new. **Update now** downloads the installer for your computer with a progress bar and verifies it (SHA-256); **Install and restart** closes the app, installs the new version (your Mac asks for your password, Windows for permission) and opens it again. Your songs, samples, plugins and settings are left alone.
+- **Check by hand or turn it off** in Settings › Updates, and **Skip this version** if you'd rather wait. On the Mac also from **Tidal Studio › Check for Updates…**. This is the last version you install by hand.
+
+**Español:** **Tidal Studio se actualiza solo**: al arrancar y cada 12 horas mira en GitHub si hay versión nueva y te enseña una tarjeta con las novedades. **Actualizar ahora** descarga el instalador de tu ordenador con barra de progreso y lo comprueba (SHA-256); **Instalar y reiniciar** cierra la app, instala la versión nueva (el Mac te pide tu contraseña y Windows, permiso) y la vuelve a abrir. Tus canciones, samples, plugins y ajustes no se tocan. **Búscalas a mano o desactívalo** en Ajustes › Actualizaciones, y **Salta una versión** si prefieres esperar. En el Mac también desde **Tidal Studio › Buscar actualizaciones…**. Es la última versión que instalas a mano.
+
+## 0.10.0
 
 - **Generate from your MIDI, in any style**: upload a MIDI of yours, pick one of 11 styles (merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass, lo-fi) and what to keep (melody, chords, bass, drums, tempo); the studio writes the rest in that style over your chords, offline and without AI: course drums, bass and accompaniment with rhythms measured in real songs, and a new call-and-response melody if you don't keep yours. Each track says where it comes from; try another version, change style, then ask Maestro to turn it into a whole song. Also from the genre courses (Make my MIDI Merengue) and from song import.
 - **Maestro makes a plan for big requests and goes step by step**: ask for a whole song or a big change and Maestro first shows a plan of 3 to 6 steps to approve, edit or skip, then does it all in a row or step by step. Each step is applied, explained and saved as soon as it's done, with a progress bar at the top of the chat.

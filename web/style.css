@@ -1412,6 +1412,32 @@ dialog.il-dialog[open] { display: flex; }
 .chat-cancel { padding: 2px 6px; font-size: 12px; font-style: normal; margin-left: 6px; display: inline-flex; align-items: center; gap: 4px; }
 #chat-form button.is-stop { background: var(--ink); border-color: var(--ink); }
 .np-choice b.imp-time { display: inline-block; margin-top: 6px; font: 600 13px/1.4 var(--sans); color: var(--ink); }
+
+/* ---------- actualizaciones de la app (appupdate.js) ---------- */
+.upd-banner { position: fixed; left: 16px; bottom: 16px; z-index: 60; width: min(600px, calc(100vw - 32px)); padding: 12px 14px; border: 1px solid var(--teal); border-radius: var(--r); background: var(--teal-soft); box-shadow: 0 12px 32px -12px rgba(60, 40, 10, .45); font-size: 13px; }
+.upd-main { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; }
+.upd-ico { color: var(--teal); display: inline-flex; }
+.upd-text { flex: 1; min-width: 220px; display: flex; flex-direction: column; }
+.upd-text b { font-family: var(--serif); font-size: 15px; }
+.upd-text span { color: var(--ink-2); }
+.upd-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.upd-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--rule-strong); background: var(--card); cursor: pointer; text-decoration: none; color: var(--ink); white-space: nowrap; }
+.upd-btn.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+.upd-btn small { opacity: .8; }
+.upd-link { background: none; border: 0; padding: 2px 4px; color: var(--teal); text-decoration: underline; cursor: pointer; font-size: 12.5px; }
+.upd-bar { display: inline-block; width: 160px; height: 8px; border-radius: 99px; background: var(--card); border: 1px solid var(--rule); overflow: hidden; }
+.upd-bar span { display: block; height: 100%; background: var(--teal); transition: width .4s; }
+.upd-pct { font-variant-numeric: tabular-nums; color: var(--ink-2); font-size: 12.5px; }
+.upd-notes { margin: 10px 0 2px 32px; padding: 8px 12px; background: var(--card); border-radius: var(--r-sm); border: 1px solid var(--rule); max-height: 220px; overflow: auto; }
+.upd-notes ul, .upd-notes-s ul { margin: 0; padding-left: 18px; }
+.upd-notes p, .upd-notes-s p { margin: 4px 0; }
+.upd-err { margin: 6px 0 0 32px; color: var(--danger); font-size: 12.5px; }
+#upd-settings .toggle { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+#upd-settings .toggle input { width: auto; margin: 0; }
+#upd-settings .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.upd-status { margin: 6px 0; }
+.upd-notes-s { font-size: 12.5px; margin: 4px 0 8px; }
+.upd-notes-s summary { cursor: pointer; color: var(--teal); }
 /* ----- Pestañas: varias canciones abiertas ----- */
 .doc-tabs { display: flex; align-items: flex-end; gap: 2px; padding: 6px 14px 0; height: 38px; background: var(--sunk); border-bottom: 1px solid var(--rule);
   overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; }

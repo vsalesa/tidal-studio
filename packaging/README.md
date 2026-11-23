@@ -45,6 +45,26 @@ because it links against the system's Qt and audio. The menu entry runs the same
 window (`tidal-studio-window.py`, run with the system Python and `python3-gi`), or Chromium in app mode, or a small
 control window plus the browser. User data: `~/.local/share/tidal-studio`.
 
+## In-app updates
+
+`server/appupdate.py` checks `releases/latest` of this repository at startup (after 20 s) and every 12 hours (Settings ›
+Updates can turn that off), and picks the asset for the running install: `macOS-AppleSilicon.pkg` (or `-Intel.pkg`),
+`Windows-x64-Setup.exe` or `_amd64.deb`. **So keep those file names.** The download goes to `~/.tidal-studio/updates`
+and must match the asset's `size` and `digest` (SHA-256, published by GitHub). To install, the server writes a small
+script there and starts it detached (its own session on Mac/Linux; on Windows outside the launcher's job object, which
+therefore has `JOB_OBJECT_LIMIT_BREAKAWAY_OK`), then writes `TIDAL_STUDIO_QUIT_FILE`. The Mac app and the launcher
+watch that file and quit; the script waits for their PID (`TIDAL_STUDIO_SHELL_PID`) to exit, then runs:
+
+- Mac: `installer -pkg … -target /` through `osascript … with administrator privileges` (the usual password dialog),
+  then `open -a "Tidal Studio"`; if cancelled, it opens the `.pkg` in Installer.
+- Windows: `Setup.exe /SILENT /SUPPRESSMSGBOXES /NORESTART /CLOSEAPPLICATIONS` (Inno Setup asks for elevation), then
+  the launcher again.
+- Linux: `pkexec apt-get install -y <deb>`, then `tidal-studio`; without pkexec it opens the package with `xdg-open`.
+
+The shells pass `TIDAL_STUDIO_RUNTIME` (install folder, whose `VERSION` is the installed version). Run from source,
+the studio only links to the new release. Log: `~/.tidal-studio/updates/install.log`. For testing,
+`TIDAL_STUDIO_UPDATE_FEED=<release.json>` replaces the GitHub API answer (see `docs/screenshot-tool/app-update.js`).
+
 ## GitHub Action
 
 `.github/workflows/installers.yml` ("Offline installers"):

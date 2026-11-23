@@ -39,6 +39,7 @@ APP = os.path.join(DATA, "app")
 LOGDIR = os.path.join(DATA, "logs")
 LOG = os.path.join(LOGDIR, "studio.log")
 PORT_FILE = os.path.join(DATA, ".port")
+QUIT_FILE = os.path.join(DATA, ".quit-request")  # the studio writes it to close the app (to install an update)
 KEEP = {"config.json", "samples", "recordings", "my-plugins", "my-skills"}
 
 
@@ -117,6 +118,10 @@ def server_env():
         "PYTHONUNBUFFERED": "1",
         "PYTHONIOENCODING": "utf-8",
         "TIDAL_STUDIO_LANG": env.get("TIDAL_STUDIO_LANG") or ("es" if ES else "en"),
+        # updates (server/appupdate.py): where the install is, how to ask us to quit, and whom to wait for
+        "TIDAL_STUDIO_RUNTIME": RT,
+        "TIDAL_STUDIO_QUIT_FILE": QUIT_FILE,
+        "TIDAL_STUDIO_SHELL_PID": str(os.getpid()),
     })
     return env
 
@@ -151,7 +156,8 @@ def kill_on_close_job():
         k32.CreateJobObjectW.restype = wintypes.HANDLE
         job = k32.CreateJobObjectW(None, None)
         info = EXT()
-        info.Basic.LimitFlags = 0x2000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        # KILL_ON_JOB_CLOSE, plus BREAKAWAY_OK so the update installer can outlive the app
+        info.Basic.LimitFlags = 0x2000 | 0x0800
         k32.SetInformationJobObject(wintypes.HANDLE(job), 9, ctypes.byref(info), ctypes.sizeof(info))
         return job
     except Exception as e:
@@ -269,6 +275,32 @@ def log_tail(n=30):
 
 
 # ---------------------------------------------------------------- windows (the UI kind)
+def quit_requested():
+    if os.path.exists(QUIT_FILE):
+        try:
+            os.remove(QUIT_FILE)
+        except OSError:
+            pass
+        say("the studio asked to quit (update)")
+        return True
+    return False
+
+
+def wait_window(p):
+    """Waits for the window to close, or closes it when the studio asks (to install an update).
+    Returns the window's exit code, or 0 if we closed it."""
+    while p.poll() is None:
+        if quit_requested():
+            p.terminate()
+            try:
+                p.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                p.kill()
+            return 0
+        time.sleep(0.5)
+    return p.returncode
+
+
 def app_mode_browser():
     """Edge / Chrome / Chromium, which can show a page as an app window (no tabs or address bar)."""
     cands = []
@@ -291,10 +323,9 @@ def run_window(url):
         sys_py = "/usr/bin/python3"
         if os.path.exists(gtk) and os.path.exists(sys_py) and os.environ.get("DISPLAY", "") + os.environ.get("WAYLAND_DISPLAY", ""):
             env = {k: v for k, v in os.environ.items() if not k.startswith("PYTHON")}
-            r = subprocess.run([sys_py, gtk, url, T("Tidal Studio", "Tidal Studio")], env=env)
-            if r.returncode == 0:
+            if wait_window(subprocess.Popen([sys_py, gtk, url, T("Tidal Studio", "Tidal Studio")], env=env)) == 0:
                 return
-            say(f"GTK window not available (exit {r.returncode}), trying a browser in app mode")
+            say("GTK window not available, trying a browser in app mode")
     # 2) Edge / Chrome in app mode, with its own profile so this window is its own process
     exe = app_mode_browser()
     if exe:
@@ -303,7 +334,7 @@ def run_window(url):
                 "--disable-features=Translate", "--window-size=1440,920", "--autoplay-policy=no-user-gesture-required"]
         start = time.time()
         p = subprocess.Popen(args, creationflags=NO_WINDOW if WIN else 0)
-        p.wait()
+        wait_window(p)
         # if it handed the window to an already running browser, fall back to the control window
         if time.time() - start > 5:
             return
@@ -332,6 +363,13 @@ def control_window(url):
     row.pack(pady=12)
     tk.Button(row, text=T("Open again", "Volver a abrir"), command=lambda: webbrowser.open(url)).pack(side="left", padx=6)
     tk.Button(row, text=T("Stop the studio", "Parar el estudio"), command=root.destroy).pack(side="left", padx=6)
+
+    def watch():
+        if quit_requested():
+            root.destroy()
+        else:
+            root.after(700, watch)
+    root.after(700, watch)
     root.mainloop()
 
 
@@ -368,6 +406,10 @@ def main():
                                     f"Faltan los archivos del estudio en {RT}. Vuelve a ejecutar el instalador."))
         return 1
     sync_app()
+    try:
+        os.remove(QUIT_FILE)
+    except OSError:
+        pass
     srv = Server()
     srv.start()
     try:
