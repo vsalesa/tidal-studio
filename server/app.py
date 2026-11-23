@@ -42,6 +42,7 @@ import songimport  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
 import instlib  # noqa: E402
+import references  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
@@ -885,6 +886,15 @@ class Handler(SimpleHTTPRequestHandler):
                 if sk:
                     out["skills"] = skills_report(sk, raw)
                 return self._json(out)
+
+            if path == "/api/courses/reference":
+                # Un baterista real tocando el estilo del curso (Groove MIDI Dataset), convertido en pistas
+                try:
+                    bpm = data.get("bpm")
+                    return self._json(references.example(ROOT, data.get("ref") or {}, data.get("lang") or "es",
+                                                         float(bpm) if bpm else None))
+                except references.RefError as e:
+                    return self._err(e, data.get("lang") or "es")
 
             if path.startswith("/api/instruments/") or path.startswith("/api/engines/"):
                 try:

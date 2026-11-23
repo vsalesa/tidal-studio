@@ -31,6 +31,32 @@ style skills of the [music-composition plugin](https://github.com/vsalesa/music-
   varied answer; the reggaeton has a dembow fill, a short sub, chopped vocals and a subtractive break; the bossa follows
   the odd/even bar chord rule and plans a density drop.
 
+## Real drummer examples (0.10)
+
+Nine courses carry a `ref`: one performance from the [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+(Google Magenta, CC BY 4.0), real drummers recorded on an electronic kit. `server/references.py` downloads the dataset's
+MIDI pack once, takes the bars the course names and writes one Tidal track per part of the kit (kick, snare and rim,
+hi-hats, toms and cymbals, on d9 to d12). Each hit keeps its velocity as `gain` and its distance from the grid as `nudge`
+(seconds, with the shared offset of the recording removed). Swing is written on a 12-step triplet grid. `sounds` swaps
+kit pieces for the course's instruments (merengue: wood block and congas for the tambora; reggaeton: an 808 kick) and
+`slow` stretches the songo bar over two salsa bars.
+
+| Course | Example | What it teaches |
+|---|---|---|
+| Merengue | Dominican merengue, 130 BPM | the tambora on a kit: rim on the 4th, 7th and 11th sixteenth, a tom roll into the next bar |
+| Salsa | Cuban songo, 112 BPM | a kick that anticipates like the tumbao, ghost notes around the rim |
+| Reggaeton | Reggaeton, 90 BPM | off-beat hi-hat accents and a dembow about 15 ms ahead of the grid |
+| Bossa nova | Bossa nova, 127 BPM | surdo kick, rim clave that changes every bar, everything soft |
+| Jazz | Swing, 124 BPM | triplet ride feel, hi-hat foot on 2 and 4 |
+| Funk | Funk, 102 BPM | ghost notes between the backbeats, open hats on the last sixteenth |
+| House | Disco, 120 BPM | the four-on-the-floor drummers that house machines copied |
+| Drum & bass | Breakbeat, 170 BPM | a whole break played before you chop one |
+| Lo-fi | Hip hop, 86 BPM | a fixed backbeat with the kick and the timing moving around it |
+
+Cumbia and techno have no example: the dataset has no cumbia or techno, and no openly licensed MIDI for them was found.
+What the reggaeton drummer does (hi-hats loud on the «and», dembow early) was measured over all 32 bars and copied into
+the course's own dembow step. All 32 example tracks were compiled and queried with tidal-core 1.10.0.
+
 ## How the code was checked
 
 - Every track in every course (70 tracks) was compiled and evaluated with the real TidalCycles

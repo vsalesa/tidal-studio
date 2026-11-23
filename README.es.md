@@ -76,6 +76,23 @@ descargan solos al empezar el curso.
 | **«Lo que dice la skill» en cada paso, con instrumentos reales** | |
 | ![Paso con la regla de la skill](docs/screenshots/es/curso-skill-paso.png) | |
 
+**Escucha a un baterista real tocar el estilo.** Nueve cursos (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass y lo-fi) traen una interpretación real en MIDI del [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+(Google Magenta, CC BY 4.0): bateristas profesionales grabados tocando merengue dominicano, reggaeton, bossa nova, songo
+cubano, swing, funk, disco, breakbeat y hip hop. La primera vez que pulsas **Escuchar**, el estudio descarga el paquete de
+MIDI (3 MB) y convierte cuatro compases en pistas de Tidal que conservan lo que lo hace humano: la fuerza de cada golpe
+(`# gain`) y lo que se adelanta o se atrasa (`# nudge`, en segundos), con rejilla de tresillos para el swing. El baterista
+del merengue toca el bloque de madera y las congas del curso, y el del reggaeton un bombo 808. Cada curso explica qué
+escuchar, y **Añadirlo a mi canción** pone al baterista en las pistas d9 a d12 para que silencies las tuyas y compares. El
+curso de reggaeton ahora acentúa el charles y adelanta el dembow como lo hace este baterista. Cumbia y techno aún no tienen
+MIDI con licencia libre, así que siguen con sus patrones escritos.
+
+| Los cursos con baterista real lo indican | Qué escuchar, con Escuchar y Añadirlo a mi canción |
+|---|---|
+| ![Cursos con baterista real](docs/screenshots/es/cursos-baterista-real.png) | ![Baterista real en un curso](docs/screenshots/es/curso-baterista-real.png) |
+| **El baterista en tu canción: la fuerza y el tiempo de cada golpe, en código** | |
+| ![Baterista real en la canción](docs/screenshots/es/baterista-real-en-cancion.png) | |
+
 ### Maestro, tu profesor
 
 - **Maestro te guía** paso a paso: estilo, ritmo, velocidad, bajo, acordes, melodía, efectos y cuándo cambia cada cosa.

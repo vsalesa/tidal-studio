@@ -75,6 +75,22 @@ when you start the course.
 | **«What the skill says» on every step, played by real instruments** | |
 | ![Course step with the skill's rule](docs/screenshots/course-skill-step.png) | |
 
+**Hear a real drummer play the style.** Nine courses (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass and lo-fi) come with a real performance in MIDI from the [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+(Google Magenta, CC BY 4.0): professional drummers recorded playing Dominican merengue, reggaeton, bossa nova, Cuban
+songo, swing, funk, disco, breakbeat and hip hop. The first time you press **Listen** the studio downloads the MIDI pack
+(3 MB) and turns four bars into Tidal tracks that keep what makes it human: the strength of every hit (`# gain`) and how
+early or late it lands (`# nudge`, in seconds), on a triplet grid for swing. The merengue drummer plays the course's wood
+block and congas, the reggaeton one an 808 kick. Each course explains what to listen for, and **Add it to my song** puts
+the drummer on tracks d9 to d12 so you can mute yours and compare. The reggaeton course now accents its hi-hats and pushes
+its dembow the way this drummer does. Cumbia and techno have no openly licensed MIDI yet, so they keep their written patterns.
+
+| The courses that have a real drummer say so | What to listen for, with Listen and Add it to my song |
+|---|---|
+| ![Courses with a real drummer](docs/screenshots/courses-real-drummer.png) | ![Real drummer in a course](docs/screenshots/course-real-drummer.png) |
+| **The drummer in your song: every hit's strength and timing as code** | |
+| ![Real drummer in the song](docs/screenshots/real-drummer-in-song.png) | |
+
 ### Maestro, your teacher
 
 - **Maestro guides you** step by step: style, beat, tempo, bass, chords, melody, effects, and when each thing changes.

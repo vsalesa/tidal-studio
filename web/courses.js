@@ -11,6 +11,10 @@ const P = (fragmento, es, en) => ({ fragmento, explicacion: L(es, en) });
 const S = (label, url) => ({ label, url });
 // Los cursos latinos se basan en una skill del plugin music-composition (se carga sola al preguntar a Maestro)
 const PLUGIN = "https://github.com/vsalesa/music-composition-skills/tree/main/plugins/music-composition/skills/";
+// Un baterista real tocando el estilo (Groove MIDI Dataset de Google Magenta, CC BY 4.0). El estudio baja el MIDI
+// y lo convierte en pistas que conservan la fuerza y el tiempo de cada golpe. sounds cambia los sonidos de la batería
+// por los del curso; slow estira el compás cuando el tempo del curso cuenta distinto.
+const GMD = (file, start, style, note, extra = {}) => ({ file, start, bars: 4, style, note, ...extra });
 const SK = (name) => ({ label: L(`Skill del plugin · ${name}`, `Plugin skill · ${name}`), url: PLUGIN + name, skill: true });
 
 // Explicaciones comunes de los pasos de arreglo y mezcla
@@ -37,6 +41,10 @@ export const COURSES = [
     blurb: L("El ritmo nacional dominicano, versión orquesta: la güira que no para, la tambora que responde, un bajo que se adelanta y metales que se contestan. A 140 BPM.",
       "The Dominican national rhythm, orchestra style: a güira that never stops, a tambora that answers, a bass that jumps ahead and horns that talk to each other. At 140 BPM."),
     learn: [L("Güira y tambora", "Güira and tambora"), L("Bajo con aproximaciones", "Bass with approach notes"), L("Pregunta y respuesta de metales", "Horn call and response")],
+    ref: GMD("drummer5/session1/9_latin-dominican-merengue_130_beat_4-4.mid", 8, L("Merengue dominicano · 130 BPM", "Dominican merengue · 130 BPM"),
+      L("Así lo toca un baterista: traduce la tambora a la batería. El aro (aquí el bloque de madera del curso) cae en la 4ª, 7ª y 11ª semicorchea, al final del primer compás hay un redoble de toms (aquí congas) que cae con fuerza en el 1 del siguiente, el bombo va suave en los cuatro tiempos y el charles de pie hace de güira en los contratiempos. Compara con tu tambora: la suya respira en frases de dos compases.",
+        "This is how a drummer plays it: they translate the tambora to the kit. The rim (here the course's wood block) hits the 4th, 7th and 11th sixteenth, at the end of the first bar a tom roll (here congas) lands hard on the 1 of the next, the kick stays soft on all four beats and the hi-hat pedal plays the güira's off-beats. Compare with your tambora: theirs breathes in two-bar phrases."),
+      { sounds: { snare: "woodblock_vcsl:6", stick: "woodblock_vcsl:7", tomh: "congas:6", tomm: "congas:22", toml: "congas:23" } }),
     sources: [SK("mc-style-latin-merengue"), S("Wikipedia · Merengue music", "https://en.wikipedia.org/wiki/Merengue_music"), S("Wikipedia · Güira", "https://en.wikipedia.org/wiki/G%C3%BCira"),
       S("Wikipedia · Tambora (Dominican drum)", "https://en.wikipedia.org/wiki/Tambora_(Dominican_drum)"),
       S("Clark College · Latin percussion clinic (PDF)", "https://www.clark.edu/about/arts-events/music/jazz_festival/documents/latinpercussionclinicfernandez2020.pdf")],
@@ -133,6 +141,10 @@ export const COURSES = [
     blurb: L("Todo gira alrededor de la clave. Aprende la clave 2-3, el tumbao de congas y bajo, el martillo del bongó, el guajeo de piano, el coro y la moña de trombones.",
       "Everything revolves around the clave. Learn the 2-3 clave, the conga and bass tumbao, the bongo martillo, the piano guajeo, the coro and the trombone moña."),
     learn: [L("Clave 2-3", "2-3 clave"), L("Tumbao y guajeo", "Tumbao and guajeo"), L("Coro y moña", "Coro and moña")],
+    ref: GMD("drummer5/session1/14_latin-brazilian-songo_112_beat_4-4.mid", 8, L("Songo cubano · 112 BPM", "Cuban songo · 112 BPM"),
+      L("El songo es el ritmo de batería que creó Changuito en Los Van Van: así toca un baterista la salsa cubana moderna. El bombo nunca marca el 1, se anticipa como el bajo tumbao; la caja hace notas fantasma muy suaves alrededor de los golpes de aro, y el charles lleva el pulso. Aquí cada compás del baterista ocupa dos de tu salsa.",
+        "Songo is the drum-kit rhythm Changuito created in Los Van Van: it's how a drummer plays modern Cuban salsa. The kick never marks the 1, it anticipates like the tumbao bass; the snare plays very soft ghost notes around the rim hits, and the hi-hat keeps the pulse. Here each of the drummer's bars takes two of your salsa bars."),
+      { slow: 2, bars: 2 }),
     sources: [SK("mc-style-latin-salsa"), S("Wikipedia · Clave (rhythm)", "https://en.wikipedia.org/wiki/Clave_(rhythm)"), S("Wikipedia · Tumbao", "https://en.wikipedia.org/wiki/Tumbao"),
       S("Wikipedia · Guajeo", "https://en.wikipedia.org/wiki/Guajeo"), S("Smithsonian Folkways", "https://folkways.si.edu/")],
     steps: [
@@ -330,6 +342,10 @@ export const COURSES = [
     blurb: L("Nació del reggae en español de Panamá y del underground de Puerto Rico. Construye un dembow con variaciones, un bajo que no choca con el bombo, un gancho de guitarra y un break que hace que la vuelta reviente.",
       "Born from Panama's reggae en español and Puerto Rico's underground. Build a dembow with variations, a bass that doesn't clash with the kick, a guitar hook and a break that makes the return explode."),
     learn: [L("Dembow con variaciones", "Dembow with variations"), L("Sub que no choca", "A sub that doesn't clash"), L("Break y vuelta", "Break and return")],
+    ref: GMD("drummer1/session1/79_latin-reggaeton_90_beat_4-4.mid", 8, L("Reggaeton · 90 BPM", "Reggaeton · 90 BPM"),
+      L("El dembow tocado por una persona: el aro cae en la última semicorchea del 1 y en el «y» del 2, igual en la segunda mitad, y a veces añade uno más. Fíjate en dos detalles que el curso ha copiado de aquí: el charles acentúa los contratiempos (el «y»), no los tiempos, y los golpes del dembow llegan unos 15 ms antes de la rejilla. Por eso empuja.",
+        "The dembow played by a person: the rim lands on the last sixteenth of beat 1 and on the «and» of 2, the same in the second half, and sometimes adds one more. Notice two details the course copied from here: the hi-hat accents the off-beats (the «and»), not the beats, and the dembow hits arrive about 15 ms ahead of the grid. That's why it pushes."),
+      { sounds: { kick: "808bd:3" } }),
     sources: [SK("mc-style-latin-reggaeton"), S("Wikipedia · Reggaeton", "https://en.wikipedia.org/wiki/Reggaeton"), S("Wikipedia · Dembow", "https://en.wikipedia.org/wiki/Dembow"),
       S("Wikipedia · Tresillo", "https://en.wikipedia.org/wiki/Tresillo_(rhythm)")],
     steps: [
@@ -349,11 +365,12 @@ export const COURSES = [
         rule: L("El dembow es una familia de bucles, no un patrón inmutable. Lo que importa son las microvariaciones por compás que decide el productor, no apilar capas cada 4 tiempos.",
           "Dembow is a family of loops, not one fixed pattern. What matters are the bar-by-bar micro-variations the producer chooses, not stacking layers every 4 beats."),
         listen: L("Escucha el compás 4: el último tiempo es un redoble de 4 golpes.", "Listen to bar 4: the last beat is a 4-hit roll."),
-        tracks: [T("d2", "Caja dembow", "Dembow snare", "percusion", 's "[~ ~ ~ sn] [~ ~ sn ~] [~ ~ ~ sn] <[~ ~ sn ~] [~ ~ sn ~] [~ ~ sn ~] [sn sn sn sn]>" # gain 0.9'),
-          T("d3", "Hi-hats", "Hi-hats", "percusion", 's "hh*8" # gain "[0.8 0.55]*4" # pan 0.6')],
+        tracks: [T("d2", "Caja dembow", "Dembow snare", "percusion", 's "[~ ~ ~ sn] [~ ~ sn ~] [~ ~ ~ sn] <[~ ~ sn ~] [~ ~ sn ~] [~ ~ sn ~] [sn sn sn sn]>" # gain 0.9 # nudge (-0.015)'),
+          T("d3", "Hi-hats", "Hi-hats", "percusion", 's "hh*8" # gain "[0.55 0.8]*4" # pan 0.6')],
         parts: [P("[~ ~ ~ sn] [~ ~ sn ~]", "Cada grupo es un tiempo dividido en 4. Caja en la cuarta semicorchea del 1 y en la tercera del 2.", "Each group is one beat split into 4. Snare on the 4th sixteenth of beat 1 and the 3rd of beat 2."),
           P("<[~ ~ sn ~] … [sn sn sn sn]>", "El último tiempo cambia según el compás: tres veces normal y la cuarta un redoble.", "The last beat changes with the bar: normal three times and a roll the fourth time."),
-          P('s "hh*8"', "Hi-hats en corcheas, una fuerte y una suave.", "Hi-hats in eighth notes, one loud, one soft.")],
+          P("# nudge (-0.015)", "Adelanta la caja 15 milésimas de segundo. Lo hemos medido en un baterista real tocando reggaeton (el ejemplo de este curso): el dembow llega un pelín antes de la rejilla, y por eso empuja.", "Moves the snare 15 milliseconds earlier. We measured it on a real drummer playing reggaeton (this course's example): the dembow arrives a hair ahead of the grid, and that's why it pushes."),
+          P('s "hh*8" # gain "[0.55 0.8]*4"', "Hi-hats en corcheas: suave en el tiempo y fuerte en el «y». Así acentúa el baterista del ejemplo, y hace que el ritmo rebote en vez de marchar.", "Hi-hats in eighth notes: soft on the beat and loud on the «and». That's how the example's drummer accents, and it makes the groove bounce instead of march.")],
         try: L("Haz que el redoble sea de tresillo: cambia [sn sn sn sn] por [sn sn sn].", "Make the roll a triplet: change [sn sn sn sn] to [sn sn sn].") },
       { t: L("Sub 808 en tresillo (sin chocar)", "808 sub in tresillo (without clashing)"),
         why: L("El bajo toca en las corcheas 1, 4 y 7 (el tresillo 3+3+2) con un sub muy grave. Como el bombo también suena en el 1 y el 4, las notas del sub son cortas: así los dos graves no se emborronan.",
@@ -426,6 +443,9 @@ export const COURSES = [
     blurb: L("Samba susurrada: el ritmo de la samba tocado suave e íntimo, con acordes de jazz. Aprende la batida de guitarra, la regla del acorde que se adelanta y cómo dejar espacio.",
       "Whispered samba: samba's rhythm played softly and intimately, with jazz chords. Learn the guitar batida, the early-chord rule and how to leave space."),
     learn: [L("Batida de guitarra", "Guitar batida"), L("El acorde que se adelanta", "The early chord"), L("Bajar la densidad", "Dropping the density")],
+    ref: GMD("drummer5/session1/1_latin-brazilian-bossa_127_beat_4-4.mid", 4, L("Bossa nova · 127 BPM", "Bossa nova · 127 BPM"),
+      L("Bossa en la batería: el bombo hace de surdo (1, el «y» del 2, 3 y el «y» del 4), el aro toca un patrón de clave que cambia cada compás y el charles susurra corcheas. Mira los valores de gain: casi todo va por debajo de 0.8. La bossa se toca casi en voz baja.",
+        "Bossa on the drum kit: the kick plays the surdo (1, the «and» of 2, 3 and the «and» of 4), the rim plays a clave pattern that changes every bar and the hi-hat whispers eighth notes. Look at the gain values: almost everything stays under 0.8. Bossa is played almost in a whisper.")),
     sources: [SK("mc-style-latin-bossa-mpb"), S("Wikipedia · Bossa nova", "https://en.wikipedia.org/wiki/Bossa_nova"), S("Wikipedia · Surdo", "https://en.wikipedia.org/wiki/Surdo"),
       S("Wikipedia · João Gilberto", "https://en.wikipedia.org/wiki/Jo%C3%A3o_Gilberto")],
     steps: [
@@ -506,6 +526,10 @@ export const COURSES = [
     blurb: L("El swing en tresillos: plato ride, bajo caminante, piano con el ritmo Charleston y un tema de trompeta con sordina.",
       "Swing in triplets: ride cymbal, walking bass, piano with the Charleston rhythm and a muted trumpet theme."),
     learn: [L("Swing", "Swing"), L("Walking bass", "Walking bass"), L("ii–V–I", "ii–V–I")],
+    ref: GMD("drummer10/session1/1_jazz-swing_124_beat_4-4.mid", 8, L("Swing · 124 BPM", "Swing · 124 BPM"),
+      L("Swing de verdad: la rejilla aquí tiene 12 pasos por compás (tresillos), no 16, porque el «ding, ding-ga ding» no cae en semicorcheas. El charles se cierra con el pie en el 2 y el 4 y el bombo casi no toca. Compara con tu ride: el baterista no toca dos compases iguales.",
+        "Real swing: the grid here has 12 steps per bar (triplets), not 16, because the «ding, ding-ga ding» doesn't land on sixteenths. The hi-hat closes with the foot on 2 and 4 and the kick barely plays. Compare with your ride: the drummer never plays two bars the same."),
+      { steps: 12 }),
     sources: [S("Wikipedia · Swing (jazz performance style)", "https://en.wikipedia.org/wiki/Swing_(jazz_performance_style)"), S("Wikipedia · Walking bass", "https://en.wikipedia.org/wiki/Walking_bass"),
       S("Wikipedia · ii–V–I progression", "https://en.wikipedia.org/wiki/Ii%E2%80%93V%E2%80%93I_progression")],
     steps: [
@@ -575,6 +599,9 @@ export const COURSES = [
     blurb: L("Todo en semicorcheas: caja con notas fantasma, un bajo con saltos de octava, guitarra rasgueada y golpes de metales.",
       "Everything in sixteenths: snare with ghost notes, an octave-jumping bass, scratchy guitar and horn stabs."),
     learn: [L("Notas fantasma", "Ghost notes"), L("Semicorcheas", "Sixteenth notes"), L("Vamp de dos acordes", "Two-chord vamp")],
+    ref: GMD("drummer7/session1/12_funk_102_beat_4-4.mid", 4, L("Funk · 102 BPM", "Funk · 102 BPM"),
+      L("Funk tocado: la caja está llena de notas fantasma (mira los gain de 0.5 a 0.7 entre los golpes fuertes del 2 y el 4) y el charles se abre en la última semicorchea de algunos tiempos. Sin esos fantasmas el funk suena a marcha.",
+        "Played funk: the snare is full of ghost notes (look at the 0.5 to 0.7 gains between the strong hits on 2 and 4) and the hi-hat opens on the last sixteenth of some beats. Without those ghosts funk sounds like a march.")),
     sources: [S("Wikipedia · Funk", "https://en.wikipedia.org/wiki/Funk"), S("Wikipedia · Ghost note", "https://en.wikipedia.org/wiki/Ghost_note")],
     steps: [
       { t: L("Bombo sincopado", "Syncopated kick"),
@@ -642,6 +669,9 @@ export const COURSES = [
     blurb: L("Four-on-the-floor, palmas, hi-hat abierto a contratiempo, bajo saltarín, acordes de piano y un arpegio con filtro que se abre.",
       "Four-on-the-floor, claps, off-beat open hi-hat, bouncy bass, piano chords and an arpeggio with an opening filter."),
     learn: [L("Four-on-the-floor", "Four-on-the-floor"), L("Arpegios", "Arpeggios"), L("Modulación de filtro", "Filter modulation")],
+    ref: GMD("drummer1/session3/6_dance-disco_120_beat_4-4.mid", 8, L("Disco · 120 BPM", "Disco · 120 BPM"),
+      L("El house nació copiando a los baterías de la música disco. Aquí tienes uno: bombo en los cuatro tiempos, caja en el 2 y el 4 y un charles que corre en semicorcheas. Las cajas de ritmos del house hicieron esto mismo, pero sin las pequeñas diferencias de fuerza.",
+        "House was born copying disco drummers. Here's one: kick on all four beats, snare on 2 and 4 and a hi-hat running in sixteenths. House drum machines did exactly this, minus the small differences in strength.")),
     sources: [S("Wikipedia · House music", "https://en.wikipedia.org/wiki/House_music"),
       S("Production Music Live · House drum patterns", "https://www.productionmusiclive.com/blogs/news/how-to-make-house-drum-patterns-beginners")],
     steps: [
@@ -786,6 +816,9 @@ export const COURSES = [
     blurb: L("174 BPM: el «two-step», un break troceado al azar, bajo largo, pad y un piano «liquid» con eco.",
       "174 BPM: the «two-step», a randomly chopped break, a long bass, a pad and a «liquid» piano with echo."),
     learn: [L("Two-step", "Two-step"), L("Breakbeat", "Breakbeat"), L("Aleatoriedad", "Randomness")],
+    ref: GMD("drummer1/session1/80_dance-breakbeat_170_beat_4-4.mid", 8, L("Breakbeat · 170 BPM", "Breakbeat · 170 BPM"),
+      L("Un breakbeat tocado a 170: bombo y caja desplazados, como en los breaks que el drum & bass trocea. Antes de cortar el «amencutup» del curso, escucha cómo suena un break entero tocado por una persona.",
+        "A breakbeat played at 170: shifted kick and snare, like the breaks drum & bass chops up. Before you slice the course's «amencutup», hear what a whole break sounds like played by a person.")),
     sources: [S("Native Instruments · Drum and bass", "https://www.native-instruments.com/en/blogs/blog/drum-and-bass"),
       S("MusicRadar · Jungle and DnB grooves", "https://www.musicradar.com/how-to/how-to-program-6-different-jungle-and-drum-n-bass-grooves"),
       S("EDMProd · How to make drum & bass", "https://www.edmprod.com/how-to-make-drum-and-bass/")],
@@ -854,6 +887,9 @@ export const COURSES = [
     blurb: L("Batería boom-bap perezosa con swing, acordes de piano jazzeros, bajo suave, melodía que aparece y desaparece y un sonido de cinta vieja.",
       "Lazy swung boom-bap drums, jazzy piano chords, a soft bass, a melody that comes and goes and an old-tape sound."),
     learn: [L("Swing", "Swing"), L("Boom-bap", "Boom-bap"), L("Variación aleatoria", "Random variation")],
+    ref: GMD("drummer8/session2/10_hiphop_86_beat_4-4.mid", 8, L("Hip hop · 86 BPM", "Hip hop · 86 BPM"),
+      L("Hip hop tocado por una persona: la caja muy fija en el 2 y el 4, el bombo bailando a su alrededor y cada golpe un poco desplazado de la rejilla. El lo-fi intenta imitar esta sensación con swing y filtros.",
+        "Hip hop played by a person: the snare locked on 2 and 4, the kick dancing around it and every hit slightly off the grid. Lo-fi tries to imitate this feel with swing and filters.")),
     sources: [S("Wikipedia · Lo-fi music", "https://en.wikipedia.org/wiki/Lo-fi_music"), S("Ableton · Make your first beat", "https://www.ableton.com/en/blog/create-your-first-track-in-ableton-live/")],
     steps: [
       { t: L("Batería boom-bap", "Boom-bap drums"),
