@@ -30,6 +30,7 @@ import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./ti
 import { initAppUpdate } from "./appupdate.js";
 import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
+import { initMidi, toggleMidi } from "./midikeys.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -2700,6 +2701,35 @@ function wireInstLib() {
   mountInstLib();
   $("#btn-instlib").onclick = () => openInstLib();
 }
+// --- teclado MIDI (web/midikeys.js): tu piano suena y se traduce a pistas de Tidal
+function wireMidi() {
+  initMidi({
+    toast, beep: (m) => beep(m, "piano", 0.6),
+    bpm: () => state.bpm,
+    // sonidos para tocar: los de siempre, los instrumentos que has fijado y los que ya usa tu canción
+    sounds: () => [...pinnedInstruments().map((p) => p.id), ...state.tracks.flatMap((t) => [...t.code.matchAll(/#\s*s\s+"([\w.-]+)"/g)].map((m) => m[1]))],
+    ensure: (snd) => ensureInstruments([`note "c" # s "${snd}"`], { quiet: true }),
+    preview: async (tracks, bpm, synced) => {
+      await ensureInstruments(tracks.map((t) => t.codigo), { quiet: true });
+      const ids = []; for (let i = MAX_TRACKS; i >= 1 && ids.length < tracks.length; i--) if (!state.tracks.find((t) => t.id === "d" + i)) ids.push("d" + i);
+      preHear({ bpm: synced || bpm === state.bpm ? undefined : bpm, pistas: tracks.map((t, i) => ({ id: ids[i] || "d" + (MAX_TRACKS - i), codigo: fixNegatives(t.codigo) })) });
+    },
+    stopPreview: () => stopPreHear(),
+    addTracks: (tracks, bpm, synced) => {
+      // Canción vacía: se queda con el tempo al que has tocado. Si no, va al tempo de tu canción (ya grabaste a ese).
+      if (!state.tracks.length && !synced && bpm) { state.bpm = Math.max(40, Math.min(220, bpm)); $("#bpm").value = state.bpm; if (live()) evalCode(cps(state.bpm)); }
+      const added = [];
+      for (const t of tracks) { const x = addTrack(t.nombre, t.tipo, fixNegatives(t.codigo)); if (x) added.push(x); }
+      ensureInstruments(added.map((t) => t.code), { quiet: true });
+      return added;
+    },
+    adopt: (r) => adoptImport(r),
+    generate: (name, bytes) => { rememberMidi(name, bytes); openImportSong({ generate: true, useLast: true }); },
+    say: (text) => say(text, state.options),
+    ask: (text) => (useLLM() ? send(text) : say(text.split("\n\n")[0] + "\n\n" + L("Para que Maestro te lo explique y te proponga cómo seguir, conecta una IA en Ajustes. Mientras, pulsa «Explícame» en las pistas nuevas.", "For Maestro to explain it and suggest how to continue, connect an AI in Settings. Meanwhile, press «Explain» on the new tracks."), state.options)),
+  });
+  $("#btn-midi").onclick = () => toggleMidi();
+}
 // --- loops largos (web/loops.js): el cargador, el navegador y cómo entran en la canción
 function wireLoops() {
   initLoops({
@@ -4241,6 +4271,7 @@ function init() {
   wireInstrument();
   wireSamples();
   wireInstLib();
+  wireMidi();
   wireLoops();
   wireControls();
   wireArrange();

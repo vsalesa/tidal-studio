@@ -322,6 +322,15 @@ footer { padding: 40px 0; text-align: center; color: var(--ink-3); font-size: 14
   </div>
 </section>
 
+<section id="midi-keys" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker" data-i="kk">Your MIDI keyboard</div>
+    <h2 class="sec-title" data-i="tk">Play your piano. Watch it become code.</h2>
+    <p class="sec-lead" data-i="lk">Plug in your USB keyboard and it sounds right away with any instrument in the studio. Record a phrase, in time with your song if it's playing, and it becomes Tidal tracks, one per hand, with the key and chords; the code is written while you play. Then Maestro explains what you played and suggests how to continue.</p>
+    <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="midi-img" alt="" width="2880" height="1800"></div>
+  </div>
+</section>
+
 <section id="midi-generate" style="padding-top: 20px">
   <div class="wrap">
     <div class="kicker" data-i="kg">Generate from your MIDI</div>
@@ -350,9 +359,10 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
 <section id="novedades" style="padding-top: 20px">
   <div class="wrap">
     <div class="kicker" data-i="kn">What's new</div>
-    <h2 class="sec-title" data-i="tn">Version 0.11.0 is out.</h2>
+    <h2 class="sec-title" data-i="tn">Version 0.12.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
+      <li><b>0.12.0</b><span data-i="v12">Play your MIDI keyboard: your USB piano sounds with any instrument and what you play becomes Tidal tracks, one per hand, in time with your song; Maestro explains it.</span></li>
       <li><b>0.11.0</b><span data-i="v11">Tidal Studio updates itself: it tells you about new versions, shows what's new, downloads and verifies the installer for your computer and installs it with one click.</span></li>
       <li><b>0.10.0</b><span data-i="v10">Maestro shows a plan for big requests and builds it step by step, so a timeout no longer loses work, with a Cancel button; generate a new song from your MIDI in 11 styles; several songs open in tabs, from your disk or GitHub; a real drummer in nine genre courses; better audio import with MSST; and Maestro sees the sounds you just downloaded.</span></li>
       <li><b>0.9.1</b><span data-i="v91">Maestro loads mc-tidal-studio, the skills route of your composition plugin made for this app, with every message.</span></li>
@@ -375,8 +385,8 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="step solo reveal" style="margin-bottom:40px">
       <h4 data-i="mach">Mac, Windows and Linux: one installer, everything inside</h4>
       <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. It opens as a real Mac app, in its own window and with no Terminal. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
-      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
-      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/TidalStudio-0.11.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.11.0/tidal-studio_0.11.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.12.0/TidalStudio-0.12.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.12.0/TidalStudio-0.12.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.12.0/tidal-studio_0.12.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
       <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows and Linux have their own installers too, each opening the studio in its own window. Intel Mac, or prefer the source? Follow the three steps below.</p>
       <p style="margin-top:4px;font-size:.9em"><a href="https://github.com/vsalesa/tidal-studio/releases/latest" data-i="allv">All versions</a></p>
     </div>
@@ -456,7 +466,8 @@ const ES = {
   f20h: "Un plan, paso a paso", f20p: "Pide una canción entera y Maestro primero te enseña un plan, como una lluvia de ideas con un productor. Apruébalo o cámbialo y construye la canción paso a paso, guardando cada uno: si la IA tarda demasiado, no se pierde nada.",
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Archivos de Tidal en pestañas", f18p: "Abre cualquier .tidal o .hs de tu disco o una canción de GitHub, cada uno en su pestaña, y ciérralos al terminar; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
-  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.11.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
+  v12: "Toca tu teclado MIDI: tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal, una por mano, a compás con tu canción; Maestro te lo explica.",
+  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.12.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
   v11: "Tidal Studio se actualiza solo: te avisa de las versiones nuevas, te enseña las novedades, descarga y comprueba el instalador de tu ordenador y lo instala con un clic.",
   v10: "En las peticiones grandes Maestro te enseña un plan y lo construye paso a paso, así un timeout ya no pierde trabajo, con un botón Cancelar; genera una canción nueva desde tu MIDI en 11 estilos; varias canciones abiertas en pestañas, desde tu disco o GitHub; un baterista real en nueve cursos; mejor importación de audio con MSST; y Maestro ve los sonidos que acabas de descargar.",
   v91: "Maestro carga en cada mensaje mc-tidal-studio, la ruta de skills de tu plugin de composición hecha para esta app.",
@@ -474,6 +485,8 @@ const ES = {
   kc: "Cursos por género", tc: "Construye un merengue desde cero.",
   lc: "Once cursos, un género cada uno: merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno, drum & bass y lo-fi. Como una clase de producción: primero el ritmo característico, luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade una pieza que ya suena bien, y Maestro te explica por qué suena a ese estilo. Los cursos latinos siguen las skills de estilos latinos de tu plugin de composición, dicen qué tradición tocan y usan instrumentos reales: güiro, congas, bongós, contrabajo, trombones, acordeón, guitarra de nailon… Nueve cursos además te dejan escuchar a un baterista real tocando el estilo (MIDI del Groove MIDI Dataset de Google Magenta), con la fuerza y el tiempo de cada golpe en el código.",
   ki: "Importar canción", ti: "Empieza con una canción que te encanta. Termina con una tuya.",
+  kk: "Tu teclado MIDI", tk: "Toca tu piano. Míralo convertirse en código.",
+  lk: "Enchufa tu teclado USB y suena al momento con cualquier instrumento del estudio. Graba una frase, a compás con tu canción si está sonando, y se convierte en pistas de Tidal, una por mano, con la tonalidad y los acordes; el código se escribe mientras tocas. Luego Maestro te explica lo que has tocado y te propone cómo seguir.",
   kg: "Genera desde tu MIDI", tg: "Tu melodía, en merengue. O en bossa, o en house.",
   lg: "Sube un MIDI tuyo, elige uno de once estilos y qué te quedas: melodía, acordes, bajo, batería o tempo. El estudio escribe el resto en ese estilo sobre tus acordes, sin IA: la batería del curso, un bajo y un acompañamiento con ritmos medidos en canciones reales, y una melodía nueva de pregunta y respuesta si no te quedas la tuya. Cada pista dice de dónde sale, y Maestro puede convertirla en una canción entera.",
   li: "Suelta un MIDI, o un mp3 o wav (sus instrumentos se separan con MSST o Demucs), y se convierte en pistas de Tidal y en su receta: tempo, tonalidad, acordes, estructura y groove. Luego Maestro te ayuda a escribir algo nuevo inspirado en ella, conservando lo que funciona y cambiando el resto. Todo se queda en tu ordenador.",
@@ -664,6 +677,7 @@ function applyLang() {
 }
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
+{ const mi = document.getElementById("midi-img"); mi.src = shotPath(lang === "es" ? "midi-traducido" : "midi-result"); mi.alt = lang === "es" ? "Lo que tocas en tu piano, traducido a pistas de Tidal" : "What you play on your piano, translated into Tidal tracks"; }
 { const gi = document.getElementById("gen-img"); gi.src = shotPath(lang === "es" ? "midi-generar-resultado" : "midi-generate-result"); gi.alt = lang === "es" ? "Tu MIDI en bossa nova: pistas de tu MIDI, del estilo y nuevas" : "Your MIDI as bossa nova: tracks from your MIDI, the style and new ones"; }
 { const ii = document.getElementById("import-img"); ii.src = shotPath(lang === "es" ? "importar-resultado" : "import-result"); ii.alt = lang === "es" ? "Canción importada: receta y pistas de Tidal" : "Imported song: recipe and Tidal tracks"; }
 { const ci = document.getElementById("course-img"); ci.src = shotPath(lang === "es" ? "curso-baterista-real" : "course-real-drummer"); ci.alt = lang === "es" ? "Curso de merengue: escucha a un baterista real tocando el estilo" : "Merengue course: hear a real drummer play the style"; }

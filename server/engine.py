@@ -176,6 +176,9 @@ class Engine:
         self.events = collections.deque(maxlen=600)
         self.event_seq = 0
         self._events_thread = None
+        # Teclado MIDI: quién recibe los OSC /ts/midi… y qué hacer cuando SuperDirt está listo (midilive.MidiHub)
+        self.midi_handler = None
+        self.on_ready = []
 
     # ---------- notas que suenan ----------
     def start_event_listener(self):
@@ -194,15 +197,34 @@ class Engine:
                 except OSError:
                     continue
                 msg = osc_parse(data)
+                if msg and msg[0].startswith("/ts/midi") and self.midi_handler:
+                    # Teclado MIDI (studio-midi.scd): ver midilive.py
+                    try:
+                        self.midi_handler(msg[0], msg[1])
+                    except Exception as e:  # noqa: BLE001
+                        self._add("studio", f"MIDI: {e}")
+                    continue
                 if not msg or msg[0] != "/ts/ev" or len(msg[1]) < 7:
                     continue
                 orbit, cycle, delta, latency, snd, n, cps = msg[1][:7]
+                if float(cycle) < 0:
+                    continue  # notas del teclado MIDI tocadas en directo: no son de ninguna pista
                 with self.lock:
                     self.event_seq += 1
                     self.events.append({"seq": self.event_seq, "at": time.time() + float(latency), "orbit": int(orbit),
                                         "cycle": float(cycle), "delta": float(delta), "s": str(snd), "n": float(n), "cps": float(cps)})
         self._events_thread = threading.Thread(target=run, daemon=True)
         self._events_thread.start()
+
+    def song_clock(self, max_age=2.5):
+        """(cps, momento, ciclo) de la última nota de la canción que ha sonado, si suena algo ahora.
+        Sirve para que una toma del teclado MIDI empiece justo al principio de un ciclo de tu canción."""
+        now = time.time()
+        with self.lock:
+            for e in reversed(self.events):
+                if e["cps"] > 0 and e["cycle"] >= 0 and now - max_age <= e["at"] <= now + 1.0:
+                    return e["cps"], e["at"], e["cycle"]
+        return None
 
     def events_since(self, seq):
         with self.lock:
@@ -232,6 +254,11 @@ class Engine:
                     # Las órdenes por OSC (/tidalstudio) solo funcionan desde aquí: antes se perdían
                     self.osc_ready = True
                     self._flush_reloads()
+                    for fn in list(self.on_ready):
+                        try:
+                            fn()
+                        except Exception as e:  # noqa: BLE001
+                            self._add("studio", f"{e}")
             if source == "sc" and line.startswith("TIDAL_STUDIO_SOUNDS:"):
                 with self.lock:
                     self.sounds = set(line.split(":", 1)[1].split())

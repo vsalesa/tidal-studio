@@ -63,6 +63,7 @@ const P = {
   skill: `<path d="M5 3.5h10.5L19 7v13.5H5z"/><path d="M15.5 3.5V7H19"/><path d="M12 10.2l1 2.1 2.3.3-1.7 1.6.4 2.3-2-1.1-2 1.1.4-2.3-1.7-1.6 2.3-.3z" fill="currentColor" stroke-width="1"/>`,
   course: `<path d="M3 5.5C5.5 4 8.5 4 12 6c3.5-2 6.5-2 9-.5V19c-2.5-1.5-5.5-1.5-9 .5-3.5-2-6.5-2-9-.5z"/><path d="M12 6v13.5"/><path d="M16.5 8.5v5.2"/><circle cx="15.3" cy="13.9" r="1.3" fill="currentColor"/><path d="M16.5 8.5l2 .8"/>`,
   cap: `<path d="M2 9.5L12 5l10 4.5-10 4.5z"/><path d="M6 11.3V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.7"/><path d="M21 10v5"/>`,
+  piano: `<rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M7.25 19v-5M12 19v-5M16.75 19v-5"/><rect x="5.6" y="5" width="2.6" height="9" rx=".5" fill="currentColor"/><rect x="10.7" y="5" width="2.6" height="9" rx=".5" fill="currentColor"/><rect x="15.8" y="5" width="2.6" height="9" rx=".5" fill="currentColor"/>`,
   check: `<path d="M5 12.5l4.5 4.5L19 7.5"/>`,
   arrow: `<path d="M5 12h14M13 6l6 6-6 6"/>`,
 };
