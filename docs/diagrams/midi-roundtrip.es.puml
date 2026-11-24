@@ -1,0 +1,36 @@
+@startuml
+!include style.iuml
+title <size:20><b>Tu teclado y Tidal Studio hablan en los dos sentidos</b></size>
+skinparam sequence {
+  ParticipantBackgroundColor #fffdf8
+  ParticipantBorderColor #c9bca5
+  LifeLineBorderColor #c9bca5
+  GroupBackgroundColor #efe8da
+}
+participant "Tu teclado MIDI" as kb
+participant "SuperCollider\nstudio-midi.scd" as sc
+participant "server/midilive.py" as srv
+participant "Navegador\npanel MIDI" as web
+participant "Tidal\nd1 … d12" as tidal
+
+group Entrada: tú tocas
+  kb -> sc : nota on / off, pedal
+  sc -> sc : suena al momento (su propia orbit)
+  sc -> srv : OSC /ts/midi
+  srv -> web : se iluminan las teclas, la toma → código Tidal
+end
+group Salida: la canción suena en tu teclado
+  tidal -> sc : s "midi" # midichan 0
+  sc -> kb : notas (a tiempo con el audio)
+  tidal -> sc : midicmd "midiClock*96", start / stop
+  sc -> kb : reloj: arpegiador y batería siguen el tempo
+  web -> srv : sonido del teclado (program change)
+  srv -> sc : midiprog
+  sc -> kb : program change
+end
+group Enchufar y desenchufar (cada 2 s)
+  sc -> srv : /ts/midiplug, /ts/midiunplug
+  srv -> web : aviso; se sueltan las notas pisadas
+  sc -> kb : All Notes Off al pulsar Silencio
+end
+@enduml

@@ -7,16 +7,16 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.12.1** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.13.1** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
 **Contents:** [Start a song](#start-a-song) · [Genre courses](#genre-courses) · [Maestro, your teacher](#maestro-your-teacher) · [Maestro's options](#hear-maestros-options-and-pick-one) ·
 [Help with your code](#help-with-your-code-and-code-palette) · [Blocks and live highlighting](#blocks-view-and-live-highlighting) ·
 [Controls in the chat](#controls-and-cards-in-the-chat) · [Mix](#mix-tab) · [Timeline](#timeline-when-each-sound-plays) · [Arrangement](#arrangement) ·
-[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) · [Long loops](#long-loops-a-library-that-knows-what-to-do-with-them) ·
+[Undo and a tidy chat](#undo-history-and-a-tidy-chat) · [Instruments](#instruments) · [One library for every sound](#one-library-for-every-sound) · [Replace a sound](#replace-a-sound-by-selecting-its-name) · [Sample library](#sample-library) · [Maestro downloads sounds](#maestro-downloads-the-sounds-it-needs) · [Long loops](#long-loops-a-library-that-knows-what-to-do-with-them) ·
 [Skills and plugins](#skills-and-plugins) · [How Maestro decides](#how-maestro-decides-and-its-reasoning) ·
-[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Songs in tabs](#several-songs-open-at-once-in-tabs) · [Import a song](#import-a-song-as-a-starting-point) · [Generate from my MIDI](#generate-from-your-midi-in-any-style) · [Save and share](#save-export-and-share) ·
+[AI detection and Diagnostics](#connect-your-ai-with-automatic-detection-and-diagnostics) · [Native app](#a-real-app-on-your-computer) · [Tutorial](#interactive-tutorial) · [Open and save files](#open-and-save-tidal-files) · [Songs in tabs](#several-songs-open-at-once-in-tabs) · [Import a song](#import-a-song-as-a-starting-point) · [Generate from my MIDI](#generate-from-your-midi-in-any-style) · [MIDI both ways](#your-keyboard-both-ways-the-song-plays-on-your-piano) · [Audio that recovers](#plug-in-unplug-the-audio-recovers) · [Save and share](#save-export-and-share) ·
 [What's new](#whats-new-version-by-version) · [Installation](#installation-once)
 
 ## What you can do
@@ -33,7 +33,6 @@ where every line of code is explained.
 
 | 1. Style | 2. Tempo |
 |---|---|
-| **0.13.1** | [Your songs on GitHub](#your-songs-on-github-remote-paths-upload-in-bulk-start-new-songs-there): a song opened from GitHub shows its GitHub path, never a local one; upload many `.tidal` files at once from Settings, optionally deleting the local copies (to the Trash, only after a verified upload); and an option to create every new song directly on GitHub. |
 | ![Choose style](docs/screenshots/wizard-1-style.png) | ![Choose tempo](docs/screenshots/wizard-2-tempo.png) |
 | **3. Beat (up to 3 layers)** | **4. Bass, chords, melody and texture** |
 | ![Choose beat](docs/screenshots/wizard-3-beat.png) | ![Choose chords](docs/screenshots/wizard-4-chords.png) |
@@ -387,6 +386,35 @@ to open with one click.
 **Maestro knows them too.** Ask for «a harpsichord on the chords» or «a double bass in pizzicato» and Maestro uses the
 exact instrument from the library. If it is small it is downloaded right away; if it is big, Maestro asks first.
 
+### One library for every sound
+
+There is no difference any more between the sounds that come with Tidal Studio and the ones you downloaded:
+**everything is in one Library** (the books and speaker buttons in the top bar open it). Dirt-Samples, the SuperDirt
+synths, the 600+ instruments of the instrument library, your uploads, Freesound, packs, what Maestro downloaded,
+your long loops and even your MIDI keyboard show up in the same list, with the same search (Spanish or English, with or
+without accents: «organo» finds every organ) and the same buttons: **listen**, **download** (one click, with its size)
+and **add** to your song. Filter by kind (hits, instruments, synths, loops, engines), by family or by what is ready to use,
+still to download or yours. Where it came from is just a small tag. If a sound of yours has the same name as a built-in
+one, yours plays and the Library says so. The files stay where they were; only the way you see them changed.
+
+![One library: every sound in the same list](docs/diagrams/library.png)
+
+![The Library: built-in and downloaded sounds in one list](docs/screenshots/library.png)
+
+### Replace a sound by selecting its name
+
+Double-click (or select) the name of a sound in your code, like `superpiano` or `bd`, in a track or in the Code tab. A
+card appears: **«Replace superpiano with…»**, with similar sounds from your library (same family, same role, similar
+tags and range): first the ones you already have, then ones that download in one click. If none fits, **search**. Press ▶
+to listen to each option, then pick one: **just here**, **in this track** or **in the whole song**. If it needs
+downloading, it downloads first, and **Undo** takes it back. Sample numbers like `bd:3` stay when you swap one hit for
+another, and the card warns you when a hit becomes a tuned instrument (or the other way round). **More ideas from
+Maestro** asks your AI for three alternatives and why.
+
+| Similar sounds, the ones you have first | Or search the whole library |
+|---|---|
+| ![Replace superpiano with similar sounds](docs/screenshots/replace-sound.png) | ![Search for another sound](docs/screenshots/replace-sound-search.png) |
+
 ### Sample library
 
 Sounds by type (kicks, snares, hats, percussion, breaks, basses, melodic, pads, voices, FX, synths). Listen to them, use
@@ -502,13 +530,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.12.1; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.13.1; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.12.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/TidalStudio-0.12.1-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.12.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/TidalStudio-0.12.1-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.12.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/tidal-studio_0.12.1_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.13.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.13.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.13.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/tidal-studio_0.13.1_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -695,6 +723,38 @@ simulate a song playing, `--port` for a real virtual MIDI port with `pip install
 | **3. Translated into Tidal, hand by hand** | **4. Maestro explains it and suggests what's next** |
 | ![Left and right hand as Tidal tracks, with key and chords](docs/screenshots/midi-result.png) | ![The tracks in the song and Maestro explaining what you played](docs/screenshots/midi-maestro.png) |
 
+### Your keyboard both ways: the song plays on your piano
+
+MIDI now goes both ways. In the MIDI keyboard panel, open **Send to my keyboard** and pick the **output** (your piano),
+the **channel** and, if you like, the **keyboard sound** (piano, electric piano, organ, strings… from the General MIDI
+list). Then:
+
+- **Click a track** to play it with your keyboard's own sound (its code becomes `# s "midi" # midichan 0`); click it again
+  to go back to the studio sound. Maestro knows `s "midi"` too.
+- **Clock and start/stop**: your keyboard's arpeggiator, drums or sequencer follow the song's tempo (24 pulses per beat)
+  and start with **Play all** and stop with **Hush**.
+- **Hush** also sends *All Notes Off*, so nothing keeps ringing on your piano. If you hear every note twice, turn off
+  *Local Control* on your keyboard.
+
+![Your keyboard and Tidal Studio talk both ways](docs/diagrams/midi-roundtrip.png)
+
+![Send to my keyboard: output, channel, keyboard sound, clock and tracks](docs/screenshots/midi-out.png)
+
+### Plug in, unplug: the audio recovers
+
+Plugging in a keyboard, headphones or a USB audio device used to leave the studio silent. Now:
+
+- The keyboard is **found by itself** when you plug it in (checked every 2 s) and you get a notice; when you unplug it,
+  **the notes and the pedal you were holding are released** and the recording doesn't stretch them.
+- Turning **Play sound** off, or switching keyboard or channel, stops what was ringing.
+- Your keyboard plays on **its own channel in SuperDirt**, so it no longer changes the reverb or delay of `d12`.
+- On a Mac the engine **no longer opens an audio input** (Tidal Studio doesn't record from the microphone), which was
+  the usual cause of «Mismatched sample rates» when macOS switched the input to a new device.
+- If the sound outputs change or the audio engine stops, a bar offers **Reconnect audio**, with the **output** you want
+  (it is remembered). Only SuperCollider restarts: Tidal keeps your song and it plays again by itself.
+
+![Reconnect audio after plugging something in](docs/screenshots/audio-bar.png)
+
 ### Save, export and share
 
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`,
@@ -749,6 +809,8 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.13.1** | [Your songs on GitHub](#your-songs-on-github-remote-paths-upload-in-bulk-start-new-songs-there): a song opened from GitHub shows its GitHub path, never a local one; upload many `.tidal` files at once from Settings, optionally deleting the local copies (to the Trash, only after a verified upload); and an option to create every new song directly on GitHub. |
+| **0.13.0** | [MIDI both ways](#your-keyboard-both-ways-the-song-plays-on-your-piano): tracks play on your keyboard, clock and start/stop, keyboard sound, All Notes Off. [Audio that recovers](#plug-in-unplug-the-audio-recovers): keyboards found when plugged in, held notes released when unplugged, Reconnect audio with your output, no audio input on Mac. [One library for every sound](#one-library-for-every-sound): built-in and downloaded sounds in one list. [Replace a sound](#replace-a-sound-by-selecting-its-name) by selecting its name: similar sounds, search, listen first. |
 | **0.12.1** | Fix: saving songs to a [GitHub](#github) repository you just created empty (no README) no longer fails with «409: the repository is empty»; the repository field also accepts a pasted GitHub URL. |
 | **0.12.0** | [Play your MIDI keyboard](#play-your-midi-keyboard-it-sounds-and-turns-into-tidal-code): your USB piano sounds with any instrument and what you play becomes Tidal tracks (left and right hand), recorded in time with your song; Maestro explains it and suggests how to continue. |
 | **0.11.0** | [Tidal Studio updates itself](#tidal-studio-updates-itself): it tells you about new versions, downloads and verifies the installer for your computer and installs it with one click. |
@@ -953,6 +1015,7 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `server/skills.py` + `web/skills.js`: Maestro's skills (`skills/` included, `my-skills/` yours): choosing which to load, install from GitHub, the panel and the chips in the chat.
 - `web/timeline.js` + `server/timeline.py` + `tidal/Timeline.ghci`: the Timeline tab. The server asks Tidal (`queryArc`) in its own GHCi; `web/tpat.js` is the approximate in-browser calculator used without the engine.
 - `server/instcatalog.py` + `server/instlib.py` + `web/instlib.js`: the instrument library (catalog, downloads, SoundFont/SFZ import, pre-listen). `supercollider/studio-instruments.scd` plays multisampled instruments with notes; `studio-synthlib.scd` holds the built-in synths; `server/engines.py` + `studio-engines.scd` install and load Mi-UGens and VSTPlugin (Surge XT, Vital); `server/photos.py` finds photos on Wikimedia Commons.
+- `server/midilive.py` + `supercollider/studio-midi.scd` + `web/midikeys.js`: MIDI keyboard in and out (`s "midi"`, clock, plug/unplug watch). `server/engine.py` audio state + `web/audiostatus.js`: Reconnect audio (`/api/audio`, `/api/audio/restart`). `server/library.py` + `web/library.js`: one library for every sound (`/api/library`, `/search`, `/similar`). `web/replace.js`: replace a sound by selecting its name.
 - `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio). `server/midigen.py`: generate from your MIDI in a style (`POST /api/import/generate`); `tools/make_example_midi.py` writes the test song `examples/little-tune.mid`.
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro finds and downloads missing sounds. `web/variants.js`: Maestro's audible options (live A/B).
 - `server/loops.py` + `web/loops.js`: long-loops library (analysis of tempo, bars, key and hits, and the code that fits your song).

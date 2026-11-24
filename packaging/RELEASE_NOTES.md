@@ -1,4 +1,17 @@
-## What's new in 0.12.1 / Novedades
+## What's new in 0.13.1 / Novedades
+
+- **Songs opened from GitHub show their GitHub path**: the tab and the line above the title show `user/repo/songs/name`, never a path on your computer, even if you also have a `.tidal` file with the same name (that file keeps its own tab). Ctrl+S / ⌘S on a GitHub song saves a new version to GitHub.
+- **Upload songs from my computer** (Settings → GitHub): choose a folder, tick the `.tidal` / `.hs` files and upload them all at once, one commit per song, with their extra code. A name already in the repository is uploaded as `name-2`, so nothing is overwritten.
+- **Delete the local files after uploading them** (optional): only after GitHub confirmed the upload and the song read back from GitHub is identical, and only if the file didn't change meanwhile. It goes to the Trash / Recycle Bin.
+- **Create new songs directly on GitHub** (Settings → GitHub): any template (blank, wizard, brainstorm, course, MIDI, audio…) creates the song in your repository as soon as it has its first track.
+
+**Español:** **Las canciones abiertas desde GitHub enseñan su ruta en GitHub** (`usuario/repo/songs/nombre`), nunca una ruta de tu ordenador, aunque tengas un `.tidal` con el mismo nombre; Ctrl+S / ⌘S guarda una versión nueva en GitHub. **Subir canciones desde mi ordenador** (Ajustes → GitHub): eliges una carpeta, marcas los `.tidal` / `.hs` y los subes todos de una vez, un commit por canción; si el nombre ya existe se sube como `nombre-2`. **Eliminar los archivos locales después de subirlos** (opcional): solo cuando GitHub ha confirmado la subida y la canción leída de vuelta es idéntica, y si el archivo no ha cambiado; va a la Papelera. **Crear las canciones nuevas directamente en GitHub**: cualquier plantilla crea la canción en tu repositorio en cuanto tiene su primera pista.
+
+## 0.13.0
+
+- **MIDI both ways**: tracks play on your keyboard, with clock and start/stop, keyboard sound and All Notes Off. **Audio that recovers**: keyboards found when plugged in, held notes released when unplugged, Reconnect audio with your output. **One library for every sound** and **replace a sound** by selecting its name.
+
+## 0.12.1
 
 - **Fix: save songs to an empty GitHub repository**: a repository you just created on GitHub with no files (no README) gave «GitHub 409: the repository is empty» when saving. Now the first save adds a small README as the first commit and saves your song on top. The configured branch is created if it doesn't exist, and the repository field also accepts a pasted GitHub URL (`https://github.com/user/repo`, `.git`).
 
