@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.16.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.17.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -50,8 +50,8 @@ change?…) with clickable examples, and ends in a **plan for your song**: style
 
 ### Genre courses
 
-**Build a song from scratch.** Eleven courses (merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno,
-drum & bass, lo-fi), each one a full production class: the signature rhythm (güira and tambora, clave and tumbao, dembow,
+**Build a song from scratch.** Fifteen courses (merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house, techno,
+drum & bass, lo-fi, reggae & dub, boom bap, afrobeat, bachata), each one a full production class: the signature rhythm (güira and tambora, clave and tumbao, dembow,
 two-step…), then bass, harmony, melody, arrangement and mix. Every step adds tracks that already sound good, Maestro
 explains the musical *why* and the code piece by piece, and gives you a challenge. See [docs/COURSES.md](docs/COURSES.md)
 for the full list and sources.
@@ -75,8 +75,8 @@ when you start the course.
 | **«What the skill says» on every step, played by real instruments** | |
 | ![Course step with the skill's rule](docs/screenshots/course-skill-step.png) | |
 
-**Hear a real drummer play the style.** Nine courses (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
-drum & bass and lo-fi) come with a real performance in MIDI from the [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+**Hear a real drummer play the style.** Twelve courses (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass, lo-fi, reggae, boom bap and afrobeat) come with a real performance in MIDI from the [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
 (Google Magenta, CC BY 4.0): professional drummers recorded playing Dominican merengue, reggaeton, bossa nova, Cuban
 songo, swing, funk, disco, breakbeat and hip hop. The first time you press **Listen** the studio downloads the MIDI pack
 (3 MB) and turns four bars into Tidal tracks that keep what makes it human: the strength of every hit (`# gain`) and how
@@ -109,6 +109,48 @@ listen to four bars with all its instruments, and Maestro compares each step wit
 | Your example in the course, next to the real drummer | |
 |---|---|
 | ![Your example](docs/screenshots/course-my-example.png) | |
+
+### Four new genres, cumbia variants and the song's form
+
+**Fifteen courses now.** Four new ones:
+
+- **Reggae & dub** (Jamaica): the one drop, the bass that leads, the off-beat skank, the bubble organ and a dub step
+  with echo throws.
+- **Boom bap hip hop** (New York): MPC swing, jazz chords chopped like a sample and an upright bass that follows the kick.
+- **Afrobeat** (Lagos): Tony Allen's drums, bell and shekere, a repeating bass, two interlocking guitars and unison horns.
+- **Bachata** (Dominican Republic): güira, bongo, a syncopated bass, the second guitar and the requinto. It is marked
+  **beta** because the library's guitar hasn't been checked by ear yet. If you don't like it, choose another one by ear.
+
+Reggae, boom bap and afrobeat each come with a real drummer from the Groove MIDI Dataset. The four new genres also work
+with **Another version** and with **Generate from your MIDI**.
+
+![The four new courses](docs/screenshots/new-courses.png)
+
+**Cumbia: choose the branch before the rhythm.** The cumbia course starts by asking which cumbia you want:
+
+- **Colombian (coastal)**: guacharaca and maracas, llamador, tambor alegre, tambora, orchestra horns and a millo flute.
+- **Sonidera (Mexico)**: the course as it was.
+- **Villera (Argentina)**: timbales with fills and a synth keyboard.
+- **Chicha (Peru)**: rock organ and an electric guitar with tremolo playing an Andean pentatonic melody.
+
+Each variant changes the tempo, the tradition and the steps that differ. Maestro is told which one you picked.
+
+![Choose the cumbia variant before the rhythm](docs/screenshots/cumbia-variants.png)
+
+**Every course, a step up:**
+
+- **The song's form goes into the score.** Each course has its sections (intro, verse, mambo, dub…). Its melody, chords
+  and bass tracks go into the score as you add them, in the course's key. The Score dialog shows the form, and the
+  `.musicxml` carries it as rehearsal marks that MuseScore shows.
+- **Choose a sound by ear inside the course.** Every track already in your song has **Choose the sound by ear**. It
+  opens the four-way comparison from [the Sound Lab](#sound-lab-sounds-that-learn), and what you pick is learned for
+  that genre.
+- **A warning when a sound doesn't play yet.** It lists which sounds are downloading (freely licensed, with
+  **Download now**), which are still loading, and which aren't available at all.
+
+| The course's form in the score | Choose a sound by ear inside the course |
+|---|---|
+| ![The course form in the score](docs/screenshots/course-score.png) | ![Choose the sound by ear in a course](docs/screenshots/course-sound-by-ear.png) |
 
 ### Maestro, your teacher
 
@@ -530,13 +572,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.16.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.17.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.16.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.16.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.16.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/tidal-studio_0.16.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.17.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.17.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.17.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/tidal-studio_0.17.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -931,6 +973,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.17.0** | Maestro v2, fourth step: [genres](#four-new-genres-cumbia-variants-and-the-songs-form). Four new courses (reggae & dub, boom bap, afrobeat, bachata in beta), cumbia variants chosen before the rhythm (Colombian, sonidera, villera, chicha), the course's form as sections in the score and the `.musicxml`, choose a sound by ear inside any course (learned per genre), a warning for sounds that don't play yet, and real drummers for reggae, boom bap and afrobeat. |
 | **0.16.0** | Maestro v2, third step: [sounds that learn](#sound-lab-sounds-that-learn). A Sound Lab that measures your sounds on demand (library, downloads, built-in, imported stems and bought packs kept local); four states per sound so Maestro only suggests what plays; 14 sound recipes you and Maestro can combine (layer, blend, in between); **Compare the best 3 by ear** on the same phrase, and the ranking learns from your picks; optional automatic critic (groove, harmony, form); configurable questions; experimental CLaMP 3 add-on, on per genre at 10+ songs. |
 | **0.15.0** | Maestro v2, second step: [the score](#the-score-your-songs-melody-chords-and-bass-as-sheet-music). Every song is `.tidal` + `.musicxml` (MuseScore-ready) in the app, on disk, on GitHub and in the index; Maestro composes melody, chords and bass in the score and the app translates them to Tidal, also step by step in plans; hand edits ask «send to the score» or «keep as free code»; smarter melodies (motif, answer, climax, cadence); **Another version** on course steps; per-track fingerprints for Maestro's changes. |
 | **0.14.0** | Maestro v2, first step: [lock](#lock-what-you-like-maestro-cant-change-it) a whole track or just its rhythm, notes, sound, effects or mix, and the BPM; [blind A/B](#blind-ab-your-ear-is-the-judge) with every vote stored as an exportable dataset, plus baseline ratings per genre; and a [live RAG monitor](#rag-monitor-see-which-layer-answered) of Maestro's layers with configurable limits, local answers without AI and a read-only SQLite index of your songs. |

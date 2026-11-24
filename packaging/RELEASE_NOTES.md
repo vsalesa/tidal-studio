@@ -1,4 +1,17 @@
-## What's new in 0.16.0 / Novedades
+## What's new in 0.17.0 / Novedades
+
+Maestro v2, fourth release of five: genres.
+
+- **Four new courses**: **reggae & dub** (one drop, the bass that leads, skank and bubble organ, melodica, a dub step with echo), **boom bap hip hop** (MPC swing, chords chopped like a sample, an upright bass that follows the kick, a trumpet hook), **afrobeat** (Tony Allen's drums, bell and shekere, a repeating bass, two interlocking guitars, unison horns) and **bachata** (güira, bongo, syncopated bass, second guitar and requinto). Bachata is in **beta**: the library's guitar still needs a listening check, so choose another one by ear if you don't like it.
+- **Real drummers** (Groove MIDI Dataset, CC BY 4.0) for reggae, boom bap and afrobeat. The new genres also work with «Another version» and «Generate from your MIDI».
+- **Cumbia variants, chosen before the rhythm**: Colombian (coastal), sonidera (Mexico), villera (Argentina) and chicha (Peru), each with its own tempo, tradition, percussion and lead instrument. Maestro is told which one you picked.
+- **The course's form goes into the score**: every course has named sections (intro, verse, mambo, dub…). Its melody, chord and bass tracks go into the score in the course's key, the Score dialog shows the form, and the `.musicxml` carries it as rehearsal marks.
+- **Choose a sound by ear inside any course**: each track already in your song has «Choose the sound by ear». It compares your sound with the 3 best ones that already play, and your pick is learned for that genre.
+- **A warning when a course sound doesn't play yet**: which sounds are downloading (freely licensed), which are loading and which aren't available.
+
+**Español:** **Cuatro cursos nuevos**: **reggae y dub** (one drop, el bajo que manda, skank y órgano burbuja, melódica, un paso de dub con eco), **hip hop boom bap** (swing de MPC, acordes troceados como un sample, contrabajo que sigue al bombo, gancho de trompeta), **afrobeat** (la batería de Tony Allen, campana y shekere, bajo que repite, dos guitarras que se entrelazan, metales al unísono) y **bachata** (güira, bongó, bajo sincopado, segunda guitarra y requinto). La bachata va en **beta**: la guitarra de la biblioteca aún hay que oírla; si no te convence, elige otra de oído. **Bateristas reales** (Groove MIDI Dataset, CC BY 4.0) para reggae, boom bap y afrobeat; los géneros nuevos funcionan con «Otra versión» y «Generar desde tu MIDI». **Variantes de cumbia elegidas antes del ritmo**: colombiana (costeña), sonidera (México), villera (Argentina) y chicha (Perú), cada una con su tempo, tradición, percusión e instrumento solista; Maestro sabe cuál has elegido. **La forma del curso va a la partitura**: cada curso tiene sus secciones (intro, verso, mambo, dub…), sus pistas de melodía, acordes y bajo entran en la partitura en la tonalidad del curso y el `.musicxml` la guarda como marcas de ensayo. **Elige un sonido de oído dentro de cualquier curso**, y tu elección se aprende para ese género. **Aviso de sonidos del curso que aún no suenan**.
+
+## 0.16.0
 
 Maestro v2, third release of five: sounds that learn.
 
