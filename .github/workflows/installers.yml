@@ -338,6 +338,8 @@ jobs:
           ls -lh dist
           if [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" = "push" ] && gh release view "$TAG" >/dev/null 2>&1; then
             echo "Release $TAG already exists. Bump packaging/VERSION on main to publish a new one."
+            # keep its notes in step with packaging/RELEASE_NOTES.md (a fix to the notes after release)
+            gh release edit "$TAG" --notes-file packaging/RELEASE_NOTES.md || true
             exit 0
           fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
