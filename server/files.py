@@ -77,6 +77,31 @@ def write(path, content, overwrite=True):
     return {"path": path, "name": os.path.basename(path), "mtime": os.path.getmtime(path)}
 
 
+def score_path(path):
+    """La partitura va al lado del .tidal, con el mismo nombre: cancion.tidal + cancion.musicxml."""
+    return os.path.splitext(_norm(path))[0] + ".musicxml"
+
+
+def read_score(path):
+    sp = score_path(path)
+    if not os.path.isfile(sp) or os.path.getsize(sp) > MAX_BYTES:
+        return None
+    with open(sp, "rb") as f:
+        return {"path": sp, "xml": f.read().decode("utf-8", "replace"), "mtime": os.path.getmtime(sp)}
+
+
+def write_score(path, xml):
+    sp = score_path(path)
+    data = str(xml or "")
+    if len(data.encode("utf-8")) > MAX_BYTES:
+        raise FileError("La partitura es demasiado grande (máx. 2 MB)|The score is too big (max 2 MB)")
+    tmp = sp + ".tmp-tidal-studio"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        f.write(data)
+    os.replace(tmp, sp)
+    return {"path": sp, "mtime": os.path.getmtime(sp)}
+
+
 def list_dir(folder):
     """Los archivos de Tidal de una carpeta (sin entrar en subcarpetas), para el importador a GitHub."""
     folder = os.path.abspath(os.path.expanduser(str(folder or "").strip() or default_dir()))

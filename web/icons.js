@@ -31,6 +31,7 @@ const P = {
   lock: `<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/><path d="M12 14.5v2.5" stroke-width="2"/>`,
   unlock: `<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 6.8-1.2"/><path d="M12 14.5v2.5" stroke-width="2"/>`,
   ear: `<path d="M7 9.5a5 5 0 0 1 10 0c0 3-2.5 4-3.2 6-.5 1.6-1.3 3.5-3.3 3.5a3 3 0 0 1-3-2.5"/><path d="M10 9.5a2 2 0 0 1 4 0c0 1-.8 1.5-1.5 2"/>`,
+  score: `<path d="M3 7h13M3 11h13M3 15h9"/><path d="M19 4v11.5"/><ellipse cx="17" cy="16.5" rx="2.2" ry="1.7"/><path d="M19 4l2.5 1.5"/>`,
   monitor: `<rect x="3" y="3" width="6" height="4.5" rx="1"/><rect x="15" y="3" width="6" height="4.5" rx="1"/><rect x="9" y="16.5" width="6" height="4.5" rx="1"/><path d="M6 7.5v3.5h12V7.5M12 11v5.5"/>`,
   code: `<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M13.5 4l-3 16"/>`,
   log: `<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M12.5 15H17"/>`,

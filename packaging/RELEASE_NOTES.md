@@ -1,4 +1,18 @@
-## What's new in 0.14.0 / Novedades
+## What's new in 0.15.0 / Novedades
+
+Maestro v2, second release of five: the score.
+
+- **Every song is `.tidal` + `.musicxml`**: a MusicXML score (the standard format MuseScore, Sibelius, Finale and Dorico open) with the song's melody, chords and bass travels with the Tidal code: in the app, next to your file on disk (`song.tidal` + `song.musicxml`), on GitHub and in the song index. Rhythm grooves and effects stay in Tidal.
+- **Maestro composes in the score**: when you ask for a melody, chords or a bass it writes the notes in the score first and the app translates them to Tidal, one bar per cycle. In a plan, each step adds its section to the same score.
+- **Score button**: each part as a piano roll with its notes as text; **Download .musicxml** to open it in MuseScore and **Import** it back (the tracks are regenerated).
+- **Hand edits**: if you edit a track that comes from the score, choose **Send to the score** or **Keep it as free code**. Code with Tidal tricks (`every`, `jux`, `|+`…) stays free code.
+- **More musical melodies**: a motif, its displaced answer, a sequence or climax and a cadence that breathes and lands on the tonic, in every 4-bar phrase.
+- **Another version** on course steps with a melody, bass or chords track: three new takes over the rest of your song, which stays frozen.
+- **Per-track fingerprints**: Maestro's changes apply directly only if the tracks it touched didn't change while it was thinking; otherwise they arrive as an option.
+
+**Español:** **Cada canción es `.tidal` + `.musicxml`**: una partitura MusicXML (el formato estándar de MuseScore, Sibelius, Finale y Dorico) con la melodía, los acordes y el bajo viaja con el código Tidal: en la app, junto a tu archivo en disco, en GitHub y en el índice de canciones; el groove y los efectos se quedan en Tidal. **Maestro compone en la partitura**: cuando le pides melodía, acordes o bajo escribe primero las notas y la app las traduce a Tidal, un compás por ciclo; en un plan, cada paso añade su sección. **Botón Partitura**: cada parte como piano roll, **Descargar .musicxml** para abrirla en MuseScore e **Importar** de vuelta. **Ediciones a mano**: si cambias una pista que sale de la partitura, elige **Llevar a la partitura** o **Dejarla como código libre**. **Melodías más musicales**: motivo, respuesta desplazada, secuencia o clímax y cadencia que respira y acaba en la tónica. **Otra versión** en los pasos de curso: tres versiones nuevas sobre el resto de tu canción, que no cambia. **Huella por pista**: los cambios de Maestro se aplican directamente solo si las pistas que tocó no cambiaron mientras pensaba.
+
+## 0.14.0
 
 Maestro v2, first release of five (plan in `docs/maestro-v2` on the `feature/maestro-v2-blueprint` branch).
 

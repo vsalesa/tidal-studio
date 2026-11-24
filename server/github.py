@@ -8,6 +8,8 @@ Integración con GitHub: guarda cada canción como una carpeta en un repositorio
 Cada guardado es UN commit, así que el historial del repo es el historial de versiones de tu canción.
 Solo biblioteca estándar. El token se guarda únicamente en config.json, en tu ordenador.
 """
+import xml.etree.ElementTree as ET
+import score as scoremod
 import base64
 import json
 import re
@@ -158,14 +160,20 @@ def song_files(project):
         lines[5:5] = ["-- Código extra / Extra code", extra, ""]
     tidal = "\n".join(lines)
     keep = {k: project.get(k) for k in ("name", "bpm", "style", "tracks", "projectId", "extra") if project.get(k) not in (None, "")}
-    keep["tracks"] = [{k: t.get(k) for k in ("id", "name", "kind", "code", "muted")} for t in tracks]
+    keep["tracks"] = [{k: t.get(k) for k in ("id", "name", "kind", "code", "muted", "fromScore") if t.get(k) not in (None, "")} for t in tracks]
+    sc = scoremod.normalize(project.get("score")) if project.get("score") else None
     readme = [f"# {name}", "", f"**{bpm} BPM**" + (f" · {project.get('style')}" if project.get("style") else "") + f" · {len(tracks)} pistas", "",
               "| Pista | Nombre | Código |", "|---|---|---|"]
     for t in tracks:
         code = (t.get("code") or "").replace("|", "\\|").replace("\n", " ")
         readme.append(f"| `{t.get('id')}` | {t.get('name', '')} | `{code}` |")
     readme += ["", "Abre `song.tidal` en tu editor de TidalCycles, o abre la canción desde Tidal Studio (Mis proyectos → GitHub).", ""]
-    return {"song.tidal": tidal, "song.json": json.dumps(keep, ensure_ascii=False, indent=2), "README.md": "\n".join(readme)}
+    out = {"song.tidal": tidal, "song.json": json.dumps(keep, ensure_ascii=False, indent=2), "README.md": "\n".join(readme)}
+    if sc and sc["parts"]:
+        # El bloque de composición: song.tidal + song.musicxml (melodía, acordes y bajo; se abre en MuseScore)
+        out["song.musicxml"] = scoremod.to_musicxml(sc, name)
+        out["README.md"] = out["README.md"].replace("Abre `song.tidal`", "La partitura (melodía, acordes y bajo) está en `song.musicxml`: ábrela en MuseScore.\n\nAbre `song.tidal`")
+    return out
 
 
 def _branch_head(g, repo):
@@ -247,6 +255,13 @@ def load_song(cfg, slug, ref=None):
     if not r or "content" not in r:
         raise GitHubError(f"No encuentro la canción «{slug}» (falta song.json)", 404)
     data = json.loads(base64.b64decode(r["content"]).decode("utf-8"))
+    # La partitura manda para la melodía, los acordes y el bajo (puede venir editada en MuseScore)
+    x = _req(g, "GET", f"{repo}/contents/{base}/song.musicxml?ref={urllib.parse.quote(ref or g['branch'])}", ok404=True)
+    if x and "content" in x:
+        try:
+            data["score"] = scoremod.to_json(scoremod.from_musicxml(base64.b64decode(x["content"]).decode("utf-8", "replace")))
+        except (ValueError, ET.ParseError):
+            data["score_error"] = "song.musicxml"
     data["github"] = {"slug": slug, "ref": ref or g["branch"], **remote_where(g, slug)}
     return data
 

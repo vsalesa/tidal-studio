@@ -11,13 +11,14 @@ Solo usa la biblioteca estándar de Python (sqlite3 con FTS5 si está disponible
 """
 import hashlib
 import json
+import score as scoremod
 import os
 import re
 import sqlite3
 import threading
 import time
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2  # 2: tabla scores (partitura .musicxml de cada canción, release 0.15)
 DATASET_VERSION = 1
 
 # Lo que no es un nombre de sonido dentro de un patrón de Tidal
@@ -39,7 +40,7 @@ def song_hash(song):
     tracks = [{k: t.get(k) for k in ("id", "name", "kind", "code", "muted", "mix", "lock")}
               for t in (song.get("tracks") or []) if isinstance(t, dict)]
     key = json.dumps({"bpm": song.get("bpm"), "name": song.get("name"), "tracks": tracks,
-                      "locks": song.get("locks")}, sort_keys=True, ensure_ascii=False)
+                      "locks": song.get("locks"), "score": song.get("score")}, sort_keys=True, ensure_ascii=False, default=str)
     return "sha256:" + hashlib.sha256(key.encode("utf-8")).hexdigest()[:32]
 
 
@@ -69,6 +70,8 @@ class SongIndex:
             self.db.execute("""CREATE TABLE IF NOT EXISTS tracks (
                 song_id TEXT, track_id TEXT, name TEXT, kind TEXT, code TEXT, sounds TEXT, locks TEXT,
                 PRIMARY KEY (song_id, track_id))""")
+            self.db.execute("""CREATE TABLE IF NOT EXISTS scores (
+                song_id TEXT PRIMARY KEY, key TEXT, meter TEXT, n_parts INTEGER, n_bars INTEGER, data TEXT, musicxml TEXT)""")
             self.db.execute("""CREATE TABLE IF NOT EXISTS votes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, ts REAL, kind TEXT, song_id TEXT, data TEXT)""")
             try:
@@ -107,6 +110,13 @@ class SongIndex:
                     self.db.execute("INSERT INTO tracks_fts VALUES (?,?,?,?,?,?,?)",
                                     (sid, str(t["id"])[:8], name, str(t.get("name") or ""), str(t.get("kind") or ""),
                                      code, " ".join(snd)))
+            self.db.execute("DELETE FROM scores WHERE song_id = ?", (sid,))
+            sc = scoremod.normalize(song.get("score")) if song.get("score") else None
+            if sc and sc["parts"]:
+                # Las dos formas de la canción: el código Tidal (arriba, por pista) y la partitura MusicXML
+                self.db.execute("INSERT INTO scores VALUES (?,?,?,?,?,?,?)",
+                                (sid, sc["key"], sc["meter"], len(sc["parts"]), max(len(p["bars"]) for p in sc["parts"]),
+                                 json.dumps(scoremod.to_json(sc), ensure_ascii=False), scoremod.to_musicxml(sc, name)))
             data = {k: song.get(k) for k in ("id", "name", "bpm", "style", "locks", "course")}
             data["tracks"] = [{k: t.get(k) for k in ("id", "name", "kind", "code", "muted", "mix", "lock")} for t in tracks]
             self.db.execute("INSERT OR REPLACE INTO songs VALUES (?,?,?,?,?,?,?,?,?)",
@@ -120,6 +130,7 @@ class SongIndex:
         with self.lock, self.db:
             self.db.execute("DELETE FROM songs WHERE id = ?", (song_id,))
             self.db.execute("DELETE FROM tracks WHERE song_id = ?", (song_id,))
+            self.db.execute("DELETE FROM scores WHERE song_id = ?", (song_id,))
             if self.fts:
                 self.db.execute("DELETE FROM tracks_fts WHERE song_id = ?", (song_id,))
 
@@ -127,6 +138,12 @@ class SongIndex:
         with self.lock:
             row = self.db.execute("SELECT data FROM songs WHERE id = ?", (song_id,)).fetchone()
         return json.loads(row["data"]) if row else None
+
+    def score(self, song_id):
+        """La partitura guardada de una canción: {"key", "meter", "score", "musicxml"} o None."""
+        with self.lock:
+            row = self.db.execute("SELECT key, meter, data, musicxml FROM scores WHERE song_id = ?", (song_id,)).fetchone()
+        return {"key": row["key"], "meter": row["meter"], "score": json.loads(row["data"]), "musicxml": row["musicxml"]} if row else None
 
     def songs(self, limit=200):
         with self.lock:
@@ -216,9 +233,10 @@ class SongIndex:
             n_songs = self.db.execute("SELECT COUNT(*) FROM songs").fetchone()[0]
             n_tracks = self.db.execute("SELECT COUNT(*) FROM tracks").fetchone()[0]
             n_votes = self.db.execute("SELECT COUNT(*) FROM votes").fetchone()[0]
+            n_scores = self.db.execute("SELECT COUNT(*) FROM scores").fetchone()[0]
         try:
             size = os.path.getsize(self.path)
         except OSError:
             size = 0
-        return {"songs": n_songs, "tracks": n_tracks, "votes": n_votes, "bytes": size, "fts": self.fts,
+        return {"songs": n_songs, "tracks": n_tracks, "votes": n_votes, "scores": n_scores, "bytes": size, "fts": self.fts,
                 "path": self.path, "schema": SCHEMA_VERSION}

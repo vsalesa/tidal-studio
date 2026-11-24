@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.14.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.15.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -544,13 +544,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.14.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.15.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.14.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.14.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.14.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/tidal-studio_0.14.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.15.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.15.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.15.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/tidal-studio_0.15.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -864,6 +864,39 @@ necesita una respuesta local, el tiempo de corte de la IA y qué capas están ac
 La canción sigue en tu navegador (y en tus `.tidal` o en GitHub): el índice es solo una copia, que se rehace a partir de
 tus canciones, en `maestro-data/` junto a la app.
 
+### La partitura: melodía, acordes y bajo de tu canción en notación
+
+Cada canción tiene ahora dos formas que viajan juntas: el código `.tidal` y una **partitura MusicXML** (`.musicxml`,
+el formato estándar que abren MuseScore, Sibelius, Finale o Dorico). La partitura guarda la **melodía, los acordes y el
+bajo**; el groove rítmico y los efectos se quedan en Tidal. Es el **cuaderno de composición de Maestro**: cuando le pides
+una melodía primero escribe las notas en la partitura (un motivo, su respuesta, un clímax y una cadencia, compás a
+compás) y la app las traduce a Tidal, un compás por ciclo. En un [plan](#peticiones-grandes-maestro-hace-un-plan-y-va-paso-a-paso)
+cada paso añade su sección a la misma partitura. Las pistas que salen de la partitura llevan la etiqueta **partitura**.
+
+El botón **Partitura** de la barra de arriba enseña cada parte como un piano roll, con las notas en texto, y te deja
+**Descargar .musicxml** para abrirla en MuseScore, cambiarla e **Importarla** de vuelta: las pistas se regeneran. La
+partitura se guarda también junto a tu archivo (`cancion.tidal` + `cancion.musicxml`), en GitHub (`song.musicxml` junto a
+`song.tidal`) y en el índice de canciones.
+
+![Maestro escribe una melodía y un bajo en la partitura](docs/screenshots/es/partitura-maestro.png)
+
+![El diálogo Partitura: cada parte como piano roll, lista para MuseScore](docs/screenshots/es/partitura.png)
+
+Si editas a mano una pista que sale de la partitura, la app te pregunta: **Llevar a la partitura** (lee las notas de tu
+código) o **Dejarla como código libre** (la partitura deja de cambiarla y Maestro la trata como Tidal normal). El código
+con trucos de Tidal que no caben en una partitura (`every`, `jux`, `|+`…) solo puede ser código libre.
+
+![Has cambiado a mano una pista de la partitura: llévala a la partitura o déjala como código libre](docs/screenshots/es/partitura-editada.png)
+
+Maestro solo aplica sus cambios directamente si ninguna de las pistas que tocó cambió mientras pensaba (cada pista tiene
+su propia huella); si no, llegan como opción.
+
+**Otra versión** en los cursos: en un paso con una pista de melodía, bajo o acordes, pulsa **Otra versión** y tendrás
+tres versiones nuevas de esa pista, escritas con melodías de motivo y desarrollo, bajos que anticipan y nuevas
+posiciones de acordes. El resto de tu canción queda congelado: escúchalas encima y elige una.
+
+![Otra versión: tres bajos nuevos sobre el resto de la canción](docs/screenshots/es/curso-otra-version.png)
+
 ### Y además
 
 - **Tu progreso**: conceptos de código y de música que ya has usado.
@@ -879,6 +912,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.15.0** | Maestro v2, segundo paso: [la partitura](#la-partitura-melodía-acordes-y-bajo-de-tu-canción-en-notación). Cada canción es `.tidal` + `.musicxml` (lista para MuseScore) en la app, en disco, en GitHub y en el índice; Maestro compone melodía, acordes y bajo en la partitura y la app los traduce a Tidal, también paso a paso en los planes; al editar a mano te pregunta «llevar a la partitura» o «dejar como código libre»; melodías más musicales (motivo, respuesta, clímax, cadencia); **Otra versión** en los pasos de curso; huella por pista para los cambios de Maestro. |
 | **0.14.0** | Maestro v2, primer paso: [bloquea](#bloquea-lo-que-te-gusta-maestro-no-puede-cambiarlo) una pista entera o solo su ritmo, notas, sonido, efectos o mezcla, y el BPM; [A/B a ciegas](#ab-a-ciegas-tu-oído-es-el-juez) con cada voto guardado como dataset exportable, más notas de línea base por género; y un [monitor RAG en vivo](#monitor-rag-mira-qué-capa-respondió) de las capas de Maestro con límites configurables, respuestas locales sin IA y un índice SQLite de solo lectura de tus canciones. |
 | **0.13.1** | [Tus canciones en GitHub](#tus-canciones-en-github-ruta-remota-subir-varias-a-la-vez-y-crear-las-nuevas-allí): una canción abierta desde GitHub enseña su ruta en GitHub, nunca una local; sube muchos `.tidal` a la vez desde Ajustes, con la opción de eliminar las copias locales (a la Papelera, solo tras comprobar la subida); y una casilla para crear cada canción nueva directamente en GitHub. |
 | **0.13.0** | [MIDI de ida y vuelta](#tu-teclado-en-los-dos-sentidos-la-canción-suena-en-tu-piano): las pistas suenan en tu teclado, reloj y start/stop, sonido del teclado, All Notes Off. [Audio que se recupera](#enchufar-y-desenchufar-el-audio-se-recupera): teclados detectados al enchufarlos, notas soltadas al quitarlos, Reconectar audio con tu salida, sin entrada de audio en Mac. [Una sola librería](#una-sola-librería-para-todos-los-sonidos): incluidos y descargados en una lista. [Cambiar un sonido](#cambiar-un-sonido-seleccionando-su-nombre) seleccionando su nombre: parecidos, buscador y escuchar antes. |

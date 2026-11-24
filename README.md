@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.14.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.15.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -530,13 +530,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.14.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.15.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.14.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.14.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.14.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/tidal-studio_0.14.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.15.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.15.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.15.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/tidal-studio_0.15.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -839,6 +839,39 @@ as context, the confidence a local answer needs, the AI timeout and which layers
 The song stays in your browser (and in your `.tidal` files or GitHub): the index is only a copy, rebuilt from your
 songs, in `maestro-data/` next to the app.
 
+### The score: your song's melody, chords and bass as sheet music
+
+Every song now has two forms that travel together: the `.tidal` code and a **MusicXML score** (`.musicxml`, the
+standard format MuseScore, Sibelius, Finale or Dorico open). The score holds the **melody, chords and bass**; rhythm
+grooves and effects stay in Tidal. It is **Maestro's composition notebook**: when you ask for a melody it first writes
+the notes in the score (a motif, its answer, a climax and a cadence, bar by bar) and the app translates them to Tidal,
+one bar per cycle. In a [plan](#big-requests-maestro-makes-a-plan-and-goes-step-by-step) each step adds its section to
+the same score. Tracks that come from the score show a **score** badge.
+
+The **Score** button in the top bar shows each part as a piano roll, with the notes as text, and lets you **Download
+.musicxml** to open it in MuseScore, change it, and **Import** it back: the tracks are regenerated. The score is also
+saved next to your file (`song.tidal` + `song.musicxml`), in GitHub (`song.musicxml` next to `song.tidal`) and in the
+song index.
+
+![Maestro writes a melody and a bass in the score](docs/screenshots/score-maestro.png)
+
+![The Score dialog: each part as a piano roll, ready for MuseScore](docs/screenshots/score.png)
+
+If you edit by hand a track that comes from the score, the app asks: **Send to the score** (the notes are read back
+from your code) or **Keep it as free code** (the score stops changing it and Maestro treats it as plain Tidal). Code
+with Tidal tricks that don't fit a score (`every`, `jux`, `|+`…) can only be free code.
+
+![You changed a score track by hand: send it to the score or keep it as free code](docs/screenshots/score-edited.png)
+
+Maestro only applies its changes directly if none of the tracks it touched changed while it was thinking (each track
+has its own fingerprint); otherwise they arrive as an option.
+
+**Another version** in the courses: on a step with a melody, bass or chords track, press **Another version** for three
+new takes of that track, written with motif-and-development melodies, anticipating basses and new chord voicings. The
+rest of your song stays frozen: listen to them over it and pick one.
+
+![Another version: three new bass lines over the rest of the song](docs/screenshots/course-another-version.png)
+
 ### And also
 
 - **Your progress**: the code and music concepts you have already used.
@@ -854,6 +887,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.15.0** | Maestro v2, second step: [the score](#the-score-your-songs-melody-chords-and-bass-as-sheet-music). Every song is `.tidal` + `.musicxml` (MuseScore-ready) in the app, on disk, on GitHub and in the index; Maestro composes melody, chords and bass in the score and the app translates them to Tidal, also step by step in plans; hand edits ask «send to the score» or «keep as free code»; smarter melodies (motif, answer, climax, cadence); **Another version** on course steps; per-track fingerprints for Maestro's changes. |
 | **0.14.0** | Maestro v2, first step: [lock](#lock-what-you-like-maestro-cant-change-it) a whole track or just its rhythm, notes, sound, effects or mix, and the BPM; [blind A/B](#blind-ab-your-ear-is-the-judge) with every vote stored as an exportable dataset, plus baseline ratings per genre; and a [live RAG monitor](#rag-monitor-see-which-layer-answered) of Maestro's layers with configurable limits, local answers without AI and a read-only SQLite index of your songs. |
 | **0.13.1** | [Your songs on GitHub](#your-songs-on-github-remote-paths-upload-in-bulk-start-new-songs-there): a song opened from GitHub shows its GitHub path, never a local one; upload many `.tidal` files at once from Settings, optionally deleting the local copies (to the Trash, only after a verified upload); and an option to create every new song directly on GitHub. |
 | **0.13.0** | [MIDI both ways](#your-keyboard-both-ways-the-song-plays-on-your-piano): tracks play on your keyboard, clock and start/stop, keyboard sound, All Notes Off. [Audio that recovers](#plug-in-unplug-the-audio-recovers): keyboards found when plugged in, held notes released when unplugged, Reconnect audio with your output, no audio input on Mac. [One library for every sound](#one-library-for-every-sound): built-in and downloaded sounds in one list. [Replace a sound](#replace-a-sound-by-selecting-its-name) by selecting its name: similar sounds, search, listen first. |

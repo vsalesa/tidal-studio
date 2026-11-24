@@ -16,7 +16,7 @@ import { songBlocksHTML, blockInfo } from "./blocks.js";
 import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf } from "./edit.js";
 import { mixerHTML, mixCodeHTML, mixBadgeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
-import { songOf, initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory } from "./history.js";
+import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory } from "./history.js";
 import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fixNegatives, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
@@ -27,6 +27,7 @@ import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LET
 import { guardChanges, blockedText, lockRowHTML, toggleLock, isLocked, mixLocked } from "./locks.js";
 import { initListen, recordVote, songContext } from "./listen.js";
 import { initMonitor } from "./monitor.js";
+import { initScore, linkPart, unlinkTrack, scoreBadgeHTML, scoreBarHTML, scoreBarAction, adoptScore } from "./score.js";
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { planHTML, planContext, planEnabled, setPlanEnabled, newPlan, nextStep as nextPlanStep, planDone, PLAN_START, PLAN_STEPWISE, PLAN_ALL, PLAN_SPLIT, PLAN_CONTINUE, PLAN_RETRY, planBarHTML } from "./plan.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
@@ -101,7 +102,8 @@ async function syncSong() {
   if (!state.projectId || !state.tracks.length) return;
   const song = { id: state.projectId, name: state.name || "", bpm: state.bpm, style: state.style || "", locks: { bpm: !!state.bpmLock },
     course: state.course ? state.course.id : null,
-    tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted, mix: t.mix || null, lock: t.lock || null })) };
+    tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted, mix: t.mix || null, lock: t.lock || null })),
+    ...(state.score && state.score.parts && state.score.parts.length ? { score: state.score } : {}) };
   const key = JSON.stringify(song);
   if (key === lastSynced) return;
   try { await api("/api/songs/sync", { song }); lastSynced = key; } catch { /* sin servidor: se reintenta al guardar otra vez */ }
@@ -696,7 +698,7 @@ function renderTracks() {
       <div class="head">
         <span class="kico">${icon(CATEGORIES.find((c) => c.id === t.kind) ? t.kind : "fx", 20)}</span>
         <span class="id">${t.id}</span>
-        <input class="tname">
+        <input class="tname">${scoreBadgeHTML(t)}
         <span class="actions">
           <button data-a="explain" class="explain" title="${L("¿Qué hace este código?", "What does this code do?")}">${icon("explain", 15)} ${L("Explícame", "Explain")}</button>
           <button data-a="help" class="helpbtn" title="${L("¿No suena como quieres o da error? Maestro te ayuda", "Not sounding right or erroring? Maestro helps you")}">${icon("wand", 15)} ${L("Ayuda", "Help")}</button>
@@ -711,6 +713,7 @@ function renderTracks() {
       <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="${L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")}"></textarea>
       ${fxRowHTML(t)}
       ${lockRowHTML(t, icon)}
+      ${scoreBarHTML(t)}
       ${mixBadgeHTML(t, state, icon("mixer", 13))}
       ${t.error ? `<div class="err ${t.errorCode && t.errorCode !== t.code ? "stale" : ""}"><button class="err-x" data-a="clear-err" title="${L("Borrar este error (ya no aplica)", "Clear this error (no longer applies)")}" aria-label="${L("Borrar error", "Clear error")}">${icon("close", 14)}</button>${t.errorCode && t.errorCode !== t.code ? `<span class="err-stale">${L("Error de una versión anterior del código. Pulsa ▶ para comprobarlo o × para borrarlo.", "Error from an earlier version of the code. Press ▶ to check it or × to clear it.")}</span>` : ""}<span class="err-txt"></span></div>` : ""}
       ${t.help && t.help.open ? `<div class="explain-box help-box">${helpHTML(t)}</div>` : ""}
@@ -737,6 +740,7 @@ function renderTracks() {
       if (btn && btn.dataset.fx) return toggleFx(t.id, btn.dataset.fx);
       if (a === "lock") { t.lockOpen = !t.lockOpen; save(); renderTracks(); return; }
       if (btn && btn.dataset.lock) { toggleLock(t, btn.dataset.lock); save(); renderTracks(); renderBlocks(); return; }
+      if (btn && btn.dataset.sc) { scoreBarAction(state, t, btn.dataset.sc); return; }
       if (a === "mix") return openMixFor(t.id);
       if (a === "controls") return showControls(t);
       if (a === "card") return openCard(t.id);
@@ -1799,8 +1803,11 @@ async function askLLM(opts = {}) {
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}), ...(t.lock ? { lock: t.lock } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
+    if (state.score && state.score.parts && state.score.parts.length) session.score = state.score;
     state.tracks.forEach((t) => delete t.edited);
-    const sentSong = songOf(state);  // versión de la canción que vio Maestro
+    // Huella de cada pista que vio Maestro: si una pista que él cambia ha cambiado mientras pensaba, su propuesta no se aplica sola
+    const sentCodes = Object.fromEntries(state.tracks.map((t) => [t.id, hashText(t.code)]));
+    const sentBpm = state.bpm;
     const r = await api("/api/chat", { messages: history, session, trace: trace.id }, me.controller.signal);
     if (me.cancelled) throw Object.assign(new Error("cancelled"), { data: { cancelled: true } });
     inflight = null;
@@ -1810,7 +1817,10 @@ async function askLLM(opts = {}) {
     if (r.paso) state.step = r.paso;
     // Si la canción cambió mientras Maestro pensaba, sus cambios no se aplican solos: se ofrecen como opción para escuchar
     const rc = r.cambios || {};
-    if (songOf(state) !== sentSong && ((rc.pistas || []).length || (rc.eliminar || []).length || rc.bpm)) {
+    const touched = [...(rc.pistas || []).map((p) => p.id), ...(rc.eliminar || [])];
+    const nowCode = (id) => { const t = state.tracks.find((x) => x.id === id); return t ? hashText(t.code) : undefined; };
+    const stale = touched.filter((id) => nowCode(id) !== sentCodes[id]);
+    if (stale.length || (rc.bpm && state.bpm !== sentBpm)) {
       r.variantes = [{ titulo: L("La propuesta de Maestro", "Maestro's proposal"), concepto: "",
         descripcion: L("Tu canción cambió mientras Maestro pensaba, así que no la aplico sola: escúchala sobre lo que suena ahora y elígela si te convence.",
           "Your song changed while Maestro was thinking, so I won't apply it on its own: listen to it over what's playing now and pick it if you like it."),
@@ -1875,13 +1885,18 @@ function applyChanges(c) {
     if (live()) evalCode(cps(state.bpm));
   }
   for (const id of c.eliminar || []) {
-    if (state.tracks.find((t) => t.id === id)) { removeTrack(id); notes.push(L(`borrada ${id}`, `deleted ${id}`)); }
+    const t = state.tracks.find((x) => x.id === id);
+    if (t) { if (t.fromScore) unlinkTrack(state, t); removeTrack(id); notes.push(L(`borrada ${id}`, `deleted ${id}`)); }
   }
+  if (c.score_meta && state.score) { state.score.key = c.score_meta.key || state.score.key; state.score.meter = c.score_meta.meter || state.score.meter; }
   for (const p of c.pistas || []) {
     p.codigo = fixNegatives(p.codigo);
     let t = state.tracks.find((x) => x.id === p.id);
     if (t) { t.code = p.codigo; t.name = p.nombre || t.name; t.kind = p.tipo || t.kind; t.muted = false; t.explain = null; notes.push(L(`cambiada ${p.id} ${t.name}`, `changed ${p.id} ${t.name}`)); }
     else { t = { id: p.id, name: p.nombre, kind: p.tipo, code: p.codigo, muted: false }; state.tracks.push(t); notes.push(L(`nueva ${p.id} ${t.name}`, `new ${p.id} ${t.name}`)); }
+    // Melodía, acordes o bajo que caben en una partitura: van también al cuaderno (la partitura de la canción)
+    if (p.parte) linkPart(state, t, p.parte);
+    else if (t.fromScore) unlinkTrack(state, t);
     state.tracks.sort((a, b) => parseInt(a.id.slice(1)) - parseInt(b.id.slice(1)));
     state.selected = p.id;
     if (live()) playTrack(t);
@@ -2999,7 +3014,8 @@ async function smSearch() {
 // ------------------------------------------------------------------ GitHub
 function projectPayload() {
   return { name: state.name || L("Canción sin título", "Untitled song"), bpm: state.bpm, style: state.style,
-    projectId: state.projectId, tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted })) };
+    projectId: state.projectId, tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted, ...(t.fromScore ? { fromScore: t.fromScore } : {}) })),
+    ...(state.score && state.score.parts && state.score.parts.length ? { score: state.score } : {}) };
 }
 function needGitHub() {
   if (server.github) return false;
@@ -3089,8 +3105,10 @@ async function openGitHubSong(slug, ref) {
   fileHandle = null;
   // Una versión antigua se abre como copia para no pisar la actual
   if (ref) { state.projectId = "p" + Date.now(); state.name = `${state.name} (${ref.slice(0, 7)})`; }
+  const regen = data.score ? await adoptScore(state, data.score) : [];
   restoreHistory(state, null); tabOpened();
   $("#newproj").close(); renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons(); if (live()) playAll();
+  if (regen.length) sysMsg(L(`La partitura (song.musicxml) manda sobre la melodía, los acordes y el bajo: he regenerado ${regen.join(", ")} a partir de ella.`, `The score (song.musicxml) leads the melody, chords and bass: I regenerated ${regen.join(", ")} from it.`));
   sysMsg(ref ? L(`Abierta la versión ${ref.slice(0, 7)} de «${slug}». Si la guardas en GitHub, pasará a ser la versión más nueva.`, `Opened version ${ref.slice(0, 7)} of «${slug}». If you save it to GitHub, it becomes the newest version.`)
     : L(`Abierta «${slug}» desde GitHub.`, `Opened «${slug}» from GitHub.`));
 }
@@ -3142,7 +3160,8 @@ async function createOnGitHub() {
     const list = await api("/api/github/list", {});
     const slug = uniqueSlug(slugify(s.name || L("cancion", "song") + "-" + new Date().toISOString().slice(0, 10)), new Set(list.songs.map((x) => x.slug)));
     const payload = { name: s.name || L("Canción sin título", "Untitled song"), bpm: s.bpm, style: s.style, projectId: s.projectId, extra: s.extra || "",
-      tracks: s.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted })) };
+      tracks: s.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted })),
+      ...(s.score && s.score.parts && s.score.parts.length ? { score: s.score } : {}) };
     const r = await api("/api/github/save", { project: payload, slug, message: L(`Creo «${payload.name}»`, `Create «${payload.name}»`) });
     if (!s.github || !s.github.pending) return;
     s.github = ghFrom(r);
@@ -3862,13 +3881,13 @@ async function openPath(path) {
   if (busy) return busyMsg();
   try {
     const r = await api("/api/file/read", { path });
-    loadFileText(r.content, { path: r.path, name: r.name });
+    await loadFileText(r.content, { path: r.path, name: r.name, score: r.score });
   } catch (e) {
     dropRecent(path);
     toast(L(`No se pudo abrir ${baseName(path)}: `, `Couldn't open ${baseName(path)}: `) + e.message);
   }
 }
-function loadFileText(text, file, handle = null) {
+async function loadFileText(text, file, handle = null) {
   const meta = readMeta(text);
   const p = parseCode(text, meta && meta.master);
   if (!p.tracks.length && !p.extra) return toast(L(`«${file.name}» no tiene código de Tidal que pueda leer.`, `«${file.name}» has no Tidal code I can read.`));
@@ -3884,6 +3903,8 @@ function loadFileText(text, file, handle = null) {
     style: meta && STYLES[meta.style] ? meta.style : (prev ? base.style : ""),
     master: (meta && meta.master) || undefined, tracks: p.tracks, extra: p.extra, step: "libre" };
   fileHandle = handle;
+  // cancion.tidal + cancion.musicxml: la partitura regenera las pistas que salen de ella (puede venir de MuseScore)
+  const regen = file.score ? await adoptScore(state, file.score) : [];
   state.file = { path: file.path || "", name: file.name, hash: "" };
   state.file.hash = hashText(fileText());
   addRecent(file.path, file.name);
@@ -3892,7 +3913,9 @@ function loadFileText(text, file, handle = null) {
   const n = p.tracks.length;
   say(L(`He abierto «${file.name}»: ${n} ${n === 1 ? "pista" : "pistas"} a ${state.bpm} BPM.`, `I opened «${file.name}»: ${n} ${n === 1 ? "track" : "tracks"} at ${state.bpm} BPM.`)
     + (p.extra ? L(" El código que no es una pista (definiciones, let, once…) está intacto en «Código extra», arriba de las pistas.", " Code that isn't a track (definitions, let, once…) is kept intact in «Extra code», above the tracks.") : "")
-    + (p.skipped.length ? L(` He quitado ${p.skipped.join(", ")}: aquí se para con el botón Silencio.`, ` I left out ${p.skipped.join(", ")}: here you stop with the Hush button.`) : ""),
+    + (p.skipped.length ? L(` He quitado ${p.skipped.join(", ")}: aquí se para con el botón Silencio.`, ` I left out ${p.skipped.join(", ")}: here you stop with the Hush button.`) : "")
+    + (file.score ? L(` Con su partitura (${file.score.parts.length} ${file.score.parts.length === 1 ? "parte" : "partes"})${regen.length ? `: he regenerado ${regen.join(", ")} a partir de ella` : ""}.`,
+      ` With its score (${file.score.parts.length} ${file.score.parts.length === 1 ? "part" : "parts"})${regen.length ? `: I regenerated ${regen.join(", ")} from it` : ""}.`) : ""),
     [L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()]);
   renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons(); renderFileStatus();
   if (live() && n) playAll(true);
@@ -3905,7 +3928,8 @@ async function writeTo(target) {
     const w = await target.handle.createWritable(); await w.write(content); await w.close();
     return { name: target.handle.name, path: "" };
   }
-  const r = await api("/api/file/write", { path: target.path, content, overwrite: target.overwrite !== false });
+  const score = state.score && state.score.parts && state.score.parts.length ? state.score : undefined;
+  const r = await api("/api/file/write", { path: target.path, content, overwrite: target.overwrite !== false, score, title: state.name || "" });
   return r;
 }
 function savedAs(r, handle = null) {
@@ -4354,6 +4378,7 @@ function renderCourse() {
       <div class="cs-actions">
         <button class="primary" data-cs="apply">${icon(done ? "redo" : kind === "tracks" ? "plus" : "check", 14)} ${done ? L("Volver a aplicar", "Apply again") : applyLabel}</button>
         ${kind === "tracks" ? `<button class="prehear" data-cs="hear">${icon("speaker", 13)} ${L("Escuchar", "Listen")}</button>` : ""}
+        ${kind === "tracks" && st.tracks.some((t) => /^(melodia|bajo|armonia)$/.test(t.tipo)) ? `<button data-cs="other" title="${esc(L("3 versiones nuevas de esta pista sobre el resto de tu canción, que no se toca", "3 new takes on this track over the rest of your song, which stays as it is"))}">${icon("redo", 14)} ${L("Otra versión", "Another version")}</button>` : ""}
         <button data-cs="ask">${icon("maestro", 15)} ${L("Pregunta a Maestro", "Ask Maestro")}</button>
       </div>
       ${done ? `<div class="cs-try"><b>${L("Tu turno.", "Your turn.")}</b> ${esc(st.try)}</div>` : ""}
@@ -4403,6 +4428,27 @@ function courseAction(a) {
   if (a === "record") return toggleRecord();
   if (a === "ask") return courseAsk();
   if (a === "apply") return courseApply();
+  if (a === "other") return courseOther();
+}
+
+// «Otra versión»: 3 candidatas de la pista melódica/bajo/armonía del paso,
+// generadas con midigen v2 sobre el resto de la canción, que queda congelado.
+async function courseOther() {
+  const c = courseById(state.course.id), st = c.steps[state.course.i];
+  const t = (st.tracks || []).find((x) => /^(melodia|bajo|armonia)$/.test(x.tipo));
+  if (!t) return;
+  stopPreHear();
+  const cur = state.tracks.find((x) => x.id === t.id);
+  const btn = $("#course-dock [data-cs=other]");
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api("/api/course/variants", { style: c.id, track: { id: t.id, nombre: t.nombre, tipo: t.tipo, codigo: (cur && cur.code) || t.codigo }, seed: Math.floor(Math.random() * 1e6) });
+    if (!r.variantes || !r.variantes.length) return toast(L("No he podido generar versiones para esta pista.", "I couldn't make versions of this track."));
+    state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
+    say(L(`Tres versiones nuevas de «${t.nombre}» en ${r.key} (${(r.chords || []).join(" ")}). El resto de tu canción no cambia: escúchalas encima y elige.`,
+      `Three new takes on «${t.nombre}» in ${r.key} (${(r.chords || []).join(" ")}). The rest of your song stays the same: listen over it and pick one.`), state.options, { variantes: r.variantes });
+  } catch (e) { toast(String(e.message || e)); }
+  finally { if (btn) btn.disabled = false; }
 }
 
 async function courseApply() {
@@ -4575,6 +4621,7 @@ function init() {
   $("#btn-settings").onclick = openSettings;
   initListen({ api, getState: () => state, genres: COURSES.map((c) => ({ id: c.id, name: c.name })) });
   initMonitor({ api });
+  initScore({ api, getState: () => state, changed, sysMsg, toast, playTrack: (t) => live() && playTrack(t) });
   $("#bpm-lock").onclick = () => { state.bpmLock = !state.bpmLock; save(); renderBpmLock(); };
   renderBpmLock();
   initAppUpdate();

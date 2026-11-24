@@ -16,6 +16,8 @@ La IA siempre contesta con un bloque JSON que la interfaz entiende:
 import json
 import re
 
+import score as scoremod
+
 SYSTEM_PROMPT = """Eres "Maestro", profesor de TidalCycles y productor musical. Tidal Studio es una plataforma para APRENDER MÚSICA y TidalCycles a la vez, creando canciones de verdad, y tú acompañas al alumno en cada paso como lo haría un buen profesor de producción musical. El alumno es principiante absoluto: hablas en español, con frases cortas y sin jerga; si usas un término técnico (BPM, reverb, ciclo, patrón…) lo explicas en media frase.
 
 TRES PAPELES A LA VEZ:
@@ -113,6 +115,12 @@ def session_summary(session):
         maxop = 4
     if maxop < 4 and variants_on(session):
         lines.append(f"LÍMITE DE OPCIONES (ajuste del alumno): como mucho {max(1, maxop)} en \"variantes\".")
+    try:
+        sc = scoremod.summary(session.get("score")) if isinstance(session.get("score"), dict) else ""
+    except (ValueError, TypeError, KeyError):
+        sc = ""
+    if sc:
+        lines.append(sc)
     related = [str(x)[:400] for x in (session.get("canciones_relacionadas") or [])][:10]
     if related:
         lines.append("Pistas de OTRAS canciones del alumno relacionadas con lo que pide (de su índice de canciones; úsalas para "
@@ -198,6 +206,15 @@ MODO PLAN POR PASOS (activado; tiene prioridad sobre el modo opciones cuando cho
 - Peticiones pequeñas (una pista, un efecto, una duda, un arreglo): responde normal, sin plan."""
 
 
+SCORE_PROMPT = """
+
+PARTITURA (el cuaderno de composición de la canción): la melodía, los acordes y el bajo de la canción viven también en una partitura (MusicXML) que el alumno puede abrir en MuseScore; la app la traduce a Tidal. El ritmo de batería, el groove y los efectos siguen siendo Tidal puro.
+- Cuando COMPONGAS o cambies notas de melodía, acordes o bajo, escríbelas en "cambios.partitura" en vez de escribir tú el código: {"clave": "Am", "compas": "4/4", "partes": [{"id": "melodia", "pista": "d6", "nombre": "Melodía", "rol": "melodia|armonia|bajo", "sonido": "superpiano", "efectos": "# room 0.3", "compases": "e5:1 ~:1/2 g5:1/2 a5:2 | c6:2 b5:1 a5:1 | …"}]}. La app crea el código Tidal de esa pista (note "<…>" con un compás por ciclo) y lo explica; no repitas esa pista en "pistas".
+- "compases": compases separados por «|»; cada nota es nota:duración en tiempos (negras): c5 es el do central, cs5 do sostenido, ef5 mi bemol; ~ silencio; [c4,e4,g4] acorde; duraciones como 1, 1/2, 3/2, 1/3. Cada compás suma lo que pide el compás (4 en 4/4).
+- Compón como un compositor: un MOTIVO corto que se repite, se transforma (secuencia, inversión, desplazamiento rítmico) y se contesta (pregunta y respuesta), con silencios para respirar, un clímax y una cadencia al final. Cuida que la melodía, el bajo y los acordes encajen en la tonalidad y en los acordes de cada compás.
+- En un plan por pasos, cada paso escribe su parte en la partitura; "desde_compas": N (1, 2…) reescribe solo desde ese compás para añadir una sección nueva sin tocar las anteriores.
+- Si una pista es código libre (transformaciones de Tidal como every, jux o superimpose que no caben en una partitura), sigue escribiéndola en "pistas" como siempre."""
+
 PLAN_STEP_PROMPT = """
 
 EJECUTANDO UN PLAN APROBADO (tiene prioridad sobre todo lo anterior): el alumno aprobó un plan y vamos paso a paso. Su último mensaje trae el plan, los pasos hechos y el paso que toca AHORA.
@@ -274,9 +291,9 @@ def build_messages(history, session):
                    + f"---\nESTADO DE LA SESIÓN:\n{session_summary(session)}",
     }
     if ps:
-        system = SYSTEM_PROMPT + (FETCH_PROMPT if fetch_on(session) else "") + PLAN_STEP_PROMPT
+        system = SYSTEM_PROMPT + SCORE_PROMPT + (FETCH_PROMPT if fetch_on(session) else "") + PLAN_STEP_PROMPT
     else:
-        system = (SYSTEM_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "") + (FETCH_PROMPT if fetch_on(session) else "")
+        system = (SYSTEM_PROMPT + SCORE_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "") + (FETCH_PROMPT if fetch_on(session) else "")
                   + (PLAN_PROMPT if plan_on(session) else "")
                   + (FORCE_PLAN if (session or {}).get("plan_forzar") else ""))
     return system, msgs
@@ -333,11 +350,15 @@ def _parse_changes(cambios):
         bpm = max(40, min(220, float(bpm))) if bpm is not None else None
     except (TypeError, ValueError):
         bpm = None
-    return {
+    out = {
         "bpm": bpm,
         "pistas": pistas,
         "eliminar": [e for e in (cambios.get("eliminar") or []) if isinstance(e, str)],
     }
+    pt = cambios.get("partitura")
+    if isinstance(pt, dict) and isinstance(pt.get("partes"), list):
+        out["partitura"] = {k: pt.get(k) for k in ("clave", "compas", "partes") if pt.get(k) is not None}
+    return out
 
 
 def _parse_explain(items):
