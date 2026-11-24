@@ -283,6 +283,12 @@ class MidiHub:
         self.settings = dict(DEFAULTS)
         self.rec = None      # {start_seq, t0, bpm, cycle0, synced, stop}
         self.last_note_at = 0.0
+        # Teclas y pedal pisados por cada teclado: si lo desenchufas a medias, se sueltan solos
+        self.held = collections.defaultdict(set)
+        self.pedal = {}
+        # Avisos de enchufar / desenchufar para la web (los últimos)
+        self.plugs = collections.deque(maxlen=20)
+        self.plug_seq = 0
 
     # --- de SuperCollider (engine.py reparte los OSC /ts/midi…)
     def on_osc(self, addr, args):
@@ -295,6 +301,8 @@ class MidiHub:
             with self.lock:
                 self.devices = [str(a) for a in args]
                 self.devices_at, self.error = time.time(), ""
+        elif addr in ("/ts/midiplug", "/ts/midiunplug") and args:
+            self.plugged(str(args[0]), addr == "/ts/midiplug")
         elif addr == "/ts/midierr":
             with self.lock:
                 self.error = str(args[0]) if args else "?"
@@ -310,7 +318,44 @@ class MidiHub:
             self.events.append(ev)
             if kind == "on":
                 self.last_note_at = ev["t"]
+                self.held[src].add(ev["note"])
+            elif kind == "off":
+                self.held[src].discard(ev["note"])
+            else:
+                self.pedal[src] = ev["vel"]
             return ev
+
+    def plugged(self, name, added):
+        """Un teclado aparece o desaparece. Si desaparece con teclas o el pedal pisados, los soltamos:
+        si no, la web los dejaría encendidos y la grabación alargaría esas notas hasta el final."""
+        if not added:
+            with self.lock:
+                notes = sorted(self.held.pop(name, set()))
+                ped = self.pedal.pop(name, 0)
+            for n in notes:
+                self.add("off", n, 0, 0, name)
+            if ped >= 64:
+                self.add("pedal", 64, 0, 0, name)
+                self.pedal.pop(name, None)
+        with self.lock:
+            self.plug_seq += 1
+            self.plugs.append({"seq": self.plug_seq, "t": time.time(), "name": name, "added": bool(added)})
+
+    def release_all(self):
+        """Suelta todo lo pisado (al parar el motor o desactivar el teclado)."""
+        with self.lock:
+            held = {src: sorted(n) for src, n in self.held.items() if n}
+            peds = [src for src, v in self.pedal.items() if v >= 64]
+            self.held.clear()
+            self.pedal.clear()
+        for src, notes in held.items():
+            for n in notes:
+                self.add("off", n, 0, 0, src)
+        for src in peds:
+            self.add("pedal", 64, 0, 0, src)
+        with self.lock:
+            self.held.clear()
+            self.pedal.clear()
 
     def web_note(self, kind, note, vel=90, ch=0, src="web"):
         """Nota del navegador (Web MIDI, teclado en pantalla, teclas): la apuntamos y suena en SuperDirt."""
@@ -322,7 +367,7 @@ class MidiHub:
 
     # --- ajustes (se mandan a SuperCollider y se vuelven a mandar cada vez que arranca)
     def set_settings(self, data):
-        changed = {}
+        changed, moved = {}, set()
         for k, v in (data or {}).items():
             if k not in DEFAULTS:
                 continue
@@ -334,13 +379,20 @@ class MidiHub:
                 v = float(v)
             else:
                 v = str(v)[:120]
+            if self.settings.get(k) != v:
+                moved.add(k)
             self.settings[k] = v
             changed[k] = v
         for k, v in changed.items():
             self.engine.sc_cmd("midiset", k, ("1" if v else "0") if isinstance(v, bool) else str(v))
+        # Desactivar el sonido o cambiar de teclado/canal: lo que estaba pisado deja de estarlo
+        if moved & {"device", "chan"} or ("play" in moved and not self.settings["play"]):
+            self.release_all()
         return self.settings
 
     def on_engine_ready(self):
+        # El motor acaba de (re)arrancar: nada sigue sonando, así que nada sigue pisado
+        self.release_all()
         for k, v in self.settings.items():
             self.engine.sc_cmd("midiset", k, ("1" if v else "0") if isinstance(v, bool) else str(v))
         self.engine.sc_cmd("midiscan")
@@ -434,4 +486,5 @@ class MidiHub:
             rec = dict(self.rec) if self.rec else None
             return {"now": time.time(), "seq": self.seq, "events": evs, "devices": list(self.devices),
                     "devices_at": self.devices_at, "error": self.error, "settings": dict(self.settings),
-                    "sc": bool(self.engine.osc_ready), "rec": rec, "last_note_at": self.last_note_at}
+                    "sc": bool(self.engine.osc_ready), "rec": rec, "last_note_at": self.last_note_at,
+                    "plugs": list(self.plugs)}

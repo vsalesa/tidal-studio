@@ -109,6 +109,10 @@ DEFAULT_CONFIG = {
         "auto_check": True,
         "skipped": "",             # versión que elegiste saltarte
     },
+    # Salida de audio de SuperCollider ("" = la del sistema). Se elige en el aviso de audio de la web.
+    "audio": {
+        "out": "",
+    },
     "temperature": 0.7,
     # Segundos que la IA puede pasar SIN mandar nada antes de darla por perdida (si va respondiendo, no se corta)
     "ai_timeout": 300,
@@ -671,6 +675,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(ENGINE.events_since(since))
             if path == "/api/sounds":
                 return self._json(ENGINE.sound_list())
+            if path == "/api/audio":
+                return self._json(ENGINE.audio_state())
             if path == "/api/midi/state":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -1189,6 +1195,17 @@ class Handler(SimpleHTTPRequestHandler):
 
             if path == "/api/engine/start":
                 return self._json(ENGINE.start())
+            if path == "/api/audio/restart":
+                # «Reconectar audio» (opcional: otra salida). La salida elegida se guarda para el próximo arranque.
+                if not self._same_origin():
+                    return self._json({"error": "forbidden"}, 403)
+                out = data.get("out")
+                if out is not None:
+                    cfg = load_config()
+                    cfg.setdefault("audio", {})["out"] = str(out or "")[:200]
+                    save_config(cfg)
+                threading.Thread(target=ENGINE.restart_audio, args=(out,), daemon=True).start()
+                return self._json({"ok": True})
             if path == "/api/engine/stop":
                 ENGINE.stop()
                 return self._json(ENGINE.status())
@@ -1358,6 +1375,7 @@ def main():
             print(f"[instrumentos] nivel corregido: {', '.join(lv)}")
     except Exception as e:  # noqa: BLE001
         print(f"[instrumentos] {e}")
+    ENGINE.audio_out = str((load_config().get("audio") or {}).get("out") or "")
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
     threading.Thread(target=update_plugins_on_start, daemon=True).start()

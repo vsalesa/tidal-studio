@@ -23,7 +23,7 @@ let dock = null;
 const st = {
   open: false, seq: -1, offset: 0, sc: false, devices: [], devicesKey: "", error: "", held: new Set(), clicks: [],
   rec: null, result: null, opts: { grid: "auto", split: "auto", bpm: null }, busy: false, previewing: false,
-  web: null, webInputs: [], kbOct: 0, lastPreview: 0, pollTimer: null, ac: null, metroTimer: null, nextClick: 0,
+  web: null, webInputs: [], kbOct: 0, plugSeq: -1, lastPreview: 0, pollTimer: null, ac: null, metroTimer: null, nextClick: 0,
 };
 const conf = Object.assign({ sound: "superpiano", device: "", chan: -1, play: true, length: 1.2, transpose: 0, volume: 1, countin: true, metro: true },
   (() => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; } })());
@@ -93,6 +93,15 @@ async function poll() {
       if (st.open) renderStatus();
     }
     if (scWas !== st.sc && st.open) { maybeWebMidi(); renderStatus(); }
+    // Enchufar y desenchufar el teclado: lo avisamos (al quitarlo, el servidor ya ha soltado sus notas)
+    const plugs = r.plugs || [];
+    if (st.plugSeq >= 0) {
+      for (const p of plugs.filter((x) => x.seq > st.plugSeq)) {
+        ctx.toast(p.added ? L(`Teclado conectado: ${p.name}`, `Keyboard connected: ${p.name}`)
+          : L(`Teclado desconectado: ${p.name}. He soltado las notas que se quedaron pisadas.`, `Keyboard disconnected: ${p.name}. I released any notes left held.`));
+      }
+    }
+    st.plugSeq = plugs.length ? plugs[plugs.length - 1].seq : Math.max(0, st.plugSeq);
     if (!first) {
       for (const e of r.events) {
         if (e.type === "on") st.held.add(e.note);
@@ -161,9 +170,20 @@ const webNames = () => (st.web && !st.sc ? [...st.web.inputs.values()].map((i) =
 
 // ---------------------------------------------------------------- metrónomo (WebAudio)
 
+// El AudioContext del navegador: Safari (la app de Mac) lo deja «interrupted» o «suspended» cuando cambia la
+// salida de sonido (enchufar un piano USB, unos auriculares…). Lo reanudamos y, si no vuelve, creamos otro.
 function audio() {
-  try { st.ac = st.ac || new (window.AudioContext || window.webkitAudioContext)(); } catch { st.ac = null; }
-  if (st.ac && st.ac.state === "suspended") st.ac.resume();
+  try {
+    if (!st.ac || st.ac.state === "closed") {
+      st.ac = new (window.AudioContext || window.webkitAudioContext)();
+      st.ac.onstatechange = () => { if (st.ac && st.ac.state === "interrupted") st.ac.resume().catch(() => {}); };
+    }
+  } catch { st.ac = null; }
+  if (st.ac && (st.ac.state === "suspended" || st.ac.state === "interrupted")) {
+    const ac = st.ac;
+    ac.resume().catch(() => {});
+    setTimeout(() => { if (st.ac === ac && ac.state !== "running") { try { ac.close(); } catch { /* ya cerrado */ } st.ac = null; } }, 400);
+  }
   return st.ac;
 }
 function click(at, accent) {

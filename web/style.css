@@ -1501,3 +1501,11 @@ dialog.il-dialog[open] { display: flex; }
 .mk-actions .link { margin-left: auto; }
 @media (max-width: 640px) { .mk-keys { height: 70px; } .mk-tracks .imp-track { grid-template-columns: auto auto 1fr; } .mk-tracks .imp-track code { grid-column: 1 / -1; } }
 .mk-settings label, .mk-rec label, .mk-opts label { white-space: nowrap; }
+
+/* Aviso de audio (web/audiostatus.js) */
+.audio-bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 60; max-width: min(860px, calc(100vw - 32px));
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-radius: 10px;
+  background: var(--panel, #fff); border: 1px solid var(--warn, #d9a400); box-shadow: 0 6px 24px rgba(0,0,0,.15); font-size: 14px; }
+.audio-bar[hidden] { display: none; }
+.audio-bar .as-msg { flex: 1 1 280px; }
+.audio-bar select { max-width: 220px; }

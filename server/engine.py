@@ -179,6 +179,11 @@ class Engine:
         # Teclado MIDI: quién recibe los OSC /ts/midi… y qué hacer cuando SuperDirt está listo (midilive.MidiHub)
         self.midi_handler = None
         self.on_ready = []
+        # Audio: qué salida usa SuperCollider, a qué frecuencia, qué salidas hay y si algo ha cambiado
+        # (enchufar un piano USB o unos auriculares puede cambiar el audio del sistema). Ver audio_state().
+        self.audio_out = ""            # salida elegida en Ajustes ("" = la del sistema)
+        self.audio = self._audio_blank()
+        self._stopping = False
 
     # ---------- notas que suenan ----------
     def start_event_listener(self):
@@ -259,6 +264,8 @@ class Engine:
                             fn()
                         except Exception as e:  # noqa: BLE001
                             self._add("studio", f"{e}")
+            if source == "sc" and self._audio_line(line):
+                continue
             if source == "sc" and line.startswith("TIDAL_STUDIO_SOUNDS:"):
                 with self.lock:
                     self.sounds = set(line.split(":", 1)[1].split())
@@ -273,6 +280,13 @@ class Engine:
                         self.missing.add(m.group(1)); self.sounds_rev += 1
             self._add(source, line)
         self._add("studio", f"{source} se ha cerrado (código {proc.poll()})")
+        if source == "sc" and not self._stopping and proc is self.sclang:
+            # SuperCollider se ha cerrado sin que lo paremos: el audio se ha perdido
+            with self.lock:
+                self.audio["problem"] = "sc-exit"
+                self.audio["rev"] += 1
+            self.superdirt_ready = False
+            self.osc_ready = False
 
     # ---------- arranque ----------
     def status(self):
@@ -292,7 +306,7 @@ class Engine:
         with self.lock:
             return {"sounds": sorted(self.sounds), "missing": sorted(self.missing), "rev": self.sounds_rev}
 
-    def _popen(self, cmd, cwd):
+    def _popen(self, cmd, cwd, extra_env=None):
         kwargs = dict(stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                       stderr=subprocess.STDOUT, cwd=cwd, bufsize=0)
         if SYSTEM == "Windows":
@@ -300,6 +314,7 @@ class Engine:
         env = utf8_env()
         if SYSTEM == "Linux" and not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
             env["QT_QPA_PLATFORM"] = "offscreen"
+        env.update(extra_env or {})
         kwargs["env"] = env
         return subprocess.Popen(cmd, **kwargs)
 
@@ -327,7 +342,11 @@ class Engine:
                 with self.lock:
                     self.sounds, self.missing = set(), set()
                     self.sounds_rev += 1
-                self.sclang = self._popen(cmd, os.path.dirname(sclang))
+                    rev = self.audio["rev"] + 1
+                    self.audio = self._audio_blank()
+                    self.audio["rev"] = rev
+                self._stopping = False
+                self.sclang = self._popen(cmd, os.path.dirname(sclang), {"TIDAL_SC_OUTDEVICE": self.audio_out or ""})
                 threading.Thread(target=self._pump, args=(self.sclang, "sc"), daemon=True).start()
 
             if not ghci:
@@ -390,8 +409,10 @@ class Engine:
     def record_stop(self):
         return self.sc_cmd("stoprecord")
 
-    def stop(self):
-        for name in ("ghci", "sclang"):
+    def stop(self, only=("ghci", "sclang")):
+        if "sclang" in only:
+            self._stopping = True
+        for name in only:
             proc = getattr(self, name)
             if proc and proc.poll() is None:
                 try:
@@ -407,6 +428,88 @@ class Engine:
             setattr(self, name, None)
         self.superdirt_ready = False
         self.osc_ready = False
+
+    # ---------- audio: dispositivo de salida y recuperación ----------
+    @staticmethod
+    def _audio_blank():
+        return {"out": "", "rate": 0, "inputs": None, "devices": [], "boot_devices": None,
+                "problem": "", "added": [], "removed": [], "rev": 0}
+
+    def _audio_line(self, line):
+        """Lee las líneas TIDAL_STUDIO_AUDIO… de start_superdirt.scd y los avisos de audio de scsynth.
+        Devuelve True si la línea era solo para nosotros (no va al registro)."""
+        line = line.rstrip("\r\n")
+        if line.startswith("TIDAL_STUDIO_AUDIO:"):
+            parts = line.split(":", 1)[1].split("\t")
+            with self.lock:
+                self.audio["out"] = parts[0] if parts else ""
+                try:
+                    self.audio["rate"] = int(float(parts[1])) if len(parts) > 1 else 0
+                    self.audio["inputs"] = int(float(parts[2])) if len(parts) > 2 else None
+                except ValueError:
+                    pass
+                self.audio["rev"] += 1
+            return True
+        if line.startswith("TIDAL_STUDIO_AUDIO_DEVICES:"):
+            devs = [d for d in line.split(":", 1)[1].split("\t") if d.strip()]
+            with self.lock:
+                a = self.audio
+                if a["boot_devices"] is None:
+                    a["boot_devices"] = devs
+                else:
+                    # Comparado con lo que había al arrancar el motor: si cambia, la web ofrece reconectar
+                    a["added"] = [d for d in devs if d not in a["boot_devices"]]
+                    a["removed"] = [d for d in a["boot_devices"] if d not in devs]
+                    if (a["added"] or a["removed"]) and not a["problem"]:
+                        a["problem"] = "devices-changed"
+                    elif not (a["added"] or a["removed"]) and a["problem"] == "devices-changed":
+                        a["problem"] = ""
+                a["devices"] = devs
+                a["rev"] += 1
+            return True
+        if line.startswith("TIDAL_STUDIO_AUDIO_LOST"):
+            with self.lock:
+                self.audio["problem"] = "server-lost"
+                self.audio["rev"] += 1
+            self._add("studio", "El motor de audio (scsynth) se ha parado. Pulsa «Reconectar audio».")
+            return True
+        low = line.lower()
+        if "mismatched sample rates" in low or "could not initialize audio" in low or "could not boot server" in low:
+            with self.lock:
+                self.audio["problem"] = "rate-mismatch" if "mismatched" in low else "boot-failed"
+                self.audio["rev"] += 1
+        return False
+
+    def audio_state(self):
+        with self.lock:
+            a = dict(self.audio)
+        a["chosen"] = self.audio_out
+        a["running"] = bool(self.sclang and self.sclang.poll() is None)
+        a["ready"] = bool(self.osc_ready)
+        return a
+
+    def restart_audio(self, out=None):
+        """«Reconectar audio»: reinicia solo SuperCollider + SuperDirt (con la salida elegida).
+        Tidal sigue vivo y sigue mandando la canción, así que vuelve a sonar sola en cuanto SuperDirt escucha."""
+        if out is not None:
+            self.audio_out = str(out or "")[:200]
+        self._add("studio", "Reconectando el audio…" + (f" (salida: {self.audio_out})" if self.audio_out else ""))
+        self.stop(only=("sclang",))
+        self._kill_orphan_scsynth()
+        return self.start()
+
+    def _kill_orphan_scsynth(self):
+        """Si sclang se cerró a la fuerza, scsynth puede quedar vivo ocupando el puerto 57110 y el nuevo
+        arranque fallaría. El audio de Tidal Studio es nuestro, así que lo cerramos."""
+        try:
+            if SYSTEM == "Windows":
+                subprocess.run(["taskkill", "/F", "/IM", "scsynth.exe"], capture_output=True, timeout=5,
+                               creationflags=0x08000000)
+            elif shutil.which("pkill"):
+                subprocess.run(["pkill", "-x", "scsynth"], capture_output=True, timeout=5)
+            time.sleep(0.5)
+        except Exception:  # noqa: BLE001
+            pass
 
     # ---------- evaluar código ----------
     def eval(self, code):

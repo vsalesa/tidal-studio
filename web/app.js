@@ -31,6 +31,7 @@ import { initAppUpdate } from "./appupdate.js";
 import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
 import { initMidi, toggleMidi } from "./midikeys.js";
+import { initAudioStatus } from "./audiostatus.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -2703,6 +2704,7 @@ function wireInstLib() {
 }
 // --- teclado MIDI (web/midikeys.js): tu piano suena y se traduce a pistas de Tidal
 function wireMidi() {
+  initAudioStatus();
   initMidi({
     toast, beep: (m) => beep(m, "piano", 0.6),
     bpm: () => state.bpm,
