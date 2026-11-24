@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.12.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.12.1** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -501,13 +501,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.12.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.12.1; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.12.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.0/TidalStudio-0.12.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.12.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.0/TidalStudio-0.12.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.12.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.0/tidal-studio_0.12.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.12.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/TidalStudio-0.12.1-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.12.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/TidalStudio-0.12.1-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.12.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/tidal-studio_0.12.1_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -719,6 +719,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.12.1** | Fix: saving songs to a [GitHub](#github) repository you just created empty (no README) no longer fails with «409: the repository is empty»; the repository field also accepts a pasted GitHub URL. |
 | **0.12.0** | [Play your MIDI keyboard](#play-your-midi-keyboard-it-sounds-and-turns-into-tidal-code): your USB piano sounds with any instrument and what you play becomes Tidal tracks (left and right hand), recorded in time with your song; Maestro explains it and suggests how to continue. |
 | **0.11.0** | [Tidal Studio updates itself](#tidal-studio-updates-itself): it tells you about new versions, downloads and verifies the installer for your computer and installs it with one click. |
 | **0.10.0** | [Plan step by step](#big-requests-maestro-makes-a-plan-and-goes-step-by-step): for big requests Maestro shows a plan first and does it step by step, saving each step, so a timeout no longer loses work; a Cancel button (or Esc) stops what you sent; the AI is only cut off when it goes silent, and Maestro caches its instructions, skills and sound searches. [Generate from your MIDI](#generate-from-your-midi-in-any-style) in 11 styles, keeping your melody, chords, bass or drums. [Songs in tabs](#several-songs-open-at-once-in-tabs), opening and closing `.tidal` files from your disk next to GitHub. [Genre courses](#genre-courses) with a real drummer to hear in nine styles and Latin styles learned from real songs. [Audio import](#import-a-song-as-a-starting-point) separates instruments with MSST (SCNet XL) plus Demucs for the bass. [Maestro sees new downloads](#maestro-downloads-the-sounds-it-needs) right away: your library is read from disk with every message. |
