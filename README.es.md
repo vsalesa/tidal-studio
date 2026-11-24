@@ -915,9 +915,13 @@ Cajas de ritmos opcionales: `git clone https://github.com/geikha/tidal-drum-mach
 
 Abre ⚙ Ajustes → GitHub. Crea un **token fine-grained** en GitHub (Settings → Developer settings → Personal access tokens)
 con acceso al repositorio de tus canciones y el permiso **Contents: Read and write**. Escribe el repositorio como
-`usuario/nombre`; si aún no existe, «Crear repositorio privado» lo crea (para eso el token necesita permiso para crear
+`usuario/nombre` (o pega su URL de GitHub, `https://github.com/usuario/nombre` o `…/nombre.git`; las dos valen). Si aún no existe, «Crear repositorio privado» lo crea (para eso el token necesita permiso para crear
 repositorios). Después usa el botón de la nube de la barra superior para guardar una versión con un mensaje. El token se
 guarda solo en `config.json`.
+
+También funciona un repositorio recién creado en GitHub sin ningún fichero (sin README): en el primer guardado Tidal
+Studio hace un commit inicial con un `README.md` pequeño y después guarda tu canción encima. Antes eso daba el error
+«GitHub 409: el repositorio está vacío».
 
 ## Cómo funciona
 

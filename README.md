@@ -894,9 +894,13 @@ Optional drum machines: `git clone https://github.com/geikha/tidal-drum-machines
 
 Open ⚙ Settings → GitHub. Create a **fine-grained token** on GitHub (Settings → Developer settings → Personal access
 tokens) with access to your songs repository and the permission **Contents: Read and write**. Type the repository as
-`user/name`; if it doesn't exist yet, «Create private repository» makes it (that needs a token with permission to create
+`user/name` (or paste its GitHub URL, `https://github.com/user/name` or `…/name.git`; both work). If it doesn't exist yet, «Create private repository» makes it (that needs a token with permission to create
 repositories). Then use the cloud button in the top bar to save a version with a message. The token is stored only in
 `config.json`.
+
+A repository you just created on GitHub with no files at all (no README) works too: on the first save Tidal Studio makes
+an initial commit with a small `README.md` and then saves your song on top of it. Before, that gave the error
+«GitHub 409: the repository is empty».
 
 ## How it works
 
