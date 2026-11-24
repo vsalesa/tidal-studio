@@ -1,4 +1,16 @@
-## What's new in 0.13.1 / Novedades
+## What's new in 0.14.0 / Novedades
+
+Maestro v2, first release of five (plan in `docs/maestro-v2` on the `feature/maestro-v2-blueprint` branch).
+
+- **Locks**: lock a whole track or just its rhythm, notes, sound, effects or mix, and the BPM. Maestro, ideas, options and courses can't change what you locked (the app checks every proposal; the server drops whatever touches a fully locked track or the BPM). You can still edit by hand. If the song changed while Maestro was thinking, its proposal arrives as an option instead of being applied.
+- **Blind A/B**: on Maestro's options, press **Blind** to vote by ear with names and code hidden; then Maestro tells you which one it was. Every vote, pick and undone pick is stored on your computer (never audio).
+- **Listening** (ear button): baseline rating 1-5 per genre with what is missing, your counts, and **Export JSONL** for a future model of your own.
+- **RAG monitor** (monitor button): Maestro's layers as a live diagram (local rules, song index, library, skills, LLM, validation) with time, hits, tokens and cache per layer, the share of requests answered without the LLM, and **Router limits** (max tokens, options at most, context tracks, local-answer confidence, AI timeout, layers on/off).
+- **Local answers without AI**: «which of my songs use supersaw?», «my songs», «search my songs for …» are answered from a read-only SQLite copy of your saved songs (full-text search), in `maestro-data/`.
+
+**Español:** **Candados**: bloquea una pista entera o solo su ritmo, notas, sonido, efectos o mezcla, y el BPM; Maestro, las ideas, las opciones y los cursos no pueden cambiar lo bloqueado, y tú sí puedes editarlo a mano. Si la canción cambió mientras Maestro pensaba, su propuesta llega como opción. **A/B a ciegas**: en las opciones de Maestro pulsa **A ciegas** y vota de oído sin nombres ni código; luego te dice cuál era. Cada voto, elección y elección deshecha se guarda en tu ordenador (nunca audio). **Escucha** (botón de la oreja): nota de línea base del 1 al 5 por género con lo que le falta, tus contadores y **Exportar JSONL**. **Monitor RAG** (botón del monitor): las capas de Maestro como diagrama en vivo con tiempo, aciertos, tokens y caché, el porcentaje sin LLM y los **Límites del enrutador**. **Respuestas locales sin IA**: «¿qué canciones mías usan supersaw?», «mis canciones» o «busca en mis canciones …» se responden con una copia SQLite de solo lectura de tus canciones guardadas.
+
+## 0.13.1
 
 - **Songs opened from GitHub show their GitHub path**: the tab and the line above the title show `user/repo/songs/name`, never a path on your computer, even if you also have a `.tidal` file with the same name (that file keeps its own tab). Ctrl+S / ⌘S on a GitHub song saves a new version to GitHub.
 - **Upload songs from my computer** (Settings → GitHub): choose a folder, tick the `.tidal` / `.hs` files and upload them all at once, one commit per song, with their extra code. A name already in the repository is uploaded as `name-2`, so nothing is overwritten.

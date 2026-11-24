@@ -10,6 +10,8 @@ frame "Your computer  (127.0.0.1)" {
   rectangle "<b>server/engine.py</b>\nstarts GHCi and sclang" as engine
   rectangle "<b>GHCi + TidalCycles</b>\ntidal/BootTidal.hs\nd1 … d12" as tidal #dcefeb
   rectangle "<b>SuperCollider + SuperDirt</b>\nsupercollider/start_superdirt.scd\nsamples · synths · EQ" as sc #f8ecd2
+  rectangle "<b>server/router.py</b>\nlayers: rules, index, library,\nskills, LLM, validation (locks)\nlimits + RAG monitor" as router #fbe3db
+  database "<b>maestro-data/maestro.db</b>\nSQLite: read-only copy of your songs\n(FTS5), votes, JSONL dataset" as db
   rectangle "<b>server/llm.py</b> + assistant.py\nMaestro's prompts and replies" as llm
   rectangle "<b>server/skills.py</b> + plugins.py\nskills/ · my-skills/ · my-plugins/" as skills
   rectangle "<b>server/samples.py</b> + fetcher.py\nsamples/ library\nMaestro fetches what is missing" as samples
@@ -30,7 +32,10 @@ engine --> tidal : code (stdin)
 tidal --> sc : OSC :57120
 sc --> out : audio
 sc ..> app : notes playing\nOSC :57140\n(live highlighting)
-app --> llm : chat
+app --> router : chat
+router --> llm : only when needed
+router --> db
+web ..> db : one-way sync\nof saved songs
 skills --> llm : matching skills
 llm --> ai
 app --> samples

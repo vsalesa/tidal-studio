@@ -16,14 +16,17 @@ import { songBlocksHTML, blockInfo } from "./blocks.js";
 import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf } from "./edit.js";
 import { mixerHTML, mixCodeHTML, mixBadgeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
-import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory } from "./history.js";
+import { songOf, initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory } from "./history.js";
 import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fixNegatives, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
 import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
-import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS } from "./variants.js";
+import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS, blindStart, BLIND } from "./variants.js";
+import { guardChanges, blockedText, lockRowHTML, toggleLock, isLocked, mixLocked } from "./locks.js";
+import { initListen, recordVote, songContext } from "./listen.js";
+import { initMonitor } from "./monitor.js";
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { planHTML, planContext, planEnabled, setPlanEnabled, newPlan, nextStep as nextPlanStep, planDone, PLAN_START, PLAN_STEPWISE, PLAN_ALL, PLAN_SPLIT, PLAN_CONTINUE, PLAN_RETRY, planBarHTML } from "./plan.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
@@ -89,6 +92,19 @@ function save() {
   renderFileStatus();
   renderTabs();
   if (state.github && state.github.pending) scheduleGitHubCreate();
+  scheduleSync();
+}
+// Copia de SOLO LECTURA de la canción para el índice de Maestro (SQLite). La canción sigue siendo del navegador.
+let syncTimer = null, lastSynced = "";
+function scheduleSync() { clearTimeout(syncTimer); syncTimer = setTimeout(syncSong, 2000); }
+async function syncSong() {
+  if (!state.projectId || !state.tracks.length) return;
+  const song = { id: state.projectId, name: state.name || "", bpm: state.bpm, style: state.style || "", locks: { bpm: !!state.bpmLock },
+    course: state.course ? state.course.id : null,
+    tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted, mix: t.mix || null, lock: t.lock || null })) };
+  const key = JSON.stringify(song);
+  if (key === lastSynced) return;
+  try { await api("/api/songs/sync", { song }); lastSynced = key; } catch { /* sin servidor: se reintenta al guardar otra vez */ }
 }
 const PROJ_KEY = "tidal-studio-projects-v1";
 function listProjects() {
@@ -247,6 +263,13 @@ function removeTrack(id) {
   changed();
 }
 
+function renderBpmLock() {
+  const b = $("#bpm-lock"); if (!b) return;
+  b.classList.toggle("on", !!state.bpmLock);
+  b.innerHTML = icon(state.bpmLock ? "lock" : "unlock", 16);
+  b.title = state.bpmLock ? L("BPM bloqueado: Maestro, las ideas y los cursos no lo cambian (pulsa para desbloquear)", "BPM locked: Maestro, ideas and courses won't change it (click to unlock)")
+    : L("Bloquear el BPM: Maestro, las ideas y los cursos no lo cambian", "Lock the BPM: Maestro, ideas and courses won't change it");
+}
 function changed() {
   save();
   renderTracks();
@@ -679,6 +702,7 @@ function renderTracks() {
           <button data-a="help" class="helpbtn" title="${L("¿No suena como quieres o da error? Maestro te ayuda", "Not sounding right or erroring? Maestro helps you")}">${icon("wand", 15)} ${L("Ayuda", "Help")}</button>
           <button data-a="controls" class="ctlbtn" title="${L("Ajustar esta pista con controles en el chat", "Tweak this track with controls in the chat")}">${icon("sliders", 15)}</button>
           <button data-a="card" class="ctlbtn" title="${L("Tarjeta configuradora: todos sus valores en el chat", "Configurator card: all its values in the chat")}">${icon("blocks", 15)}</button>
+          <button data-a="lock" class="lockbtn${isLocked(t) ? " on" : ""}" title="${isLocked(t) ? L("Bloqueada para Maestro (pulsa para cambiar qué partes)", "Locked for Maestro (click to change which parts)") : L("Bloquear la pista o una parte para que Maestro no la cambie", "Lock the track or a part so Maestro won't change it")}">${icon(isLocked(t) ? "lock" : "unlock", 15)}</button>
           <button data-a="play" title="${L("Hacer sonar esta pista", "Play this track")}">${icon("play", 14)}</button>
           <button data-a="mute" title="${t.muted ? L("Activar", "Unmute") : L("Silenciar", "Mute")}">${icon(t.muted ? "unmute" : "mute", 16)}</button>
           <button data-a="del" title="${L("Borrar pista", "Delete track")}">${icon("trash", 16)}</button>
@@ -686,6 +710,7 @@ function renderTracks() {
       </div>
       <textarea rows="${Math.min(6, t.code.split("\n").length + 1)}" spellcheck="false" title="${L("Ctrl+Enter para escuchar", "Ctrl+Enter to listen")}"></textarea>
       ${fxRowHTML(t)}
+      ${lockRowHTML(t, icon)}
       ${mixBadgeHTML(t, state, icon("mixer", 13))}
       ${t.error ? `<div class="err ${t.errorCode && t.errorCode !== t.code ? "stale" : ""}"><button class="err-x" data-a="clear-err" title="${L("Borrar este error (ya no aplica)", "Clear this error (no longer applies)")}" aria-label="${L("Borrar error", "Clear error")}">${icon("close", 14)}</button>${t.errorCode && t.errorCode !== t.code ? `<span class="err-stale">${L("Error de una versión anterior del código. Pulsa ▶ para comprobarlo o × para borrarlo.", "Error from an earlier version of the code. Press ▶ to check it or × to clear it.")}</span>` : ""}<span class="err-txt"></span></div>` : ""}
       ${t.help && t.help.open ? `<div class="explain-box help-box">${helpHTML(t)}</div>` : ""}
@@ -710,6 +735,8 @@ function renderTracks() {
         save(); renderTracks(); return;
       }
       if (btn && btn.dataset.fx) return toggleFx(t.id, btn.dataset.fx);
+      if (a === "lock") { t.lockOpen = !t.lockOpen; save(); renderTracks(); return; }
+      if (btn && btn.dataset.lock) { toggleLock(t, btn.dataset.lock); save(); renderTracks(); renderBlocks(); return; }
       if (a === "mix") return openMixFor(t.id);
       if (a === "controls") return showControls(t);
       if (a === "card") return openCard(t.id);
@@ -1048,6 +1075,8 @@ async function pickVariant(mi, k) {
   } else await stopAudition(true);
   const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
   m.picked = k;
+  recordVote({ kind: "pick", ...songContext(state), request: lastRealRequest().slice(0, 500), blind: !!m.blind,
+    candidates: m.variantes.map((x) => ({ title: x.titulo, concept: x.concepto || "", changes: x.cambios })), chosen: k });
   state.chat.push({ role: "user", content: L(`Me quedo con la opción ${LETTERS[k]}: «${v.titulo}».`, `I'll keep option ${LETTERS[k]}: «${v.titulo}».`) });
   const summary = applyChanges(v.cambios);
   if (v.concepto && !state.learnedMusic.includes(v.concepto)) state.learnedMusic.push(v.concepto);
@@ -1060,6 +1089,7 @@ function undoPick() {
   const m = [...state.chat].reverse().find((x) => x.pickSnap);
   if (!m) return false;
   const before = JSON.parse(m.pickSnap);
+  recordVote({ kind: "undo", ...songContext(state), undone_to: before });
   const keep = new Set(before.tracks.map((t) => t.id));
   const removed = state.tracks.filter((t) => !keep.has(t.id)).map((t) => t.id);
   state.bpm = before.bpm; $("#bpm").value = state.bpm; state.tracks = before.tracks;
@@ -1108,6 +1138,18 @@ function wireVariants() {
     if (a === "stop") return stopAudition();
     if (a === "ab" && audition && audition.prev != null) return startAudition(mi, audition.prev);
     if (a === "pick") return pickVariant(mi, k);
+    if (a === "blind") { stopAudition(); blindStart(m); save(); return refreshVariants(); }
+    if (a === "unblind") { m.blind.revealed = true; save(); return refreshVariants(); }
+    if (a === "vote" || a === "same") {
+      const why = (b.closest(".variants").querySelector(".va-why input") || {}).value || "";
+      m.blind.choice = a === "vote" ? k : null; m.blind.revealed = true;
+      recordVote({ kind: "ab", blind: true, ...songContext(state), request: lastRealRequest().slice(0, 500), order: m.blind.order,
+        candidates: m.variantes.map((x) => ({ title: x.titulo, concept: x.concepto || "", changes: x.cambios })), chosen: a === "vote" ? k : null, reason: why.slice(0, 500) });
+      stopAudition(); save(); refreshVariants();
+      return sysMsg(a === "vote"
+        ? L(`Voto guardado. Elegiste a ciegas la ${BLIND[m.blind.order.indexOf(k)]}, que era la ${LETTERS[k]}: «${m.variantes[k].titulo}». Si la quieres en tu canción, pulsa «Elegir esta».`, `Vote saved. You blindly picked ${BLIND[m.blind.order.indexOf(k)]}, which was ${LETTERS[k]}: «${m.variantes[k].titulo}». If you want it in your song, press «Pick this one».`)
+        : L("Guardado: ninguna te gustó más que las otras. Ya puedes ver sus nombres.", "Saved: none stood out over the others. You can see their names now."));
+    }
     if (a === "more") { stopAudition(); return send(L("Dame otras opciones distintas a estas.", "Give me other options, different from these.")); }
     if (a === "none") { stopAudition(); m.dismissed = true; save(); renderChat(); return send(L("No me convence ninguna. Pregúntame qué busco y propón otras.", "None of them convinces me. Ask me what I'm after and suggest others.")); }
     if (a === "refine") { const f = b.closest(".variants").querySelector(".va-refine"); f.hidden = !f.hidden; if (!f.hidden) f.querySelector("input").focus(); }
@@ -1125,7 +1167,11 @@ function wireVariants() {
   document.addEventListener("keydown", (e) => {
     if (!audition || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || "")) return;
     const m = state.chat[audition.mi];
-    if (/^[1-4]$/.test(e.key) && m.variantes[+e.key - 1]) { e.preventDefault(); startAudition(audition.mi, +e.key - 1); }
+    if (/^[1-4]$/.test(e.key) && m.variantes[+e.key - 1]) {
+      e.preventDefault();
+      const pos = +e.key - 1;  // a ciegas, las teclas siguen el orden barajado (X, Y, Z, W)
+      startAudition(audition.mi, m.blind && !m.blind.revealed ? m.blind.order[pos] : pos);
+    }
     if (e.key === "Escape") stopAudition();
   });
   const t = $("#variants-on");
@@ -1745,15 +1791,16 @@ async function askLLM(opts = {}) {
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
       curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
-      bpm: state.bpm, step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
+      bpm: state.bpm, bpm_lock: !!state.bpmLock, song_id: state.projectId || "", step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       plan_modo: planEnabled() && !state.course, ...(opts.planStep ? { plan_paso: opts.planStep } : {}), ...(opts.forcePlan ? { plan_forzar: true } : {}),
       referencia: state.reference || undefined,
       master: state.master || undefined,
       ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
-      tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}),
+      tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}), ...(t.lock ? { lock: t.lock } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
     };
     state.tracks.forEach((t) => delete t.edited);
+    const sentSong = songOf(state);  // versión de la canción que vio Maestro
     const r = await api("/api/chat", { messages: history, session, trace: trace.id }, me.controller.signal);
     if (me.cancelled) throw Object.assign(new Error("cancelled"), { data: { cancelled: true } });
     inflight = null;
@@ -1761,8 +1808,18 @@ async function askLLM(opts = {}) {
     busy = false;
     if ((r.descargas || []).some((d) => d.estado === "descargado")) { server.samples = null; sm.mine = null; }
     if (r.paso) state.step = r.paso;
+    // Si la canción cambió mientras Maestro pensaba, sus cambios no se aplican solos: se ofrecen como opción para escuchar
+    const rc = r.cambios || {};
+    if (songOf(state) !== sentSong && ((rc.pistas || []).length || (rc.eliminar || []).length || rc.bpm)) {
+      r.variantes = [{ titulo: L("La propuesta de Maestro", "Maestro's proposal"), concepto: "",
+        descripcion: L("Tu canción cambió mientras Maestro pensaba, así que no la aplico sola: escúchala sobre lo que suena ahora y elígela si te convence.",
+          "Your song changed while Maestro was thinking, so I won't apply it on its own: listen to it over what's playing now and pick it if you like it."),
+        cambios: rc }, ...(r.variantes || [])].slice(0, 4);
+      r.cambios = {};
+    }
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
-    const summary = applyChanges(r.cambios || {});
+    let summary = applyChanges(r.cambios || {});
+    if (r.bloqueado && r.bloqueado.length) summary = (summary ? summary + " · " : "") + L("candados (descartado por el servidor): ", "locks (dropped by the server): ") + r.bloqueado.join(", ");
     const diff = diffFor(before, r.cambios || {});
     if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias.filter((x) => !isDismissed(x));
     let controles = normalizeControls(r.controles, state.tracks);
@@ -1809,6 +1866,9 @@ async function askLLM(opts = {}) {
 
 function applyChanges(c) {
   const notes = [];
+  // Candados: lo bloqueado no se toca (pistas enteras, partes, BPM). Lo que se descarta se avisa en el resumen.
+  const g = guardChanges(state, c || {});
+  c = g.cambios;
   if (c.bpm && Math.round(c.bpm) !== state.bpm) {
     state.bpm = Math.round(c.bpm); $("#bpm").value = state.bpm;
     notes.push(`${state.bpm} BPM`);
@@ -1826,6 +1886,7 @@ function applyChanges(c) {
     state.selected = p.id;
     if (live()) playTrack(t);
   }
+  if (g.blocked.length) notes.push(L("bloqueado, no se ha aplicado: ", "locked, not applied: ") + blockedText(g.blocked));
   changed();
   return notes.length ? L("Cambios: ", "Changes: ") + notes.join(" · ") : "";
 }
@@ -4350,7 +4411,9 @@ async function courseApply() {
   if (st.tracks) await ensureInstruments(st.tracks.map((t) => t.codigo));
   const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
   let changes = "", diff = [];
-  if (state.bpm !== c.bpm) { state.bpm = c.bpm; $("#bpm").value = c.bpm; if (live()) evalCode(cps(c.bpm)); }
+  const skipped = [];
+  if (state.bpm !== c.bpm && state.bpmLock) skipped.push("BPM");
+  else if (state.bpm !== c.bpm) { state.bpm = c.bpm; $("#bpm").value = c.bpm; if (live()) evalCode(cps(c.bpm)); }
   if (st.tracks) {
     // Si la pista ya tenía un arreglo (mask) lo conservamos
     const pistas = st.tracks.map((t) => {
@@ -4362,14 +4425,14 @@ async function courseApply() {
     diff = diffFor(before, { pistas });
   }
   if (st.arrange) {
-    for (const [id, m] of Object.entries(st.arrange)) { const t = state.tracks.find((x) => x.id === id); if (t) t.code = setMask(t.code, maskArr(m)); }
+    for (const [id, m] of Object.entries(st.arrange)) { const t = state.tracks.find((x) => x.id === id); if (t && t.lock && (t.lock.all || t.lock.ritmo)) { skipped.push(id); continue; } if (t) t.code = setMask(t.code, maskArr(m)); }
     changed(); if (live()) playAll(true);
     document.querySelector('.tab[data-tab="arrange"]')?.click();
   }
   if (st.mix) {
     for (const [id, m] of Object.entries(st.mix)) {
       const v = { vol: 0, low: 0, mid: 0, high: 0, ...m };
-      if (id === "master") state.master = v; else { const t = state.tracks.find((x) => x.id === id); if (t) t.mix = v; }
+      if (id === "master") state.master = v; else { const t = state.tracks.find((x) => x.id === id); if (t && mixLocked(t)) { skipped.push(id); continue; } if (t) t.mix = v; }
     }
     changed(); if (live()) playAll();
     document.querySelector('.tab[data-tab="mixer"]')?.click();
@@ -4379,6 +4442,7 @@ async function courseApply() {
   const last = i === c.steps.length - 1;
   const intro = `${L("Paso", "Step")} ${i + 1}/${c.steps.length} · ${st.t}\n\n${st.why}${st.rule ? `\n\n${L("Según la skill", "Per the skill")} ${c.skill}: ${st.rule}` : ""}${st.listen ? `\n\n${L("Escucha:", "Listen for:")} ${st.listen}` : ""}`;
   const opts = [...(last ? [] : [COURSE_NEXT()]), COURSE_ASK(), ...(last ? [COURSE_OPEN()] : [])];
+  if (skipped.length) changes = (changes ? changes + " · " : "") + L("bloqueado, el curso no lo ha cambiado: ", "locked, the course didn't change it: ") + [...new Set(skipped)].join(", ");
   say(intro, opts, { explicacion: st.parts, reto: st.try, changes, diff });
   save();
   renderCourse();
@@ -4509,6 +4573,10 @@ function init() {
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };
 
   $("#btn-settings").onclick = openSettings;
+  initListen({ api, getState: () => state, genres: COURSES.map((c) => ({ id: c.id, name: c.name })) });
+  initMonitor({ api });
+  $("#bpm-lock").onclick = () => { state.bpmLock = !state.bpmLock; save(); renderBpmLock(); };
+  renderBpmLock();
   initAppUpdate();
   $("#btn-new").onclick = openNewProject;
   $("#btn-projects").onclick = () => openProjects();

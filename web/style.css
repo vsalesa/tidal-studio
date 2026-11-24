@@ -1584,3 +1584,76 @@ dialog label.gi-file input { width: auto; display: inline-block; margin: 0; acce
 .rp-opt .icon-btn { margin-top: 2px; }
 .mk-out-body label { display: inline-flex; align-items: center; gap: 6px; }
 .mk-out-body select { padding: 4px 6px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--card); }
+
+/* ------------------------------------------------------------------ Maestro v2 (0.14): candados, escucha, monitor */
+.track .lockbtn.on, .bpm-lock.on { color: var(--accent); background: var(--accent-soft); border-radius: 6px; }
+.bpm-lock { margin-left: -4px; }
+.lock-row { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-top: 6px; padding: 6px 8px; border: 1px dashed var(--rule-strong); border-radius: var(--r-sm); background: var(--sunk); }
+.lock-row .lk-ico { color: var(--accent); display: inline-flex; }
+.lock-row .lk-lbl { font-size: 12px; color: var(--ink-2); margin-right: 2px; }
+.lk-chip { border: 1px solid var(--rule-strong); background: var(--card); border-radius: 999px; padding: 2px 10px; font-size: 12px; cursor: pointer; }
+.lk-chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.lk-chip:disabled { opacity: .55; cursor: default; }
+.variants.blind .va-card.blind .va-title { color: var(--ink-3); font-style: italic; }
+.va-why input { width: 100%; padding: 6px 8px; border: 1px solid var(--rule); border-radius: var(--r-sm); background: var(--card); }
+.va-blind-win { font-size: 12px; color: var(--plum); font-weight: 600; margin-bottom: 4px; display: flex; gap: 4px; align-items: center; }
+.va-card.blind-win { border-color: var(--plum); box-shadow: 0 0 0 2px var(--plum-soft); }
+
+.listen-dlg { width: min(760px, 96vw); }
+#listen-body { padding: 4px 18px 18px; }
+.ls-sec { border-top: 1px solid var(--rule); padding-top: 10px; margin-top: 12px; }
+.ls-sec h3 { display: flex; gap: 6px; align-items: center; margin: 0 0 6px; font-size: 16px; }
+.ls-counts { display: flex; flex-wrap: wrap; gap: 14px; color: var(--ink-2); }
+.ls-counts b { color: var(--ink); font-size: 18px; margin-right: 2px; }
+.ls-rate { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.ls-rate input[name=missing] { flex: 1 1 240px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: var(--r-sm); background: var(--card); }
+.ls-stars { display: inline-flex; gap: 2px; }
+.ls-stars input { position: absolute; opacity: 0; pointer-events: none; }
+.ls-stars span { display: inline-block; min-width: 28px; text-align: center; padding: 3px 0; border: 1px solid var(--rule-strong); border-radius: 6px; cursor: pointer; background: var(--card); }
+.ls-stars input:checked + span { background: var(--gold); color: #fff; border-color: var(--gold); }
+.ls-base { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+.ls-base th, .ls-base td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--rule); }
+.ok-msg { color: var(--ok); }
+a.btn { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; border: 1px solid var(--rule-strong); border-radius: var(--r-sm); color: var(--ink); text-decoration: none; background: var(--card); }
+
+.monitor-dlg { width: min(1100px, 96vw); }
+#monitor-body { padding: 4px 18px 18px; }
+.mn-sum { display: flex; flex-wrap: wrap; gap: 18px; color: var(--ink-2); margin-bottom: 10px; }
+.mn-sum b { color: var(--ink); font-size: 18px; margin-right: 2px; }
+.mn-main { display: grid; grid-template-columns: minmax(200px, 300px) 1fr; gap: 16px; }
+@media (max-width: 760px) { .mn-main { grid-template-columns: 1fr; } }
+.mn-list { display: flex; flex-direction: column; gap: 6px; max-height: 560px; overflow: auto; }
+.mn-list h4 { margin: 0 0 4px; font-family: var(--serif); }
+.mn-req { text-align: left; border: 1px solid var(--rule); background: var(--card); border-radius: var(--r-sm); padding: 6px 8px; cursor: pointer; display: flex; flex-direction: column; gap: 2px; }
+.mn-req.on { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.mn-req-t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mn-req-m { font-size: 12px; color: var(--ink-3); }
+.mn-diagram { display: grid; grid-template-columns: minmax(280px, 560px) minmax(180px, 1fr); gap: 12px; align-items: start; }
+@media (max-width: 1000px) { .mn-diagram { grid-template-columns: 1fr; } }
+.mn-svg { width: 100%; height: auto; }
+.mn-svg text { font: 13px var(--sans); fill: var(--ink); }
+.mn-svg .mn-meta { font-size: 11.5px; fill: var(--ink-2); }
+.mn-svg .mn-name { font-weight: 600; }
+.mn-svg .mn-tag { font-size: 11px; fill: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.mn-node rect { fill: var(--card); stroke: var(--rule-strong); stroke-width: 1.2; }
+.mn-node[data-layer] { cursor: pointer; }
+.mn-node.mn-io rect { fill: var(--sunk); }
+.mn-node.mn-pass rect { fill: var(--teal-soft); stroke: var(--teal); }
+.mn-node.mn-hit rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 2; }
+.mn-node.mn-running rect { fill: var(--gold-soft); stroke: var(--gold); stroke-dasharray: 5 3; }
+.mn-node.mn-blocked rect { fill: var(--plum-soft); stroke: var(--plum); stroke-width: 2; }
+.mn-node.mn-off rect, .mn-node.mn-skip rect { fill: var(--paper); stroke-dasharray: 3 3; }
+.mn-node.mn-off text, .mn-node.mn-skip text { fill: var(--ink-3); }
+.mn-node.mn-error rect { stroke: var(--danger); stroke-width: 2; }
+.mn-node.mn-sel rect { stroke: var(--ink); stroke-width: 2.4; }
+.mn-edge { stroke: var(--rule-strong); stroke-width: 1.6; }
+.mn-edge.mn-pass, .mn-edge.mn-hit, .mn-edge.mn-blocked, .mn-edge.mn-running { stroke: var(--teal); stroke-width: 2.4; }
+.mn-detail { border: 1px solid var(--rule); border-radius: var(--r-sm); padding: 10px; background: var(--card); font-size: 13px; }
+.mn-detail pre { white-space: pre-wrap; font: 12px var(--mono); background: var(--sunk); padding: 6px; border-radius: 6px; margin: 6px 0 0; }
+.mn-limits-box { margin-top: 14px; border-top: 1px solid var(--rule); padding-top: 8px; }
+.mn-limits-box summary { cursor: pointer; display: flex; gap: 6px; align-items: center; font-weight: 600; }
+.mn-limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 8px 18px; margin-top: 10px; }
+.mn-limits label { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.mn-limits label.check { justify-content: flex-start; }
+.mn-limits input[type=number] { width: 90px; }
+.mn-limits .row { grid-column: 1 / -1; }

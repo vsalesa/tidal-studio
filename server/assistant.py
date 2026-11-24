@@ -73,15 +73,50 @@ REGLAS DEL CÓDIGO TIDAL (muy importante, si fallan no suena nada):
 El usuario puede editar el código a mano; la sesión actual te llega en cada mensaje: respétala y construye sobre ella."""
 
 
+LOCK_PARTS = {"ritmo": "ritmo", "notas": "notas", "sonido": "sonido", "efectos": "efectos", "mezcla": "mezcla"}
+
+
+def lock_text(lock):
+    """« [BLOQUEADA]» o « [bloqueado: ritmo, sonido]» para el resumen de la canción que lee Maestro."""
+    if not isinstance(lock, dict):
+        return ""
+    if lock.get("all"):
+        return " [BLOQUEADA: no la cambies ni la borres]"
+    parts = [v for k, v in LOCK_PARTS.items() if lock.get(k)]
+    return f" [bloqueado: {', '.join(parts)}]" if parts else ""
+
+
 def session_summary(session):
     bpm = session.get("bpm", 120)
     lines = [f"BPM actual: {bpm}"]
     tracks = session.get("tracks") or []
     if not tracks:
         lines.append("Pistas: (ninguna todavía)")
+    any_lock = False
     for t in tracks:
         estado = " [SILENCIADA]" if t.get("muted") else ""
-        lines.append(f'- {t.get("id")} · {t.get("name", "")} ({t.get("kind", "")}){estado}: {t.get("code", "")}')
+        lk = lock_text(t.get("lock"))
+        any_lock = any_lock or bool(lk)
+        lines.append(f'- {t.get("id")} · {t.get("name", "")} ({t.get("kind", "")}){estado}{lk}: {t.get("code", "")}')
+    if session.get("bpm_lock"):
+        any_lock = True
+        lines.append(f"BPM BLOQUEADO por el alumno: no cambies el tempo ({bpm}).")
+    if any_lock:
+        lines.append("CANDADOS: el alumno ha bloqueado lo marcado arriba. No toques una pista BLOQUEADA ni la borres, y en las "
+                     "pistas con partes bloqueadas cambia solo las otras partes (ritmo = el patrón y sus transformaciones, "
+                     "notas = n/note, sonido = los nombres de s, efectos = los # que no son s/n/note, mezcla = su volumen y EQ). "
+                     "La app rechaza cualquier cambio que toque algo bloqueado. Si tu idea lo necesita, dilo en el mensaje y "
+                     "pide permiso en vez de hacerlo.")
+    try:
+        maxop = int(session.get("max_opciones") or 4)
+    except (TypeError, ValueError):
+        maxop = 4
+    if maxop < 4 and variants_on(session):
+        lines.append(f"LÍMITE DE OPCIONES (ajuste del alumno): como mucho {max(1, maxop)} en \"variantes\".")
+    related = [str(x)[:400] for x in (session.get("canciones_relacionadas") or [])][:10]
+    if related:
+        lines.append("Pistas de OTRAS canciones del alumno relacionadas con lo que pide (de su índice de canciones; úsalas para "
+                     "entender su gusto y estilo, sin copiarlas literalmente):\n" + "\n".join(f"  · {x}" for x in related))
     if session.get("step"):
         lines.append(f"Paso actual de la guía: {session['step']}")
     curso = session.get("curso") if isinstance(session.get("curso"), dict) else {}
