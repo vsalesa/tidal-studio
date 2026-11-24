@@ -24,7 +24,11 @@ import songimport
 PPQ = 480
 GRIDS = (4, 8, 12, 16, 24)      # pasos por compás: negras, corcheas, tresillos, semicorcheas, tresillos de semi
 BAR_CHOICES = (1, 2, 4, 8, 16)
-DEFAULTS = {"sound": "superpiano", "device": "", "chan": -1, "play": True, "length": 1.2, "transpose": 0, "volume": 1.0}
+DEFAULTS = {"sound": "superpiano", "device": "", "chan": -1, "play": True, "length": 1.2, "transpose": 0, "volume": 1.0,
+            # Salida: de Tidal Studio al teclado (notas de las pistas con s "midi", reloj y sonido del teclado)
+            "out": "", "outch": 0, "prog": -1, "clock": False}
+# Ajustes que solo usa la salida (no son «midiset» de la entrada)
+OUT_KEYS = ("out", "outch", "prog", "clock")
 
 
 def T(lang, es, en):
@@ -280,6 +284,7 @@ class MidiHub:
         self.events = collections.deque(maxlen=6000)
         self.seq = 0
         self.devices, self.devices_at, self.error = [], 0.0, ""
+        self.outputs, self.out_active = [], ""   # salidas MIDI que hay y la que está conectada ahora
         self.settings = dict(DEFAULTS)
         self.rec = None      # {start_seq, t0, bpm, cycle0, synced, stop}
         self.last_note_at = 0.0
@@ -301,6 +306,17 @@ class MidiHub:
             with self.lock:
                 self.devices = [str(a) for a in args]
                 self.devices_at, self.error = time.time(), ""
+        elif addr == "/ts/midiouts":
+            with self.lock:
+                self.outputs = [str(a) for a in args]
+                want = self.settings.get("out") or ""
+                retry = want and want in self.outputs and self.out_active != want
+            if retry:
+                # La salida elegida ha vuelto (la habías desenchufado): la reconectamos sola
+                self._apply_out()
+        elif addr == "/ts/midiout":
+            with self.lock:
+                self.out_active = str(args[0]) if args else ""
         elif addr in ("/ts/midiplug", "/ts/midiunplug") and args:
             self.plugged(str(args[0]), addr == "/ts/midiplug")
         elif addr == "/ts/midierr":
@@ -371,9 +387,9 @@ class MidiHub:
         for k, v in (data or {}).items():
             if k not in DEFAULTS:
                 continue
-            if k in ("play",):
+            if k in ("play", "clock"):
                 v = bool(v)
-            elif k in ("chan", "transpose"):
+            elif k in ("chan", "transpose", "outch", "prog"):
                 v = int(v)
             elif k in ("length", "volume"):
                 v = float(v)
@@ -383,8 +399,16 @@ class MidiHub:
                 moved.add(k)
             self.settings[k] = v
             changed[k] = v
+        if "outch" in self.settings:
+            self.settings["outch"] = max(0, min(15, int(self.settings["outch"])))
         for k, v in changed.items():
+            if k in OUT_KEYS:
+                continue
             self.engine.sc_cmd("midiset", k, ("1" if v else "0") if isinstance(v, bool) else str(v))
+        if "out" in moved:
+            self._apply_out()
+        elif moved & {"prog", "outch"}:
+            self._apply_prog()
         # Desactivar el sonido o cambiar de teclado/canal: lo que estaba pisado deja de estarlo
         if moved & {"device", "chan"} or ("play" in moved and not self.settings["play"]):
             self.release_all()
@@ -393,9 +417,38 @@ class MidiHub:
     def on_engine_ready(self):
         # El motor acaba de (re)arrancar: nada sigue sonando, así que nada sigue pisado
         self.release_all()
+        with self.lock:
+            self.out_active = ""
         for k, v in self.settings.items():
-            self.engine.sc_cmd("midiset", k, ("1" if v else "0") if isinstance(v, bool) else str(v))
+            if k not in OUT_KEYS:
+                self.engine.sc_cmd("midiset", k, ("1" if v else "0") if isinstance(v, bool) else str(v))
         self.engine.sc_cmd("midiscan")
+        if self.settings.get("out"):
+            self._apply_out()
+
+    # --- salida al teclado
+    def _apply_out(self):
+        self.engine.sc_cmd("midiout", self.settings.get("out") or "")
+        self._apply_prog()
+
+    def _apply_prog(self):
+        prog = int(self.settings.get("prog", -1))
+        if self.settings.get("out") and prog >= 0:
+            self.engine.sc_cmd("midiprog", str(int(self.settings.get("outch", 0))), str(prog))
+
+    def panic(self):
+        """All Notes Off en el teclado (Silencio): nada se queda sonando en tu piano."""
+        return self.engine.sc_cmd("midipanic")
+
+    def clock_code(self, start=False):
+        """Líneas de Tidal para el reloj MIDI (si está activado y hay salida): 24 pulsos por negra.
+        En Tidal Studio un ciclo son 4 negras, así que 96 pulsos por ciclo."""
+        if not (self.settings.get("clock") and self.settings.get("out")):
+            return []
+        lines = ['p "ts-midiclock" $ midicmd "midiClock*96" # s "midi"']
+        if start:
+            lines.append('once $ midicmd "start" # s "midi"')
+        return lines
 
     def scan(self):
         return self.engine.sc_cmd("midiscan")
@@ -487,4 +540,4 @@ class MidiHub:
             return {"now": time.time(), "seq": self.seq, "events": evs, "devices": list(self.devices),
                     "devices_at": self.devices_at, "error": self.error, "settings": dict(self.settings),
                     "sc": bool(self.engine.osc_ready), "rec": rec, "last_note_at": self.last_note_at,
-                    "plugs": list(self.plugs)}
+                    "plugs": list(self.plugs), "outputs": list(self.outputs), "out_active": self.out_active}

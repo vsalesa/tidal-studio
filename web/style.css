@@ -1509,3 +1509,13 @@ dialog.il-dialog[open] { display: flex; }
 .audio-bar[hidden] { display: none; }
 .audio-bar .as-msg { flex: 1 1 280px; }
 .audio-bar select { max-width: 220px; }
+
+/* Teclado MIDI: enviar a mi teclado (salida) */
+.mk-out { margin: 4px 0 8px; }
+.mk-out-toggle { font-size: 13px; }
+.mk-out-toggle[aria-expanded="true"] svg { transform: rotate(90deg); }
+.mk-out-body { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; padding: 8px 0 0; font-size: 13px; }
+.mk-out-tracks { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; width: 100%; }
+.mk-out-tracks button { font-size: 12px; padding: 3px 8px; }
+.mk-out-tracks button.on { border-color: var(--accent, #3b6cf6); background: color-mix(in srgb, var(--accent, #3b6cf6) 12%, transparent); }
+.mk-out-tracks .hint { flex-basis: 100%; }

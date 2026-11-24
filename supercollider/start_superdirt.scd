@@ -84,6 +84,10 @@ if(\SuperDirt.asClass.isNil) {
                             "midiset", { ~studioMidiSet.(msg[2], msg[3]) },
                             "midinote", { ~studioMidiPlay.(msg[2].asString.asInteger, msg[3].asString.asInteger) },
                             "midicut", { ~studioMidiCut.value },
+                            "midiout", { ~studioMidiOutSet.(msg[2] ? "") },
+                            "midiprog", { ~studioMidiProg.(msg[2].asString.asInteger, msg[3].asString.asInteger) },
+                            "midicc", { ~studioMidiCC.(msg[2].asString.asInteger, msg[3].asString.asInteger, msg[4].asString.asInteger) },
+                            "midipanic", { ~studioMidiPanic.value },
                             "audioinfo", { ~studioAudioInfo.value }
                         );
                     };

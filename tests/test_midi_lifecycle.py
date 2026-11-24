@@ -80,6 +80,34 @@ class MidiLifecycle(unittest.TestCase):
         self.assertIn(("midiscan",), self.hub.engine.sent)
 
 
+class MidiOut(unittest.TestCase):
+    def setUp(self):
+        self.hub = midilive.MidiHub(FakeEngine())
+
+    def test_choose_output_and_sound(self):
+        self.hub.set_settings({"out": PIANO, "outch": 2, "prog": 4})
+        sent = self.hub.engine.sent
+        self.assertIn(("midiout", PIANO), sent)
+        self.assertIn(("midiprog", "2", "4"), sent)
+        self.assertFalse(any(a[0] == "midiset" and a[1] in midilive.OUT_KEYS for a in sent))
+
+    def test_output_comes_back_after_unplug(self):
+        self.hub.set_settings({"out": PIANO})
+        self.hub.on_osc("/ts/midiout", [PIANO])
+        self.hub.on_osc("/ts/midiout", [""])  # desenchufado
+        self.hub.engine.sent.clear()
+        self.hub.on_osc("/ts/midiouts", [PIANO])
+        self.assertIn(("midiout", PIANO), self.hub.engine.sent)
+
+    def test_clock_only_with_output(self):
+        self.hub.set_settings({"clock": True})
+        self.assertEqual(self.hub.clock_code(True), [])
+        self.hub.set_settings({"out": PIANO})
+        lines = self.hub.clock_code(True)
+        self.assertIn("midiClock*96", lines[0])
+        self.assertIn('midicmd "start"', lines[1])
+
+
 class AudioState(unittest.TestCase):
     def setUp(self):
         self.e = engine.Engine(ROOT)

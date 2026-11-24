@@ -30,7 +30,7 @@ import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./ti
 import { initAppUpdate } from "./appupdate.js";
 import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
-import { initMidi, toggleMidi } from "./midikeys.js";
+import { initMidi, toggleMidi, clockLines, midiSilence } from "./midikeys.js";
 import { initAudioStatus } from "./audiostatus.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
@@ -183,7 +183,8 @@ const silenceId = (id) => evalCode(`${id} silence`);
 // fromTop: vuelve al compás 1 (resetCycles) para que el arreglo (mask "<…>") empiece desde el principio
 // El «código extra» de un archivo abierto (let, definiciones…) va antes de las pistas, que pueden usarlo
 const extraCode = () => (state.extra && state.extra.trim() ? [state.extra.trim()] : []);
-const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...extraCode(), ...state.tracks.map(trackLine)].join("\n\n"), null, state.tracks);
+// Con «Reloj y start/stop» (teclado MIDI), el reloj va con la canción: tu teclado sigue el tempo
+const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...extraCode(), ...state.tracks.map(trackLine), ...clockLines(true)].join("\n\n"), null, state.tracks);
 const hasArrangement = () => state.tracks.some((t) => /\bmask\s+"</.test(t.code));
 const live = () => $("#autoplay").checked;
 // Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
@@ -195,7 +196,7 @@ function hushAll() {
   clearTimeout(ctlTimer);
   seqTimers.forEach(clearTimeout); seqTimers = [];
   smStop(); stopBeeps();
-  return evalCode("panic");
+  return evalCode(["panic", ...midiSilence()].join("\n\n"));
 }
 
 // ------------------------------------------------------------------ pistas
@@ -2717,6 +2718,15 @@ function wireMidi() {
       preHear({ bpm: synced || bpm === state.bpm ? undefined : bpm, pistas: tracks.map((t, i) => ({ id: ids[i] || "d" + (MAX_TRACKS - i), codigo: fixNegatives(t.codigo) })) });
     },
     stopPreview: () => stopPreHear(),
+    // salida al teclado: pasar pistas a tu piano (s "midi") y volver
+    tracks: () => state.tracks,
+    patchTrack: (id, patch) => {
+      const t = state.tracks.find((x) => x.id === id); if (!t) return;
+      Object.assign(t, patch); t.explain = null;
+      changed();
+      if (live()) playTrack(t);
+    },
+    clockChanged: (on) => { if (!live()) return; evalCode(on ? clockLines(false).join("\n\n") : 'p "ts-midiclock" silence'); },
     addTracks: (tracks, bpm, synced) => {
       // Canción vacía: se queda con el tempo al que has tocado. Si no, va al tempo de tu canción (ya grabaste a ese).
       if (!state.tracks.length && !synced && bpm) { state.bpm = Math.max(40, Math.min(220, bpm)); $("#bpm").value = state.bpm; if (live()) evalCode(cps(state.bpm)); }

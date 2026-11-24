@@ -15,6 +15,7 @@ var to = NetAddr("127.0.0.1", 57140);
 var conf = (sound: \superpiano, orbit: 12, play: true, chan: -1, device: "", length: 1.2, transpose: 0, volume: 1.0);
 var ready = false;
 var currentNames = { MIDIClient.sources.collect { |d| d.device ++ " · " ++ d.name } };
+var knownOuts = [];   // salidas MIDI la última vez que miramos
 var known = [];   // teclados conectados la última vez que miramos (nombre «aparato · puerto»)
 var srcName = { |uid|
     var d = MIDIClient.sources.detect { |s| s.uid == uid };
@@ -49,14 +50,16 @@ var accept = { |chan, uid|
 // Mira qué teclados hay y, si ha cambiado algo, reconecta y avisa: qué se ha enchufado y qué se ha quitado.
 // full: true al pulsar «Buscar» (en Mac reinicia CoreMIDI para ver un piano enchufado tarde)
 ~studioMidiRefresh = { |full = false|
-    var names, gone, added;
+    var names, gone, added, outs;
     if(ready.not) { MIDIClient.init(verbose: false); ready = true } {
         if(full and: { thisProcess.platform.name == \osx } and: { MIDIClient.respondsTo(\restart) }) {
             MIDIClient.restart
         } { MIDIClient.list };
     };
     names = currentNames.value;
-    if(full or: { names != known }) {
+    outs = ~studioMidiOutNames.value;
+    if(full or: { names != known } or: { outs != knownOuts }) {
+        knownOuts = outs;
         gone = known.reject { |n| names.includesEqual(n) };
         added = names.reject { |n| known.includesEqual(n) };
         try { MIDIIn.disconnectAll };
@@ -67,6 +70,11 @@ var accept = { |chan, uid|
         // Si el teclado elegido se ha ido, lo que estaba sonando se corta (si no, se quedaría colgado)
         if(gone.notEmpty) { ~studioMidiCut.value };
         to.sendMsg(*(["/ts/mididevs"] ++ names));
+        to.sendMsg(*(["/ts/midiouts"] ++ ~studioMidiOutNames.value));
+        // La salida elegida ha desaparecido (desenchufado): la soltamos; al volver, la web la vuelve a elegir
+        if(~studioMidiOutName != "" and: { ~studioMidiOutNames.value.includesEqual(~studioMidiOutName).not }) {
+            ~studioMidiOutName = ""; to.sendMsg("/ts/midiout", "");
+        };
         ("TIDAL_STUDIO_MIDI: " ++ names.size ++ " entradas MIDI: " ++ names.join(", ")).postln;
     };
 };
@@ -89,6 +97,52 @@ var accept = { |chan, uid|
         \volume, { conf[\volume] = value.asFloat.clip(0, 2) }
     );
 };
+// ---------------------------------------------------------------- salida: de Tidal Studio al teclado
+// Una sola MIDIOut a la que le cambiamos el destino. Se registra en SuperDirt como el sonido "midi":
+//   d1 $ n "c e g" # s "midi" # midichan 0        (toca la pista con el sonido de tu teclado)
+//   p "ts-midiclock" $ midicmd "midiClock*96" # s "midi"   (reloj: 24 pulsos por negra, 4 negras por ciclo)
+// Órdenes: midiout nombre ("" = ninguna), midiprog canal programa, midicc canal control valor, midipanic.
+~studioMidiOutName = "";
+~studioMidiOutNames = { try { MIDIClient.destinations.collect { |d| d.device ++ " · " ++ d.name } } { [] } };
+~studioMidiOutSet = { |name|
+    var dests = MIDIClient.destinations, idx, d;
+    name = name.asString;
+    idx = dests.detectIndex { |x| (x.device ++ " · " ++ x.name) == name };
+    if(~studioMidiOut.notNil and: { ~studioMidiOutName != "" }) { ~studioMidiPanic.value };
+    if(idx.isNil) {
+        ~studioMidiOutName = "";
+        if(name != "") { to.sendMsg("/ts/midierr", "MIDI out: no encuentro " ++ name) };
+    } {
+        d = dests[idx];
+        if(~studioMidiOut.isNil) {
+            ~studioMidiOut = MIDIOut(0, d.uid);
+            // El sonido "midi" de SuperDirt: las notas salen a tiempo con el audio
+            dirt.soundLibrary.addMIDI(\midi, ~studioMidiOut);
+        };
+        if(thisProcess.platform.name == \linux) {
+            try { ~studioMidiOut.disconnect(~studioMidiOutIdx ? 0) };
+            ~studioMidiOut.connect(idx);
+            ~studioMidiOutIdx = idx;
+        } { ~studioMidiOut.uid = d.uid; ~studioMidiOut.port = idx };
+        ~studioMidiOut.latency = s.latency ? 0.3;
+        ~studioMidiOutName = name;
+        ("TIDAL_STUDIO_MIDI: salida al teclado " ++ name).postln;
+    };
+    to.sendMsg("/ts/midiout", ~studioMidiOutName);
+};
+// Todas las notas fuera en los 16 canales (Silencio, cambiar de salida, desenchufar)
+~studioMidiPanic = {
+    if(~studioMidiOut.notNil and: { ~studioMidiOutName != "" }) {
+        16.do { |ch| try { ~studioMidiOut.control(ch, 123, 0); ~studioMidiOut.control(ch, 64, 0) } };
+    };
+};
+~studioMidiProg = { |chan, prog|
+    if(~studioMidiOut.notNil and: { ~studioMidiOutName != "" }) { try { ~studioMidiOut.program(chan.clip(0, 15), prog.clip(0, 127)) } };
+};
+~studioMidiCC = { |chan, num, val|
+    if(~studioMidiOut.notNil and: { ~studioMidiOutName != "" }) { try { ~studioMidiOut.control(chan.clip(0, 15), num.clip(0, 127), val.clip(0, 127)) } };
+};
+
 MIDIdef.noteOn(\tsMidiOn, { |vel, note, chan, uid|
     if(accept.(chan, uid)) {
         // Muchos teclados mandan "note on" con velocidad 0 para soltar la tecla

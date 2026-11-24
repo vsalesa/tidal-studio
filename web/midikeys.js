@@ -23,9 +23,10 @@ let dock = null;
 const st = {
   open: false, seq: -1, offset: 0, sc: false, devices: [], devicesKey: "", error: "", held: new Set(), clicks: [],
   rec: null, result: null, opts: { grid: "auto", split: "auto", bpm: null }, busy: false, previewing: false,
-  web: null, webInputs: [], kbOct: 0, plugSeq: -1, lastPreview: 0, pollTimer: null, ac: null, metroTimer: null, nextClick: 0,
+  web: null, webInputs: [], kbOct: 0, plugSeq: -1, outputs: [], outActive: "", outOpen: false, lastPreview: 0, pollTimer: null, ac: null, metroTimer: null, nextClick: 0,
 };
-const conf = Object.assign({ sound: "superpiano", device: "", chan: -1, play: true, length: 1.2, transpose: 0, volume: 1, countin: true, metro: true },
+const conf = Object.assign({ sound: "superpiano", device: "", chan: -1, play: true, length: 1.2, transpose: 0, volume: 1, countin: true, metro: true,
+  out: "", outch: 0, prog: -1, clock: false },
   (() => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; } })());
 const saveConf = () => { try { localStorage.setItem(STORE, JSON.stringify(conf)); } catch { /* sin almacenamiento */ } };
 
@@ -43,7 +44,7 @@ const noteLabel = (m) => NAMES[m % 12] + (Math.floor(m / 12) - 1);
 export function initMidi(c) {
   ctx = c;
   dock = document.querySelector("#mididock");
-  sendSettings(["sound", "device", "chan", "play", "length", "transpose", "volume"]);
+  sendSettings(["sound", "device", "chan", "play", "length", "transpose", "volume", "out", "outch", "prog", "clock"]);
   document.addEventListener("keydown", onKey);
   document.addEventListener("keyup", onKey);
   poll();
@@ -93,6 +94,8 @@ async function poll() {
       if (st.open) renderStatus();
     }
     if (scWas !== st.sc && st.open) { maybeWebMidi(); renderStatus(); }
+    const outsKey = JSON.stringify([r.outputs || [], r.out_active || ""]);
+    if (outsKey !== st.outsKey) { st.outsKey = outsKey; st.outputs = r.outputs || []; st.outActive = r.out_active || ""; if (st.open) renderOut(); }
     // Enchufar y desenchufar el teclado: lo avisamos (al quitarlo, el servidor ya ha soltado sus notas)
     const plugs = r.plugs || [];
     if (st.plugSeq >= 0) {
@@ -375,6 +378,7 @@ function render() {
       <label class="mk-oct">${L("Octava", "Octave")} <button data-a="oct-" title="Z">−</button><b data-c="transpose">${(conf.transpose > 0 ? "+" : "") + conf.transpose / 12}</b><button data-a="oct+" title="X">+</button></label>
       <label class="toggle"><input type="checkbox" data-c="play" ${conf.play ? "checked" : ""}> ${L("Que suene", "Play sound")}</label>
     </div>
+    <div class="mk-out">${outHTML()}</div>
     ${keyboardSVG()}
     <p class="hint mk-tip">${L("Toca tu piano, pulsa las teclas de la pantalla o usa A W S E D F T G Y H U J K en el ordenador (Z y X cambian de octava).", "Play your piano, click the keys on screen or use A W S E D F T G Y H U J K on your computer (Z and X change octave).")}</p>
     <div class="mk-rec">
@@ -390,6 +394,67 @@ function render() {
   wire();
 }
 
+// ---------------------------------------------------------------- salida: de Tidal Studio a tu teclado
+
+// Sonidos General MIDI más útiles (programa 0-127): la mayoría de pianos digitales y teclados los entienden
+const GM = [[-1, "—"], [0, "Piano"], [4, "Electric piano"], [6, "Harpsichord"], [11, "Vibraphone"], [16, "Organ"], [19, "Church organ"],
+  [24, "Nylon guitar"], [32, "Acoustic bass"], [33, "Electric bass"], [40, "Violin"], [48, "Strings"], [52, "Choir"], [56, "Trumpet"],
+  [65, "Alto sax"], [73, "Flute"], [80, "Square lead"], [81, "Saw lead"], [88, "New age pad"], [89, "Warm pad"]];
+const isMidiTrack = (code) => /#\s*s(ound)?\s+"midi"/.test(code);
+// Pasa una pista a tu teclado: el sonido pasa a ser "midi" (el anterior se guarda en la pista, kbWas, para volver)
+export function toKeyboard(code, ch) {
+  const m = code.match(/#\s*s(?:ound)?\s+"([^"]+)"/);
+  const was = m ? m[1] : "";
+  const out = (m ? code.replace(m[0], '# s "midi"') : code + ' # s "midi"').replace(/\s*#\s*midichan\s+\d+/g, "") + ` # midichan ${ch}`;
+  return { code: out, was };
+}
+export function fromKeyboard(code, was) {
+  return code.replace(/\s*#\s*midichan\s+\d+/g, "").replace(/#\s*s(ound)?\s+"midi"/, `# s "${was || "superpiano"}"`);
+}
+
+function outHTML() {
+  const outs = st.outputs;
+  const tracks = ctx.tracks ? ctx.tracks() : [];
+  const head = `<button class="link mk-out-toggle" data-a="out-toggle" aria-expanded="${st.outOpen}">${icon("arrow", 12)} ${L("Enviar a mi teclado", "Send to my keyboard")}${conf.out ? ` · <b>${esc(conf.out)}</b>${st.outActive === conf.out ? "" : L(" (desconectado)", " (disconnected)")}` : ""}</button>`;
+  if (!st.outOpen) return head;
+  if (!st.sc) return head + `<p class="hint">${L("Para mandar notas a tu teclado hace falta el motor de sonido en marcha.", "Sending notes to your keyboard needs the sound engine running.")}</p>`;
+  return head + `<div class="mk-out-body">
+    <label>${L("Salida", "Output")} <select data-c="out"><option value="">${L("Ninguna", "None")}</option>${outs.map((o) => `<option ${o === conf.out ? "selected" : ""}>${esc(o)}</option>`).join("")}${conf.out && !outs.includes(conf.out) ? `<option selected>${esc(conf.out)}</option>` : ""}</select></label>
+    <label>${L("Canal", "Channel")} <select data-c="outch">${Array.from({ length: 16 }, (_, i) => `<option value="${i}" ${conf.outch === i ? "selected" : ""}>${i + 1}</option>`).join("")}</select></label>
+    <label>${L("Sonido del teclado", "Keyboard sound")} <select data-c="prog">${GM.map(([n, t]) => `<option value="${n}" ${conf.prog === n ? "selected" : ""}>${n < 0 ? L("El que tenga", "Leave as is") : t}</option>`).join("")}</select></label>
+    <label class="toggle" title="${L("El arpegiador o la batería de tu teclado siguen el tempo de la canción y arrancan y paran con ella", "Your keyboard's arpeggiator or drums follow the song tempo and start and stop with it")}"><input type="checkbox" data-c="clock" ${conf.clock ? "checked" : ""}> ${L("Reloj y start/stop", "Clock and start/stop")}</label>
+    ${conf.out ? `<div class="mk-out-tracks">${tracks.length ? tracks.map((t) => `<button data-a="${isMidiTrack(t.code) ? "trk-studio" : "trk-kb"}" data-t="${esc(t.id)}" class="${isMidiTrack(t.code) ? "on" : ""}">${icon(isMidiTrack(t.code) ? "piano" : "speaker", 12)} ${esc(t.name || t.id)}</button>`).join("") : `<span class="hint">${L("Añade pistas a tu canción para tocarlas en tu teclado.", "Add tracks to your song to play them on your keyboard.")}</span>`}
+      <span class="hint">${L("Pulsa una pista para que suene en tu teclado (y otra vez para volver al estudio). Si oyes cada nota dos veces, desactiva «Local Control» en tu teclado.", "Click a track to play it on your keyboard (click again to go back to the studio). If you hear every note twice, turn off «Local Control» on your keyboard.")}</span></div>` : ""}
+  </div>`;
+}
+function renderOut() {
+  const el = dock && dock.querySelector(".mk-out");
+  if (el) { el.innerHTML = outHTML(); wireOut(el); }
+}
+function wireOut(root) {
+  root.querySelectorAll("[data-c]").forEach((el) => {
+    el.onchange = () => {
+      const k = el.dataset.c;
+      conf[k] = el.type === "checkbox" ? el.checked : (k === "outch" || k === "prog") ? +el.value : el.value;
+      saveConf(); sendSettings([k]);
+      if (k === "clock" && ctx.clockChanged) ctx.clockChanged(conf.clock);
+      renderOut();
+    };
+  });
+}
+export const midiOutOn = () => !!(conf.out && st.outActive === conf.out);
+// Reloj MIDI para «Tocar todo»: 24 pulsos por negra (96 por ciclo de 4 negras) y start al empezar
+export function clockLines(start) {
+  if (!(conf.clock && conf.out)) return [];
+  return ['p "ts-midiclock" $ midicmd "midiClock*96" # s "midi"', ...(start ? ['once $ midicmd "start" # s "midi"'] : [])];
+}
+// Silencio: stop al teclado y All Notes Off (nada se queda sonando en tu piano)
+export function midiSilence() {
+  if (!conf.out) return [];
+  post("/api/midi/panic", {}).catch(() => {});
+  return conf.clock ? ['once $ midicmd "stop" # s "midi"'] : [];
+}
+
 function wire() {
   // teclado en pantalla
   let mouseNote = null;
@@ -397,7 +462,8 @@ function wire() {
   keys.onpointerdown = (e) => { const k = e.target.closest(".mk-key"); if (!k) return; mouseNote = +k.dataset.m; noteFromUI("on", mouseNote, 96); };
   const up = () => { if (mouseNote !== null) { noteFromUI("off", mouseNote, 0); mouseNote = null; } };
   keys.onpointerup = up; keys.onpointerleave = up;
-  dock.querySelectorAll("[data-c]").forEach((el) => {
+  wireOut(dock.querySelector(".mk-out"));
+  dock.querySelectorAll(".mk-settings [data-c], .mk-rec [data-c]").forEach((el) => {
     if (el.tagName === "B") return;
     el.onchange = () => {
       const k = el.dataset.c;
@@ -423,9 +489,16 @@ function wire() {
   };
 }
 
-async function act(a) {
+async function act(a, b) {
   const r = st.result;
   if (a === "close") return closeDock();
+  if (a === "out-toggle") { st.outOpen = !st.outOpen; return renderOut(); }
+  if (a === "trk-kb" || a === "trk-studio") {
+    const id = b?.dataset.t; const t = (ctx.tracks() || []).find((x) => x.id === id); if (!t) return;
+    if (a === "trk-kb") { const r = toKeyboard(t.code, conf.outch); ctx.patchTrack(id, { code: r.code, kbWas: r.was }); }
+    else ctx.patchTrack(id, { code: fromKeyboard(t.code, t.kbWas), kbWas: undefined });
+    return renderOut();
+  }
   if (a === "scan") { post("/api/midi/scan", {}).catch(() => {}); maybeWebMidi(); return ctx.toast(L("Buscando teclados…", "Looking for keyboards…")); }
   if (a === "oct-" || a === "oct+") { conf.transpose = Math.max(-36, Math.min(36, conf.transpose + (a === "oct+" ? 12 : -12))); saveConf(); sendSettings(["transpose"]); return renderSettings(); }
   if (a === "rec") return startRecording();

@@ -471,6 +471,10 @@ class Handler(SimpleHTTPRequestHandler):
                                             int(data.get("ch", 0)), str(data.get("src", "web"))[:40]))
         if path == "/api/midi/settings":
             return self._json({"settings": MIDI.set_settings(data)})
+        if path == "/api/midi/panic":
+            return self._json({"ok": MIDI.panic()})
+        if path == "/api/midi/clock":
+            return self._json({"lines": MIDI.clock_code(bool(data.get("start")))})
         if path == "/api/midi/scan":
             return self._json({"ok": MIDI.scan()})
         if path == "/api/midi/record":
