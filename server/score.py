@@ -383,11 +383,38 @@ def empty_score(key="C", meter="4/4"):
     return {"version": VERSION, "key": key or "C", "meter": meter or "4/4", "parts": []}
 
 
+def norm_sections(sections):
+    """Secciones de la forma (release 0.17): [{name, bar}] con bar 1… (el compás donde empieza), en orden y sin repetir."""
+    out = []
+    for s in sections or []:
+        if not isinstance(s, dict):
+            continue
+        try:
+            bar = int(s.get("bar") or 0)
+        except (TypeError, ValueError):
+            continue
+        name = str(s.get("name") or "").strip()[:40]
+        if bar >= 1 and name and not any(x["bar"] == bar for x in out):
+            out.append({"name": name, "bar": bar})
+    return sorted(out, key=lambda x: x["bar"])
+
+
+def sections_from_form(form):
+    """[[nombre, compases], …] → secciones con su compás de inicio."""
+    out, bar = [], 1
+    for name, n in form or []:
+        out.append({"name": str(name), "bar": bar})
+        bar += max(1, int(n))
+    return out
+
+
 def normalize(score):
     """Partitura que llega del navegador o de un JSON: duraciones como Fraction y campos por defecto."""
     if not isinstance(score, dict):
         return None
     out = {"version": VERSION, "key": str(score.get("key") or "C"), "meter": str(score.get("meter") or "4/4"), "parts": []}
+    if score.get("sections"):
+        out["sections"] = norm_sections(score.get("sections"))
     for i, p in enumerate(score.get("parts") or []):
         if not isinstance(p, dict):
             continue
@@ -458,6 +485,8 @@ def summary(score, max_bars=8):
     if not score or not score["parts"]:
         return ""
     lines = [f"PARTITURA (cuaderno de composición, {score['key']}, {score['meter']}):"]
+    if score.get("sections"):
+        lines.append("- forma: " + " · ".join(f"{s['name']} (compás {s['bar']})" for s in score["sections"]))
     for p in score["parts"]:
         txt = format_compact(p["bars"][:max_bars])
         more = f" … (+{len(p['bars']) - max_bars} compases)" if len(p["bars"]) > max_bars else ""
@@ -544,7 +573,7 @@ def to_musicxml(score, title=""):
     ET.SubElement(enc, "software").text = "Tidal Studio"
     misc = ET.SubElement(ident, "miscellaneous")
     meta = {p["id"]: {"track": p.get("track"), "sound": p.get("sound"), "role": p.get("role"), "fx": p.get("fx")} for p in score["parts"]}
-    ET.SubElement(misc, "miscellaneous-field", name="tidal-studio").text = json.dumps({"version": VERSION, "parts": meta}, ensure_ascii=False)
+    ET.SubElement(misc, "miscellaneous-field", name="tidal-studio").text = json.dumps({"version": VERSION, "parts": meta, **({"sections": score["sections"]} if score.get("sections") else {})}, ensure_ascii=False)
     plist = ET.SubElement(root, "part-list")
     for i, p in enumerate(score["parts"]):
         sp = ET.SubElement(plist, "score-part", id=f"P{i + 1}")
@@ -555,6 +584,7 @@ def to_musicxml(score, title=""):
         bars = p["bars"] or [[{"p": [], "d": bar_beats(score["meter"])}]]
         for n, bar in enumerate(bars):
             meas = ET.SubElement(part, "measure", number=str(n + 1))
+            sec = next((s for s in score.get("sections") or [] if s["bar"] == n + 1), None) if i == 0 else None
             if n == 0:
                 at = ET.SubElement(meas, "attributes")
                 ET.SubElement(at, "divisions").text = str(divisions)
@@ -569,6 +599,9 @@ def to_musicxml(score, title=""):
                                                sum(x for b in bars for e in b for x in e["p"]) / max(1, sum(len(e["p"]) for b in bars for e in b)) < 55)
                 ET.SubElement(cl, "sign").text = "F" if bass else "G"
                 ET.SubElement(cl, "line").text = "4" if bass else "2"
+            if sec:
+                dr = ET.SubElement(meas, "direction", placement="above")
+                ET.SubElement(ET.SubElement(dr, "direction-type"), "rehearsal").text = sec["name"]
             for e in bar:
                 pieces = _split_printable(_frac(e["d"]))
                 for j, d in enumerate(pieces):
@@ -617,11 +650,12 @@ def from_musicxml(text):
     root = _strip_ns(ET.fromstring(text))
     if root.tag != "score-partwise":
         raise ValueError("Solo se admite MusicXML «score-partwise» (expórtalo así desde MuseScore)")
-    meta = {}
+    meta, meta_sections = {}, []
     for f in root.iter("miscellaneous-field"):
         if f.get("name") == "tidal-studio":
             try:
-                meta = json.loads(f.text or "{}").get("parts", {})
+                raw = json.loads(f.text or "{}")
+                meta, meta_sections = raw.get("parts", {}), raw.get("sections") or []
             except ValueError:
                 meta = {}
     names = {}
@@ -629,6 +663,7 @@ def from_musicxml(text):
         names[sp.get("id")] = ((sp.findtext("part-name") or "").strip(), (sp.findtext("part-abbreviation") or "").strip())
     key, meter = "C", "4/4"
     parts = []
+    sections = []
     for i, part in enumerate(root.findall("part")):
         divisions = Fraction(1)
         bars = []
@@ -671,6 +706,10 @@ def from_musicxml(text):
                         ev[-1]["d"] += d  # ligadura dentro del compás: una nota más larga
                         continue
                     ev.append({"p": [m] if m is not None else [], "d": d})
+                elif el.tag == "direction" and i == 0:
+                    for r in el.iter("rehearsal"):
+                        if (r.text or "").strip():
+                            sections.append({"name": r.text.strip(), "bar": len(bars) + 1})
                 elif el.tag == "forward":
                     if (el.findtext("voice") or voice1 or "1").strip() == (voice1 or "1"):
                         ev.append({"p": [], "d": Fraction(int(el.findtext("duration") or 0)) / divisions})
@@ -687,7 +726,13 @@ def from_musicxml(text):
             low = name.lower()
             role = "bajo" if ("bass" in low or "bajo" in low) else "armonia" if any(w in low for w in ("piano", "chord", "acorde", "guitar", "pad")) else "melodia"
         parts.append(new_part(pid, name or pid, role, mt.get("track"), mt.get("sound"), bars, mt.get("fx") or ""))
-    return {"version": VERSION, "key": key, "meter": meter, "parts": parts}
+    out = {"version": VERSION, "key": key, "meter": meter, "parts": parts}
+    # las marcas de ensayo que escribe MuseScore mandan; las de más allá del último compás vienen de los datos de la app
+    marks = {s["bar"] for s in sections}
+    sections += [s for s in norm_sections(meta_sections) if s["bar"] not in marks and not any(s["bar"] <= len(p["bars"]) for p in parts[:1])]
+    if sections:
+        out["sections"] = norm_sections(sections)
+    return out
 
 
 def part_json(part):

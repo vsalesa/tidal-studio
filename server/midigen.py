@@ -171,6 +171,59 @@ STYLES = {
                  "why": T("acordes de séptima largos y apagados (lpf), como un piano viejo", "long, muffled seventh chords (lpf), like an old piano")},
         "lead": {"name": T("Melodía", "Melody"), "rhythms": ["x ~ x ~ x ~ ~ ~", "x ~ ~ x ~ ~ x ~"], "sound": "superpiano",
                  "fx": "# gain 0.5 # lpf 3000 # room 0.4 # delay 0.3 # delaytime (60/80*0.75) # delayfeedback 0.3", "center": 79},
+    },    # 0.17: géneros nuevos (los mismos ritmos que sus cursos en web/courses.js)
+    "reggae": {
+        "name": "Reggae", "bpm": 152, "mode": "minor", "prog": ["i", "VII", "i", "VII"],
+        "drums": [(T("One drop", "One drop"), 's "~ ~ [bd,rm] ~" # gain 1.05'),
+                  (T("Platos", "Hi-hats"), 'swingBy (1/8) 4 $ s "hh*8" # gain "[0.85 0.55]*4" # pan 0.6 # hpf 3000')],
+        "bass": {"name": T("Bajo", "Bass"), "patterns": ["~ R ~ ~ F ~ R T", "~ R ~ ~ F ~ O F"], "sound": "electric_bass_finger_fluid",
+                 "fx": "# lpf 700 # legato 0.9 # gain 1", "center": 33,
+                 "why": T("deja vacío el 1, como el one drop, y dibuja la raíz y la quinta con huecos", "leaves beat 1 empty, like the one drop, and draws root and fifth with gaps")},
+        "comp": {"name": T("Guitarra skank", "Skank guitar"), "patterns": ["[~ x ~ x]"], "sound": "electric_guitar_muted_fluid",
+                 "fx": "# legato 0.25 # gain 0.9 # hpf 400", "center": 57,
+                 "why": T("acordes muy cortos en los tiempos 2 y 4: el skank", "very short chords on beats 2 and 4: the skank")},
+        "lead": {"name": T("Melódica", "Melodica"), "rhythms": ["x ~ x ~ x ~ ~ x", "~ ~ x ~ x ~ ~ ~"], "sound": "accordion_fluid",
+                 "fx": "# legato 0.8 # gain 0.75 # room 0.3", "center": 76},
+    },
+    "boombap": {
+        "name": "Boom bap", "bpm": 90, "mode": "minor", "prog": ["i7", "iv7", "i7", "iv7"], "wrap": "swingBy (1/9) 4 $ ",
+        "drums": [(T("Bombo y caja", "Kick and snare"), 'swingBy (1/9) 4 $ s "[bd ~ ~ ~ ~ ~ ~ bd ~ ~ bd ~ ~ ~ ~ ~, ~ ~ ~ ~ sn:3 ~ ~ ~ ~ ~ ~ ~ sn:3 ~ ~ ~]" # gain 1.1'),
+                  (T("Platos", "Hi-hats"), 'swingBy (1/9) 4 $ s "hh*8" # gain "[0.9 0.6]*4" # pan 0.55')],
+        "bass": {"name": T("Contrabajo", "Upright bass"), "patterns": ["R ~ ~ ~ ~ ~ ~ R ~ ~ T ~ ~ ~ ~ ~", "R ~ ~ R ~ ~ ~ F ~ ~ O ~ ~ ~ ~ A"],
+                 "sound": "acoustic_bass_fluid", "fx": "# legato 1.2 # gain 1", "center": 38,
+                 "why": T("toca donde toca el bombo, para que los dos suenen como un solo golpe", "plays where the kick plays, so both sound like one hit")},
+        "comp": {"name": T("Piano eléctrico troceado", "Chopped electric piano"), "patterns": ["x ~ ~ x ~ ~ x ~"], "sound": "electric_piano_1_fluid",
+                 "fx": "# legato 0.7 # gain 0.8 # lpf 3200 # room 0.2", "center": 62,
+                 "why": T("acordes de séptima cortados en golpes, como un sample", "seventh chords cut into hits, like a sample")},
+        "lead": {"name": T("Trompeta con sordina", "Muted trumpet"), "rhythms": ["x ~ x ~ x ~ ~ ~", "x ~ x ~ x ~ x ~"], "sound": "muted_trumpet_fluid",
+                 "fx": "# legato 0.9 # gain 0.75 # room 0.3", "center": 74},
+    },
+    "afrobeat": {
+        "name": "Afrobeat", "bpm": 110, "mode": "minor", "prog": ["i7", "IV7", "i7", "IV7"],
+        "drums": [(T("Platos", "Hi-hats"), 's "[hh hh ho hh]*4" # gain "[0.8 0.55 0.7 0.55]*4" # cut 1 # pan 0.6'),
+                  (T("Shekere", "Shekere"), 's "shaker_large*16" # gain "[1 0.55 0.75 0.55]*4" # pan 0.7 # hpf 2500'),
+                  (T("Bombo y caja", "Kick and snare"), 's "[bd ~ ~ bd ~ ~ bd ~ ~ ~ bd ~ ~ ~ ~ ~, ~ ~ sn:1 ~ sn ~ ~ sn:1 ~ sn:1 ~ ~ sn ~ sn:1 ~]" # gain "[1 0.9 0.45 0.9]*4"')],
+        "bass": {"name": T("Bajo", "Bass"), "patterns": ["R ~ ~ R ~ T ~ F ~ ~ O ~ F ~ T ~", "R ~ ~ R ~ F ~ S ~ ~ O ~ S ~ F ~"], "sound": "electric_bass_finger_fluid",
+                 "fx": "# legato 0.7 # gain 1", "center": 40,
+                 "why": T("repite la misma frase subiendo por el acorde, como un mantra", "repeats the same phrase climbing the chord, like a mantra")},
+        "comp": {"name": T("Guitarra rítmica", "Rhythm guitar"), "patterns": ["~ ~ x ~ ~ ~ ~ x ~ ~ x ~ ~ ~ ~ x"], "sound": "electric_guitar_clean_fluid",
+                 "fx": "# legato 0.3 # gain 0.75 # pan 0.7", "center": 66,
+                 "why": T("acordes cortos en los huecos que deja la guitarra tenor", "short chords in the gaps the tenor guitar leaves")},
+        "lead": {"name": T("Saxo tenor", "Tenor sax"), "rhythms": ["x ~ ~ x x ~ x ~ x ~ ~ ~ x ~ x ~", "x ~ ~ x x ~ ~ ~ x ~ x ~ x ~ ~ ~"], "sound": "tenor_sax_fluid",
+                 "fx": "# legato 0.9 # gain 0.75 # room 0.25", "center": 66},
+    },
+    "bachata": {
+        "name": "Bachata", "bpm": 128, "mode": "minor", "prog": ["i", "iv", "V7", "i"],
+        "drums": [(T("Güira", "Güira"), 's "[guiro:3 guiro:1]*4" # gain "[1 0.6]*4" # cut 1 # hpf 2500 # pan 0.65'),
+                  (T("Bongó", "Bongo"), 's "bongos:0 bongos:6 bongos:2 bongos:6 bongos:0 bongos:6 bongos:16 bongos:7" # gain "0.9 0.65 0.85 0.65 0.9 0.65 1 0.75" # pan 0.4')],
+        "bass": {"name": T("Bajo", "Bass"), "patterns": ["~ R ~ L ~ R L ~", "~ R ~ L ~ R ~ N"], "sound": "electric_bass_finger_fluid",
+                 "fx": "# legato 0.6 # gain 0.95", "center": 45,
+                 "why": T("entra en el «y» del 1 y salta a la quinta: el paso del baile", "comes in on the «and» of 1 and jumps to the fifth: the dance step")},
+        "comp": {"name": T("Segunda guitarra", "Second guitar"), "patterns": ["0 1 2 3 1 2 3 2"], "sound": "acoustic_guitar_steel_fluid",
+                 "fx": "# legato 1 # gain 0.7 # pan 0.35", "center": 60,
+                 "why": T("arpegia el acorde nota a nota en corcheas", "arpeggiates the chord note by note in eighths")},
+        "lead": {"name": T("Requinto", "Requinto"), "rhythms": ["x x x x x x x x ~ ~ x x x ~ x ~", "x x x x x x x x ~ ~ x ~ x ~ ~ ~"], "sound": "acoustic_guitar_nylon_fluid",
+                 "fx": "# legato 0.9 # gain 0.75 # room 0.2 # pan 0.6", "center": 76},
     },
 }
 
@@ -602,7 +655,8 @@ def generate(data, style="merengue", keep=("melody", "chords"), seed=1, lang="es
 
 # Tonalidad de cada curso (la misma que su progresión en web/courses.js)
 COURSE_KEYS = {"merengue": (0, "major"), "salsa": (9, "minor"), "cumbia": (9, "minor"), "reggaeton": (9, "minor"), "bossa": (0, "major"),
-               "jazz": (0, "major"), "funk": (4, "minor"), "house": (9, "minor"), "techno": (9, "minor"), "dnb": (2, "minor"), "lofi": (0, "major")}
+               "jazz": (0, "major"), "funk": (4, "minor"), "house": (9, "minor"), "techno": (9, "minor"), "dnb": (2, "minor"), "lofi": (0, "major"),
+               "reggae": (9, "minor"), "boombap": (2, "minor"), "afrobeat": (4, "minor"), "bachata": (9, "minor")}
 PLAN_TXT = {"motivo": ("motivo", "motif"), "motivo invertido": ("motivo invertido", "inverted motif"),
             "respuesta (motivo desplazado)": ("respuesta desplazada", "displaced answer"), "respuesta": ("respuesta", "answer"),
             "secuencia": ("secuencia", "sequence"), "clímax": ("clímax", "climax"), "cadencia": ("cadencia", "cadence")}

@@ -52,6 +52,10 @@ kit pieces for the course's instruments (merengue: wood block and congas for the
 | House | Disco, 120 BPM | the four-on-the-floor drummers that house machines copied |
 | Drum & bass | Breakbeat, 170 BPM | a whole break played before you chop one |
 | Lo-fi | Hip hop, 86 BPM | a fixed backbeat with the kick and the timing moving around it |
+| Reggae & dub (0.17) | Jamaica | 152 (one drop on 3; feels like 76) | A minor · i–VII | The one drop → Swung hi-hats → The bass leads → The skank and the bubble organ → The melodica → Dub: the echo → Arrangement: intro, riddim and dub → Mix | One drop, Off-beat skank, Dubbing with echo |
+| Boom bap hip hop (0.17) | New York | 90 | D minor · i9–iv9 | Boom and bap → MPC hi-hats → Upright bass that follows the kick → The sample: chopped chords → A trumpet hook → Arrangement: intro, verse, hook and outro → Mix | MPC swing, Chopped chords, Bass that follows the kick |
+| Afrobeat (0.17) | Lagos, Nigeria | 110 | E minor (dorian) · i7–IV7 | Tony Allen's drums → Shekere and bell → The repeating bass → Two interlocking guitars → Unison horns → Arrangement: intro, groove and horns → Mix | Interlocking layers, Two-chord vamp, Unison horns |
+| Bachata (0.17, beta) | Dominican Republic | 128 | A minor · i–iv–V7 | The güira → The bongo → The syncopated bass → The second guitar → The requinto → Arrangement: requinto intro, verse and mambo → Mix | Arpeggiated requinto, Syncopated bass, Bongo and güira |
 
 Cumbia and techno have no example: the dataset has no cumbia or techno, and no openly licensed MIDI for them was found.
 What the reggaeton drummer does (hi-hats loud on the «and», dembow early) was measured over all 32 bars and copied into
@@ -101,6 +105,23 @@ instrument's pattern, and the most repeated four-chord progressions. Maestro get
 | Techno | Detroit · Berlin | 130 | A minor (a single chord) | The kick → Hats and claps → Euclidean percussion → Rolling bass → Acid line → Dark pad → Arrangement with a breakdown → Warehouse mix | Euclidean rhythms, Cut groups, Acid line |
 | Drum & bass | United Kingdom | 174 | D minor · i–VI–III–VII | The two-step → Hats and break → Long bass → Pad → Liquid piano → Arrangement: intro and drop → Mix | Two-step, Breakbeat, Randomness |
 | Lo-fi hip hop | The internet | 80 | C major · IVmaj7–iii7–ii7–Imaj7 | Boom-bap drums → Swung hi-hats → Piano chords → Soft bass → A melody that comes and goes → Arrangement → Old-tape mix | Swing, Boom-bap, Random variation |
+
+## Version 0.17: variants, form and sounds
+
+- **Cumbia variants**, chosen on the first step before the rhythm: **Colombian (coastal)** at 92 BPM (guacharaca and
+  maracas, llamador and tambor alegre, tambora, orchestra horns in the style of Lucho Bermúdez, millo flute),
+  **Sonidera (Mexico)** (the course as before), **Villera (Argentina)** at 100 BPM (timbales with a fill every four bars,
+  synth strings and a square-wave lead with echo) and **Chicha (Peru)** at 100 BPM (rock organ and an electric guitar with
+  tremolo on an A minor pentatonic melody with huayno-style endings). Each variant only replaces the steps that differ.
+- **Form**: every course has named sections that add up to its 16-bar arrangement. They go into the song's score as
+  sections, which are written to MusicXML as rehearsal marks and kept in the app's metadata. Melody, chord and bass tracks
+  written as `n "…"` are linked to the score when you add them.
+- **Sounds**: each course step offers «Choose the sound by ear» for its tracks (ranked and learned per genre), and the
+  course panel warns about sounds that don't play yet.
+- **Real drummers** for the new genres (Groove MIDI Dataset, CC BY 4.0): reggae `drummer1/session1/184_reggae_78`
+  (stretched over two course bars, rim as the snare), boom bap `drummer8/session1/4_hiphop_90`, afrobeat
+  `drummer8/session2/21_afrobeat_110`. Bachata has none: the dataset has no bachata.
+- **Bachata is in beta**: the requinto uses the library's nylon guitar, which still needs a listening check.
 
 ## Sources and licensing
 

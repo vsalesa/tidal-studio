@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.16.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.17.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -51,8 +51,8 @@ para probar.
 
 ### Cursos por género
 
-**Construye una canción desde cero.** Once cursos (merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house,
-techno, drum & bass, lo-fi), cada uno una clase de producción completa: el ritmo característico (güira y tambora, clave y
+**Construye una canción desde cero.** Quince cursos (merengue, salsa, cumbia, reggaeton, bossa nova, jazz, funk, house,
+techno, drum & bass, lo-fi, reggae y dub, boom bap, afrobeat, bachata), cada uno una clase de producción completa: el ritmo característico (güira y tambora, clave y
 tumbao, dembow, two-step…), luego bajo, armonía, melodía, arreglo y mezcla. Cada paso añade pistas que ya suenan bien,
 Maestro explica el *porqué* musical y el código trozo a trozo, y te propone un reto. Lista completa y fuentes en
 [docs/COURSES.md](docs/COURSES.md).
@@ -76,8 +76,8 @@ descargan solos al empezar el curso.
 | **«Lo que dice la skill» en cada paso, con instrumentos reales** | |
 | ![Paso con la regla de la skill](docs/screenshots/es/curso-skill-paso.png) | |
 
-**Escucha a un baterista real tocar el estilo.** Nueve cursos (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
-drum & bass y lo-fi) traen una interpretación real en MIDI del [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
+**Escucha a un baterista real tocar el estilo.** Doce cursos (merengue, salsa, reggaeton, bossa nova, jazz, funk, house,
+drum & bass, lo-fi, reggae, boom bap y afrobeat) traen una interpretación real en MIDI del [Groove MIDI Dataset](https://magenta.tensorflow.org/datasets/groove)
 (Google Magenta, CC BY 4.0): bateristas profesionales grabados tocando merengue dominicano, reggaeton, bossa nova, songo
 cubano, swing, funk, disco, breakbeat y hip hop. La primera vez que pulsas **Escuchar**, el estudio descarga el paquete de
 MIDI (3 MB) y convierte cuatro compases en pistas de Tidal que conservan lo que lo hace humano: la fuerza de cada golpe
@@ -111,6 +111,51 @@ comprado, escucha cuatro compases con todos sus instrumentos, y Maestro compara 
 | Tu ejemplo en el curso, junto al baterista real | |
 |---|---|
 | ![Tu ejemplo](docs/screenshots/es/curso-mi-ejemplo.png) | |
+
+### Cuatro géneros nuevos, variantes de cumbia y la forma de la canción
+
+**Ahora hay quince cursos.** Cuatro son nuevos:
+
+- **Reggae y dub** (Jamaica): el one drop, el bajo que manda, el skank a contratiempo, el órgano burbuja y un paso de
+  dub con ecos.
+- **Hip hop boom bap** (Nueva York): el swing de la MPC, acordes de jazz troceados como un sample y un contrabajo que
+  sigue al bombo.
+- **Afrobeat** (Lagos): la batería de Tony Allen, campana y shekere, un bajo que repite, dos guitarras que se entrelazan
+  y metales al unísono.
+- **Bachata** (República Dominicana): güira, bongó, bajo sincopado, segunda guitarra y requinto. Va marcado como
+  **beta** porque la guitarra de la biblioteca aún no se ha probado de oído. Si no te convence, elige otra de oído.
+
+Reggae, boom bap y afrobeat traen un baterista real del Groove MIDI Dataset. Los cuatro géneros nuevos funcionan también
+con **Otra versión** y con **Generar desde tu MIDI**.
+
+![Los cuatro cursos nuevos](docs/screenshots/es/cursos-nuevos.png)
+
+**Cumbia: elige la rama antes del ritmo.** El curso de cumbia empieza preguntando qué cumbia quieres:
+
+- **Colombiana (costeña)**: guacharaca y maracas, llamador, tambor alegre, tambora, metales de orquesta y flauta de
+  millo.
+- **Sonidera (México)**: el curso de siempre.
+- **Villera (Argentina)**: timbales con redobles y un teclado sintetizado.
+- **Chicha (Perú)**: órgano de rock y guitarra eléctrica con trémolo que toca una melodía pentatónica andina.
+
+Cada variante cambia el tempo, la tradición y los pasos que la distinguen. Maestro sabe cuál has elegido.
+
+![Elige la variante de cumbia antes del ritmo](docs/screenshots/es/cumbia-variantes.png)
+
+**Todos los cursos suben de nivel:**
+
+- **La forma de la canción va a la partitura.** Cada curso tiene sus secciones (intro, verso, mambo, dub…). Sus pistas
+  de melodía, acordes y bajo entran en la partitura según las añades, en la tonalidad del curso. El diálogo Partitura
+  enseña la forma, y el `.musicxml` la guarda como marcas de ensayo que MuseScore muestra.
+- **Elige un sonido de oído dentro del curso.** Cada pista que ya está en tu canción tiene **Elegir sonido de oído**.
+  Abre la comparación de cuatro del [Laboratorio de sonido](#laboratorio-de-sonido-sonidos-que-aprenden), y lo que eliges
+  se aprende para ese género.
+- **Un aviso cuando un sonido aún no suena.** Dice qué sonidos se están descargando (con licencia libre, con
+  **Descargar ahora**), cuáles se están cargando y cuáles no están disponibles.
+
+| La forma del curso en la partitura | Elige un sonido de oído dentro del curso |
+|---|---|
+| ![La forma del curso en la partitura](docs/screenshots/es/curso-partitura.png) | ![Elegir sonido de oído en un curso](docs/screenshots/es/curso-sonido-de-oido.png) |
 
 ### Maestro, tu profesor
 
@@ -544,13 +589,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.16.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.17.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.16.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.16.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.16.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/tidal-studio_0.16.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.17.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.17.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.17.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/tidal-studio_0.17.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -957,6 +1002,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.17.0** | Maestro v2, cuarto paso: [géneros](#cuatro-géneros-nuevos-variantes-de-cumbia-y-la-forma-de-la-canción). Cuatro cursos nuevos (reggae y dub, boom bap, afrobeat, bachata en beta), variantes de cumbia elegidas antes del ritmo (colombiana, sonidera, villera, chicha), la forma del curso como secciones en la partitura y en el `.musicxml`, elegir un sonido de oído dentro de cualquier curso (se aprende por género), aviso de sonidos que aún no suenan y bateristas reales para reggae, boom bap y afrobeat. |
 | **0.16.0** | Maestro v2, tercer paso: [sonidos que aprenden](#laboratorio-de-sonido-sonidos-que-aprenden). Un Laboratorio de sonido que mide tus sonidos cuando lo pides (librería, descargas, incluidos, pistas de canciones importadas y packs comprados solo en local); cuatro estados por sonido para que Maestro solo proponga lo que suena; 14 recetas de sonido que tú y Maestro podéis combinar (capa, mezcla, intermedia); **Comparar los 3 mejores de oído** sobre la misma frase, y el orden aprende de tus elecciones; crítico automático opcional (groove, armonía, forma); preguntas configurables; complemento experimental CLaMP 3, activo por género desde 10 canciones. |
 | **0.15.0** | Maestro v2, segundo paso: [la partitura](#la-partitura-melodía-acordes-y-bajo-de-tu-canción-en-notación). Cada canción es `.tidal` + `.musicxml` (lista para MuseScore) en la app, en disco, en GitHub y en el índice; Maestro compone melodía, acordes y bajo en la partitura y la app los traduce a Tidal, también paso a paso en los planes; al editar a mano te pregunta «llevar a la partitura» o «dejar como código libre»; melodías más musicales (motivo, respuesta, clímax, cadencia); **Otra versión** en los pasos de curso; huella por pista para los cambios de Maestro. |
 | **0.14.0** | Maestro v2, primer paso: [bloquea](#bloquea-lo-que-te-gusta-maestro-no-puede-cambiarlo) una pista entera o solo su ritmo, notas, sonido, efectos o mezcla, y el BPM; [A/B a ciegas](#ab-a-ciegas-tu-oído-es-el-juez) con cada voto guardado como dataset exportable, más notas de línea base por género; y un [monitor RAG en vivo](#monitor-rag-mira-qué-capa-respondió) de las capas de Maestro con límites configurables, respuestas locales sin IA y un índice SQLite de solo lectura de tus canciones. |

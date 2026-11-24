@@ -877,6 +877,23 @@ class Handler(SimpleHTTPRequestHandler):
             if ANALYZER:
                 ANALYZER.stop()
             return self._json({"ok": True})
+        if path == "/api/sounds/check":
+            # 0.17: ¿suenan ya los sonidos de un curso? Para cada uno, su estado y si se puede bajar con licencia libre
+            want = [str(s) for s in (data.get("sounds") or [])][:80]
+            items = library_items()
+            by = {}
+            for e in items:
+                by.setdefault(e.get("sound"), e)
+            out = []
+            for s in want:
+                e = by.get(s)
+                if e:
+                    out.append({"sound": s, "state": e.get("state"), "name": e.get("en") if en else e.get("es"),
+                                "kind": e.get("kind"), "license": e.get("license") or "", "installed": bool(e.get("installed"))})
+                else:
+                    out.append({"sound": s, "state": "unknown", "name": s, "kind": "", "license": "", "installed": False})
+            loaded, _, ok = sound_states()
+            return self._json({"sounds": out, "engine_ok": ok})
         if path == "/api/sounds/choice":
             if SOUNDS and data.get("chosen"):
                 SOUNDS.choose(str(data.get("role") or ""), str(data.get("style") or ""), str(data["chosen"]),
@@ -1332,7 +1349,7 @@ class Handler(SimpleHTTPRequestHandler):
 
             if path.startswith("/api/score/"):
                 return self._score(path, data)
-            if path.startswith(("/api/soundlab/", "/api/sounds/choice", "/api/recipes/", "/api/critic", "/api/clamp/")):
+            if path.startswith(("/api/soundlab/", "/api/sounds/choice", "/api/sounds/check", "/api/recipes/", "/api/critic", "/api/clamp/")):
                 return self._soundlab_post(path, data)
             if path == "/api/course/variants":
                 # «Otra versión» de un paso del curso: 3 candidatas de esa pista, el resto de la canción congelado (sin IA)

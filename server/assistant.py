@@ -134,6 +134,11 @@ def session_summary(session):
     if curso.get("ejemplo_del_alumno"):
         lines.append("Ejemplo que ha cargado el alumno para este curso (una canción de referencia del estilo; compara sus "
                      f"pasos con ella):\n{str(curso['ejemplo_del_alumno'])[:3000]}")
+    if curso.get("variante"):
+        lines.append(f"Variante del curso que ha elegido el alumno: {str(curso['variante'])[:80]} (respeta su rama: percusión, "
+                     "instrumentos y tempo de esa variante, no los de otra).")
+    if curso.get("forma"):
+        lines.append(f"Forma de la canción del curso (secciones de la partitura): {str(curso['forma'])[:300]}")
     import styleprofiles
     g = styleprofiles.genre_in(curso.get("nombre"), session.get("style"))
     if g:

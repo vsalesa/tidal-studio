@@ -169,6 +169,10 @@ function renderScore(msg = "") {
     <p class="hint">${L("La melodía, los acordes y el bajo de tu canción, como partitura. La app la traduce a Tidal (un compás por ciclo); el ritmo y los efectos siguen en Tidal. Ábrela en MuseScore, cámbiala y vuelve a importarla: las pistas se regeneran.",
       "Your song's melody, chords and bass, as a score. The app translates it to Tidal (one bar per cycle); rhythm and effects stay in Tidal. Open it in MuseScore, change it and import it back: the tracks are regenerated.")}</p>
     ${parts.length ? `<div class="sc-meta"><span><b>${esc(sc.key)}</b> ${L("tonalidad", "key")}</span><span><b>${esc(sc.meter)}</b> ${L("compás", "time")}</span><span><b>${parts.length}</b> ${parts.length === 1 ? L("parte", "part") : L("partes", "parts")}</span></div>
+      ${sc.sections && sc.sections.length ? `<div class="sc-form"><span class="sc-form-k">${L("Forma", "Form")}</span>${sc.sections.map((x, k) => {
+        const next = sc.sections[k + 1], n = next ? next.bar - x.bar : null;
+        return `<span class="sc-sec"><b>${esc(x.name)}</b><small>${L("compás", "bar")} ${x.bar}${n ? ` · ${n}` : ""}</small></span>`;
+      }).join("")}</div>` : ""}
       ${parts.map((p) => `<section class="sc-part" style="--k:${ROLE_COLOR[p.role] || "var(--accent)"}">
         <div class="sc-phead"><b>${esc(p.name)}</b><span class="sc-role">${esc((ROLE_NAME[p.role] || ROLE_NAME.melodia)())}</span>
           <span class="sc-trk">${p.track ? `→ <code>${esc(p.track)}</code>` : L("sin pista (código libre)", "no track (free code)")}</span>

@@ -21,7 +21,11 @@ import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.j
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fixNegatives, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
-import { COURSES, courseById, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
+import { COURSES, courseById, courseFor, courseSounds, finalTracks, maskArr, courseProgress, markStepDone } from "./courses.js";
+// El curso activo, con su variante (0.17: cumbia colombiana, sonidera, villera o chicha)
+const curCourse = () => (state.course ? courseFor(state.course.id, state.course.variant) : null);
+// El primer sonido de una pista: s "x" / # s "x" (sin el «:n»)
+const soundOf = (code) => { const m = /(?:^|[\s(#$])(?:s|sound)\s+"\[?\s*([A-Za-z][\w.]*)/.exec(code || ""); return m ? m[1] : ""; };
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
 import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS, blindStart, BLIND } from "./variants.js";
 import { guardChanges, blockedText, lockRowHTML, toggleLock, isLocked, mixLocked } from "./locks.js";
@@ -1630,7 +1634,7 @@ async function send(text) {
   if (!text || busy) return;
   if (text.startsWith(L("Lluvia de ideas", "Brainstorm"))) return openWizard();
   if (text === COURSE_OPEN() || /^(cursos?|courses?)\b/i.test(text)) return openCourses();
-  if (text === COURSE_NEXT() && state.course) { const c = courseById(state.course.id); if (state.course.i < c.steps.length - 1) courseGo(state.course.i + 1); state.options = []; return renderChat(); }
+  if (text === COURSE_NEXT() && state.course) { const c = curCourse(); if (state.course.i < c.steps.length - 1) courseGo(state.course.i + 1); state.options = []; return renderChat(); }
   if (text === COURSE_ASK() && state.course) return courseAsk();
   if (text.startsWith(L("Crear proyecto con wizard", "Create project with wizard"))) return openBuilder();
   if (text === INSPIRE_CHIP() && state.reference) text = INSPIRE_PROMPT();
@@ -1797,7 +1801,7 @@ async function askLLM(opts = {}) {
     if (opts.forcePlan && opts.request) history.push({ role: "user", content: L(`Hazlo por pasos con un plan: ${opts.request}`, `Do it in steps with a plan: ${opts.request}`) });
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      curso: state.course ? (() => { const c = courseById(state.course.id); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
+      curso: state.course ? (() => { const c = curCourse(); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.variant ? { variante: c.variant.name } : {}), ...(c.form ? { forma: c.form.map((f) => `${f.name} (${f.bars} compases)`).join(" · ") } : {}), ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
       bpm: state.bpm, bpm_lock: !!state.bpmLock, song_id: state.projectId || "", step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       plan_modo: planEnabled() && !state.course, ...(opts.planStep ? { plan_paso: opts.planStep } : {}), ...(opts.forcePlan ? { plan_forzar: true } : {}),
       referencia: state.reference || undefined,
@@ -2851,12 +2855,13 @@ function hearEntry(e) {
 }
 // 0.16: selector de instrumentos. Los 3 sonidos que mejor encajan y YA SUENAN, sobre la misma frase de tu pista,
 // junto al que tienes: eliges de oído (también a ciegas) y el ranking aprende de tu elección.
-async function compareSounds(base, ta) {
+async function compareSounds(base, ta, track) {
   const card = ta && ta.closest(".track");
-  const t = card && state.tracks.find((x) => x.id === card.dataset.id);
-  if (!t) return;
+  const t = track || (card && state.tracks.find((x) => x.id === card.dataset.id));
+  if (!t || !base) return;
+  const style = state.course ? state.course.id : (state.style || "");
   let r = null;
-  try { r = await (await fetch(`/api/sounds/rank?sound=${encodeURIComponent(base)}&role=${encodeURIComponent(t.kind || "")}&style=${encodeURIComponent(state.style || "")}&n=3`)).json(); } catch { /* sin servidor */ }
+  try { r = await (await fetch(`/api/sounds/rank?sound=${encodeURIComponent(base)}&role=${encodeURIComponent(t.kind || "")}&style=${encodeURIComponent(style)}&n=3`)).json(); } catch { /* sin servidor */ }
   const top = (r && r.top) || [];
   if (!top.length) {
     return sysMsg(L(`Ningún sonido parecido a «${base}» suena ahora mismo${r && !r.engine_ok ? " (el motor de sonido no está listo)" : ""}. Descarga alguno desde la Librería o el Laboratorio de sonido.`,
@@ -2876,7 +2881,7 @@ async function compareSounds(base, ta) {
   state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
   say(L(`Cuatro sonidos para ${t.id} «${t.name}», sobre la misma frase: el tuyo y los 3 que mejor encajan entre los que ya suenan. Escúchalos (o pulsa «A ciegas») y elige: el estudio aprende de tu elección.`,
     `Four sounds for ${t.id} «${t.name}», on the same phrase: yours and the 3 best matches among the ones that already play. Listen (or press «Blind») and pick: the studio learns from your choice.`),
-    state.options, { variantes, soundPick: { role: t.kind || "", style: state.style || "", sounds: [base, ...top.map((e) => e.sound)] } });
+    state.options, { variantes, soundPick: { role: t.kind || "", style, sounds: [base, ...top.map((e) => e.sound)] } });
 }
 
 async function installEntry(e) {
@@ -4227,7 +4232,8 @@ function openCourses() {
       const done = (prog[c.id] || []).length, total = c.steps.length;
       const active = state.course && state.course.id === c.id;
       return `<article class="cs-card" style="--g:${c.color}">
-        <header><b>${esc(c.name)}</b><span>${esc(c.origin)}</span></header>
+        <header><b>${esc(c.name)}${c.added ? ` <span class="cs-new">${L("nuevo", "new")}</span>` : ""}${c.beta ? ` <span class="cs-new beta" title="${esc(L("La guitarra de la biblioteca aún no se ha probado de oído: si no te convence, elige otra en el paso del requinto.", "The library guitar hasn't been checked by ear yet: if you don't like it, pick another on the requinto step."))}">beta</span>` : ""}</b><span>${esc(c.origin)}</span></header>
+        ${c.variants ? `<div class="cs-vars">${icon("redo", 12)} ${c.variants.length} ${L("variantes", "variants")}: ${c.variants.map((v) => esc(v.name)).join(" · ")}</div>` : ""}
         <div class="cs-meta"><span>${c.bpm} BPM</span>${levelDots(c.level)}<span>${esc(c.key)}</span></div>
         <p>${esc(c.blurb)}</p>
         ${c.skill ? `<p class="cs-trad"><b>${L("Tradición:", "Tradition:")}</b> ${esc(c.tradition)}</p>
@@ -4345,22 +4351,90 @@ async function courseReferenceAdd(c, btn) {
   btn.disabled = false;
 }
 
-function startCourse(id) {
-  const c = courseById(id);
+function startCourse(id, variant) {
+  const c = courseFor(id, variant);
   startFresh();
-  state.course = { id, i: 0, done: [] };
+  state.course = { id, i: 0, done: [], ...(c.variant ? { variant: c.variant.id } : {}) };
+  courseScore(c);
   state.name = L(`${c.name} desde cero`, `${c.name} from scratch`);
   state.bpm = c.bpm; $("#bpm").value = c.bpm; $("#proj-name").value = state.name;
   if (live()) evalCode(cps(c.bpm));
   // Los instrumentos reales del curso (congas, bajo acústico, trombones…) se van bajando mientras lees
-  ensureInstruments(finalTracks(c).map((t) => t.codigo), { quiet: true });
+  ensureInstruments(finalTracks(c).map((t) => t.codigo), { quiet: true }).then(() => checkCourseSounds(c));
+  checkCourseSounds(c);
   state.step = "libre";
   const trad = c.skill ? L(`\n\nTradición: ${c.tradition} ${c.lens} El curso sigue la skill ${c.skill} de tu plugin de composición; los instrumentos reales se descargan solos.`,
     `\n\nTradition: ${c.tradition} ${c.lens} The course follows the ${c.skill} skill from your composition plugin; the real instruments download by themselves.`) : "";
-  say(L(`¡Vamos a construir un ${c.name} desde cero! (${c.origin})\n\n${c.blurb}${trad}\n\nHe puesto el tempo a ${c.bpm} BPM. El curso está en el panel de la izquierda: lee cada paso, pulsa «Escuchar» para oírlo antes y «Añadir a mi canción» cuando quieras. Yo te explico el código de cada pieza aquí.`,
-    `Let's build ${/^[aeiou]/i.test(c.name) ? "an" : "a"} ${c.name} track from scratch! (${c.origin})\n\n${c.blurb}${trad}\n\nI set the tempo to ${c.bpm} BPM. The course is in the left panel: read each step, press «Listen» to hear it first and «Add to my song» when you're ready. I'll explain each piece's code here.`), []);
+  const vtxt = c.variant ? L(`\n\nVariante: ${c.variant.name}. ${c.variant.short} Puedes cambiarla arriba del primer paso.`, `\n\nVariant: ${c.variant.name}. ${c.variant.short} You can change it above the first step.`) : "";
+  say(L(`¡Vamos a construir un ${c.name} desde cero! (${c.origin})\n\n${c.blurb}${vtxt}${trad}\n\nHe puesto el tempo a ${c.bpm} BPM. El curso está en el panel de la izquierda: lee cada paso, pulsa «Escuchar» para oírlo antes y «Añadir a mi canción» cuando quieras. Yo te explico el código de cada pieza aquí.`,
+    `Let's build ${/^[aeiou]/i.test(c.name) ? "an" : "a"} ${c.name} track from scratch! (${c.origin})\n\n${c.blurb}${vtxt}${trad}\n\nI set the tempo to ${c.bpm} BPM. The course is in the left panel: read each step, press «Listen» to hear it first and «Add to my song» when you're ready. I'll explain each piece's code here.`), []);
   save();
   renderCourse();
+}
+
+// 0.17: la partitura del curso lleva su tonalidad y su forma (secciones), y las pistas de melodía, acordes y bajo
+const COURSE_KEY = { merengue: "C", salsa: "Am", cumbia: "Am", reggaeton: "Am", bossa: "C", jazz: "C", funk: "Em", house: "Am", techno: "Am", dnb: "Dm", lofi: "C",
+  reggae: "Am", boombap: "Dm", afrobeat: "Em", bachata: "Am" };
+function courseScore(c) {
+  if (!c || !c.form) return;
+  state.score = state.score && Array.isArray(state.score.parts) ? state.score : { version: 1, key: "C", meter: "4/4", parts: [] };
+  state.score.key = COURSE_KEY[c.id] || state.score.key;
+  let bar = 1;
+  state.score.sections = c.form.map((f) => { const s = { name: f.name, bar }; bar += f.bars; return s; });
+}
+async function courseLinkScore(c, tracks) {
+  courseScore(c);
+  for (const p of tracks || []) {
+    if (!/^(melodia|bajo|armonia)$/.test(p.tipo)) continue;
+    const t = state.tracks.find((x) => x.id === p.id);
+    if (!t || /^\s*(struct|swingBy|degradeBy|every|jux|sometimes)/.test(t.code)) continue;   // código con trucos: se queda libre
+    try {
+      const r = await api("/api/score/from-tidal", { code: t.code, meter: "4/4" });
+      if (r.bars) linkPart(state, t, { id: t.id, name: t.name, role: t.kind, bars: r.bars, sound: r.sound, fx: r.fx });
+    } catch { /* sin partitura no pasa nada */ }
+  }
+}
+
+// 0.17: ¿suenan ya los sonidos del curso? Los que faltan se avisan en el panel (y se descargan solos si tienen licencia libre)
+async function checkCourseSounds(c) {
+  if (!c || !state.course || state.course.id !== c.id) return;
+  let r;
+  try { r = await api("/api/sounds/check", { sounds: courseSounds(c) }); } catch { return; }
+  if (!state.course || state.course.id !== c.id) return;
+  state.course.sounds = (r.sounds || []).filter((s) => s.state !== "playable").map((s) => ({ sound: s.sound, state: s.state, name: s.name, license: s.license }));
+  state.course.engineOk = !!r.engine_ok;
+  renderCourse();
+}
+function courseSoundsBox(c) {
+  const miss = (state.course && state.course.sounds) || [];
+  if (!miss.length || state.course.engineOk === false) return "";
+  const dl = miss.filter((s) => s.state === "catalog"), loading = miss.filter((s) => s.state === "downloaded" || s.state === "loaded"), none = miss.filter((s) => s.state === "unknown");
+  const list = (xs) => xs.map((s) => `<code title="${esc(s.license || "")}">${esc(s.sound)}</code>`).join(" ");
+  return `<div class="cs-warn">${icon("speaker", 15)}<div><b>${L("Sonidos que aún no suenan", "Sounds that don't play yet")}</b>
+    ${dl.length ? `<span>${L("Con licencia libre, se descargan solos:", "Freely licensed, they download by themselves:")} ${list(dl)} <button class="link" data-cs="sounds">${L("Descargar ahora", "Download now")}</button></span>` : ""}
+    ${loading.length ? `<span>${L("Descargados, cargándose en el motor:", "Downloaded, loading into the engine:")} ${list(loading)}</span>` : ""}
+    ${none.length ? `<span>${L("No están en tu librería ni en el catálogo libre: esas pistas sonarán en silencio. Elige otro sonido de oído.", "Not in your library or the free catalogue: those tracks will be silent. Pick another sound by ear.")} ${list(none)}</span>` : ""}
+  </div></div>`;
+}
+function courseVariantsBox(c) {
+  const base = courseById(c.id);
+  if (!base.variants) return "";
+  const cur = c.variant ? c.variant.id : base.variants[0].id;
+  return `<div class="cs-variants"><b>${L("Elige la variante antes del ritmo", "Choose the variant before the rhythm")}</b>
+    ${base.variants.map((v) => `<label class="${v.id === cur ? "on" : ""}"><input type="radio" name="cs-variant" value="${esc(v.id)}" ${v.id === cur ? "checked" : ""}>
+      <span><b>${esc(v.name)}</b>${v.bpm ? ` · ${v.bpm} BPM` : ` · ${base.bpm} BPM`}<small>${esc(v.short)}</small></span></label>`).join("")}</div>`;
+}
+function setCourseVariant(id) {
+  if (!state.course || state.course.variant === id) return;
+  stopPreHear();
+  state.course.variant = id;
+  const c = curCourse();
+  if (!state.bpmLock) { state.bpm = c.bpm; $("#bpm").value = c.bpm; if (live()) evalCode(cps(c.bpm)); }
+  state.course.sounds = null;
+  ensureInstruments(finalTracks(c).map((t) => t.codigo), { quiet: true }).then(() => checkCourseSounds(c));
+  checkCourseSounds(c);
+  save(); renderCourse();
+  sysMsg(L(`Variante: ${c.variant.name}. ${c.variant.short}`, `Variant: ${c.variant.name}. ${c.variant.short}`));
 }
 
 function leaveCourse() {
@@ -4373,7 +4447,7 @@ function courseStepDone(i) { return !!(state.course && state.course.done.include
 
 function renderCourse() {
   const dock = $("#course-dock");
-  const c = state.course && courseById(state.course.id);
+  const c = curCourse();
   document.querySelector(".layout").classList.toggle("course-mode", !!c);
   dock.hidden = !c;
   if (!c) { dock.innerHTML = ""; return; }
@@ -4382,7 +4456,12 @@ function renderCourse() {
   const allDone = c.steps.every((_, k) => courseStepDone(k));
   const dots = c.steps.map((s, k) => `<button class="cs-dot ${k === i ? "on" : ""} ${courseStepDone(k) ? "done" : ""}" data-go="${k}" title="${esc(`${k + 1}. ${s.t}`)}">${courseStepDone(k) ? icon("check", 12) : k + 1}</button>`).join("");
   let what = "";
-  if (kind === "tracks") what = st.tracks.map((t) => `<div class="cs-track" style="--k:${KIND_COLOR[t.tipo] || "var(--ink-3)"}"><div class="cs-tname">${icon(t.tipo, 14)} <code>${esc(t.id)}</code> ${esc(t.nombre)}</div><pre class="cs-code">${esc(t.codigo)}</pre></div>`).join("");
+  if (kind === "tracks") what = st.tracks.map((t) => {
+    const cur = state.tracks.find((x) => x.id === t.id);
+    const snd = cur && soundOf(cur.code);
+    return `<div class="cs-track" style="--k:${KIND_COLOR[t.tipo] || "var(--ink-3)"}"><div class="cs-tname">${icon(t.tipo, 14)} <code>${esc(t.id)}</code> ${esc(t.nombre)}
+      ${snd ? `<button class="link cs-ear" data-ear="${esc(t.id)}" title="${esc(L(`Los 3 sonidos que mejor encajan con «${snd}» y ya suenan, sobre la misma frase. El estudio aprende lo que te gusta en ${c.name}.`, `The 3 sounds that best match «${snd}» and already play, on the same phrase. The studio learns what you like in ${c.name}.`))}">${icon("ear", 13)} ${L("Elegir sonido de oído", "Choose the sound by ear")}</button>` : ""}</div><pre class="cs-code">${esc(t.codigo)}</pre></div>`;
+  }).join("");
   if (kind === "arrange") what = `<div class="cs-arr">${Object.entries(st.arrange).map(([id, m]) => {
       const t = state.tracks.find((x) => x.id === id) || (finalTracks(c).find((x) => x.id === id) || {});
       return `<div class="cs-arr-row"><span><code>${esc(id)}</code> ${esc(t.name || t.nombre || "")}</span><span class="cs-bars">${maskArr(m).map((on) => `<i class="${on ? "on" : ""}"></i>`).join("")}</span></div>`;
@@ -4400,6 +4479,8 @@ function renderCourse() {
       <button class="icon-btn" data-cs="leave" title="${esc(L("Salir del curso (tu canción se queda)", "Leave the course (your song stays)"))}">${icon("close", 17)}</button>
     </div>
     <div class="cs-dots">${dots}</div>
+    ${i === 0 ? courseVariantsBox(c) : ""}
+    ${courseSoundsBox(c)}
     ${c.skill && i === 0 ? `<div class="cs-trad-box"><b>${L("La tradición que vamos a tocar", "The tradition we'll play")}</b><span>${esc(c.tradition)}</span><span class="cs-lens">${esc(c.lens)}</span></div>` : ""}
     ${i <= 1 ? (c.ref ? refBox(c) : "") + mineBox(c) : ""}
     <div class="cs-step">
@@ -4426,6 +4507,11 @@ function renderCourse() {
     <details class="cs-sources"><summary>${L("Fuentes y lecturas recomendadas", "Sources and further reading")}</summary>
       <ul>${c.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ul></details>`;
   dock.querySelectorAll("[data-go]").forEach((b) => b.onclick = () => courseGo(+b.dataset.go));
+  dock.querySelectorAll("[name=cs-variant]").forEach((r) => r.onchange = () => setCourseVariant(r.value));
+  dock.querySelectorAll("[data-ear]").forEach((b) => b.onclick = () => {
+    const t = state.tracks.find((x) => x.id === b.dataset.ear);
+    if (t) compareSounds(soundOf(t.code), null, t);
+  });
   const hear = dock.querySelector("[data-cs=hear]");
   if (hear) wirePreHear(hear, { pistas: st.tracks });
   const refHear = dock.querySelector("[data-ref=hear]");
@@ -4452,7 +4538,7 @@ function courseGo(i) {
 }
 
 function courseAction(a) {
-  const c = state.course && courseById(state.course.id);
+  const c = curCourse();
   if (a === "list") return openCourses();
   if (!c) return;
   const i = state.course.i, st = c.steps[i];
@@ -4463,12 +4549,13 @@ function courseAction(a) {
   if (a === "ask") return courseAsk();
   if (a === "apply") return courseApply();
   if (a === "other") return courseOther();
+  if (a === "sounds") return ensureInstruments(finalTracks(c).map((t) => t.codigo)).then(() => checkCourseSounds(c));
 }
 
 // «Otra versión»: 3 candidatas de la pista melódica/bajo/armonía del paso,
 // generadas con midigen v2 sobre el resto de la canción, que queda congelado.
 async function courseOther() {
-  const c = courseById(state.course.id), st = c.steps[state.course.i];
+  const c = curCourse(), st = c.steps[state.course.i];
   const t = (st.tracks || []).find((x) => /^(melodia|bajo|armonia)$/.test(x.tipo));
   if (!t) return;
   stopPreHear();
@@ -4487,7 +4574,7 @@ async function courseOther() {
 }
 
 async function courseApply() {
-  const c = courseById(state.course.id), i = state.course.i, st = c.steps[i];
+  const c = curCourse(), i = state.course.i, st = c.steps[i];
   stopPreHear();
   if (st.tracks) await ensureInstruments(st.tracks.map((t) => t.codigo));
   const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
@@ -4504,8 +4591,10 @@ async function courseApply() {
     });
     changes = applyChanges({ pistas });
     diff = diffFor(before, { pistas });
+    await courseLinkScore(c, pistas);
   }
   if (st.arrange) {
+    courseScore(c);
     for (const [id, m] of Object.entries(st.arrange)) { const t = state.tracks.find((x) => x.id === id); if (t && t.lock && (t.lock.all || t.lock.ritmo)) { skipped.push(id); continue; } if (t) t.code = setMask(t.code, maskArr(m)); }
     changed(); if (live()) playAll(true);
     document.querySelector('.tab[data-tab="arrange"]')?.click();
@@ -4530,7 +4619,7 @@ async function courseApply() {
 }
 
 function courseAsk() {
-  const c = courseById(state.course.id), i = state.course.i, st = c.steps[i];
+  const c = curCourse(), i = state.course.i, st = c.steps[i];
   if (useLLM()) {
     return send(L(`Estoy en el curso de ${c.name}, paso ${i + 1} («${st.t}»). Explícame con más detalle, como un profesor de producción, por qué esto suena a ${c.name}, qué haría un músico real aquí y propón una variación para probar en mi canción.`,
       `I'm on the ${c.name} course, step ${i + 1} («${st.t}»). Explain in more depth, like a production teacher, why this sounds like ${c.name}, what a real musician would do here, and suggest one variation to try on my song.`));
