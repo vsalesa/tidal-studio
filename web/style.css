@@ -1565,3 +1565,5 @@ dialog.il-dialog[open] { display: flex; }
 .rp-pick { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; }
 .rp-pick .rp-badges { flex-basis: 100%; }
 .rp-opt .icon-btn { margin-top: 2px; }
+.mk-out-body label { display: inline-flex; align-items: center; gap: 6px; }
+.mk-out-body select { padding: 4px 6px; border: 1px solid var(--rule-strong); border-radius: 6px; background: var(--card); }
