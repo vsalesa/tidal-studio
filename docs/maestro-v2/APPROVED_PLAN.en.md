@@ -69,6 +69,7 @@ The router only goes down a layer when the one above has no answer with enough c
 - Sound recipes: a sample plus processing, or a SuperCollider synth with parameters. Maestro can **combine recipes** to create new sounds.
 - Candidates are heard over Victor's song by default (solo optional). Maestro asks concrete questions when unsure (frequency configurable). The ranking learns from choices without the LLM.
 - CLaMP 3 add-on as described in section 2.
+- *(Added 2026-11-24, Victor)* Instrument selector with four separate states: in the catalog, downloaded, loaded in SuperDirt, actually playable. Maestro only proposes what plays, and ranks the top 2-3 by ear on the same phrase.
 - *(Added 2026-11-24, Victor)* Optional automatic critic (off by default): scores groove, harmony and form of each candidate as a hint next to it. It is an extra; your ear stays the judge.
 
 ### 0.17 — Genres

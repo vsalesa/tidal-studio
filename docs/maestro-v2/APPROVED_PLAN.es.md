@@ -69,6 +69,7 @@ El enrutador solo baja de capa cuando la anterior no tiene una respuesta con suf
 - Recetas de sonido: una muestra más su procesado, o un synth de SuperCollider con parámetros. Maestro puede **combinar recetas** para crear sonidos nuevos.
 - Las candidatas suenan sobre la canción de Victor por defecto (solas, opcional). Maestro hace preguntas concretas cuando duda (frecuencia configurable). El ranking aprende de las elecciones sin LLM.
 - Complemento CLaMP 3 como se describe en la sección 2.
+- *(Añadido 24-11-2026, Victor)* Selector de instrumentos con cuatro estados separados: en el catálogo, descargado, cargado en SuperDirt y que suena de verdad. Maestro solo propone lo que suena y ordena los 2-3 mejores escuchándolos con la misma frase.
 - *(Añadido 24-11-2026, Victor)* Crítico automático opcional (apagado por defecto): puntúa groove, armonía y forma de cada candidata como pista a su lado. Es un extra; el juez sigue siendo tu oído.
 
 ### 0.17 — Géneros
