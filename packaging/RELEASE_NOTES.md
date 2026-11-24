@@ -1,4 +1,10 @@
-## What's new in 0.12.0 / Novedades
+## What's new in 0.12.1 / Novedades
+
+- **Fix: save songs to an empty GitHub repository**: a repository you just created on GitHub with no files (no README) gave «GitHub 409: the repository is empty» when saving. Now the first save adds a small README as the first commit and saves your song on top. The configured branch is created if it doesn't exist, and the repository field also accepts a pasted GitHub URL (`https://github.com/user/repo`, `.git`).
+
+**Español:** **Arreglo: guardar canciones en un repositorio de GitHub vacío**: un repositorio recién creado en GitHub sin ficheros (sin README) daba «GitHub 409: el repositorio está vacío» al guardar. Ahora el primer guardado añade un README pequeño como primer commit y guarda tu canción encima. Si la rama configurada no existe, se crea, y el campo del repositorio también acepta la URL de GitHub pegada (`https://github.com/usuario/repo`, `.git`).
+
+## 0.12.0
 
 - **Play your MIDI keyboard**: plug in your USB piano and press **MIDI keyboard**. It sounds right away with the instrument you pick (SuperCollider listens to it, so it works in the Mac app too), the keys light up on screen, and what you play **turns into Tidal tracks**, one per hand, snapped to a grid, with the key and chords. Record with a count-in and metronome or in time with your song from its next bar; the code is written live while you play; or turn your last phrase into code without having pressed Record. Then add it to your song, ask Maestro to explain it and continue it, generate it in a style, or download the .mid. No keyboard? Use the on-screen keys or your computer keys.
 

@@ -52,11 +52,23 @@ def slugify(name):
     return s[:60] or "cancion"
 
 
+def normalize_repo(value):
+    """Acepta «usuario/repo» y también la URL que copias de GitHub:
+    https://github.com/usuario/repo(.git), github.com/usuario/repo/tree/main, git@github.com:usuario/repo.git"""
+    s = (value or "").strip()
+    s = re.sub(r"^(?:https?://)?(?:www\.)?github\.com[/:]", "", s, flags=re.I)
+    s = re.sub(r"^git@github\.com:", "", s, flags=re.I)
+    parts = [p for p in s.split("/") if p][:2]
+    if len(parts) == 2 and parts[1].lower().endswith(".git"):
+        parts[1] = parts[1][:-4]
+    return "/".join(parts)
+
+
 def _cfg(cfg):
     g = cfg.get("github") or {}
     return {
         "token": (g.get("token") or "").strip(),
-        "repo": (g.get("repo") or "").strip().strip("/"),
+        "repo": normalize_repo(g.get("repo")),
         "branch": (g.get("branch") or "main").strip() or "main",
         "folder": (g.get("folder") or "songs").strip().strip("/") or "songs",
         "api_url": (g.get("api_url") or "https://api.github.com").rstrip("/"),
@@ -152,38 +164,76 @@ def song_files(project):
     return {"song.tidal": tidal, "song.json": json.dumps(keep, ensure_ascii=False, indent=2), "README.md": "\n".join(readme)}
 
 
+def _branch_head(g, repo):
+    """Devuelve el commit de la rama, creándola si hace falta.
+
+    Un repositorio recién creado en GitHub sin README no tiene ningún commit: la API de datos de Git
+    responde 409 «Git Repository is empty» y no se puede crear un árbol ni una rama. En ese caso hago
+    un primer commit con la API de contenidos (que sí funciona con repos vacíos) y sigo como siempre.
+    """
+    branch = urllib.parse.quote(g["branch"])
+    try:
+        ref = _req(g, "GET", f"{repo}/git/ref/heads/{branch}", ok404=True)
+    except GitHubError as e:
+        if e.status != 409:
+            raise
+        ref, empty = None, True
+    else:
+        empty = False
+    if ref and ref.get("object"):
+        return ref["object"]["sha"]
+    if empty:
+        readme = (f"# {g['repo'].split('/')[-1]}\n\nMis canciones hechas con Tidal Studio (TidalCycles). "
+                  f"Cada canción está en `{g['folder']}/<nombre>/`.\n\n"
+                  f"My songs made with Tidal Studio (TidalCycles). Each song lives in `{g['folder']}/<name>/`.\n")
+        # Sin «branch»: en un repo vacío GitHub crea la rama por defecto con este commit
+        r = _req(g, "PUT", f"{repo}/contents/README.md", {"message": "Primer commit: repositorio de canciones de Tidal Studio",
+                                                         "content": base64.b64encode(readme.encode("utf-8")).decode()})
+        sha = r["commit"]["sha"]
+        default = (_req(g, "GET", repo) or {}).get("default_branch") or g["branch"]
+        if default == g["branch"]:
+            return sha
+    else:
+        # El repo tiene commits pero no existe la rama configurada: la creo desde la rama por defecto
+        default = _req(g, "GET", repo)["default_branch"]
+        sha = _req(g, "GET", f"{repo}/git/ref/heads/{urllib.parse.quote(default)}")["object"]["sha"]
+    _req(g, "POST", f"{repo}/git/refs", {"ref": f"refs/heads/{g['branch']}", "sha": sha})
+    return sha
+
+
 def save_song(cfg, project, message="", slug=None):
     g = _cfg(cfg)
     slug = slug or slugify(project.get("name"))
     base, repo = _paths(g, slug)
     files = song_files(project)
     message = (message or "").strip() or f"Guardo «{project.get('name') or slug}»"
-    ref = _req(g, "GET", f"{repo}/git/ref/heads/{urllib.parse.quote(g['branch'])}", ok404=True)
-    if ref and ref.get("object"):
-        # Un único commit con los tres ficheros (API de datos de Git)
-        head = ref["object"]["sha"]
-        base_tree = _req(g, "GET", f"{repo}/git/commits/{head}")["tree"]["sha"]
-        tree = _req(g, "POST", f"{repo}/git/trees", {"base_tree": base_tree, "tree": [
-            {"path": f"{base}/{n}", "mode": "100644", "type": "blob", "content": c} for n, c in files.items()]})
-        if tree.get("sha") == base_tree:
-            return {"slug": slug, "unchanged": True, "html_url": f"https://github.com/{g['repo']}/tree/{g['branch']}/{base}"}
-        commit = _req(g, "POST", f"{repo}/git/commits", {"message": message, "tree": tree["sha"], "parents": [head]})
-        _req(g, "PATCH", f"{repo}/git/refs/heads/{urllib.parse.quote(g['branch'])}", {"sha": commit["sha"]})
-        sha, url = commit["sha"], commit.get("html_url")
-    else:
-        # Repositorio vacío: la API de contenidos crea la rama con el primer fichero
-        sha = url = None
-        for n, c in files.items():
-            r = _req(g, "PUT", f"{repo}/contents/{base}/{n}", {"message": message, "branch": g["branch"],
-                                                                 "content": base64.b64encode(c.encode("utf-8")).decode()})
-            sha = r["commit"]["sha"]; url = r["commit"].get("html_url")
+    head = _branch_head(g, repo)
+    # Un único commit con los tres ficheros (API de datos de Git)
+    base_tree = _req(g, "GET", f"{repo}/git/commits/{head}")["tree"]["sha"]
+    tree = _req(g, "POST", f"{repo}/git/trees", {"base_tree": base_tree, "tree": [
+        {"path": f"{base}/{n}", "mode": "100644", "type": "blob", "content": c} for n, c in files.items()]})
+    if tree.get("sha") == base_tree:
+        return {"slug": slug, "unchanged": True, "html_url": f"https://github.com/{g['repo']}/tree/{g['branch']}/{base}"}
+    commit = _req(g, "POST", f"{repo}/git/commits", {"message": message, "tree": tree["sha"], "parents": [head]})
+    _req(g, "PATCH", f"{repo}/git/refs/heads/{urllib.parse.quote(g['branch'])}", {"sha": commit["sha"]})
+    sha, url = commit["sha"], commit.get("html_url")
     return {"slug": slug, "sha": sha, "commit_url": url or f"https://github.com/{g['repo']}/commit/{sha}",
             "html_url": f"https://github.com/{g['repo']}/tree/{g['branch']}/{base}"}
 
 
+def _empty_ok(fn):
+    """En un repo vacío (409) no hay canciones ni historial: devuelvo una lista vacía, no un error."""
+    try:
+        return fn()
+    except GitHubError as e:
+        if e.status == 409:
+            return []
+        raise
+
+
 def list_songs(cfg):
     g = _cfg(cfg)
-    items = _req(g, "GET", f"/repos/{g['repo']}/contents/{g['folder']}?ref={urllib.parse.quote(g['branch'])}", ok404=True) or []
+    items = _empty_ok(lambda: _req(g, "GET", f"/repos/{g['repo']}/contents/{g['folder']}?ref={urllib.parse.quote(g['branch'])}", ok404=True)) or []
     return [{"slug": it["name"], "html_url": it.get("html_url")} for it in items if it.get("type") == "dir"]
 
 
@@ -201,6 +251,6 @@ def load_song(cfg, slug, ref=None):
 def history(cfg, slug, limit=20):
     g = _cfg(cfg)
     base, repo = _paths(g, slug)
-    commits = _req(g, "GET", f"{repo}/commits?sha={urllib.parse.quote(g['branch'])}&path={urllib.parse.quote(base)}&per_page={limit}") or []
+    commits = _empty_ok(lambda: _req(g, "GET", f"{repo}/commits?sha={urllib.parse.quote(g['branch'])}&path={urllib.parse.quote(base)}&per_page={limit}")) or []
     return [{"sha": c["sha"], "message": (c.get("commit") or {}).get("message", ""),
              "date": ((c.get("commit") or {}).get("author") or {}).get("date", ""), "html_url": c.get("html_url")} for c in commits]
