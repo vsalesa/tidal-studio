@@ -41,6 +41,8 @@ import ccdetect  # noqa: E402
 import songimport  # noqa: E402
 import midigen  # noqa: E402
 import midilive  # noqa: E402
+import library as soundlib  # noqa: E402
+import instcatalog  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
 import appupdate  # noqa: E402
@@ -375,6 +377,19 @@ INSTLIB = instlib.InstLib(LIBRARY, ENGINE)
 PHOTOS = instphotos.Photos(LIBRARY.dir)
 
 
+def library_items():
+    """La librería única (server/library.py): incluidos, biblioteca de instrumentos, tuyos, loops y tu teclado."""
+    try:
+        loaded = set((ENGINE.sound_list() or {}).get("sounds") or [])
+    except Exception:  # noqa: BLE001
+        loaded = set()
+    try:
+        lps = loops.listing(LIBRARY)["loops"]
+    except Exception:  # noqa: BLE001
+        lps = []
+    return soundlib.build(LIBRARY, INSTLIB, lps, loaded)
+
+
 def instrument_listing():
     """La biblioteca de instrumentos tal y como la ve la interfaz (con los motores y Surge XT si están)."""
     try:
@@ -681,6 +696,17 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(ENGINE.sound_list())
             if path == "/api/audio":
                 return self._json(ENGINE.audio_state())
+            if path in ("/api/library", "/api/library/search", "/api/library/similar"):
+                q = parse_qs(urlparse(self.path).query)
+                arg = lambda k: q.get(k, [""])[0]  # noqa: E731
+                items = library_items()
+                if path == "/api/library/similar":
+                    return self._json(soundlib.suggest(items, arg("sound"), int(arg("n") or 6)))
+                if path == "/api/library/search":
+                    return self._json({"items": soundlib.search(items, arg("q"), arg("kind") or None, arg("origin") or None,
+                                                                int(arg("limit") or 60))})
+                cats = [{"id": c[0], "es": c[1], "en": c[2]} for c in instcatalog.CATEGORIES] + [{"id": "loops", "es": "Loops", "en": "Loops"}]
+                return self._json({"items": items, "families": cats})
             if path == "/api/midi/state":
                 q = parse_qs(urlparse(self.path).query)
                 try:

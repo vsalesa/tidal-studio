@@ -32,6 +32,7 @@ import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAI
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
 import { initMidi, toggleMidi, clockLines, midiSilence } from "./midikeys.js";
 import { initAudioStatus } from "./audiostatus.js";
+import { initLibrary, openLibrary, loadLibrary } from "./library.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -2742,6 +2743,49 @@ function wireMidi() {
   });
   $("#btn-midi").onclick = () => toggleMidi();
 }
+// --- librería única (web/library.js): todos los sonidos, incluidos y descargados, en una sola lista
+const isReal = () => !!(server.engine && server.engine.superdirt_ready && !server.engine.simulation);
+async function waitJob(r) {
+  let job = r;
+  while (job && job.state === "running") { await new Promise((ok) => setTimeout(ok, 600)); job = await api(`/api/instruments/job?id=${job.id}`); }
+  if (job && job.state === "error") throw new Error(job.error);
+  return job;
+}
+// Escuchar cualquier sonido de la librería: con el motor, en SuperDirt; sin él, una vista previa en el navegador
+function hearEntry(e) {
+  const ref = e.ref || e.sound;
+  if (isReal() && e.installed) {
+    if (e.kind === "hit" || e.kind === "loop") return evalCode(`once $ s "${ref}"`);
+    return evalCode(`once $ n "0 4 7" # s "${e.sound}"${e.extra || ""}`);
+  }
+  smStop();
+  if (e.origin === "library" || (e.origin === "mine" && e.kind === "pitched" && e.id)) { smAudio = new Audio(`/api/instruments/preview?id=${encodeURIComponent(e.id || e.sound)}&midi=60`); return smAudio.play().catch(() => {}); }
+  if (e.origin === "mine" || e.origin === "loop") { const [n, i] = ref.split(":"); smAudio = new Audio(`/api/samples/file?name=${encodeURIComponent(n)}&i=${i || 0}`); return smAudio.play().catch(() => {}); }
+  if (e.kind === "hit") return hearDirt(e.sound, 0);
+  beep(60, "piano", 0.6);
+}
+async function installEntry(e) {
+  if (e.kind === "engine") { $("#library").close(); openInstLib({ id: e.id }); throw new Error(L("Los motores se instalan desde su ficha.", "Engines are installed from their page.")); }
+  const r = await api("/api/instruments/install", { id: e.id || e.sound });
+  await waitJob(r);
+}
+// Código de partida de una pista con ese sonido (el mismo que usan la biblioteca de samples y la de instrumentos)
+function entryCode(e) {
+  if (e.kind === "loop") return loopCodeFor(e.ref) || `loopAt 2 $ chop 8 $ s "${e.ref}"`;
+  if (e.kind === "hit") return starterCode(e.sound, ["bombo", "caja", "platos", "percusion", "voz", "fx"].includes(e.role) ? e.role : "percusion");
+  if (e.kind === "midi") return `n "c e g e" # s "midi" # midichan 0`;
+  return `n "c e g e" # s "${e.sound}"${e.extra || ""}`;
+}
+function wireLibrary() {
+  initLibrary({
+    toast, hear: hearEntry, install: installEntry,
+    add: (e) => { const kind = e.kind === "hit" || e.kind === "loop" ? "percusion" : e.family === "basses" || e.family === "synth_bass" ? "bajo" : e.family === "synth_pad" ? "textura" : "melodia"; addTrack(L(e.es, e.en) || e.sound, kind, entryCode(e)); },
+    openSamples: () => openSamples(), openInstLib: (o) => openInstLib(o),
+  });
+  // Los dos botones de siempre abren la misma librería, con el filtro puesto
+  $("#btn-instlib").onclick = () => openLibrary({ kind: "pitched", show: "" });
+  $("#btn-samples").onclick = () => openLibrary({ kind: "", show: "" });
+}
 // --- loops largos (web/loops.js): el cargador, el navegador y cómo entran en la canción
 function wireLoops() {
   initLoops({
@@ -4285,6 +4329,7 @@ function init() {
   wireInstLib();
   wireMidi();
   wireLoops();
+  wireLibrary();
   wireControls();
   wireArrange();
   initTimeline({
