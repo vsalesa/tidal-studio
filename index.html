@@ -365,12 +365,22 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
   </div>
 </section>
 
+<section id="partitura" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker" data-i="ksc">Maestro v2 · the score</div>
+    <h2 class="sec-title" data-i="tsc">Your song, also as sheet music.</h2>
+    <p class="sec-lead" data-i="lsc">Every song is now .tidal code plus a MusicXML score with its melody, chords and bass. Maestro composes in the score first (motif, answer, climax, cadence) and the app turns it into Tidal. Open it in MuseScore, change it and bring it back. And on any course step, «Another version» gives you three new takes of the melody, bass or chords over the rest of your song.</p>
+    <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="sc-img" alt="" width="2880" height="1800"></div>
+  </div>
+</section>
+
 <section id="novedades" style="padding-top: 20px">
   <div class="wrap">
     <div class="kicker" data-i="kn">What's new</div>
-    <h2 class="sec-title" data-i="tn">Version 0.14.0 is out.</h2>
+    <h2 class="sec-title" data-i="tn">Version 0.15.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
+      <li><b>0.15.0</b><span data-i="v150">Maestro v2, second step: every song is .tidal + a MusicXML score (melody, chords, bass) on disk, GitHub and the index; Maestro composes in the score and the app translates it to Tidal; open it in MuseScore; hand edits go to the score or stay free code; «Another version» on course steps.</span></li>
       <li><b>0.14.0</b><span data-i="v140">Maestro v2, first step: locks per track and part (rhythm, notes, sound, effects, mix) and for the BPM; blind A/B with your votes saved as an exportable dataset; and a live RAG monitor with configurable limits and answers without AI.</span></li>
       <li><b>0.13.1</b><span data-i="v131">Your songs on GitHub: songs opened from GitHub show their GitHub path; upload many .tidal files at once from Settings, optionally moving the local copies to the Trash; and create new songs directly on GitHub.</span></li>
       <li><b>0.13.0</b><span data-i="v130">MIDI both ways: your songs play on your keyboard; audio that recovers when you plug things in; one library for every sound; replace a sound by selecting its name.</span></li>
@@ -398,8 +408,8 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="step solo reveal" style="margin-bottom:40px">
       <h4 data-i="mach">Mac, Windows and Linux: one installer, everything inside</h4>
       <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. It opens as a real Mac app, in its own window and with no Terminal. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
-      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
-      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/tidal-studio_0.14.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/tidal-studio_0.15.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
       <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows and Linux have their own installers too, each opening the studio in its own window. Intel Mac, or prefer the source? Follow the three steps below.</p>
       <p style="margin-top:4px;font-size:.9em"><a href="https://github.com/vsalesa/tidal-studio/releases/latest" data-i="allv">All versions</a></p>
     </div>
@@ -479,12 +489,13 @@ const ES = {
   f20h: "Un plan, paso a paso", f20p: "Pide una canción entera y Maestro primero te enseña un plan, como una lluvia de ideas con un productor. Apruébalo o cámbialo y construye la canción paso a paso, guardando cada uno: si la IA tarda demasiado, no se pierde nada.",
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Archivos de Tidal en pestañas", f18p: "Abre cualquier .tidal o .hs de tu disco o una canción de GitHub, cada uno en su pestaña, y ciérralos al terminar; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
+  v150: "Maestro v2, segundo paso: cada canción es .tidal + una partitura MusicXML (melodía, acordes, bajo) en disco, GitHub y el índice; Maestro compone en la partitura y la app la traduce a Tidal; ábrela en MuseScore; lo que edites a mano va a la partitura o se queda como código libre; «Otra versión» en los pasos de curso.",
   v140: "Maestro v2, primer paso: candados por pista y por parte (ritmo, notas, sonido, efectos, mezcla) y para el BPM; A/B a ciegas con tus votos guardados como dataset exportable; y un monitor RAG en vivo con límites configurables y respuestas sin IA.",
   v131: "Tus canciones en GitHub: las canciones abiertas desde GitHub enseñan su ruta en GitHub; sube muchos .tidal a la vez desde Ajustes, con la opción de mandar las copias locales a la Papelera; y crea las canciones nuevas directamente en GitHub.",
   v130: "MIDI de ida y vuelta: tus canciones suenan en tu teclado; el audio se recupera al enchufar cosas; una sola librería para todos los sonidos; cambia un sonido seleccionando su nombre.",
   v121: "Arreglo: guardar canciones en un repositorio de GitHub recién creado vacío ya no falla con el error 409.",
   v12: "Toca tu teclado MIDI: tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal, una por mano, a compás con tu canción; Maestro te lo explica.",
-  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.14.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
+  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.15.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
   v11: "Tidal Studio se actualiza solo: te avisa de las versiones nuevas, te enseña las novedades, descarga y comprueba el instalador de tu ordenador y lo instala con un clic.",
   v10: "En las peticiones grandes Maestro te enseña un plan y lo construye paso a paso, así un timeout ya no pierde trabajo, con un botón Cancelar; genera una canción nueva desde tu MIDI en 11 estilos; varias canciones abiertas en pestañas, desde tu disco o GitHub; un baterista real en nueve cursos; mejor importación de audio con MSST; y Maestro ve los sonidos que acabas de descargar.",
   v91: "Maestro carga en cada mensaje mc-tidal-studio, la ruta de skills de tu plugin de composición hecha para esta app.",
@@ -505,6 +516,7 @@ const ES = {
   kk: "Tu teclado MIDI", tk: "Toca tu piano. Míralo convertirse en código.",
   lk: "Enchufa tu teclado USB y suena al momento con cualquier instrumento del estudio. Graba una frase, a compás con tu canción si está sonando, y se convierte en pistas de Tidal, una por mano, con la tonalidad y los acordes; el código se escribe mientras tocas. Luego Maestro te explica lo que has tocado y te propone cómo seguir.",
   kv: "Maestro v2 · decide tu oído", tv: "Bloquea lo que te encanta. Juzga el resto de oído.",
+  ksc: "Maestro v2 · la partitura", tsc: "Tu canción, también en partitura.", lsc: "Cada canción es ahora código .tidal más una partitura MusicXML con su melodía, acordes y bajo. Maestro compone primero en la partitura (motivo, respuesta, clímax, cadencia) y la app la convierte en Tidal. Ábrela en MuseScore, cámbiala y tráela de vuelta. Y en cualquier paso de un curso, «Otra versión» te da tres versiones nuevas de la melodía, el bajo o los acordes sobre el resto de tu canción.",
   lv: "Bloquea una pista entera o solo su ritmo, notas, sonido, efectos o mezcla, y el tempo: Maestro no puede tocarlo, tú sí. Vota entre las opciones de Maestro a ciegas, solo con el oído; cada voto se queda en tu ordenador como un dataset que puedes exportar. Y un monitor en vivo enseña qué capa de Maestro respondió cada petición, con su tiempo y sus tokens; las preguntas sencillas sobre tus canciones se responden sin IA.",
   kg: "Genera desde tu MIDI", tg: "Tu melodía, en merengue. O en bossa, o en house.",
   lg: "Sube un MIDI tuyo, elige uno de once estilos y qué te quedas: melodía, acordes, bajo, batería o tempo. El estudio escribe el resto en ese estilo sobre tus acordes, sin IA: la batería del curso, un bajo y un acompañamiento con ritmos medidos en canciones reales, y una melodía nueva de pregunta y respuesta si no te quedas la tuya. Cada pista dice de dónde sale, y Maestro puede convertirla en una canción entera.",
@@ -699,6 +711,7 @@ function applyLang() {
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
 { const mi = document.getElementById("midi-img"); mi.src = shotPath(lang === "es" ? "midi-traducido" : "midi-result"); mi.alt = lang === "es" ? "Lo que tocas en tu piano, traducido a pistas de Tidal" : "What you play on your piano, translated into Tidal tracks"; }
+{ const si = document.getElementById("sc-img"); si.src = shotPath(lang === "es" ? "partitura" : "score"); si.alt = lang === "es" ? "La partitura: melodía y bajo como piano roll, lista para MuseScore" : "The score: melody and bass as a piano roll, ready for MuseScore"; }
 { const vi = document.getElementById("v2-img"); vi.src = shotPath(lang === "es" ? "monitor-rag" : "rag-monitor"); vi.alt = lang === "es" ? "Monitor RAG: el recorrido de una petición por las capas de Maestro" : "RAG monitor: the path of a request through Maestro's layers"; }
 { const gi = document.getElementById("gen-img"); gi.src = shotPath(lang === "es" ? "midi-generar-resultado" : "midi-generate-result"); gi.alt = lang === "es" ? "Tu MIDI en bossa nova: pistas de tu MIDI, del estilo y nuevas" : "Your MIDI as bossa nova: tracks from your MIDI, the style and new ones"; }
 { const ii = document.getElementById("import-img"); ii.src = shotPath(lang === "es" ? "importar-resultado" : "import-result"); ii.alt = lang === "es" ? "Canción importada: receta y pistas de Tidal" : "Imported song: recipe and Tidal tracks"; }
