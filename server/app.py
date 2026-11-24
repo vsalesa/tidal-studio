@@ -83,6 +83,7 @@ DEFAULT_CONFIG = {
         "branch": "main",
         "folder": "songs",
         "api_url": "https://api.github.com",
+        "create_new": False,       # las canciones nuevas se crean directamente en GitHub
     },
     "samples": {
         "freesound_key": "",       # clave API gratuita de freesound.org/apiv2/apply
@@ -595,6 +596,8 @@ class Handler(SimpleHTTPRequestHandler):
                     "llm_configured": llm_configured(cfg),
                     "provider": cfg["provider"],
                     "github_configured": github.configured(cfg),
+                    "github_where": github.where(cfg),
+                    "github_create_new": bool(cfg["github"].get("create_new")),
                 })
             if path == "/api/config":
                 return self._json(public_config(load_config()))
@@ -792,6 +795,8 @@ class Handler(SimpleHTTPRequestHandler):
                         continue
                     if k in cfg["github"] and isinstance(v, str):
                         cfg["github"][k] = v.strip()
+                    elif k == "create_new" and isinstance(v, bool):
+                        cfg["github"][k] = v
                 if "temperature" in data:
                     cfg["temperature"] = float(data["temperature"])
                 if "ai_timeout" in data:
@@ -1205,6 +1210,10 @@ class Handler(SimpleHTTPRequestHandler):
                         return self._json(tfiles.read(data.get("path")))
                     if path == "/api/file/write":
                         return self._json(tfiles.write(data.get("path"), data.get("content", ""), bool(data.get("overwrite", True))))
+                    if path == "/api/file/list":
+                        return self._json(tfiles.list_dir(data.get("dir", "")))
+                    if path == "/api/file/trash":
+                        return self._json(tfiles.trash(data.get("path"), data.get("mtime"), data.get("size")))
                 except (tfiles.FileError, OSError) as e:
                     msg = str(e) if isinstance(e, tfiles.FileError) else f"{e.strerror or e}|{e.strerror or e}"
                     es, _, en = msg.partition("|")

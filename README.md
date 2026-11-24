@@ -33,6 +33,7 @@ where every line of code is explained.
 
 | 1. Style | 2. Tempo |
 |---|---|
+| **0.13.1** | [Your songs on GitHub](#your-songs-on-github-remote-paths-upload-in-bulk-start-new-songs-there): a song opened from GitHub shows its GitHub path, never a local one; upload many `.tidal` files at once from Settings, optionally deleting the local copies (to the Trash, only after a verified upload); and an option to create every new song directly on GitHub. |
 | ![Choose style](docs/screenshots/wizard-1-style.png) | ![Choose tempo](docs/screenshots/wizard-2-tempo.png) |
 | **3. Beat (up to 3 layers)** | **4. Bass, chords, melody and texture** |
 | ![Choose beat](docs/screenshots/wizard-3-beat.png) | ![Choose chords](docs/screenshots/wizard-4-chords.png) |
@@ -703,6 +704,35 @@ simulate a song playing, `--port` for a real virtual MIDI port with `pip install
 - **My projects**: your songs are saved automatically; open or delete them from the folder button.
 
 ![GitHub: every save is a version](docs/screenshots/github-versions.png)
+
+### Your songs on GitHub: remote paths, upload in bulk, start new songs there
+
+- **A song opened from GitHub shows where it lives on GitHub**, `user/repo/songs/name`, in its tab and above the
+  title, never a path on your computer, even if you also have a `.tidal` file with the same name. If that file is open
+  too, it stays in its own tab. `Ctrl+S` / `⌘S` on a GitHub song saves a new version to GitHub.
+
+![A song opened from GitHub shows its path on GitHub](docs/screenshots/github-remote-path.png)
+
+- **Settings → GitHub** has two new things: «Create new songs directly on GitHub» and «Upload songs from my computer…».
+
+![Settings → GitHub: create new songs there, or upload songs from your computer](docs/screenshots/github-settings.png)
+
+- **Upload songs from my computer**: choose a folder, tick the `.tidal` / `.hs` files you want and upload them all at
+  once. Each file becomes a song in `songs/<name>/` with its own commit (with its extra code, `let` and definitions).
+  If the repository already has a song with that name, it is uploaded as `<name>-2`, so nothing gets overwritten.
+
+![Choose a folder and tick the songs to upload](docs/screenshots/github-import.png)
+
+- **Delete the local files after uploading them**: a file is only removed after GitHub confirmed the upload *and* the
+  song read back from GitHub is identical, and only if you didn't change the file meanwhile. It goes to the Trash
+  (Recycle Bin on Windows), so you can get it back. A tab that had that file open becomes the GitHub song.
+
+![Every song uploaded, and the local copies moved to the Trash](docs/screenshots/github-import-done.png)
+
+- **Create new songs directly on GitHub**: with this ticked, every new song, whatever you start from (blank, wizard,
+  brainstorm, a course, a MIDI or audio file…), is created in your repository as soon as it has its first track.
+
+![A new song created on GitHub as soon as it has a track](docs/screenshots/github-create-new.png)
 
 ### And also
 

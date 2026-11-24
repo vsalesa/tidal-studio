@@ -726,6 +726,37 @@ además una canción sonando, y con `--port` crea un puerto MIDI virtual de verd
 
 ![GitHub: cada guardado es una versión](docs/screenshots/es/github-versiones.png)
 
+### Tus canciones en GitHub: ruta remota, subir varias a la vez y crear las nuevas allí
+
+- **Una canción abierta desde GitHub enseña dónde vive en GitHub**, `usuario/repo/songs/nombre`, en su pestaña y encima
+  del título, nunca una ruta de tu ordenador, aunque también tengas un `.tidal` con el mismo nombre. Si ese archivo
+  está abierto, sigue en su propia pestaña. `Ctrl+S` / `⌘S` en una canción de GitHub guarda una versión nueva en GitHub.
+
+![Una canción abierta desde GitHub enseña su ruta en GitHub](docs/screenshots/es/github-ruta-remota.png)
+
+- **Ajustes → GitHub** tiene dos cosas nuevas: «Crear las canciones nuevas directamente en GitHub» y «Subir canciones
+  desde mi ordenador…».
+
+![Ajustes → GitHub: crear allí las canciones nuevas o subir las de tu ordenador](docs/screenshots/es/github-ajustes.png)
+
+- **Subir canciones desde mi ordenador**: eliges una carpeta, marcas los `.tidal` / `.hs` que quieras y los subes todos
+  de una vez. Cada archivo pasa a ser una canción en `songs/<nombre>/` con su propio commit (con su código extra, `let`
+  y definiciones). Si el repositorio ya tiene una canción con ese nombre, se sube como `<nombre>-2`, así no se pisa nada.
+
+![Eliges una carpeta y marcas las canciones que quieres subir](docs/screenshots/es/github-importar.png)
+
+- **Eliminar los archivos locales después de subirlos**: un archivo solo se quita cuando GitHub ha confirmado la subida
+  *y* la canción leída de vuelta desde GitHub es idéntica, y solo si no lo has tocado mientras tanto. Va a la Papelera,
+  así que puedes recuperarlo. Una pestaña que tenía ese archivo abierto pasa a ser la canción de GitHub.
+
+![Todas las canciones subidas y las copias locales en la Papelera](docs/screenshots/es/github-importar-hecho.png)
+
+- **Crear las canciones nuevas directamente en GitHub**: con esta casilla marcada, cada canción nueva, empieces como
+  empieces (en blanco, asistente, lluvia de ideas, un curso, un MIDI o un audio…), se crea en tu repositorio en cuanto
+  tiene su primera pista.
+
+![Una canción nueva creada en GitHub en cuanto tiene una pista](docs/screenshots/es/github-crear-nuevas.png)
+
 ### Y además
 
 - **Tu progreso**: conceptos de código y de música que ya has usado.
@@ -741,6 +772,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.13.1** | [Tus canciones en GitHub](#tus-canciones-en-github-ruta-remota-subir-varias-a-la-vez-y-crear-las-nuevas-allí): una canción abierta desde GitHub enseña su ruta en GitHub, nunca una local; sube muchos `.tidal` a la vez desde Ajustes, con la opción de eliminar las copias locales (a la Papelera, solo tras comprobar la subida); y una casilla para crear cada canción nueva directamente en GitHub. |
 | **0.12.1** | Arreglo: guardar canciones en un repositorio de [GitHub](#github) recién creado vacío (sin README) ya no falla con «409: el repositorio está vacío»; el campo del repositorio también acepta la URL de GitHub pegada. |
 | **0.12.0** | [Toca tu teclado MIDI](#toca-tu-teclado-midi-suena-y-se-convierte-en-código-de-tidal): tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal (mano izquierda y derecha), grabado a compás con tu canción; Maestro te lo explica y te propone cómo seguir. |
 | **0.11.0** | [Tidal Studio se actualiza solo](#tidal-studio-se-actualiza-solo): te avisa de las versiones nuevas, descarga y comprueba el instalador de tu ordenador y lo instala con un clic. |

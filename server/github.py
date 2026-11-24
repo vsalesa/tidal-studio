@@ -152,8 +152,12 @@ def song_files(project):
         lines.append(f"-- {t.get('name', t.get('id'))} ({t.get('kind', '')})")
         lines.append(f"{t.get('id')} $ {t.get('code', '')}" if not t.get("muted") else f"{t.get('id')} silence -- silenciada: {t.get('code', '')}")
         lines.append("")
+    extra = (project.get("extra") or "").strip()
+    if extra:
+        # Código que no es una pista (let, definiciones, once…): va antes de las pistas, como en el estudio
+        lines[5:5] = ["-- Código extra / Extra code", extra, ""]
     tidal = "\n".join(lines)
-    keep = {k: project.get(k) for k in ("name", "bpm", "style", "tracks", "projectId") if k in project}
+    keep = {k: project.get(k) for k in ("name", "bpm", "style", "tracks", "projectId", "extra") if project.get(k) not in (None, "")}
     keep["tracks"] = [{k: t.get(k) for k in ("id", "name", "kind", "code", "muted")} for t in tracks]
     readme = [f"# {name}", "", f"**{bpm} BPM**" + (f" · {project.get('style')}" if project.get("style") else "") + f" · {len(tracks)} pistas", "",
               "| Pista | Nombre | Código |", "|---|---|---|"]
@@ -213,12 +217,11 @@ def save_song(cfg, project, message="", slug=None):
     tree = _req(g, "POST", f"{repo}/git/trees", {"base_tree": base_tree, "tree": [
         {"path": f"{base}/{n}", "mode": "100644", "type": "blob", "content": c} for n, c in files.items()]})
     if tree.get("sha") == base_tree:
-        return {"slug": slug, "unchanged": True, "html_url": f"https://github.com/{g['repo']}/tree/{g['branch']}/{base}"}
+        return {"slug": slug, "unchanged": True, **remote_where(g, slug)}
     commit = _req(g, "POST", f"{repo}/git/commits", {"message": message, "tree": tree["sha"], "parents": [head]})
     _req(g, "PATCH", f"{repo}/git/refs/heads/{urllib.parse.quote(g['branch'])}", {"sha": commit["sha"]})
     sha, url = commit["sha"], commit.get("html_url")
-    return {"slug": slug, "sha": sha, "commit_url": url or f"https://github.com/{g['repo']}/commit/{sha}",
-            "html_url": f"https://github.com/{g['repo']}/tree/{g['branch']}/{base}"}
+    return {"slug": slug, "sha": sha, "commit_url": url or f"https://github.com/{g['repo']}/commit/{sha}", **remote_where(g, slug)}
 
 
 def _empty_ok(fn):
@@ -244,8 +247,21 @@ def load_song(cfg, slug, ref=None):
     if not r or "content" not in r:
         raise GitHubError(f"No encuentro la canción «{slug}» (falta song.json)", 404)
     data = json.loads(base64.b64decode(r["content"]).decode("utf-8"))
-    data["github"] = {"slug": slug, "ref": ref or g["branch"]}
+    data["github"] = {"slug": slug, "ref": ref or g["branch"], **remote_where(g, slug)}
     return data
+
+
+def remote_where(g, slug):
+    """Dónde vive la canción en GitHub: «usuario/repo/songs/slug» (lo que se enseña en vez de una ruta local)."""
+    base = f"{g['folder']}/{slug}"
+    return {"repo": g["repo"], "branch": g["branch"], "path": base, "remote": f"{g['repo']}/{base}",
+            "html_url": f"https://github.com/{g['repo']}/tree/{urllib.parse.quote(g['branch'])}/{base}"}
+
+
+def where(cfg):
+    """Repo, rama y carpeta configurados (para que la web pinte rutas remotas)."""
+    g = _cfg(cfg)
+    return {"repo": g["repo"], "branch": g["branch"], "folder": g["folder"]}
 
 
 def history(cfg, slug, limit=20):
