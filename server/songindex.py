@@ -227,6 +227,25 @@ class SongIndex:
             lines.append(json.dumps(d, ensure_ascii=False, sort_keys=True))
         return "\n".join(lines) + ("\n" if lines else "")
 
+    def index_bytes(self):
+        """Lo que ocupa más o menos el índice (sin los votos): el código de las pistas y las partituras."""
+        with self.lock:
+            a = self.db.execute("SELECT COALESCE(SUM(LENGTH(code)),0) FROM tracks").fetchone()[0]
+            b = self.db.execute("SELECT COALESCE(SUM(LENGTH(musicxml)),0) FROM scores").fetchone()[0]
+        return int(a) * 2 + int(b)
+
+    def clear_index(self):
+        """Vacía el índice de canciones (se rehace al guardar). Los votos NO se tocan."""
+        with self.lock, self.db:
+            for t in ("tracks", "scores", "songs"):
+                self.db.execute(f"DELETE FROM {t}")
+            try:
+                self.db.execute("DELETE FROM tracks_fts")
+            except sqlite3.Error:
+                pass
+        with self.lock:
+            self.db.execute("VACUUM")
+
     # ------------------------------------------------------------ estado
     def stats(self):
         with self.lock:

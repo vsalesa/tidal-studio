@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.17.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.18.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -151,6 +151,71 @@ Each variant changes the tempo, the tradition and the steps that differ. Maestro
 | The course's form in the score | Choose a sound by ear inside the course |
 |---|---|
 | ![The course form in the score](docs/screenshots/course-score.png) | ![Choose the sound by ear in a course](docs/screenshots/course-sound-by-ear.png) |
+
+### Maestro remembers you: memory, your styles and musical cases
+
+**Memory with scopes.** Maestro remembers what you tell it and what you choose, for **this song**, **this course**,
+**the genre** or **always**. Before answering it reads only what applies to what you're doing, the most specific
+first. Open it with the brain button.
+
+- **Say it in the chat**: «remember that in house I prefer claps with a short room». A pure «remember that…» is
+  answered without AI. Phrases like «never…», «I prefer…» or «I don't like…» are noted too.
+- **Learned from your ear**: when you pick the same sound by ear 3 times or more for the same role and genre (Sound
+  Lab, courses, the replace card), it becomes a memory of that genre.
+- **A validation layer**: very clear memories (an explicit «remember…», or 3+ picks with no other favourite) are
+  approved by themselves. Doubtful ones wait in the **Inbox**: a preference said in passing, something that
+  contradicts another memory, or a tempo far from the genre's. Maestro doesn't use them until you approve them.
+- **A log you can undo**: everything added, changed or deleted, and who did it (you, Maestro or automatic). Each line
+  has **Undo**.
+
+| What Maestro remembers, by scope | The inbox: what isn't clear waits for you |
+|---|---|
+| ![Memory by scope](docs/screenshots/memory.png) | ![Memory inbox with the reasons](docs/screenshots/memory-inbox.png) |
+
+| «Remember that…» in the chat, without AI | The log: every change can be undone |
+|---|---|
+| ![Remember that in the chat](docs/screenshots/memory-chat.png) | ![Memory log with Undo](docs/screenshots/memory-log.png) |
+
+**My styles.** Save a song as a style: its groove (the rhythm tracks as they are), roles, instruments, effects and
+tempo. **Not its notes**, so you can make new songs with your touch without repeating yourself. Three ways to use one
+(also from **New project → From one of my styles**):
+
+- **Inspiration**: Maestro writes a new song with the same relations (groove, roles, instruments, tempo) and new
+  material.
+- **Transformation**: the groove stays and bass, chords and melody are written again in another key, tempo or set of
+  instruments, with the studio's generator and no AI. **Listen** before you use it, and ask for **Another version**.
+- **Literal copy**: the tracks as they are, with their notes. Only when you pick it, and it goes in the log.
+
+**Share styles through GitHub**: **Share** uploads the style to `styles/` in your repository and copies a link.
+Anyone can paste it in **Import from a link** (`user/repo`, a `.json` link or a `raw` link). Shared styles never
+carry your notes.
+
+| My styles | Transform a style: another key and tempo, listen first |
+|---|---|
+| ![My styles](docs/screenshots/my-styles.png) | ![Transform a style](docs/screenshots/style-transform.png) |
+
+**Musical cases.** A case is a problem you solved: the code before and after and why you accepted it. When you pick
+one of Maestro's options, **Save as a case** appears. When you later ask for something similar, Maestro reads your
+closest cases and solves it your way.
+
+![Musical cases](docs/screenshots/musical-cases.png)
+
+**Automatic GitHub backup.** With GitHub connected, approved memories, your styles and your cases are committed to
+`tidal-studio/` a few seconds after each change. The inbox, votes and audio never are. You can turn this off.
+
+**Storage panel** (Settings → Storage, or Memory → Settings). It shows what takes space on your computer and what
+happens if you delete it:
+
+- **Rebuilds itself**: the cache and the song index.
+- **Downloads or analyses again**: library instruments, downloaded sounds, the real drummers, separated stems and
+  audio models.
+- **Turns a feature off**: CLaMP 3 and the audio tools.
+- **Yours**: can't be recovered, so it is deleted one by one.
+
+It also marks what SuperDirt loads at start, so you know what speeds up starting. Your learning (votes, picks, memory)
+isn't deleted from here. Nothing is deleted on its own.
+
+![Storage panel](docs/screenshots/storage.png)
 
 ### Maestro, your teacher
 
@@ -572,13 +637,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.17.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.18.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.17.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.17.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.17.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/tidal-studio_0.17.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.18.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.18.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.18.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/tidal-studio_0.18.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -973,6 +1038,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.18.0** | Maestro v2, fifth step: [memory and styles](#maestro-remembers-you-memory-your-styles-and-musical-cases). Memory by scope (song, course, genre, always) from the chat and from your picks by ear, with a validation layer (clear ones approved by themselves, doubtful ones to an inbox), a log where every change can be undone, **My styles** (groove, roles, instruments and tempo, not notes) used as inspiration, transformation or literal copy and shared through GitHub, musical cases Maestro learns from, automatic GitHub backup of what's approved and a storage panel. |
 | **0.17.0** | Maestro v2, fourth step: [genres](#four-new-genres-cumbia-variants-and-the-songs-form). Four new courses (reggae & dub, boom bap, afrobeat, bachata in beta), cumbia variants chosen before the rhythm (Colombian, sonidera, villera, chicha), the course's form as sections in the score and the `.musicxml`, choose a sound by ear inside any course (learned per genre), a warning for sounds that don't play yet, and real drummers for reggae, boom bap and afrobeat. |
 | **0.16.0** | Maestro v2, third step: [sounds that learn](#sound-lab-sounds-that-learn). A Sound Lab that measures your sounds on demand (library, downloads, built-in, imported stems and bought packs kept local); four states per sound so Maestro only suggests what plays; 14 sound recipes you and Maestro can combine (layer, blend, in between); **Compare the best 3 by ear** on the same phrase, and the ranking learns from your picks; optional automatic critic (groove, harmony, form); configurable questions; experimental CLaMP 3 add-on, on per genre at 10+ songs. |
 | **0.15.0** | Maestro v2, second step: [the score](#the-score-your-songs-melody-chords-and-bass-as-sheet-music). Every song is `.tidal` + `.musicxml` (MuseScore-ready) in the app, on disk, on GitHub and in the index; Maestro composes melody, chords and bass in the score and the app translates them to Tidal, also step by step in plans; hand edits ask «send to the score» or «keep as free code»; smarter melodies (motif, answer, climax, cadence); **Another version** on course steps; per-track fingerprints for Maestro's changes. |

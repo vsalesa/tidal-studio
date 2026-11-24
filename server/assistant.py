@@ -125,6 +125,9 @@ def session_summary(session):
     if related:
         lines.append("Pistas de OTRAS canciones del alumno relacionadas con lo que pide (de su índice de canciones; úsalas para "
                      "entender su gusto y estilo, sin copiarlas literalmente):\n" + "\n".join(f"  · {x}" for x in related))
+    if session.get("memoria"):
+        # 0.18: memorias aprobadas por el alumno (por ámbito), sus casos musicales parecidos y el estilo elegido
+        lines.append(str(session["memoria"])[:6000])
     if session.get("step"):
         lines.append(f"Paso actual de la guía: {session['step']}")
     curso = session.get("curso") if isinstance(session.get("curso"), dict) else {}

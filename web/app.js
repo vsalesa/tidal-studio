@@ -42,6 +42,8 @@ import { initMidi, toggleMidi, clockLines, midiSilence } from "./midikeys.js";
 import { initAudioStatus } from "./audiostatus.js";
 import { initLibrary, openLibrary, loadLibrary } from "./library.js";
 import { initSoundLab } from "./soundlab.js";
+import { initMemory, openMemory } from "./memory.js";
+import { initStorage, openStorage } from "./storage.js";
 import { initReplace, replaceSound } from "./replace.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
@@ -1091,11 +1093,30 @@ async function pickVariant(mi, k) {
   state.chat.push({ role: "user", content: L(`Me quedo con la opción ${LETTERS[k]}: «${v.titulo}».`, `I'll keep option ${LETTERS[k]}: «${v.titulo}».`) });
   const summary = applyChanges(v.cambios);
   if (v.concepto && !state.learnedMusic.includes(v.concepto)) state.learnedMusic.push(v.concepto);
+  // 0.18: lo que pediste, el código de antes y el de después: si te convence, se guarda como caso musical
+  const ids = [...(v.cambios.pistas || []).map((p) => p.id), ...(v.cambios.eliminar || [])];
+  const codeOf = (tracks) => tracks.filter((t) => ids.includes(t.id)).map((t) => `${t.id} $ ${t.code}`).join("\n");
+  const caseDraft = { problem: lastRealRequest().slice(0, 400), title: v.titulo, before: codeOf(before.tracks), after: codeOf(state.tracks), why: v.descripcion || "" };
   say(L(`¡Buena elección! La ${LETTERS[k]}, «${v.titulo}», ya forma parte de tu canción. ${v.descripcion}\n\nAsí ha cambiado el código:`, `Good choice! ${LETTERS[k]}, «${v.titulo}», is now part of your song. ${v.descripcion}\n\nHere's how the code changed:`),
-    [L("Explícame el código", "Explain the code"), L("Dame variaciones de esta", "Give me variations of this one"), VA_UNDO()],
-    { changes: summary, diff: diffFor(before, v.cambios), pickSnap: JSON.stringify(before) });
+    [L("Explícame el código", "Explain the code"), L("Dame variaciones de esta", "Give me variations of this one"), CASE_CHIP(), VA_UNDO()],
+    { changes: summary, diff: diffFor(before, v.cambios), pickSnap: JSON.stringify(before), caseDraft });
 }
 const VA_UNDO = () => L("Deshacer la elección", "Undo the pick");
+const CASE_CHIP = () => L("Guardar como caso", "Save as a case");
+const MEM_OPEN = () => L("Abrir Memoria", "Open Memory");
+const SC_NAME = { song: ["esta canción", "this song"], course: ["este curso", "this course"], genre: ["el género", "the genre"], global: ["siempre", "always"] };
+function memoNote(list) {
+  return list.map((m) => m.status === "approved"
+    ? L(`apuntado en tu memoria (${SC_NAME[m.scope][0]}): «${m.text}»`, `noted in your memory (${SC_NAME[m.scope][1]}): «${m.text_en || m.text}»`)
+    : L(`a la bandeja de Memoria: «${m.text}»`, `to the Memory inbox: «${m.text_en || m.text}»`)).join(" · ");
+}
+async function refreshMemBadge() {
+  try { const r = await (await fetch("/api/memory")).json(); setMemBadge(r.stats ? r.stats.pending : 0); } catch { /* sin servidor */ }
+}
+function setMemBadge(n) {
+  const b = $("#mem-count"); if (!b) return;
+  b.hidden = !n; b.textContent = n || "";
+}
 function undoPick() {
   const m = [...state.chat].reverse().find((x) => x.pickSnap);
   if (!m) return false;
@@ -1641,6 +1662,12 @@ async function send(text) {
   if (text === GEN_AGAIN_CHIP()) return openImportSong({ generate: true, useLast: true, style: state.generated && state.generated.style });
   if (text === GEN_SONG_CHIP() && state.generated) text = GEN_SONG_PROMPT(state.generated);
   if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
+  if (text === MEM_OPEN()) { state.options = []; renderChat(); return openMemory("memories"); }
+  if (text === CASE_CHIP()) {
+    const m = [...state.chat].reverse().find((x) => x.caseDraft);
+    state.options = state.options.filter((o) => o !== CASE_CHIP()); renderChat();
+    return openMemory("cases", { caseDraft: m ? m.caseDraft : null });
+  }
   {
     const pmi = openPlanIndex();
     if (pmi >= 0 && text === PLAN_RETRY()) { state.options = []; renderChat(); return runPlan(pmi, state.chat[pmi].plan.auto); }
@@ -1801,11 +1828,12 @@ async function askLLM(opts = {}) {
     if (opts.forcePlan && opts.request) history.push({ role: "user", content: L(`Hazlo por pasos con un plan: ${opts.request}`, `Do it in steps with a plan: ${opts.request}`) });
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
-      curso: state.course ? (() => { const c = curCourse(); return c ? { nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.variant ? { variante: c.variant.name } : {}), ...(c.form ? { forma: c.form.map((f) => `${f.name} (${f.bars} compases)`).join(" · ") } : {}), ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
+      curso: state.course ? (() => { const c = curCourse(); return c ? { id: state.course.id, nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.variant ? { variante: c.variant.name } : {}), ...(c.form ? { forma: c.form.map((f) => `${f.name} (${f.bars} compases)`).join(" · ") } : {}), ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
       bpm: state.bpm, bpm_lock: !!state.bpmLock, song_id: state.projectId || "", step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       plan_modo: planEnabled() && !state.course, ...(opts.planStep ? { plan_paso: opts.planStep } : {}), ...(opts.forcePlan ? { plan_forzar: true } : {}),
       referencia: state.reference || undefined,
       master: state.master || undefined,
+      estilo: state.styleUse || undefined,
       ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}), ...(t.lock ? { lock: t.lock } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
@@ -1837,6 +1865,11 @@ async function askLLM(opts = {}) {
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
     let summary = applyChanges(r.cambios || {});
     if (r.bloqueado && r.bloqueado.length) summary = (summary ? summary + " · " : "") + L("candados (descartado por el servidor): ", "locks (dropped by the server): ") + r.bloqueado.join(", ");
+    if (r.memoria_nueva && r.memoria_nueva.length) {
+      // En la respuesta local («recuerda que…») el mensaje ya lo cuenta; con IA lo añado debajo
+      if (!r.local) summary = (summary ? summary + " · " : "") + memoNote(r.memoria_nueva);
+      refreshMemBadge();
+    }
     if (r.recetas_nuevas && r.recetas_nuevas.length) summary = (summary ? summary + " · " : "") + L("receta nueva en tu recetario: ", "new recipe in your recipe book: ") + r.recetas_nuevas.map((x) => L(x.name_es, x.name_en)).join(", ");
     const diff = diffFor(before, r.cambios || {});
     if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias.filter((x) => !isDismissed(x));
@@ -2199,6 +2232,7 @@ async function openNewProject() {
       <button class="np-choice rec" data-m="wizard"><em>${L("Recomendado", "Recommended")}</em>${icon("steps", 28)}<b>${L("Con wizard", "With wizard")}</b><span>${L("Vas pulsando opciones paso a paso (estilo, ritmo, bajo, acordes…) y se crea tu proyecto base. Todo suena mientras eliges.", "Click options step by step (style, beat, bass, chords…) and your base project is built. Everything plays while you choose.")}</span></button>
       <button class="np-choice" data-m="ideas">${icon("wand", 28)}<b>${L("Lluvia de ideas", "Brainstorm")}</b><span>${L("Maestro te hace preguntas abiertas sobre lo que quieres sentir y diseña contigo un plan.", "Maestro asks you open questions about what you want to feel and designs a plan with you.")}</span></button>
       <button class="np-choice" data-m="import">${icon("upload", 28)}<b>${L("Desde una canción", "From a song")}</b><span>${L("Importa un MIDI o un audio: lo convierto en pistas y Maestro te ayuda a crear algo nuevo inspirado en ella.", "Import a MIDI or audio file: I turn it into tracks and Maestro helps you create something new inspired by it.")}</span></button>
+      <button class="np-choice" data-m="style">${icon("palette", 28)}<b>${L("Desde uno de mis estilos", "From one of my styles")}</b><span>${L("Tu groove, tus papeles e instrumentos y tu tempo, sin repetir las notas: como inspiración para Maestro, transformado a otra tonalidad o tempo, o copiado tal cual.", "Your groove, roles, instruments and tempo, without repeating the notes: as inspiration for Maestro, transformed to another key or tempo, or copied as is.")}</span></button>
       <button class="np-choice" data-m="generate">${icon("wand", 28)}<b>${L("Generar desde mi MIDI", "Generate from my MIDI")}</b><span>${L("Sube tu MIDI, elige un estilo (merengue, salsa, bossa, jazz, house…) y qué te quedas (melodía, acordes, bajo, batería). Escribo el resto en ese estilo.", "Upload your MIDI, pick a style (merengue, salsa, bossa, jazz, house…) and what to keep (melody, chords, bass, drums). I write the rest in that style.")}</span></button>
     </div>`;
   body.querySelector(".np-choices").onclick = (e) => {
@@ -2206,6 +2240,7 @@ async function openNewProject() {
     if (!m) return;
     if (m === "import") return openImportSong();
     if (m === "generate") return openImportSong({ generate: true });
+    if (m === "style") { $("#newproj").close(); return openMemory("styles"); }
     $("#newproj").close();
     if (m === "blank") startBlank();
     if (m === "wizard") openBuilder();
@@ -2261,6 +2296,46 @@ function adoptImport(r) {
     [INSPIRE_CHIP(), L("Explícame cómo está hecha", "Explain how it's made"), CTL_CHIP()]);
 }
 const INSPIRE_CHIP = () => L("Crear algo nuevo inspirado en ella", "Create something new inspired by it");
+
+// 0.18: «Mis estilos». Tres maneras de usar un estilo: inspiración (Maestro compone material nuevo con sus
+// relaciones), transformación (el groove se queda y el resto se reescribe en otra tonalidad/tempo/instrumentos)
+// y copia literal (las pistas tal cual; solo si la eliges, y queda en el registro de Memoria)
+const STYLE_MODE = { inspiration: ["inspiración", "inspiration"], transformation: ["transformación", "transformation"], literal: ["copia literal", "literal copy"] };
+async function useStyle(st, mode) {
+  if (mode === "inspiration" && !useLLM()) {
+    // Sin IA no hay inspiración: hago una transformación con el generador del estudio (otra versión cada vez)
+    try {
+      const r = await api("/api/styles/transform", { id: st.id, seed: Math.floor(Math.random() * 1000) + 2 });
+      return adoptStyleTracks(st, r.tracks, r.bpm, "transformation", r, L("Sin IA no puedo componer «inspirado en»: te he hecho una transformación con el generador del estudio. ", "Without AI I can't compose «inspired by»: I made you a transformation with the studio's generator. "));
+    } catch (e) { return toast(e.message.split("|")[0]); }
+  }
+  startFresh();
+  state.name = L(`Nueva canción · ${st.name}`, `New song · ${st.name}`);
+  state.bpm = st.bpm; $("#bpm").value = st.bpm;
+  if (st.genre) state.style = st.genre;
+  state.styleUse = { id: st.id, modo: "inspiration" };
+  state.step = "libre";
+  renderAll();
+  return send(L(`Compón una canción nueva inspirada en mi estilo «${st.name}»: usa su groove, sus papeles e instrumentos y un tempo parecido, pero con material nuevo (no copies sus pistas). Empieza por la base rítmica y el bajo.`,
+    `Write a new song inspired by my style «${st.name}»: use its groove, its roles and instruments and a similar tempo, but with new material (don't copy its tracks). Start with the beat and the bass.`));
+}
+function adoptStyleTracks(st, tracks, bpm, mode, res, prefix = "") {
+  startFresh();
+  state.name = mode === "literal" ? L(`Copia de ${st.name}`, `Copy of ${st.name}`) : L(`${st.name} (${res && res.key ? res.key : "nueva"})`, `${st.name} (${res && res.key ? res.key : "new"})`);
+  state.bpm = Math.max(40, Math.min(220, Math.round(bpm || st.bpm || 120))); $("#bpm").value = state.bpm;
+  state.style = (res && res.genre) || st.genre || state.style;
+  state.styleUse = { id: st.id, modo: mode };
+  state.tracks = tracks.slice(0, 12).map((t, i) => ({ id: t.id || "d" + (i + 1), name: t.name || t.id, kind: t.kind || "", code: fixNegatives(t.code), muted: false }));
+  state.step = "libre";
+  resetHistory(state);
+  renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons();
+  ensureInstruments(state.tracks.map((t) => t.code)).then(() => { if (live()) playAll(true); });
+  save();
+  say(prefix + (mode === "literal"
+    ? L(`Copia literal de «${st.name}»: sus ${state.tracks.length} pistas tal cual, con sus notas. Queda anotada en el registro de Memoria.`, `Literal copy of «${st.name}»: its ${state.tracks.length} tracks as they are, with their notes. It's noted in the Memory log.`)
+    : L(`«${st.name}» transformado a ${res.key}, ${state.bpm} BPM: el groove es el de tu estilo y el bajo, los acordes y la melodía están escritos de nuevo para ${res.genre}.`, `«${st.name}» transformed to ${res.key}, ${state.bpm} BPM: the groove is your style's, and the bass, chords and melody are written again for ${res.genre}.`)),
+    [L("Explícame cómo está hecha", "Explain how it's made"), L("Dale otro aire a la melodía", "Give the melody a different feel"), MEM_OPEN()]);
+}
 
 // Canción nueva en una pestaña nueva (la de antes sigue abierta en la suya)
 function startFresh() {
@@ -4746,6 +4821,13 @@ function init() {
   initListen({ api, getState: () => state, genres: COURSES.map((c) => ({ id: c.id, name: c.name })) });
   initMonitor({ api });
   initSoundLab({ api, toast, wireHear: wirePreHear, freeId, addTrack });
+  initMemory({ api, toast, state: () => state, badge: setMemBadge, openStorage, hush: () => evalCode("hush"),
+    songForStyle: () => ({ name: state.name, bpm: state.bpm, style: state.style, tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code })), score: state.score }),
+    listen: async (tracks, bpm) => { await ensureInstruments(tracks.map((t) => t.code)); evalCode(["hush", cps(bpm), ...tracks.map((t) => `${t.id} $ ${t.code}`)].join("\n\n")); },
+    useStyle, adoptStyleTracks });
+  initStorage({ api, toast, librarySync: () => { server.samples = null; sm.mine = null; } });
+  $("#btn-storage").onclick = () => { $("#settings").close(); openStorage(); };
+  refreshMemBadge();
   initScore({ api, getState: () => state, changed, sysMsg, toast, playTrack: (t) => live() && playTrack(t) });
   $("#bpm-lock").onclick = () => { state.bpmLock = !state.bpmLock; save(); renderBpmLock(); };
   renderBpmLock();

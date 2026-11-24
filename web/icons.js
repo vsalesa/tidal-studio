@@ -72,6 +72,9 @@ const P = {
   cap: `<path d="M2 9.5L12 5l10 4.5-10 4.5z"/><path d="M6 11.3V16c0 1.4 2.7 3 6 3s6-1.6 6-3v-4.7"/><path d="M21 10v5"/>`,
   piano: `<rect x="2.5" y="5" width="19" height="14" rx="1.5"/><path d="M7.25 19v-5M12 19v-5M16.75 19v-5"/><rect x="5.6" y="5" width="2.6" height="9" rx=".5" fill="currentColor"/><rect x="10.7" y="5" width="2.6" height="9" rx=".5" fill="currentColor"/><rect x="15.8" y="5" width="2.6" height="9" rx=".5" fill="currentColor"/>`,
   check: `<path d="M5 12.5l4.5 4.5L19 7.5"/>`,
+  palette: `<path d="M12 3a9 9 0 1 0 0 18c1.2 0 1.8-.8 1.8-1.7 0-1.3-1.2-1.6-1.2-2.8 0-1 .8-1.7 1.9-1.7H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1.2" fill="currentColor"/><circle cx="10" cy="7" r="1.2" fill="currentColor"/><circle cx="15" cy="7.5" r="1.2" fill="currentColor"/>`,
+  disk: `<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>`,
+  memory: `<path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 5 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 5 3 3 0 0 1-6 1"/><path d="M12 9h2.5M12 13.5h3.5" opacity=".6"/>`,
   arrow: `<path d="M5 12h14M13 6l6 6-6 6"/>`,
 };
 

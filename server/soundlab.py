@@ -379,6 +379,21 @@ class Store:
             out[r["sound"]] = round(out.get(r["sound"], 0) + w * score, 3)
         return out
 
+    def choice_rows(self):
+        with self.lock:
+            return [dict(r) for r in self.db.execute("SELECT ctx, sound, picks, passes FROM choices").fetchall()]
+
+    def features_bytes(self):
+        with self.lock:
+            return int(self.db.execute("SELECT COALESCE(SUM(LENGTH(data)+LENGTH(file)),0) FROM features").fetchone()[0])
+
+    def clear_features(self):
+        """Olvida las medidas (se vuelven a analizar); lo que elegiste de oído se queda."""
+        with self.lock, self.db:
+            self.db.execute("DELETE FROM features")
+        with self.lock:
+            self.db.execute("VACUUM")
+
     # recetas
     def save_recipe(self, rec):
         rid = rec.get("id") or ("r" + str(int(time.time() * 1000)))
