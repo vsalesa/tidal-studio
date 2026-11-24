@@ -70,13 +70,46 @@ def join_system(system):
     return system
 
 
+_usage = _threading.local()
+
+
+def note_usage(usage):
+    """Suma los tokens de una respuesta al contador del hilo (para el monitor RAG). Sirve para todos los proveedores."""
+    if not isinstance(usage, dict):
+        return
+    def num(*keys):
+        for k in keys:
+            try:
+                v = int(usage.get(k) or 0)
+            except (TypeError, ValueError):
+                v = 0
+            if v:
+                return v
+        return 0
+    cur = getattr(_usage, "v", None) or {"in": 0, "out": 0, "cached": 0}
+    cur["in"] += num("input_tokens", "prompt_tokens")
+    cur["out"] += num("output_tokens", "completion_tokens")
+    _usage.v = cur
+
+
+def take_usage():
+    """Tokens contados en este hilo desde la última llamada ({"in", "out", "cached"}), y pone el contador a cero."""
+    cur = getattr(_usage, "v", None) or {"in": 0, "out": 0, "cached": 0}
+    _usage.v = None
+    return cur
+
+
 def _cache_note(usage, on_event):
     """Cuántos tokens de instrucciones ha reutilizado el proveedor de su caché (no se vuelven a procesar)."""
+    note_usage(usage)
     try:
         n = int((usage or {}).get("cache_read_input_tokens") or ((usage or {}).get("prompt_tokens_details") or {}).get("cached_tokens") or 0)
     except (TypeError, ValueError):
         n = 0
     if n:
+        cur = getattr(_usage, "v", None)
+        if cur is not None:
+            cur["cached"] += n
         log(f"  caché de prompt / prompt cache: {n} tokens reutilizados / reused")
         if on_event:
             on_event("cache", str(n))
@@ -286,6 +319,7 @@ def _anthropic_stream(headers, body, on_event, timeout=180):
                             on_event("thinking", d["thinking"])
                 elif t == "message_delta":
                     stop = (ev.get("delta") or {}).get("stop_reason") or stop
+                    note_usage({"output_tokens": (ev.get("usage") or {}).get("output_tokens")})
                 elif t == "error":
                     raise LLMError(f"La IA respondió con error: {str(ev.get('error'))[:300]}")
     except urllib.error.HTTPError as e:

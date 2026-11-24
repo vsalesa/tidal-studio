@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.13.1** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.14.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -530,13 +530,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.13.1; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.14.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.13.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.13.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.13.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/tidal-studio_0.13.1_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.14.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.14.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.14.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/tidal-studio_0.14.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -794,6 +794,51 @@ Plugging in a keyboard, headphones or a USB audio device used to leave the studi
 
 ![A new song created on GitHub as soon as it has a track](docs/screenshots/github-create-new.png)
 
+### Lock what you like: Maestro can't change it
+
+Under each track, the lock button opens a row of chips: lock the **whole track** or just a part of it: **Rhythm**,
+**Notes**, **Sound**, **Effects** or **Mix**. The lock next to the BPM locks the tempo. Maestro, ideas, options and
+courses can't change what you locked: the app checks every proposal before applying it, and the server drops anything
+that touches a fully locked track or the BPM before you even see it. You can still edit everything by hand: a lock
+protects your decision from automatic changes, not from you. If the song changed while Maestro was thinking, its
+proposal arrives as an option instead of being applied.
+
+![Locks: the whole kick, and only the rhythm and sound of the claps](docs/screenshots/locks.png)
+
+![Options that touched the locked kick or the BPM were dropped](docs/screenshots/options-locked.png)
+
+### Blind A/B: your ear is the judge
+
+On Maestro's options card, press **Blind**: names and code are hidden, the options are shuffled as X, Y, Z and you vote
+by ear only (keys 1-4 to switch, an optional reason). Then Maestro tells you which one it was. Every vote, every option
+you pick and every pick you undo is stored **on your computer** (code and context, never audio). The ear button in the
+top bar opens **Listening**: your counts, a **baseline** rating (1-5 per genre and what is missing, to measure whether
+each release sounds better) and **Export JSONL**, a clean dataset to train a model of your own one day.
+
+![Blind A/B: hidden options, vote by ear](docs/screenshots/blind-ab.png)
+
+![After the vote, Maestro tells you which one it was](docs/screenshots/blind-ab-result.png)
+
+![Listening: baseline ratings and your dataset](docs/screenshots/listen.png)
+
+### RAG monitor: see which layer answered
+
+Maestro now works in layers, from the cheapest to the most expensive: **local rules** (answers from your own data with
+no AI, like «which of my songs use supersaw?»), the **song index** (a read-only SQLite copy of your saved songs, with
+full-text search), **your library**, **skills**, the **LLM** only for creative or ambiguous work, and **validation**
+(locks). The monitor button in the top bar draws them as a live diagram: each request lights up its path with the
+time, hits, tokens and cache of every layer, plus the share of requests answered without the LLM. Click a layer to see
+what it does and its detail. Below it, **Router limits** sets max tokens, options at most, tracks from your songs used
+as context, the confidence a local answer needs, the AI timeout and which layers are on, without touching
+`config.json`.
+
+![RAG monitor: the path of a request through Maestro's layers](docs/screenshots/rag-monitor.png)
+
+![A request answered by local rules, and the router limits](docs/screenshots/rag-limits.png)
+
+The song stays in your browser (and in your `.tidal` files or GitHub): the index is only a copy, rebuilt from your
+songs, in `maestro-data/` next to the app.
+
 ### And also
 
 - **Your progress**: the code and music concepts you have already used.
@@ -809,6 +854,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.14.0** | Maestro v2, first step: [lock](#lock-what-you-like-maestro-cant-change-it) a whole track or just its rhythm, notes, sound, effects or mix, and the BPM; [blind A/B](#blind-ab-your-ear-is-the-judge) with every vote stored as an exportable dataset, plus baseline ratings per genre; and a [live RAG monitor](#rag-monitor-see-which-layer-answered) of Maestro's layers with configurable limits, local answers without AI and a read-only SQLite index of your songs. |
 | **0.13.1** | [Your songs on GitHub](#your-songs-on-github-remote-paths-upload-in-bulk-start-new-songs-there): a song opened from GitHub shows its GitHub path, never a local one; upload many `.tidal` files at once from Settings, optionally deleting the local copies (to the Trash, only after a verified upload); and an option to create every new song directly on GitHub. |
 | **0.13.0** | [MIDI both ways](#your-keyboard-both-ways-the-song-plays-on-your-piano): tracks play on your keyboard, clock and start/stop, keyboard sound, All Notes Off. [Audio that recovers](#plug-in-unplug-the-audio-recovers): keyboards found when plugged in, held notes released when unplugged, Reconnect audio with your output, no audio input on Mac. [One library for every sound](#one-library-for-every-sound): built-in and downloaded sounds in one list. [Replace a sound](#replace-a-sound-by-selecting-its-name) by selecting its name: similar sounds, search, listen first. |
 | **0.12.1** | Fix: saving songs to a [GitHub](#github) repository you just created empty (no README) no longer fails with «409: the repository is empty»; the repository field also accepts a pasted GitHub URL. |
@@ -1018,6 +1064,7 @@ Diagram source: [docs/diagrams/architecture.puml](docs/diagrams/architecture.pum
 - `server/midilive.py` + `supercollider/studio-midi.scd` + `web/midikeys.js`: MIDI keyboard in and out (`s "midi"`, clock, plug/unplug watch). `server/engine.py` audio state + `web/audiostatus.js`: Reconnect audio (`/api/audio`, `/api/audio/restart`). `server/library.py` + `web/library.js`: one library for every sound (`/api/library`, `/search`, `/similar`). `web/replace.js`: replace a sound by selecting its name.
 - `server/files.py` + `web/tidalfile.js`: open and save `.tidal` / `.hs` files (File menu). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: import a song (MIDI or audio). `server/midigen.py`: generate from your MIDI in a style (`POST /api/import/generate`); `tools/make_example_midi.py` writes the test song `examples/little-tune.mid`.
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro finds and downloads missing sounds. `web/variants.js`: Maestro's audible options (live A/B).
+- `server/router.py` + `server/songindex.py` + `web/monitor.js`: Maestro's layers, router limits, server-side lock validation and the RAG monitor; the read-only SQLite song index (FTS5), votes and JSONL export (`maestro-data/`). `web/locks.js`: locks per track and part. `web/listen.js`: Listening (baseline, dataset); blind A/B lives in `web/variants.js`.
 - `server/loops.py` + `web/loops.js`: long-loops library (analysis of tempo, bars, key and hits, and the code that fits your song).
 - `server/ccdetect.py` + `server/llmdiag.py`: Claude Code detection and the Diagnostics panel. `web/courses.js`: genre courses. `web/instruments.js`: instruments. `web/tour.js`: tutorial.
 - `web/i18n.js`: language switch. `web/icons.js`: custom SVG icons. `web/style.css`: light «Partitura» theme.

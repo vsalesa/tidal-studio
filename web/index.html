@@ -28,6 +28,8 @@
     <button id="btn-instlib" class="icon-btn" title="Librería: instrumentos (600+)" data-tt="Library: instruments (600+)"><i data-icon="speaker" data-size="20"></i></button>
     <button id="btn-samples" class="icon-btn" title="Librería: todos los sonidos" data-tt="Library: all sounds"><i data-icon="library" data-size="20"></i></button>
     <button id="btn-skills" class="icon-btn sk-hdr" title="Skills de Maestro: conocimiento experto que carga para responder" data-tt="Maestro's skills: expert knowledge it loads to answer"><i data-icon="skill" data-size="20"></i><span id="sk-count" class="sk-badge" hidden></span></button>
+    <button id="btn-listen" class="icon-btn" title="Escucha: A/B a ciegas, línea base y tu dataset" data-tt="Listening: blind A/B, baseline and your dataset"><i data-icon="ear" data-size="20"></i></button>
+    <button id="btn-monitor" class="icon-btn" title="Monitor RAG: por qué capas pasa cada petición a Maestro, y sus límites" data-tt="RAG monitor: which layers each request to Maestro goes through, and their limits"><i data-icon="monitor" data-size="20"></i></button>
     <button id="btn-tour" class="icon-btn" title="Tutorial interactivo" data-tt="Interactive tutorial"><i data-icon="cap" data-size="20"></i></button>
     <span class="hist-btns">
       <button id="btn-undo" class="icon-btn" title="Deshacer el último cambio (Ctrl/Cmd+Z)" data-tt="Undo the last change (Ctrl/Cmd+Z)"><i data-icon="undo" data-size="20"></i></button>
@@ -40,6 +42,7 @@
       <label class="bpm" title="Velocidad de la canción en pulsaciones por minuto" data-tt="Song tempo in beats per minute">
         <span>BPM</span> <input id="bpm" type="number" min="40" max="220" value="120">
       </label>
+      <button id="bpm-lock" class="icon-btn bpm-lock" title="Bloquear el BPM: Maestro, las ideas y los cursos no lo cambian" data-tt="Lock the BPM: Maestro, ideas and courses won't change it"><i data-icon="unlock" data-size="16"></i></button>
       <button id="btn-play" class="primary" title="Hacer sonar todo" data-tt="Play everything"><i data-icon="play" data-size="14"></i> <span data-t="Play all">Tocar todo</span></button>
       <button id="btn-rec" class="rec-btn" title="Grabar la canción a un archivo de audio (WAV)" data-tt="Record the song to an audio file (WAV)"><i data-icon="rec" data-size="14"></i> <span id="rec-label"><span data-t="Record">Grabar</span></span></button>
       <button id="btn-hush" class="outline-danger" title="Silenciar todo ya" data-tt="Silence everything now"><i data-icon="stop" data-size="14"></i> <span data-t="Hush">Silencio</span></button>
@@ -209,6 +212,22 @@
       <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
     </div>
     <div id="skills-body"></div>
+  </dialog>
+
+  <dialog id="listen" class="wide listen-dlg">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="ear" data-size="16"></i> <span data-t="Listening: your ear decides">Escucha: tu oído decide</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="listen-body"></div>
+  </dialog>
+
+  <dialog id="monitor" class="wide monitor-dlg">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="monitor" data-size="16"></i> <span data-t="RAG monitor: Maestro's layers">Monitor RAG: las capas de Maestro</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="monitor-body"></div>
   </dialog>
 
   <dialog id="newproj">

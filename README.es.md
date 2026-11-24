@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.13.1** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.14.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -544,13 +544,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.13.1; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.14.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.13.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.13.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.13.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/tidal-studio_0.13.1_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.14.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.14.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/TidalStudio-0.14.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.14.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.14.0/tidal-studio_0.14.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -818,6 +818,52 @@ Enchufar un teclado, unos auriculares o una tarjeta de sonido USB podía dejar e
 
 ![Una canción nueva creada en GitHub en cuanto tiene una pista](docs/screenshots/es/github-crear-nuevas.png)
 
+### Bloquea lo que te gusta: Maestro no puede cambiarlo
+
+Debajo de cada pista, el botón del candado abre una fila de opciones: bloquea la **pista entera** o solo una parte:
+**Ritmo**, **Notas**, **Sonido**, **Efectos** o **Mezcla**. El candado junto al BPM bloquea el tempo. Maestro, las
+ideas, las opciones y los cursos no pueden cambiar lo bloqueado: la app revisa cada propuesta antes de aplicarla, y el
+servidor quita lo que toca una pista bloqueada entera o el BPM antes de que lo veas. Tú sí puedes editarlo todo a mano:
+el candado protege tu decisión de los cambios automáticos, no de ti. Si la canción cambió mientras Maestro pensaba, su
+propuesta llega como opción en vez de aplicarse.
+
+![Candados: el bombo entero, y solo el ritmo y el sonido de las palmas](docs/screenshots/es/candados.png)
+
+![Las opciones que tocaban el bombo bloqueado o el BPM se han descartado](docs/screenshots/es/opciones-bloqueadas.png)
+
+### A/B a ciegas: tu oído es el juez
+
+En la tarjeta de opciones de Maestro, pulsa **A ciegas**: se esconden los nombres y el código, las opciones se barajan
+como X, Y, Z y votas solo con el oído (teclas 1-4 para cambiar, y un motivo si quieres). Luego Maestro te dice cuál era.
+Cada voto, cada opción que eliges y cada elección que deshaces se guarda **en tu ordenador** (código y contexto, nunca
+audio). El botón de la oreja de la barra superior abre **Escucha**: tus contadores, la **línea base** (nota del 1 al 5
+por género y qué le falta, para medir si cada versión suena mejor) y **Exportar JSONL**, un dataset limpio para entrenar
+algún día un modelo propio.
+
+![A/B a ciegas: opciones ocultas, votas de oído](docs/screenshots/es/ab-ciegas.png)
+
+![Después del voto, Maestro te dice cuál era](docs/screenshots/es/ab-ciegas-resultado.png)
+
+![Escucha: notas de línea base y tu dataset](docs/screenshots/es/escucha.png)
+
+### Monitor RAG: mira qué capa respondió
+
+Maestro ahora trabaja por capas, de la más barata a la más cara: **reglas locales** (respuestas con tus propios datos
+sin IA, como «¿qué canciones mías usan supersaw?»), el **índice de canciones** (una copia de solo lectura en SQLite de
+tus canciones guardadas, con búsqueda de texto), **tu biblioteca**, **skills**, el **LLM** solo para lo creativo o
+ambiguo, y la **validación** (candados). El botón del monitor de la barra superior las dibuja como un diagrama en vivo:
+cada petición ilumina su recorrido con el tiempo, los aciertos, los tokens y la caché de cada capa, y el porcentaje de
+peticiones resueltas sin LLM. Pulsa una capa para ver qué hace y su detalle. Debajo, **Límites del enrutador** ajusta
+los tokens máximos, las opciones como mucho, las pistas de tus canciones que se usan como contexto, la confianza que
+necesita una respuesta local, el tiempo de corte de la IA y qué capas están activas, sin tocar `config.json`.
+
+![Monitor RAG: el recorrido de una petición por las capas de Maestro](docs/screenshots/es/monitor-rag.png)
+
+![Una petición respondida por las reglas locales, y los límites del enrutador](docs/screenshots/es/monitor-limites.png)
+
+La canción sigue en tu navegador (y en tus `.tidal` o en GitHub): el índice es solo una copia, que se rehace a partir de
+tus canciones, en `maestro-data/` junto a la app.
+
 ### Y además
 
 - **Tu progreso**: conceptos de código y de música que ya has usado.
@@ -833,6 +879,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.14.0** | Maestro v2, primer paso: [bloquea](#bloquea-lo-que-te-gusta-maestro-no-puede-cambiarlo) una pista entera o solo su ritmo, notas, sonido, efectos o mezcla, y el BPM; [A/B a ciegas](#ab-a-ciegas-tu-oído-es-el-juez) con cada voto guardado como dataset exportable, más notas de línea base por género; y un [monitor RAG en vivo](#monitor-rag-mira-qué-capa-respondió) de las capas de Maestro con límites configurables, respuestas locales sin IA y un índice SQLite de solo lectura de tus canciones. |
 | **0.13.1** | [Tus canciones en GitHub](#tus-canciones-en-github-ruta-remota-subir-varias-a-la-vez-y-crear-las-nuevas-allí): una canción abierta desde GitHub enseña su ruta en GitHub, nunca una local; sube muchos `.tidal` a la vez desde Ajustes, con la opción de eliminar las copias locales (a la Papelera, solo tras comprobar la subida); y una casilla para crear cada canción nueva directamente en GitHub. |
 | **0.13.0** | [MIDI de ida y vuelta](#tu-teclado-en-los-dos-sentidos-la-canción-suena-en-tu-piano): las pistas suenan en tu teclado, reloj y start/stop, sonido del teclado, All Notes Off. [Audio que se recupera](#enchufar-y-desenchufar-el-audio-se-recupera): teclados detectados al enchufarlos, notas soltadas al quitarlos, Reconectar audio con tu salida, sin entrada de audio en Mac. [Una sola librería](#una-sola-librería-para-todos-los-sonidos): incluidos y descargados en una lista. [Cambiar un sonido](#cambiar-un-sonido-seleccionando-su-nombre) seleccionando su nombre: parecidos, buscador y escuchar antes. |
 | **0.12.1** | Arreglo: guardar canciones en un repositorio de [GitHub](#github) recién creado vacío (sin README) ya no falla con «409: el repositorio está vacío»; el campo del repositorio también acepta la URL de GitHub pegada. |
@@ -1039,6 +1086,7 @@ Fuente del diagrama: [docs/diagrams/architecture.es.puml](docs/diagrams/architec
 - `server/midilive.py` + `supercollider/studio-midi.scd` + `web/midikeys.js`: teclado MIDI de entrada y salida (`s "midi"`, reloj, vigilar enchufar/desenchufar). Estado del audio en `server/engine.py` + `web/audiostatus.js`: Reconectar audio (`/api/audio`, `/api/audio/restart`). `server/library.py` + `web/library.js`: una sola librería (`/api/library`, `/search`, `/similar`). `web/replace.js`: cambiar un sonido seleccionando su nombre.
 - `server/files.py` + `web/tidalfile.js`: abrir y guardar archivos `.tidal` / `.hs` (menú Archivo). `server/songimport.py` + `server/audioimport.py` + `web/importsong.js`: importar una canción (MIDI o audio). `server/midigen.py`: generar desde tu MIDI en un estilo (`POST /api/import/generate`); `tools/make_example_midi.py` escribe la canción de prueba `examples/little-tune.mid`.
 - `server/fetcher.py` + `web/fetchcard.js`: Maestro busca y descarga los sonidos que faltan. `web/variants.js`: las opciones de Maestro para escuchar (A/B en directo).
+- `server/router.py` + `server/songindex.py` + `web/monitor.js`: capas de Maestro, límites del enrutador, validación de candados en el servidor y monitor RAG; índice SQLite de canciones de solo lectura (FTS5), votos y exportación JSONL (`maestro-data/`). `web/locks.js`: candados por pista y por parte. `web/listen.js`: Escucha (línea base, dataset); el A/B a ciegas está en `web/variants.js`.
 - `server/loops.py` + `web/loops.js`: biblioteca de loops largos (analiza tempo, compases, tonalidad y golpes, y da el código que encaja con tu canción).
 - `server/ccdetect.py` + `server/llmdiag.py`: detección de Claude Code y panel de Diagnóstico. `web/courses.js`: cursos por género. `web/instruments.js`: instrumentos. `web/tour.js`: tutorial.
 - `web/i18n.js`: cambio de idioma. `web/icons.js`: iconos propios en SVG. `web/style.css`: tema claro «Partitura».

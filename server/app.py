@@ -49,6 +49,8 @@ import appupdate  # noqa: E402
 import instlib  # noqa: E402
 import references  # noqa: E402
 import inventory  # noqa: E402
+import router  # noqa: E402
+import songindex  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
@@ -120,6 +122,8 @@ DEFAULT_CONFIG = {
     # Segundos que la IA puede pasar SIN mandar nada antes de darla por perdida (si va respondiendo, no se corta)
     "ai_timeout": 300,
     "language": "es",
+    # Maestro v2: enrutador por capas (ver server/router.py y la ventana Monitor RAG)
+    "router": json.loads(json.dumps(router.DEFAULT)),
 }
 
 _config_lock = threading.Lock()
@@ -375,6 +379,14 @@ llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
 LIBRARY = Library(ROOT)
 LIBRARY.on_add = lambda name, fname, info: loops.maybe_analyse(LIBRARY, name, fname, info)
 INSTLIB = instlib.InstLib(LIBRARY, ENGINE)
+# Maestro v2: índice de canciones (copia de solo lectura), votos y monitor de capas. Se puede borrar: se rehace solo.
+DATA_DIR = os.environ.get("TIDAL_STUDIO_DATA") or os.path.join(ROOT, "maestro-data")
+try:
+    SONGS = songindex.SongIndex(os.path.join(DATA_DIR, "maestro.db"))
+except Exception as _e:  # noqa: BLE001  sin disco escribible el estudio sigue funcionando
+    print(f"[maestro-data] {_e}")
+    SONGS = None
+MONITOR = router.Monitor()
 PHOTOS = instphotos.Photos(LIBRARY.dir)
 
 
@@ -477,6 +489,151 @@ class Handler(SimpleHTTPRequestHandler):
     def _err(self, msg, lang, status=400):
         es, _, en = str(msg).partition("|")
         return self._json({"error": en if lang == "en" and en else es}, status)
+
+    def _chat(self, cfg, rcfg, req, data, msgs, sess):
+        """Maestro con IA: capas 2-6 del enrutador (índice, biblioteca, skills, LLM, validación)."""
+        command = None
+        last_user = next((m for m in reversed(msgs) if isinstance(m, dict) and m.get("role") == "user"), None)
+        if last_user and str(last_user.get("content", "")).lstrip().startswith("/"):
+            # /comando de un plugin: se cambia por su texto antes de enviarlo a la IA
+            expanded, command = pluginset.expand_command(cfg, str(last_user.get("content", "")))
+            if command:
+                msgs = [dict(m, content=expanded) if m is last_user else m for m in msgs]
+        tr = Trace(str(data.get("trace") or "")[:64], data.get("lang"))
+        tracks = [t for t in sess.get("tracks") or [] if isinstance(t, dict)]
+        sess["max_opciones"] = rcfg["max_candidates"]
+        last = next((m.get("content", "") for m in reversed(msgs) if m.get("role") == "user"), "")
+        # Capa 2: pistas de OTRAS canciones tuyas relacionadas (índice SQLite, sin LLM)
+        if rcfg["layers"]["index"] and rcfg["index_hits"]:
+            req.begin("index")
+            try:
+                rel, n = router.index_context(SONGS, last, str(sess.get("song_id") or ""), rcfg["index_hits"])
+            except Exception:  # noqa: BLE001
+                rel, n = [], 0
+            sess["canciones_relacionadas"] = rel
+            req.end("index", "pass" if n else "skip", hits=n)
+            if n:
+                tr.add("step", tr.L(f"Busco en tus canciones: {n} pistas relacionadas", f"Searching your songs: {n} related tracks"))
+        else:
+            req.end("index", "off")
+        req.begin("library")
+        tr.add("step", tr.L(f"Leo tu mensaje y tu canción: {len(tracks)} pistas, {sess.get('bpm') or '?'} bpm",
+                            f"Reading your message and your song: {len(tracks)} tracks, {sess.get('bpm') or '?'} bpm"))
+        if command:
+            tr.add("step", tr.L(f"Comando /{command['plugin']}:{command['command']} → uso su texto como petición",
+                                f"Command /{command['plugin']}:{command['command']} → using its text as the request"))
+        try:
+            if not rcfg["layers"]["loops"]:
+                raise RuntimeError("off")
+            sess["loops_lines"] = loops.for_maestro(LIBRARY, float(sess.get("bpm") or 120))
+            if sess["loops_lines"]:
+                tr.add("step", tr.L(f"Tienes {len(sess['loops_lines'])} loops largos analizados: se los paso con su tempo y su código",
+                                    f"You have {len(sess['loops_lines'])} analysed long loops: passing them on with their tempo and code"))
+        except Exception:  # noqa: BLE001
+            sess["loops_lines"] = []
+        # Lo que hay de verdad en el ordenador, leído ahora (no la lista que la web guardó hace rato)
+        inv = None
+        try:
+            if not rcfg["layers"]["library"]:
+                raise RuntimeError("off")
+            inv = inventory.summary(LIBRARY, INSTLIB, ENGINE, synthengines.status, synthengines.vst_list)
+            sess["inventario"] = inventory.maestro_text(inv)
+            sess["samples"] = [{"name": x["name"], "type": x["type"], "n": x["n"]} for x in inv["samples"]]
+            nuevos = [x["name"] for x in inv["samples"] if x["nuevo"]] + [x["id"] for x in inv["instrumentos"] if x["nuevo"]]
+            tr.add("step", tr.L(f"Miro tu biblioteca: {len(inv['samples'])} samples y {len(inv['instrumentos'])} instrumentos"
+                                + (f" (nuevos: {', '.join(nuevos[:6])})" if nuevos else ""),
+                                f"Checking your library: {len(inv['samples'])} samples and {len(inv['instrumentos'])} instruments"
+                                + (f" (new: {', '.join(nuevos[:6])})" if nuevos else "")))
+        except Exception:  # noqa: BLE001
+            inv = None
+        try:
+            if not rcfg["layers"]["library"]:
+                raise RuntimeError("off")
+            sess["instrument_lines"] = instlib.maestro_lines(INSTLIB, last, with_mine=inv is None)
+        except Exception:  # noqa: BLE001
+            sess["instrument_lines"] = []
+        if rcfg["layers"]["library"]:
+            req.end("library", "pass", hits=(len(inv["samples"]) + len(inv["instrumentos"])) if inv else 0)
+        else:
+            req.end("library", "off")
+        ps = plan_step(sess)
+        if ps:
+            tr.add("step", tr.L(f"Plan «{ps.get('titulo', '')}» · paso {int(ps.get('i') or 0) + 1} de {len(ps['pasos'])}",
+                                f"Plan «{ps.get('titulo', '')}» · step {int(ps.get('i') or 0) + 1} of {len(ps['pasos'])}"))
+        system, messages = build_messages(msgs, sess)
+        # En los pasos de un plan, las skills se eligen con la petición original: son las mismas en cada paso,
+        # así el prompt no cambia y el proveedor lo reutiliza de su caché (más rápido y sin repetir trabajo)
+        skill_query = str(ps.get("peticion") or last) if ps else last
+        req.begin("skills")
+        if rcfg["layers"]["skills"]:
+            stext, sk = skills_text(cfg, skill_query, sess)
+            req.end("skills", "pass" if sk and sk[1] else "skip", hits=len(sk[1]) if sk else 0)
+        else:
+            stext, sk = "", None
+            req.end("skills", "off")
+        system = [with_lang(system, data.get("lang")), stext]
+        if sk:
+            active, loaded = sk
+            names = [x["name"] + (f" (+{', '.join(r.split('/')[-1] for r in x['refs'])})" if x["refs"] else "")
+                     + (tr.L(" · siempre", " · always") if x.get("pinned") else "") for x in loaded]
+            tr.add("step", tr.L(f"Elijo skills entre {len(active)}: ", f"Picking skills out of {len(active)}: ")
+                   + (", ".join(names) if names else tr.L("ninguna encaja", "none match")))
+        tr.add("step", tr.L(f"Pregunto a {provider_label(cfg)}…", f"Asking {provider_label(cfg)}…"))
+        def _ev(kind, text):
+            if kind == "cache":
+                tr.add("step", tr.L(f"Reutilizo {text} tokens de instrucciones y skills que ya tenía en caché",
+                                    f"Reusing {text} tokens of instructions and skills already cached"))
+            else:
+                tr.add(kind, text)
+        llmmod.set_cancel(tr.cancel)
+        llmmod.take_usage()
+        req.begin("llm")
+        try:
+            try:
+                auto_tokens = 1800 if ps else (3500 if variants_on(sess) or plan_on(sess) else 1800)
+                raw = chat_completion(cfg, system, messages, max_tokens=rcfg["max_tokens"] or auto_tokens,
+                                      on_event=_ev if tr.id else None)
+                u = llmmod.take_usage()
+                req.add_tokens("llm", u["in"], u["out"], u["cached"])
+                req.end("llm", "hit", note=provider_label(cfg))
+            except LLMTimeout as e:
+                # Demasiado grande para una sola respuesta: se propone hacerlo por pasos (o reintentar solo este paso)
+                tr.add("step", tr.L("La IA ha tardado demasiado", "The AI took too long"))
+                return self._json({"error": str(e), "timeout": True, "plan_paso": bool(ps),
+                                   "seconds": tr.public()["seconds"]}, 504)
+            except LLMCancelled:
+                return self._json({"error": "Cancelado", "cancelled": True}, 409)
+            if tr.cancel.is_set():  # canceló justo cuando llegaba la respuesta: no se descarga nada
+                return self._json({"error": "Cancelado", "cancelled": True}, 409)
+            tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
+            reply = parse_reply(raw)
+            req.begin("validate")
+            blocked = router.validate(reply, sess, rcfg["max_candidates"])
+            req.end("validate", "blocked" if blocked else "pass", hits=len(blocked), note=", ".join(blocked) or None)
+            if blocked:
+                tr.add("step", tr.L(f"Candados: descarto lo que tocaba {', '.join(blocked)}", f"Locks: dropping what touched {', '.join(blocked)}"))
+                reply["bloqueado"] = blocked
+            if reply.get("descargar") and fetch_on(sess):
+                reply["descargas"] = fetch_samples(cfg, reply, sess, tr)
+            loops.fix_reply(LIBRARY, reply, float(sess.get("bpm") or 120))
+            # Instrumentos de la biblioteca que usa Maestro: los pequeños se descargan ya
+            def _ilog(item):
+                name = tr.L(item["es"], item["en"])
+                tr.add("step", {"descargado": tr.L(f"Descargo el instrumento «{name}» ({item['mb']} MB) de la biblioteca", f"Downloading the «{name}» instrument ({item['mb']} MB) from the library"),
+                                "permiso": tr.L(f"«{name}» pesa {item['mb']} MB: te pido permiso antes de descargarlo", f"«{name}» is {item['mb']} MB: asking before downloading it"),
+                                "error": tr.L(f"No he podido descargar «{name}»: {item.get('error')}", f"Couldn't download «{name}»: {item.get('error')}")}.get(item["estado"], ""))
+            try:
+                inst_items = instlib.auto_install(INSTLIB, reply, _ilog)
+            except Exception:  # noqa: BLE001
+                inst_items = []
+            if inst_items:
+                reply["instrumentos"] = inst_items
+        finally:
+            llmmod.set_cancel(None)
+            tr.finish()
+        return self._json({**reply, "skills": skills_report(sk, raw), "monitor": req.id,
+                           **({"command": command} if command else {}),
+                           **({"trace": tr.public()} if tr.id else {})})
 
     def _midi(self, path, data):
         """Teclado MIDI: notas de la web, ajustes, buscar teclados, grabar una toma y traducirla a Tidal."""
@@ -762,6 +919,33 @@ class Handler(SimpleHTTPRequestHandler):
                                    "default_plugins": DEFAULT_PLUGINS["state"],
                                    "plugin_updates": PLUGIN_UPDATES,
                                    "plugins_auto_update": bool(cfg.get("plugins", {}).get("auto_update", True))})
+            if path == "/api/monitor":
+                q = parse_qs(urlparse(self.path).query)
+                try:
+                    since = float(q.get("since", ["0"])[0])
+                except ValueError:
+                    since = 0
+                return self._json({"layers": router.LAYERS, "requests": MONITOR.public(since), "summary": MONITOR.summary(),
+                                   "router": router.config(load_config()), "ai_timeout": load_config().get("ai_timeout", 300),
+                                   "index": SONGS.stats() if SONGS else None})
+            if path == "/api/songs/search":
+                q = parse_qs(urlparse(self.path).query)
+                if not SONGS:
+                    return self._json({"results": []})
+                return self._json({"results": SONGS.search(q.get("q", [""])[0], 20)})
+            if path == "/api/ab/stats":
+                return self._json({**(SONGS.votes_stats() if SONGS else {"counts": {}, "total": 0, "baseline": {}}),
+                                   "index": SONGS.stats() if SONGS else None})
+            if path == "/api/ab/export":
+                body = (SONGS.export_jsonl() if SONGS else "").encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+                self.send_header("Content-Disposition", 'attachment; filename="tidal-studio-dataset.jsonl"')
+                self.send_header("Content-Length", str(len(body)))
+                self.send_header("Cache-Control", "no-store")
+                self.end_headers()
+                self.wfile.write(body)
+                return
             if path == "/api/trace":
                 q = parse_qs(urlparse(self.path).query)
                 with _traces_lock:
@@ -837,6 +1021,8 @@ class Handler(SimpleHTTPRequestHandler):
                     cfg["temperature"] = float(data["temperature"])
                 if "ai_timeout" in data:
                     cfg["ai_timeout"] = max(30, min(1800, int(float(data["ai_timeout"]))))
+                if isinstance(data.get("router"), dict):
+                    router.update(cfg, data["router"])
                 save_config(cfg)
                 return self._json(public_config(cfg))
 
@@ -858,6 +1044,26 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json(llmdiag.diagnose_api(cfg, data.get("lang", "es")))
                 return self._json(llmdiag.test_models(cfg, data.get("lang", "es")))
 
+            if path == "/api/songs/sync":
+                # Copia de SOLO LECTURA de la canción del navegador: el servidor nunca la escribe de vuelta
+                if not SONGS:
+                    return self._json({"ok": False, "error": "sin índice"})
+                song = data.get("song") if isinstance(data.get("song"), dict) else {}
+                try:
+                    return self._json(SONGS.sync(song))
+                except ValueError as e:
+                    return self._json({"ok": False, "error": str(e)}, 400)
+            if path == "/api/songs/forget":
+                if SONGS:
+                    SONGS.forget(str(data.get("id") or ""))
+                return self._json({"ok": True})
+            if path == "/api/ab/vote":
+                if not SONGS:
+                    return self._json({"ok": False, "error": "sin índice"})
+                try:
+                    return self._json({"ok": True, "id": SONGS.vote(data)})
+                except ValueError as e:
+                    return self._json({"ok": False, "error": str(e)}, 400)
             if path == "/api/chat/cancel":
                 # Cancelar lo que se ha mandado al chat: corta la llamada a la IA en curso (mata `claude`,
                 # deja de leer el streaming) y no se aplica ni descarga nada
@@ -870,110 +1076,25 @@ class Handler(SimpleHTTPRequestHandler):
 
             if path == "/api/chat":
                 cfg = load_config()
-                if not llm_configured(cfg):
-                    return self._json({"error": "La IA no está configurada. Abre ⚙️ Ajustes."}, 400)
+                rcfg = router.config(cfg)
                 msgs = data.get("messages") or []
-                command = None
-                last_user = next((m for m in reversed(msgs) if isinstance(m, dict) and m.get("role") == "user"), None)
-                if last_user and str(last_user.get("content", "")).lstrip().startswith("/"):
-                    # /comando de un plugin: se cambia por su texto antes de enviarlo a la IA
-                    expanded, command = pluginset.expand_command(cfg, str(last_user.get("content", "")))
-                    if command:
-                        msgs = [dict(m, content=expanded) if m is last_user else m for m in msgs]
-                tr = Trace(str(data.get("trace") or "")[:64], data.get("lang"))
                 sess = data.get("session") or {}
-                tracks = [t for t in sess.get("tracks") or [] if isinstance(t, dict)]
-                tr.add("step", tr.L(f"Leo tu mensaje y tu canción: {len(tracks)} pistas, {sess.get('bpm') or '?'} bpm",
-                                    f"Reading your message and your song: {len(tracks)} tracks, {sess.get('bpm') or '?'} bpm"))
-                if command:
-                    tr.add("step", tr.L(f"Comando /{command['plugin']}:{command['command']} → uso su texto como petición",
-                                        f"Command /{command['plugin']}:{command['command']} → using its text as the request"))
+                last_txt = next((str(m.get("content", "")) for m in reversed(msgs) if isinstance(m, dict) and m.get("role") == "user"), "")
+                req = MONITOR.start(last_txt, str(data.get("trace") or "")[:64])
                 try:
-                    sess["loops_lines"] = loops.for_maestro(LIBRARY, float(sess.get("bpm") or 120))
-                    if sess["loops_lines"]:
-                        tr.add("step", tr.L(f"Tienes {len(sess['loops_lines'])} loops largos analizados: se los paso con su tempo y su código",
-                                            f"You have {len(sess['loops_lines'])} analysed long loops: passing them on with their tempo and code"))
-                except Exception:  # noqa: BLE001
-                    sess["loops_lines"] = []
-                last = next((m.get("content", "") for m in reversed(msgs) if m.get("role") == "user"), "")
-                # Lo que hay de verdad en el ordenador, leído ahora (no la lista que la web guardó hace rato)
-                inv = None
-                try:
-                    inv = inventory.summary(LIBRARY, INSTLIB, ENGINE, synthengines.status, synthengines.vst_list)
-                    sess["inventario"] = inventory.maestro_text(inv)
-                    sess["samples"] = [{"name": x["name"], "type": x["type"], "n": x["n"]} for x in inv["samples"]]
-                    nuevos = [x["name"] for x in inv["samples"] if x["nuevo"]] + [x["id"] for x in inv["instrumentos"] if x["nuevo"]]
-                    tr.add("step", tr.L(f"Miro tu biblioteca: {len(inv['samples'])} samples y {len(inv['instrumentos'])} instrumentos"
-                                        + (f" (nuevos: {', '.join(nuevos[:6])})" if nuevos else ""),
-                                        f"Checking your library: {len(inv['samples'])} samples and {len(inv['instrumentos'])} instruments"
-                                        + (f" (new: {', '.join(nuevos[:6])})" if nuevos else "")))
-                except Exception:  # noqa: BLE001
-                    inv = None
-                try:
-                    sess["instrument_lines"] = instlib.maestro_lines(INSTLIB, last, with_mine=inv is None)
-                except Exception:  # noqa: BLE001
-                    sess["instrument_lines"] = []
-                ps = plan_step(sess)
-                if ps:
-                    tr.add("step", tr.L(f"Plan «{ps.get('titulo', '')}» · paso {int(ps.get('i') or 0) + 1} de {len(ps['pasos'])}",
-                                        f"Plan «{ps.get('titulo', '')}» · step {int(ps.get('i') or 0) + 1} of {len(ps['pasos'])}"))
-                system, messages = build_messages(msgs, sess)
-                # En los pasos de un plan, las skills se eligen con la petición original: son las mismas en cada paso,
-                # así el prompt no cambia y el proveedor lo reutiliza de su caché (más rápido y sin repetir trabajo)
-                skill_query = str(ps.get("peticion") or last) if ps else last
-                stext, sk = skills_text(cfg, skill_query, sess)
-                system = [with_lang(system, data.get("lang")), stext]
-                if sk:
-                    active, loaded = sk
-                    names = [x["name"] + (f" (+{', '.join(r.split('/')[-1] for r in x['refs'])})" if x["refs"] else "")
-                             + (tr.L(" · siempre", " · always") if x.get("pinned") else "") for x in loaded]
-                    tr.add("step", tr.L(f"Elijo skills entre {len(active)}: ", f"Picking skills out of {len(active)}: ")
-                           + (", ".join(names) if names else tr.L("ninguna encaja", "none match")))
-                tr.add("step", tr.L(f"Pregunto a {provider_label(cfg)}…", f"Asking {provider_label(cfg)}…"))
-                def _ev(kind, text):
-                    if kind == "cache":
-                        tr.add("step", tr.L(f"Reutilizo {text} tokens de instrucciones y skills que ya tenía en caché",
-                                            f"Reusing {text} tokens of instructions and skills already cached"))
-                    else:
-                        tr.add(kind, text)
-                llmmod.set_cancel(tr.cancel)
-                try:
-                    try:
-                        raw = chat_completion(cfg, system, messages,
-                                              max_tokens=1800 if ps else (3500 if variants_on(sess) or plan_on(sess) else 1800),
-                                              on_event=_ev if tr.id else None)
-                    except LLMTimeout as e:
-                        # Demasiado grande para una sola respuesta: se propone hacerlo por pasos (o reintentar solo este paso)
-                        tr.add("step", tr.L("La IA ha tardado demasiado", "The AI took too long"))
-                        return self._json({"error": str(e), "timeout": True, "plan_paso": bool(ps),
-                                           "seconds": tr.public()["seconds"]}, 504)
-                    except LLMCancelled:
-                        return self._json({"error": "Cancelado", "cancelled": True}, 409)
-                    if tr.cancel.is_set():  # canceló justo cuando llegaba la respuesta: no se descarga nada
-                        return self._json({"error": "Cancelado", "cancelled": True}, 409)
-                    tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
-                    reply = parse_reply(raw)
-                    if reply.get("descargar") and fetch_on(sess):
-                        reply["descargas"] = fetch_samples(cfg, reply, sess, tr)
-                    loops.fix_reply(LIBRARY, reply, float(sess.get("bpm") or 120))
-                    # Instrumentos de la biblioteca que usa Maestro: los pequeños se descargan ya
-                    def _ilog(item):
-                        name = tr.L(item["es"], item["en"])
-                        tr.add("step", {"descargado": tr.L(f"Descargo el instrumento «{name}» ({item['mb']} MB) de la biblioteca", f"Downloading the «{name}» instrument ({item['mb']} MB) from the library"),
-                                        "permiso": tr.L(f"«{name}» pesa {item['mb']} MB: te pido permiso antes de descargarlo", f"«{name}» is {item['mb']} MB: asking before downloading it"),
-                                        "error": tr.L(f"No he podido descargar «{name}»: {item.get('error')}", f"Couldn't download «{name}»: {item.get('error')}")}.get(item["estado"], ""))
-                    try:
-                        inst_items = instlib.auto_install(INSTLIB, reply, _ilog)
-                    except Exception:  # noqa: BLE001
-                        inst_items = []
-                    if inst_items:
-                        reply["instrumentos"] = inst_items
+                    # Capa 1: lo que se puede contestar con tus propios datos no gasta ni un token
+                    req.begin("rules")
+                    ans = router.local_answer(last_txt, SONGS, data.get("lang")) if rcfg["local_answers"] else None
+                    if ans and ans[1] >= rcfg["confidence"]:
+                        req.end("rules", "hit", hits=ans[2], note="local")
+                        req.end("validate", "skip")
+                        return self._json({**ans[0], "local": True, "monitor": req.id})
+                    req.end("rules", "pass" if rcfg["local_answers"] else "off")
+                    if not llm_configured(cfg):
+                        return self._json({"error": "La IA no está configurada. Abre ⚙️ Ajustes."}, 400)
+                    return self._chat(cfg, rcfg, req, data, msgs, sess)
                 finally:
-                    llmmod.set_cancel(None)
-                    tr.finish()
-                return self._json({**reply, "skills": skills_report(sk, raw),
-                                   **({"command": command} if command else {}),
-                                   **({"trace": tr.public()} if tr.id else {})})
+                    req.finish()
 
             if path == "/api/explain":
                 cfg = load_config()
