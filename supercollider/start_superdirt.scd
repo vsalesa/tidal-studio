@@ -113,7 +113,7 @@ if(\SuperDirt.asClass.isNil) {
             ~studioAudioInfo.value;
             // Vigilante: si cambian las salidas de audio (enchufas o quitas algo) o el motor se cae, avisamos.
             // El servidor enseña «Reconectar audio» en la web.
-            ~studioAudioWatch.stop;
+            if(~studioAudioWatch.notNil) { ~studioAudioWatch.stop };
             ~studioAudioWatch = fork {
                 var last = ~studioOutDevices.value, lost = false, now;
                 loop {

@@ -115,7 +115,8 @@ var accept = { |chan, uid|
     } {
         d = dests[idx];
         if(~studioMidiOut.isNil) {
-            ~studioMidiOut = MIDIOut(0, d.uid);
+            // En Linux se conecta con connect (uid 0 = a quien esté conectado); en Mac y Windows, por uid
+            ~studioMidiOut = MIDIOut(0, if(thisProcess.platform.name == \linux) { 0 } { d.uid });
             // El sonido "midi" de SuperDirt: las notas salen a tiempo con el audio
             dirt.soundLibrary.addMIDI(\midi, ~studioMidiOut);
         };
@@ -159,7 +160,7 @@ MIDIdef.cc(\tsMidiPedal, { |val, num, chan, uid|
 }, 64);
 ~studioMidiScan.value;
 // Vigilante de enchufar y desenchufar: cada 2 s mira la lista (barato) y solo reconecta si ha cambiado
-~studioMidiWatch.stop;
+if(~studioMidiWatch.notNil) { ~studioMidiWatch.stop };
 ~studioMidiWatch = fork {
     var said = false;
     loop {
