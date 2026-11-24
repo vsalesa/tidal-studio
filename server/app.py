@@ -41,6 +41,8 @@ import ccdetect  # noqa: E402
 import songimport  # noqa: E402
 import midigen  # noqa: E402
 import midilive  # noqa: E402
+import library as soundlib  # noqa: E402
+import instcatalog  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
 import appupdate  # noqa: E402
@@ -108,6 +110,10 @@ DEFAULT_CONFIG = {
     "updates": {
         "auto_check": True,
         "skipped": "",             # versión que elegiste saltarte
+    },
+    # Salida de audio de SuperCollider ("" = la del sistema). Se elige en el aviso de audio de la web.
+    "audio": {
+        "out": "",
     },
     "temperature": 0.7,
     # Segundos que la IA puede pasar SIN mandar nada antes de darla por perdida (si va respondiendo, no se corta)
@@ -371,6 +377,19 @@ INSTLIB = instlib.InstLib(LIBRARY, ENGINE)
 PHOTOS = instphotos.Photos(LIBRARY.dir)
 
 
+def library_items():
+    """La librería única (server/library.py): incluidos, biblioteca de instrumentos, tuyos, loops y tu teclado."""
+    try:
+        loaded = set((ENGINE.sound_list() or {}).get("sounds") or [])
+    except Exception:  # noqa: BLE001
+        loaded = set()
+    try:
+        lps = loops.listing(LIBRARY)["loops"]
+    except Exception:  # noqa: BLE001
+        lps = []
+    return soundlib.build(LIBRARY, INSTLIB, lps, loaded)
+
+
 def instrument_listing():
     """La biblioteca de instrumentos tal y como la ve la interfaz (con los motores y Surge XT si están)."""
     try:
@@ -467,6 +486,10 @@ class Handler(SimpleHTTPRequestHandler):
                                             int(data.get("ch", 0)), str(data.get("src", "web"))[:40]))
         if path == "/api/midi/settings":
             return self._json({"settings": MIDI.set_settings(data)})
+        if path == "/api/midi/panic":
+            return self._json({"ok": MIDI.panic()})
+        if path == "/api/midi/clock":
+            return self._json({"lines": MIDI.clock_code(bool(data.get("start")))})
         if path == "/api/midi/scan":
             return self._json({"ok": MIDI.scan()})
         if path == "/api/midi/record":
@@ -671,6 +694,19 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(ENGINE.events_since(since))
             if path == "/api/sounds":
                 return self._json(ENGINE.sound_list())
+            if path == "/api/audio":
+                return self._json(ENGINE.audio_state())
+            if path in ("/api/library", "/api/library/search", "/api/library/similar"):
+                q = parse_qs(urlparse(self.path).query)
+                arg = lambda k: q.get(k, [""])[0]  # noqa: E731
+                items = library_items()
+                if path == "/api/library/similar":
+                    return self._json(soundlib.suggest(items, arg("sound"), int(arg("n") or 6)))
+                if path == "/api/library/search":
+                    return self._json({"items": soundlib.search(items, arg("q"), arg("kind") or None, arg("origin") or None,
+                                                                int(arg("limit") or 60))})
+                cats = [{"id": c[0], "es": c[1], "en": c[2]} for c in instcatalog.CATEGORIES] + [{"id": "loops", "es": "Loops", "en": "Loops"}]
+                return self._json({"items": items, "families": cats})
             if path == "/api/midi/state":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -1189,6 +1225,17 @@ class Handler(SimpleHTTPRequestHandler):
 
             if path == "/api/engine/start":
                 return self._json(ENGINE.start())
+            if path == "/api/audio/restart":
+                # «Reconectar audio» (opcional: otra salida). La salida elegida se guarda para el próximo arranque.
+                if not self._same_origin():
+                    return self._json({"error": "forbidden"}, 403)
+                out = data.get("out")
+                if out is not None:
+                    cfg = load_config()
+                    cfg.setdefault("audio", {})["out"] = str(out or "")[:200]
+                    save_config(cfg)
+                threading.Thread(target=ENGINE.restart_audio, args=(out,), daemon=True).start()
+                return self._json({"ok": True})
             if path == "/api/engine/stop":
                 ENGINE.stop()
                 return self._json(ENGINE.status())
@@ -1358,6 +1405,7 @@ def main():
             print(f"[instrumentos] nivel corregido: {', '.join(lv)}")
     except Exception as e:  # noqa: BLE001
         print(f"[instrumentos] {e}")
+    ENGINE.audio_out = str((load_config().get("audio") or {}).get("out") or "")
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
     threading.Thread(target=update_plugins_on_start, daemon=True).start()

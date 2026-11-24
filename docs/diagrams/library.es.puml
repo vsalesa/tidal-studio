@@ -1,0 +1,21 @@
+@startuml
+!pragma layout smetana
+!include style.iuml
+title <size:20><b>Una sola librería: todos los sonidos en la misma lista</b></size>
+left to right direction
+rectangle "<b>Incluidos</b>\nDirt-Samples, sintes de SuperDirt" as b
+rectangle "<b>Biblioteca de instrumentos</b>\n600+ instrumentos, motores" as il
+rectangle "<b>Tuyos</b>\nsubidos, Freesound, packs,\nlo que descargó Maestro" as mine
+rectangle "<b>Tus loops largos</b>" as lp
+rectangle "<b>Tu teclado MIDI</b>\ns <U+0022>midi<U+0022>" as kb
+rectangle "<b>server/library.py</b>\nuna ficha por sonido:\nfamilia, tipo, origen,\nlisto o para descargar" as idx #fbe3db
+rectangle "<b>Panel Librería</b>\nbuscar, filtros,\nescuchar, descargar, añadir" as panel
+rectangle "<b>Cambiar un sonido</b>\nselecciona su nombre en el código:\nparecidos + buscador" as rp
+b --> idx
+il --> idx
+mine --> idx
+lp --> idx
+kb --> idx
+idx --> panel
+idx --> rp
+@enduml

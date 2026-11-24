@@ -30,7 +30,10 @@ import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./ti
 import { initAppUpdate } from "./appupdate.js";
 import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
 import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments } from "./instlib.js";
-import { initMidi, toggleMidi } from "./midikeys.js";
+import { initMidi, toggleMidi, clockLines, midiSilence } from "./midikeys.js";
+import { initAudioStatus } from "./audiostatus.js";
+import { initLibrary, openLibrary, loadLibrary } from "./library.js";
+import { initReplace, replaceSound } from "./replace.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -182,7 +185,8 @@ const silenceId = (id) => evalCode(`${id} silence`);
 // fromTop: vuelve al compás 1 (resetCycles) para que el arreglo (mask "<…>") empiece desde el principio
 // El «código extra» de un archivo abierto (let, definiciones…) va antes de las pistas, que pueden usarlo
 const extraCode = () => (state.extra && state.extra.trim() ? [state.extra.trim()] : []);
-const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...extraCode(), ...state.tracks.map(trackLine)].join("\n\n"), null, state.tracks);
+// Con «Reloj y start/stop» (teclado MIDI), el reloj va con la canción: tu teclado sigue el tempo
+const playAll = (fromTop = false) => evalCode([cps(state.bpm), ...(fromTop === true ? ["resetCycles"] : []), ...extraCode(), ...state.tracks.map(trackLine), ...clockLines(true)].join("\n\n"), null, state.tracks);
 const hasArrangement = () => state.tracks.some((t) => /\bmask\s+"</.test(t.code));
 const live = () => $("#autoplay").checked;
 // Silencio de verdad: "hush" solo para los patrones, pero las notas largas, la reverb y el eco
@@ -194,7 +198,7 @@ function hushAll() {
   clearTimeout(ctlTimer);
   seqTimers.forEach(clearTimeout); seqTimers = [];
   smStop(); stopBeeps();
-  return evalCode("panic");
+  return evalCode(["panic", ...midiSilence()].join("\n\n"));
 }
 
 // ------------------------------------------------------------------ pistas
@@ -2703,6 +2707,7 @@ function wireInstLib() {
 }
 // --- teclado MIDI (web/midikeys.js): tu piano suena y se traduce a pistas de Tidal
 function wireMidi() {
+  initAudioStatus();
   initMidi({
     toast, beep: (m) => beep(m, "piano", 0.6),
     bpm: () => state.bpm,
@@ -2715,6 +2720,15 @@ function wireMidi() {
       preHear({ bpm: synced || bpm === state.bpm ? undefined : bpm, pistas: tracks.map((t, i) => ({ id: ids[i] || "d" + (MAX_TRACKS - i), codigo: fixNegatives(t.codigo) })) });
     },
     stopPreview: () => stopPreHear(),
+    // salida al teclado: pasar pistas a tu piano (s "midi") y volver
+    tracks: () => state.tracks,
+    patchTrack: (id, patch) => {
+      const t = state.tracks.find((x) => x.id === id); if (!t) return;
+      Object.assign(t, patch); t.explain = null;
+      changed();
+      if (live()) playTrack(t);
+    },
+    clockChanged: (on) => { if (!live()) return; evalCode(on ? clockLines(false).join("\n\n") : 'p "ts-midiclock" silence'); },
     addTracks: (tracks, bpm, synced) => {
       // Canción vacía: se queda con el tempo al que has tocado. Si no, va al tempo de tu canción (ya grabaste a ese).
       if (!state.tracks.length && !synced && bpm) { state.bpm = Math.max(40, Math.min(220, bpm)); $("#bpm").value = state.bpm; if (live()) evalCode(cps(state.bpm)); }
@@ -2729,6 +2743,67 @@ function wireMidi() {
     ask: (text) => (useLLM() ? send(text) : say(text.split("\n\n")[0] + "\n\n" + L("Para que Maestro te lo explique y te proponga cómo seguir, conecta una IA en Ajustes. Mientras, pulsa «Explícame» en las pistas nuevas.", "For Maestro to explain it and suggest how to continue, connect an AI in Settings. Meanwhile, press «Explain» on the new tracks."), state.options)),
   });
   $("#btn-midi").onclick = () => toggleMidi();
+}
+// --- librería única (web/library.js): todos los sonidos, incluidos y descargados, en una sola lista
+const isReal = () => !!(server.engine && server.engine.superdirt_ready && !server.engine.simulation);
+async function waitJob(r) {
+  let job = r;
+  while (job && job.state === "running") { await new Promise((ok) => setTimeout(ok, 600)); job = await api(`/api/instruments/job?id=${job.id}`); }
+  if (job && job.state === "error") throw new Error(job.error);
+  return job;
+}
+// Escuchar cualquier sonido de la librería: con el motor, en SuperDirt; sin él, una vista previa en el navegador
+function hearEntry(e) {
+  const ref = e.ref || e.sound;
+  if (isReal() && e.installed) {
+    if (e.kind === "hit" || e.kind === "loop") return evalCode(`once $ s "${ref}"`);
+    return evalCode(`once $ n "0 4 7" # s "${e.sound}"${e.extra || ""}`);
+  }
+  smStop();
+  if (e.origin === "library" || (e.origin === "mine" && e.kind === "pitched" && e.id)) { smAudio = new Audio(`/api/instruments/preview?id=${encodeURIComponent(e.id || e.sound)}&midi=60`); return smAudio.play().catch(() => {}); }
+  if (e.origin === "mine" || e.origin === "loop") { const [n, i] = ref.split(":"); smAudio = new Audio(`/api/samples/file?name=${encodeURIComponent(n)}&i=${i || 0}`); return smAudio.play().catch(() => {}); }
+  if (e.kind === "hit") return hearDirt(e.sound, 0);
+  beep(60, "piano", 0.6);
+}
+async function installEntry(e) {
+  if (e.kind === "engine") { $("#library").close(); openInstLib({ id: e.id }); throw new Error(L("Los motores se instalan desde su ficha.", "Engines are installed from their page.")); }
+  const r = await api("/api/instruments/install", { id: e.id || e.sound });
+  await waitJob(r);
+}
+// Código de partida de una pista con ese sonido (el mismo que usan la biblioteca de samples y la de instrumentos)
+function entryCode(e) {
+  if (e.kind === "loop") return loopCodeFor(e.ref) || `loopAt 2 $ chop 8 $ s "${e.ref}"`;
+  if (e.kind === "hit") return starterCode(e.sound, ["bombo", "caja", "platos", "percusion", "voz", "fx"].includes(e.role) ? e.role : "percusion");
+  if (e.kind === "midi") return `n "c e g e" # s "midi" # midichan 0`;
+  return `n "c e g e" # s "${e.sound}"${e.extra || ""}`;
+}
+function wireLibrary() {
+  initLibrary({
+    toast, hear: hearEntry, install: installEntry,
+    add: (e) => { const kind = e.kind === "hit" || e.kind === "loop" ? "percusion" : e.family === "basses" || e.family === "synth_bass" ? "bajo" : e.family === "synth_pad" ? "textura" : "melodia"; addTrack(L(e.es, e.en) || e.sound, kind, entryCode(e)); },
+    openSamples: () => openSamples(), openInstLib: (o) => openInstLib(o),
+  });
+  // Asistente para cambiar un instrumento (web/replace.js): selecciona su nombre en el código
+  initReplace({
+    toast, hear: hearEntry, install: installEntry,
+    canAsk: () => useLLM(), ask: (text) => send(text),
+    // un cambio en una caja de código: igual que si lo hubieras escrito tú
+    commit: (ta) => {
+      if (ta.id === "code") { $("#btn-apply-code").click(); return; }
+      ta.dispatchEvent(new Event("input")); ta.dispatchEvent(new Event("change"));
+    },
+    replaceEverywhere: (from, to, keepIdx) => {
+      let n = 0;
+      for (const t of state.tracks) { const c = replaceSound(t.code, from, to, keepIdx); if (c !== t.code) { t.code = c; t.explain = null; n++; } }
+      if (state.extra) state.extra = replaceSound(state.extra, from, to, keepIdx);
+      changed();
+      $("#code").value = buildCode();
+      if (n && live()) playAll();
+    },
+  });
+  // Los dos botones de siempre abren la misma librería, con el filtro puesto
+  $("#btn-instlib").onclick = () => openLibrary({ kind: "pitched", show: "" });
+  $("#btn-samples").onclick = () => openLibrary({ kind: "", show: "" });
 }
 // --- loops largos (web/loops.js): el cargador, el navegador y cómo entran en la canción
 function wireLoops() {
@@ -4273,6 +4348,7 @@ function init() {
   wireInstLib();
   wireMidi();
   wireLoops();
+  wireLibrary();
   wireControls();
   wireArrange();
   initTimeline({
