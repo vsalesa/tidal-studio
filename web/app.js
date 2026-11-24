@@ -88,6 +88,7 @@ function save() {
   renderHistoryButtons();
   renderFileStatus();
   renderTabs();
+  if (state.github && state.github.pending) scheduleGitHubCreate();
 }
 const PROJ_KEY = "tidal-studio-projects-v1";
 function listProjects() {
@@ -2181,6 +2182,9 @@ const INSPIRE_CHIP = () => L("Crear algo nuevo inspirado en ella", "Create somet
 function startFresh() {
   openTabSlot();
   state = FRESH();
+  // Ajuste «Crear las canciones nuevas directamente en GitHub»: sea cual sea la plantilla
+  // (en blanco, asistente, lluvia de ideas, curso, MIDI…) la canción nace en el repositorio
+  if (server.github && server.ghNew) state.github = { pending: true };
   resetHistory(state);
   tabOpened();
   renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons();
@@ -2964,7 +2968,7 @@ function openGitHubSave() {
     btn.disabled = true; $("#gh-save-msg").textContent = L("Guardando…", "Saving…");
     try {
       const r = await api("/api/github/save", { project: projectPayload(), message: $("#gh-commit").value, slug: state.github?.slug });
-      state.github = { slug: r.slug, ref: null }; save();
+      state.github = ghFrom(r); save();
       $("#newproj").close();
       if (r.unchanged) return say(L("No había cambios desde la última versión, así que no he creado un commit nuevo.", "Nothing changed since the last version, so I didn't create a new commit."), state.options, { links: [{ href: r.html_url, label: L("Ver en GitHub", "View on GitHub") }] });
       say(first
@@ -3008,14 +3012,20 @@ async function renderVersions(box, slug) {
 }
 async function openGitHubSong(slug, ref) {
   const data = await api("/api/github/load", { slug, ref });
-  if (!ref && focusTabIf((s, tid) => (s.github && s.github.slug === slug && !s.github.ref) || (data.projectId && tid === data.projectId),
+  // Solo cuenta como «ya abierta» una pestaña que viene de GitHub, nunca la de un archivo local con el mismo proyecto
+  if (!ref && focusTabIf((s) => s && s.github && s.github.slug === slug && !s.github.ref && !s.file,
     L(`«${slug}» ya estaba abierta en una pestaña.`, `«${slug}» was already open in a tab.`))) { $("#newproj").close(); return; }
   if (busy) { $("#newproj").close(); return busyMsg(); }
   openTabSlot();
-  const local = listProjects().find((x) => x.id === data.projectId);
-  state = { ...FRESH(), ...(local ? local.data : {}), name: data.name || slug, bpm: data.bpm || 120, style: data.style || "",
-    tracks: (data.tracks || []).map((t) => ({ ...t })), projectId: data.projectId || "p" + Date.now(),
-    github: { slug, ref: ref || null }, trying: null };
+  // Lo que hubiera en este navegador (chat, mezcla…) se reutiliza, pero NUNCA su archivo local:
+  // una canción abierta desde GitHub enseña su ruta en GitHub, aunque exista un .tidal con el mismo nombre
+  const local = listProjects().find((x) => x.id === data.projectId && !(x.data && x.data.file));
+  const clash = data.projectId && tabs.ids.includes(data.projectId);
+  state = { ...FRESH(), ...(local && !clash ? local.data : {}), name: data.name || slug, bpm: data.bpm || 120, style: data.style || "",
+    tracks: (data.tracks || []).map((t) => ({ ...t })), extra: data.extra || "",
+    projectId: (!clash && data.projectId) || "p" + Date.now(), file: null,
+    github: ghFrom({ ...(data.github || {}), slug, ref: ref || null }), trying: null };
+  fileHandle = null;
   // Una versión antigua se abre como copia para no pisar la actual
   if (ref) { state.projectId = "p" + Date.now(); state.name = `${state.name} (${ref.slice(0, 7)})`; }
   restoreHistory(state, null); tabOpened();
@@ -3023,6 +3033,182 @@ async function openGitHubSong(slug, ref) {
   sysMsg(ref ? L(`Abierta la versión ${ref.slice(0, 7)} de «${slug}». Si la guardas en GitHub, pasará a ser la versión más nueva.`, `Opened version ${ref.slice(0, 7)} of «${slug}». If you save it to GitHub, it becomes the newest version.`)
     : L(`Abierta «${slug}» desde GitHub.`, `Opened «${slug}» from GitHub.`));
 }
+// ------------------------------------------------------------------ GitHub: dónde vive cada canción
+// {slug, ref, repo, path, remote, html_url} a partir de lo que devuelve el servidor
+function ghFrom(r) {
+  const w = server.ghWhere || {};
+  const repo = r.repo || w.repo || "", path = r.path || `${w.folder || "songs"}/${r.slug}`;
+  return { slug: r.slug, ref: r.ref && r.ref !== (r.branch || w.branch) ? r.ref : null, repo, path,
+    remote: r.remote || (repo ? `${repo}/${path}` : path), html_url: r.html_url || (repo ? `https://github.com/${repo}/tree/${w.branch || "main"}/${path}` : "") };
+}
+// «usuario/repo/songs/mi-cancion» (+ «@ abc1234» si es una versión antigua)
+function ghRemote(g) {
+  const w = server.ghWhere || {};
+  if (g.pending) return `${w.repo || "GitHub"}/${w.folder || "songs"}/${slugify(state.name || L("nueva", "new"))}`;
+  const base = g.remote || (g.repo || w.repo ? `${g.repo || w.repo}/${g.path || `${w.folder || "songs"}/${g.slug}`}` : g.slug);
+  return base + (g.ref ? " @ " + g.ref.slice(0, 7) : "");
+}
+// Un nombre de carpeta que no pise otra canción del repositorio
+function uniqueSlug(base, taken) {
+  let slug = base, n = 2;
+  while (taken.has(slug)) slug = `${base.slice(0, 56)}-${n++}`;
+  taken.add(slug);
+  return slug;
+}
+// Guarda una pestaña que no es la de delante (su copia en Mis proyectos)
+function persistDoc(s) {
+  if (s === state) return save();
+  try {
+    const list = listProjects(), p = list.find((x) => x.id === s.projectId);
+    if (p) { p.data = { ...s, trying: null }; localStorage.setItem(PROJ_KEY, JSON.stringify(list)); }
+  } catch { /* sin almacenamiento */ }
+  renderTabs();
+}
+
+// Ajuste «crear las canciones nuevas directamente en GitHub»: en cuanto la canción tiene alguna pista,
+// se crea su carpeta en el repo con un primer commit. A partir de ahí Guardar (⌘S) crea versiones nuevas.
+let ghCreateTimer = null, ghCreating = false;
+function scheduleGitHubCreate() {
+  clearTimeout(ghCreateTimer);
+  ghCreateTimer = setTimeout(createOnGitHub, 2500);
+}
+async function createOnGitHub() {
+  const s = state;
+  if (ghCreating || !s.github || !s.github.pending || !s.tracks.length || !server.github) return;
+  if (busy) return scheduleGitHubCreate(); // el Maestro aún está montando la canción: espero a que acabe
+  ghCreating = true;
+  try {
+    const list = await api("/api/github/list", {});
+    const slug = uniqueSlug(slugify(s.name || L("cancion", "song") + "-" + new Date().toISOString().slice(0, 10)), new Set(list.songs.map((x) => x.slug)));
+    const payload = { name: s.name || L("Canción sin título", "Untitled song"), bpm: s.bpm, style: s.style, projectId: s.projectId, extra: s.extra || "",
+      tracks: s.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted })) };
+    const r = await api("/api/github/save", { project: payload, slug, message: L(`Creo «${payload.name}»`, `Create «${payload.name}»`) });
+    if (!s.github || !s.github.pending) return;
+    s.github = ghFrom(r);
+    persistDoc(s);
+    if (s === state) sysMsg(L(`Canción creada en GitHub: ${s.github.remote}. Cuando quieras guardar una versión nueva, pulsa ${KEY_MOD}S.`,
+      `Song created on GitHub: ${s.github.remote}. To save a new version, press ${KEY_MOD}S.`));
+  } catch (e) {
+    toast(L("No se pudo crear la canción en GitHub: ", "Couldn't create the song on GitHub: ") + e.message);
+    if (s.github && s.github.pending) { s.github = null; persistDoc(s); } // sigue en local; no reintento en bucle
+  } finally { ghCreating = false; }
+}
+
+// ------------------------------------------------------------------ Importador: subir varios .tidal a GitHub
+let ghImport = { dir: "", files: [], taken: new Set(), running: false };
+async function openGitHubImport() {
+  const dlg = $("#ghimport");
+  if (!server.github) { toast(L("Primero configura GitHub (token y repositorio) y pulsa «Probar GitHub».", "Set up GitHub first (token and repository) and press «Test GitHub».")); return; }
+  if (!fileInfo) fileInfo = await api("/api/file/info", {}).catch(() => null);
+  const w = server.ghWhere || {};
+  dlg.innerHTML = `<div class="wz-head"><span class="wz-kicker">${icon("cloud", 16)} ${L("Subir canciones a GitHub", "Upload songs to GitHub")}</span>
+      <button class="icon-btn" data-a="close" title="${esc(L("Cerrar", "Close"))}">${icon("close", 18)}</button></div>
+    <p class="wz-help">${L(`Elige una carpeta de tu ordenador. Cada archivo <code>.tidal</code> que marques será una canción en <b>${esc(w.repo || "")}/${esc(w.folder || "songs")}/&lt;nombre&gt;/</b>, con su propio commit.`,
+      `Choose a folder on your computer. Each <code>.tidal</code> file you tick becomes a song in <b>${esc(w.repo || "")}/${esc(w.folder || "songs")}/&lt;name&gt;/</b>, with its own commit.`)}</p>
+    <div class="gi-dir"><input id="gi-dir" spellcheck="false" value="${esc(ghImport.dir || lastDir())}">
+      <button data-a="pick">${icon("folder", 14)} ${L("Elegir carpeta…", "Choose folder…")}</button>
+      <button data-a="scan">${L("Ver archivos", "List files")}</button></div>
+    <div id="gi-list" class="gi-list"></div>
+    <label class="check gi-del"><input type="checkbox" id="gi-delete"> <span>${L("Eliminar los archivos locales después de subirlos", "Delete the local files after uploading them")}</span></label>
+    <p class="hint gi-del-hint">${L("Solo se borra un archivo cuando GitHub ha confirmado la subida y he comprobado que la canción está allí entera. Va a la Papelera, así que puedes recuperarlo.",
+      "A file is only deleted once GitHub confirmed the upload and I checked the whole song is there. It goes to the Trash, so you can get it back.")}</p>
+    <div class="wz-nav"><span id="gi-msg" class="hint"></span><div class="right"><button class="primary" data-a="upload" disabled>${icon("cloud", 14)} ${L("Subir", "Upload")}</button></div></div>`;
+  dlg.onclick = async (e) => {
+    const b = e.target.closest("button"); if (!b || ghImport.running) return;
+    if (b.dataset.a === "close") return dlg.close();
+    if (b.dataset.a === "pick") {
+      try {
+        const r = await api("/api/file/dialog", { mode: "folder", dir: $("#gi-dir").value, title: L("Carpeta con tus canciones", "Folder with your songs") });
+        if (r.path) { $("#gi-dir").value = r.path; scanImport(); }
+        else if (r.unavailable) toast(L("No hay diálogo de carpetas en este sistema: escribe la ruta de la carpeta.", "No folder dialog on this system: type the folder path."));
+      } catch (err) { toast(err.message); }
+    }
+    if (b.dataset.a === "scan") scanImport();
+    if (b.dataset.a === "upload") runImport();
+  };
+  dlg.onchange = (e) => { if (e.target.matches(".gi-file input")) updateImportButton(); };
+  $("#gi-dir").addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); scanImport(); } });
+  dlg.showModal();
+  scanImport();
+}
+async function scanImport() {
+  const box = $("#gi-list"); if (!box) return;
+  box.innerHTML = `<p class="hint">${L("Buscando archivos…", "Looking for files…")}</p>`;
+  try {
+    const [r, gh] = await Promise.all([api("/api/file/list", { dir: $("#gi-dir").value }), api("/api/github/list", {}).catch(() => ({ songs: [] }))]);
+    ghImport = { dir: r.dir, files: r.files, taken: new Set(gh.songs.map((x) => x.slug)), running: false };
+    $("#gi-dir").value = r.dir;
+    box.innerHTML = r.files.length ? r.files.map((f, i) => {
+      const slug = slugify(f.name.replace(/\.(tidal|hs)$/i, "")), exists = ghImport.taken.has(slug);
+      return `<label class="gi-file" data-i="${i}"><input type="checkbox" ${f.too_big ? "disabled" : "checked"}>
+        <span class="n">${esc(f.name)}<span class="d">${f.too_big ? L("demasiado grande (máx. 2 MB)", "too big (max 2 MB)")
+          : exists ? L(`ya hay una canción «${esc(slug)}» en GitHub: se subirá como «${esc(slug)}-2»`, `there is already a song «${esc(slug)}» on GitHub: it will be uploaded as «${esc(slug)}-2»`) : esc(slug + "/")}</span></span>
+        <span class="gi-state"></span></label>`;
+    }).join("") : `<p class="hint">${L("No hay archivos .tidal ni .hs en esta carpeta.", "There are no .tidal or .hs files in this folder.")}</p>`;
+  } catch (e) { box.innerHTML = `<p class="hint">Error: ${esc(e.message)}</p>`; }
+  updateImportButton();
+}
+function updateImportButton() {
+  const n = document.querySelectorAll("#gi-list .gi-file input:checked:not(:disabled)").length, b = document.querySelector('#ghimport [data-a="upload"]');
+  if (!b) return;
+  b.disabled = !n || ghImport.running;
+  b.innerHTML = `${icon("cloud", 14)} ${!n ? L("Subir", "Upload") : n === 1 ? L("Subir 1 canción", "Upload 1 song") : L(`Subir ${n} canciones`, `Upload ${n} songs`)}`;
+}
+const sameSong = (a, b) => JSON.stringify((a.tracks || []).map((t) => [t.id, t.code, !!t.muted])) === JSON.stringify((b.tracks || []).map((t) => [t.id, t.code, !!t.muted]))
+  && (a.extra || "").trim() === (b.extra || "").trim();
+async function runImport() {
+  const rows = [...document.querySelectorAll("#gi-list .gi-file")].filter((r) => r.querySelector("input:checked:not(:disabled)"));
+  if (!rows.length) return;
+  const del = $("#gi-delete").checked, msg = $("#gi-msg");
+  ghImport.running = true; updateImportButton();
+  const set = (row, cls, text) => { const st = row.querySelector(".gi-state"); st.className = "gi-state " + cls; st.textContent = text; };
+  let ok = 0, removed = 0, failed = 0;
+  for (const [k, row] of rows.entries()) {
+    const f = ghImport.files[+row.dataset.i];
+    msg.textContent = L(`Subiendo ${k + 1} de ${rows.length}…`, `Uploading ${k + 1} of ${rows.length}…`);
+    set(row, "run", L("subiendo…", "uploading…"));
+    try {
+      const file = await api("/api/file/read", { path: f.path });
+      const meta = readMeta(file.content), p = parseCode(file.content, meta && meta.master);
+      if (!p.tracks.length && !(p.extra || "").trim()) throw new Error(L("no tiene código de Tidal que pueda leer", "has no Tidal code I can read"));
+      const name = (meta && meta.name) || f.name.replace(/\.(tidal|hs)$/i, "");
+      const project = { name, bpm: Math.max(40, Math.min(220, Math.round(p.bpm || (meta && meta.bpm) || 120))), style: (meta && meta.style) || "",
+        projectId: "p" + Date.now() + k, extra: p.extra || "", tracks: p.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted })) };
+      const slug = uniqueSlug(slugify(f.name.replace(/\.(tidal|hs)$/i, "")), ghImport.taken);
+      const r = await api("/api/github/save", { project, slug, message: L(`Importo «${name}» desde ${f.name}`, `Import «${name}» from ${f.name}`) });
+      // Comprobación: vuelvo a leer la canción de GitHub y tiene que ser idéntica a la que he subido
+      const back = await api("/api/github/load", { slug: r.slug });
+      if (!sameSong(project, back)) throw new Error(L("GitHub no devuelve la misma canción que he subido", "GitHub doesn't return the same song I uploaded"));
+      ok++;
+      if (del) {
+        try {
+          // Solo si el archivo sigue igual que cuando lo leí (fecha y tamaño)
+          await api("/api/file/trash", { path: f.path, mtime: file.mtime, size: f.size });
+          removed++;
+          movedToGitHub(f.path, r);
+          set(row, "ok", L(`subida a ${r.remote} · archivo local eliminado`, `uploaded to ${r.remote} · local file deleted`));
+        } catch (err) { set(row, "warn", L(`subida a ${r.remote}, pero no borré el archivo: ${err.message}`, `uploaded to ${r.remote}, but I didn't delete the file: ${err.message}`)); }
+      } else set(row, "ok", L(`subida a ${r.remote}`, `uploaded to ${r.remote}`));
+      row.querySelector("input").checked = false; row.querySelector("input").disabled = true;
+    } catch (err) {
+      failed++;
+      set(row, "err", L("no se subió: ", "not uploaded: ") + err.message + (del ? L(" (el archivo local sigue ahí)", " (the local file is still there)") : ""));
+    }
+  }
+  ghImport.running = false; updateImportButton();
+  msg.textContent = L(`${ok} subidas${del ? `, ${removed} archivos eliminados` : ""}${failed ? `, ${failed} con error` : ""}.`,
+    `${ok} uploaded${del ? `, ${removed} files deleted` : ""}${failed ? `, ${failed} failed` : ""}.`);
+}
+// Una pestaña que tenía abierto un archivo que acabo de subir y borrar pasa a ser la canción de GitHub
+function movedToGitHub(path, r) {
+  for (const id of tabs.ids) {
+    const s = tabState(id);
+    if (s && s.file && s.file.path === path) { s.file = null; s.github = ghFrom(r); if (s === state) fileHandle = null; persistDoc(s); }
+  }
+  dropRecent(path);
+  renderFileStatus();
+}
+
 function confirmDelete(id) {
   const list = listProjects();
   const p = list.find((x) => x.id === id);
@@ -3138,6 +3324,7 @@ async function refreshStatus() {
   try {
     const s = await api("/api/status");
     server.llm = s.llm_configured; server.engine = s.engine; server.github = s.github_configured;
+    server.ghWhere = s.github_where || null; server.ghNew = !!s.github_create_new;
     syncSounds(s.engine && s.engine.sounds_rev, api);
     refreshHighlights();
     const e = s.engine, pe = $("#st-engine");
@@ -3177,6 +3364,7 @@ async function openSettings() {
   const g = c.github || {};
   $("#gh-token").value = g.token || ""; $("#gh-repo").value = g.repo || "";
   $("#gh-branch").value = g.branch || "main"; $("#gh-folder").value = g.folder || "songs";
+  $("#gh-create-new").checked = !!g.create_new;
   $("#gh-msg").textContent = ""; $("#btn-gh-create").hidden = true;
   toggleProvider(); $("#test-msg").textContent = "";
   $("#settings").showModal();
@@ -3193,7 +3381,7 @@ async function saveSettings() {
     claudecode: { path: $("#cc-path").value, model: $("#cc-model").value, auth_mode: $("#cc-mode").value,
       base_url: $("#cc-url").value, api_key: $("#cc-key").value },
     github: { token: $("#gh-token").value, repo: $("#gh-repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""),
-      branch: $("#gh-branch").value, folder: $("#gh-folder").value },
+      branch: $("#gh-branch").value, folder: $("#gh-folder").value, create_new: $("#gh-create-new").checked },
   });
   state.offline = false; save();
   await refreshStatus();
@@ -3374,11 +3562,11 @@ function dirtyOf(s) {
 const tabTitle = (s) => (s && (s.name || (s.file && s.file.name.replace(/\.(tidal|hs|txt)$/i, "")))) || L("Sin título", "Untitled");
 function tabWhere(s) {
   if (!s) return "";
+  if (s.github && (s.github.slug || s.github.pending)) return "GitHub · " + ghRemote(s.github);
   if (s.file) return s.file.path ? shortPath(s.file.path) : s.file.name;
-  if (s.github && s.github.slug) return "GitHub · " + s.github.slug + (s.github.ref ? " @ " + s.github.ref.slice(0, 7) : "");
   return L("En este navegador (Mis proyectos)", "In this browser (My projects)");
 }
-const tabIcon = (s) => s && s.file ? "file" : s && s.github && s.github.slug ? "cloud" : s && s.course ? "course" : "melodia";
+const tabIcon = (s) => s && s.github && (s.github.slug || s.github.pending) ? "cloud" : s && s.file ? "file" : s && s.course ? "course" : "melodia";
 function renderTabs() {
   const bar = $("#doc-tabs"); if (!bar) return;
   syncTab();
@@ -3536,14 +3724,18 @@ const lastDir = () => (state.file && state.file.path && dirOf(state.file.path)) 
 // Cabecera: nombre del archivo y si hay cambios sin guardar
 function renderFileStatus() {
   const chip = $("#file-chip"); if (!chip) return;
-  const f = state.file, dirty = isDirty();
-  chip.hidden = !f;
+  const f = state.file, dirty = isDirty(), gh = state.github && (state.github.slug || state.github.pending) ? state.github : null;
+  chip.hidden = !f && !gh;
   chip.classList.toggle("dirty", dirty);
-  if (f) chip.innerHTML = `${icon("file", 14)}<code title="${esc(f.path || f.name)}">${esc(f.path ? shortPath(f.path) : f.name)}</code>
+  chip.classList.toggle("remote", !!gh);
+  // Abierta desde GitHub: se enseña la ruta remota (usuario/repo/carpeta/canción), nunca una ruta de este ordenador
+  if (gh) chip.innerHTML = `${icon("cloud", 14)}<code title="${esc(gh.html_url || ghRemote(gh))}">${esc(ghRemote(gh))}</code>
+    <span class="fc-state">${gh.pending ? L("se creará en GitHub", "will be created on GitHub") : gh.ref ? L("versión antigua", "old version") : "GitHub"}</span>`;
+  else if (f) chip.innerHTML = `${icon("file", 14)}<code title="${esc(f.path || f.name)}">${esc(f.path ? shortPath(f.path) : f.name)}</code>
     <span class="fc-state">${dirty ? `<span class="dirty-dot"></span> ${L("cambios sin guardar", "unsaved changes")}` : L("guardado", "saved")}</span>`;
   const btn = $("#btn-file");
   if (btn) { const dot = btn.querySelector(".dirty-dot"); if (dirty && !dot) btn.insertAdjacentHTML("beforeend", '<span class="dirty-dot"></span>'); if (!dirty && dot) dot.remove(); }
-  document.title = f ? `${dirty ? "● " : ""}${f.name} · Tidal Studio` : "Tidal Studio";
+  document.title = gh && gh.slug ? `${gh.slug} · Tidal Studio` : f ? `${dirty ? "● " : ""}${f.name} · Tidal Studio` : "Tidal Studio";
 }
 
 // Diálogo propio (confirm()/prompt() no funcionan igual en todas las ventanas nativas)
@@ -3665,6 +3857,8 @@ function savedAs(r, handle = null) {
   toastSoft(L(`Guardado: ${r.name}`, `Saved: ${r.name}`));
   return true;
 }
+// Guardar: si la canción vive en GitHub (y no en un archivo), guardar es crear una versión nueva allí
+function saveCmd() { return state.github && (state.github.slug || state.github.pending) && !state.file ? openGitHubSave() : saveFile(); }
 async function saveFile() {
   if (!state.file || (!state.file.path && !fileHandle)) return saveFileAs();
   try {
@@ -3747,7 +3941,7 @@ function toggleFilePop(open) {
   if (show) renderFilePop();
   pop.hidden = !show; btn.setAttribute("aria-expanded", String(show));
 }
-const FILE_CMDS = { new: () => openNewProject(), import: () => openImportSong(), generate: () => openImportSong({ generate: true, useLast: hasLastMidi() }), open: openFile, save: () => saveFile(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects(), github: () => openProjects("github"), close: () => closeTab(), newtab: () => openNewProject(),
+const FILE_CMDS = { new: () => openNewProject(), import: () => openImportSong(), generate: () => openImportSong({ generate: true, useLast: hasLastMidi() }), open: openFile, save: () => saveCmd(), saveas: () => saveFileAs(), download: downloadTidal, projects: () => openProjects(), github: () => openProjects("github"), close: () => closeTab(), newtab: () => openNewProject(),
   nexttab: () => switchTab((tabs.active + 1) % tabs.ids.length), prevtab: () => switchTab((tabs.active + tabs.ids.length - 1) % tabs.ids.length) };
 function wireFiles() {
   $("#btn-file").onclick = (e) => { e.stopPropagation(); toggleFilePop(); };
@@ -3773,7 +3967,7 @@ function wireFiles() {
     if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
     const key = e.key.toLowerCase();
     if (key === "o") { e.preventDefault(); openFile(); }
-    if (key === "s") { e.preventDefault(); if (e.shiftKey) saveFileAs(); else saveFile(); }
+    if (key === "s") { e.preventDefault(); if (e.shiftKey) saveFileAs(); else saveCmd(); }
   });
   // La app de Mac llama aquí desde su menú Archivo
   window.tsFileCommand = (cmd) => { if (FILE_CMDS[cmd]) FILE_CMDS[cmd](); };
@@ -4392,6 +4586,13 @@ function init() {
       else m.textContent = L(`Listo: ${r.login} → ${r.repo}${r.private ? " (privado)" : " (público)"}`, `Ready: ${r.login} → ${r.repo}${r.private ? " (private)" : " (public)"}`)
         + (r.can_push ? "" : L(". Ojo: sin permiso de escritura.", ". Careful: no write permission."));
     } catch (e) { m.textContent = "Error: " + e.message; }
+  };
+  $("#btn-gh-import").onclick = async () => { await saveSettings(); openGitHubImport(); };
+  $("#gh-create-new").onchange = async () => {
+    await saveSettings();
+    const m = $("#gh-msg");
+    if ($("#gh-create-new").checked && !server.github) m.textContent = L("Falta configurar GitHub: sin eso las canciones se quedan en este ordenador.", "GitHub isn't set up yet: until then songs stay on this computer.");
+    else m.textContent = $("#gh-create-new").checked ? L("Las canciones nuevas se crearán en GitHub en cuanto tengan alguna pista.", "New songs will be created on GitHub as soon as they have a track.") : "";
   };
   $("#btn-gh-create").onclick = async () => {
     const m = $("#gh-msg"); m.textContent = L("Creando…", "Creating…");

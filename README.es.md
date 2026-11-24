@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.12.1** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.13.1** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -544,13 +544,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.12.1; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.13.1; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.12.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/TidalStudio-0.12.1-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.12.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/TidalStudio-0.12.1-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.12.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.12.1/tidal-studio_0.12.1_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.13.1-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.13.1-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/TidalStudio-0.13.1-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.13.1_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.13.1/tidal-studio_0.13.1_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -787,6 +787,37 @@ Enchufar un teclado, unos auriculares o una tarjeta de sonido USB podía dejar e
 
 ![GitHub: cada guardado es una versión](docs/screenshots/es/github-versiones.png)
 
+### Tus canciones en GitHub: ruta remota, subir varias a la vez y crear las nuevas allí
+
+- **Una canción abierta desde GitHub enseña dónde vive en GitHub**, `usuario/repo/songs/nombre`, en su pestaña y encima
+  del título, nunca una ruta de tu ordenador, aunque también tengas un `.tidal` con el mismo nombre. Si ese archivo
+  está abierto, sigue en su propia pestaña. `Ctrl+S` / `⌘S` en una canción de GitHub guarda una versión nueva en GitHub.
+
+![Una canción abierta desde GitHub enseña su ruta en GitHub](docs/screenshots/es/github-ruta-remota.png)
+
+- **Ajustes → GitHub** tiene dos cosas nuevas: «Crear las canciones nuevas directamente en GitHub» y «Subir canciones
+  desde mi ordenador…».
+
+![Ajustes → GitHub: crear allí las canciones nuevas o subir las de tu ordenador](docs/screenshots/es/github-ajustes.png)
+
+- **Subir canciones desde mi ordenador**: eliges una carpeta, marcas los `.tidal` / `.hs` que quieras y los subes todos
+  de una vez. Cada archivo pasa a ser una canción en `songs/<nombre>/` con su propio commit (con su código extra, `let`
+  y definiciones). Si el repositorio ya tiene una canción con ese nombre, se sube como `<nombre>-2`, así no se pisa nada.
+
+![Eliges una carpeta y marcas las canciones que quieres subir](docs/screenshots/es/github-importar.png)
+
+- **Eliminar los archivos locales después de subirlos**: un archivo solo se quita cuando GitHub ha confirmado la subida
+  *y* la canción leída de vuelta desde GitHub es idéntica, y solo si no lo has tocado mientras tanto. Va a la Papelera,
+  así que puedes recuperarlo. Una pestaña que tenía ese archivo abierto pasa a ser la canción de GitHub.
+
+![Todas las canciones subidas y las copias locales en la Papelera](docs/screenshots/es/github-importar-hecho.png)
+
+- **Crear las canciones nuevas directamente en GitHub**: con esta casilla marcada, cada canción nueva, empieces como
+  empieces (en blanco, asistente, lluvia de ideas, un curso, un MIDI o un audio…), se crea en tu repositorio en cuanto
+  tiene su primera pista.
+
+![Una canción nueva creada en GitHub en cuanto tiene una pista](docs/screenshots/es/github-crear-nuevas.png)
+
 ### Y además
 
 - **Tu progreso**: conceptos de código y de música que ya has usado.
@@ -802,6 +833,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.13.1** | [Tus canciones en GitHub](#tus-canciones-en-github-ruta-remota-subir-varias-a-la-vez-y-crear-las-nuevas-allí): una canción abierta desde GitHub enseña su ruta en GitHub, nunca una local; sube muchos `.tidal` a la vez desde Ajustes, con la opción de eliminar las copias locales (a la Papelera, solo tras comprobar la subida); y una casilla para crear cada canción nueva directamente en GitHub. |
 | **0.13.0** | [MIDI de ida y vuelta](#tu-teclado-en-los-dos-sentidos-la-canción-suena-en-tu-piano): las pistas suenan en tu teclado, reloj y start/stop, sonido del teclado, All Notes Off. [Audio que se recupera](#enchufar-y-desenchufar-el-audio-se-recupera): teclados detectados al enchufarlos, notas soltadas al quitarlos, Reconectar audio con tu salida, sin entrada de audio en Mac. [Una sola librería](#una-sola-librería-para-todos-los-sonidos): incluidos y descargados en una lista. [Cambiar un sonido](#cambiar-un-sonido-seleccionando-su-nombre) seleccionando su nombre: parecidos, buscador y escuchar antes. |
 | **0.12.1** | Arreglo: guardar canciones en un repositorio de [GitHub](#github) recién creado vacío (sin README) ya no falla con «409: el repositorio está vacío»; el campo del repositorio también acepta la URL de GitHub pegada. |
 | **0.12.0** | [Toca tu teclado MIDI](#toca-tu-teclado-midi-suena-y-se-convierte-en-código-de-tidal): tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal (mano izquierda y derecha), grabado a compás con tu canción; Maestro te lo explica y te propone cómo seguir. |

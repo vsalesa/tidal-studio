@@ -184,6 +184,7 @@
 
   <!-- Historial de la canción (rollback) -->
   <dialog id="askdlg" class="ask-dlg"></dialog>
+  <dialog id="ghimport" class="wide gi-dialog" aria-label="Upload songs to GitHub"></dialog>
   <dialog id="mididock" class="midi-dock" aria-label="MIDI keyboard"></dialog>
   <input type="file" id="file-input" accept=".tidal,.hs,.txt,text/plain" hidden>
   <dialog id="history" class="history-dlg">
@@ -334,6 +335,11 @@
           <button type="button" id="btn-gh-test"><span data-t="Test GitHub">Probar GitHub</span></button>
           <button type="button" id="btn-gh-create" hidden><span data-t="Create private repository">Crear repositorio privado</span></button>
           <span id="gh-msg" class="hint"></span>
+        </div>
+        <label class="check"><input type="checkbox" id="gh-create-new"> <span data-t="Create new songs directly on GitHub (blank, wizard, brainstorm, course… any template)">Crear las canciones nuevas directamente en GitHub (en blanco, asistente, lluvia de ideas, curso… cualquier plantilla)</span></label>
+        <div class="row">
+          <button type="button" id="btn-gh-import"><i data-icon="cloud" data-size="14"></i> <span data-t="Upload songs from my computer…">Subir canciones desde mi ordenador…</span></button>
+          <span class="hint" data-t="Several .tidal files at once, with the option to delete the local copies.">Varios .tidal a la vez, con la opción de eliminar las copias locales.</span>
         </div>
       </details>
       <details id="upd-section">

@@ -1502,6 +1502,23 @@ dialog.il-dialog[open] { display: flex; }
 @media (max-width: 640px) { .mk-keys { height: 70px; } .mk-tracks .imp-track { grid-template-columns: auto auto 1fr; } .mk-tracks .imp-track code { grid-column: 1 / -1; } }
 .mk-settings label, .mk-rec label, .mk-opts label { white-space: nowrap; }
 
+/* Importador a GitHub */
+.gi-dialog .gi-dir { display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+.gi-dialog .gi-dir input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 12.5px; }
+.gi-list { display: flex; flex-direction: column; gap: 6px; max-height: 46vh; overflow: auto; margin: 6px 0 10px; }
+dialog label.gi-file { display: flex; align-items: center; gap: 10px; border: 1px solid var(--rule); border-radius: var(--r-sm); padding: 8px 12px; margin: 0; }
+dialog label.gi-file input { width: auto; display: inline-block; margin: 0; accent-color: var(--accent); }
+.gi-file .n { flex: 1; font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.gi-file .d { display: block; color: var(--ink-3); font-size: 12px; font-weight: 400; }
+.gi-state { font-size: 12px; max-width: 45%; text-align: right; color: var(--ink-3); }
+.gi-state.ok { color: var(--ok, #2f7d4f); }
+.gi-state.warn { color: var(--accent); }
+.gi-state.err { color: var(--bad, #b3261e); }
+.gi-del { font-weight: 600; }
+.gi-del-hint { margin-top: -4px; }
+.gi-dialog .wz-nav { align-items: center; }
+.file-chip.remote code { color: var(--ink); }
+@media (max-width: 560px) { .gi-dialog .gi-dir { flex-wrap: wrap; } .gi-state { max-width: 40%; } }
 /* Aviso de audio (web/audiostatus.js) */
 .audio-bar { position: fixed; left: 50%; bottom: 16px; transform: translateX(-50%); z-index: 60; max-width: min(860px, calc(100vw - 32px));
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 14px; border-radius: 10px;

@@ -77,6 +77,78 @@ def write(path, content, overwrite=True):
     return {"path": path, "name": os.path.basename(path), "mtime": os.path.getmtime(path)}
 
 
+def list_dir(folder):
+    """Los archivos de Tidal de una carpeta (sin entrar en subcarpetas), para el importador a GitHub."""
+    folder = os.path.abspath(os.path.expanduser(str(folder or "").strip() or default_dir()))
+    if not os.path.isdir(folder):
+        raise FileError("La carpeta no existe|The folder doesn't exist")
+    out = []
+    for name in sorted(os.listdir(folder), key=str.lower):
+        path = os.path.join(folder, name)
+        if name.startswith(".") or not os.path.isfile(path) or os.path.splitext(name)[1].lower() not in (".tidal", ".hs"):
+            continue
+        st = os.stat(path)
+        out.append({"path": path, "name": name, "size": st.st_size, "mtime": st.st_mtime, "too_big": st.st_size > MAX_BYTES})
+    return {"dir": folder, "files": out[:500]}
+
+
+def _trash_dir():
+    """Papelera del sistema donde puedo mover archivos con un simple rename (macOS y Linux)."""
+    home = os.path.expanduser("~")
+    if platform.system() == "Darwin":
+        return os.path.join(home, ".Trash")
+    if platform.system() == "Linux":
+        base = os.environ.get("XDG_DATA_HOME") or os.path.join(home, ".local", "share")
+        return os.path.join(base, "Trash")
+    return None
+
+
+def trash(path, mtime=None, size=None):
+    """Quita un archivo local DESPUÉS de haberlo subido a GitHub.
+
+    Solo si sigue igual que cuando se leyó (misma fecha y tamaño): si lo has tocado mientras tanto, no se borra.
+    Va a la Papelera del sistema siempre que se pueda, así un error tiene arreglo."""
+    path = _norm(path)
+    if not os.path.isfile(path):
+        raise FileError("No encuentro el archivo|File not found")
+    st = os.stat(path)
+    if (mtime is not None and abs(st.st_mtime - float(mtime)) > 0.001) or (size is not None and st.st_size != int(size)):
+        raise FileError("El archivo ha cambiado desde que lo subí: no lo borro|The file changed after the upload: not deleting it")
+    system = platform.system()
+    if system == "Windows":
+        exe = shutil.which("powershell") or shutil.which("powershell.exe")
+        if exe:
+            script = ("Add-Type -AssemblyName Microsoft.VisualBasic; [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile("
+                      f"{_ps_str(path)}, 'OnlyErrorDialogs', 'SendToRecycleBin')")
+            r = subprocess.run([exe, "-NoProfile", "-Command", script], capture_output=True, timeout=60, creationflags=0x08000000)
+            if r.returncode == 0 and not os.path.exists(path):
+                return {"path": path, "trashed": True}
+    trash_root = _trash_dir()
+    if trash_root:
+        files_dir = trash_root if system == "Darwin" else os.path.join(trash_root, "files")
+        try:
+            os.makedirs(files_dir, exist_ok=True)
+            name = os.path.basename(path)
+            stem, ext = os.path.splitext(name)
+            dest, n = os.path.join(files_dir, name), 1
+            while os.path.exists(dest):
+                n += 1
+                dest = os.path.join(files_dir, f"{stem} {n}{ext}")
+            if system == "Linux":  # freedesktop: la Papelera necesita una ficha .trashinfo para poder restaurar
+                import time
+                import urllib.parse
+                info_dir = os.path.join(trash_root, "info")
+                os.makedirs(info_dir, exist_ok=True)
+                with open(os.path.join(info_dir, os.path.basename(dest) + ".trashinfo"), "w", encoding="utf-8") as f:
+                    f.write(f"[Trash Info]\nPath={urllib.parse.quote(path)}\nDeletionDate={time.strftime('%Y-%m-%dT%H:%M:%S')}\n")
+            shutil.move(path, dest)
+            return {"path": path, "trashed": True, "to": dest}
+        except OSError:
+            pass  # p. ej. la Papelera está en otro disco y no hay permiso: lo borro sin más
+    os.remove(path)
+    return {"path": path, "trashed": False}
+
+
 # ---------------------------------------------------------------- diálogos nativos
 def _dialog_kind():
     system = platform.system()
@@ -106,22 +178,38 @@ def dialog(mode, name="", start="", title=""):
     if not kind:
         return {"unavailable": True}
     save = mode == "save"
+    folder = mode == "folder"
     start = os.path.expanduser(start or "")
     if start and not os.path.isdir(start):
         start = os.path.dirname(start)
     if not start or not os.path.isdir(start):
         start = default_dir()
     name = os.path.basename(name or "song.tidal")
-    title = title or ("Save Tidal file" if save else "Open a Tidal file")
+    title = title or ("Save Tidal file" if save else "Choose a folder" if folder else "Open a Tidal file")
     env = None
     if kind == "osascript":
-        if save:
+        if folder:
+            script = (f"activate\nPOSIX path of (choose folder with prompt {_as_str(title)} "
+                      f"default location (POSIX file {_as_str(start)}))")
+        elif save:
             script = (f"activate\nPOSIX path of (choose file name with prompt {_as_str(title)} "
                       f"default name {_as_str(name)} default location (POSIX file {_as_str(start)}))")
         else:
             script = (f"activate\nPOSIX path of (choose file with prompt {_as_str(title)} "
                       f"default location (POSIX file {_as_str(start)}))")
         cmd = ["osascript", "-e", script]
+    elif kind == "powershell" and folder:
+        script = "\n".join([
+            "[Console]::OutputEncoding = [Text.Encoding]::UTF8",
+            "Add-Type -AssemblyName System.Windows.Forms",
+            "$owner = New-Object System.Windows.Forms.Form -Property @{TopMost=$true; ShowInTaskbar=$false}",
+            "$d = New-Object System.Windows.Forms.FolderBrowserDialog",
+            f"$d.Description = {_ps_str(title)}",
+            f"$d.SelectedPath = {_ps_str(start)}",
+            "if ($d.ShowDialog($owner) -eq [System.Windows.Forms.DialogResult]::OK) { Write-Output $d.SelectedPath }",
+        ])
+        exe = shutil.which("powershell") or shutil.which("powershell.exe")
+        cmd = [exe, "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-Command", script]
     elif kind == "powershell":
         cls = "SaveFileDialog" if save else "OpenFileDialog"
         script = "\n".join([
@@ -138,6 +226,11 @@ def dialog(mode, name="", start="", title=""):
         ])
         exe = shutil.which("powershell") or shutil.which("powershell.exe")
         cmd = [exe, "-NoProfile", "-STA", "-ExecutionPolicy", "Bypass", "-Command", script]
+    elif kind == "zenity" and folder:
+        cmd = ["zenity", "--file-selection", "--directory", f"--title={title}", f"--filename={start}{os.sep}"]
+        env = dict(os.environ)
+    elif kind == "kdialog" and folder:
+        cmd = ["kdialog", "--title", title, "--getexistingdirectory", start]
     elif kind == "zenity":
         cmd = ["zenity", "--file-selection", f"--title={title}",
                "--file-filter=Tidal | *.tidal *.hs *.txt", "--file-filter=* | *"]
@@ -161,4 +254,6 @@ def dialog(mode, name="", start="", title=""):
         if kind == "osascript" and "-128" not in err and r.returncode != 0:
             return {"unavailable": True, "error": err.strip()[:300]}
         return {"cancelled": True}
+    if folder:
+        return {"path": path.rstrip("/\\") or path, "dir": True}
     return {"path": path, "name": os.path.basename(path)}
