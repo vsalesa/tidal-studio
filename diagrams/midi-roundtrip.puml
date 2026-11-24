@@ -1,0 +1,36 @@
+@startuml
+!include style.iuml
+title <size:20><b>Your keyboard and Tidal Studio talk both ways</b></size>
+skinparam sequence {
+  ParticipantBackgroundColor #fffdf8
+  ParticipantBorderColor #c9bca5
+  LifeLineBorderColor #c9bca5
+  GroupBackgroundColor #efe8da
+}
+participant "Your MIDI keyboard" as kb
+participant "SuperCollider\nstudio-midi.scd" as sc
+participant "server/midilive.py" as srv
+participant "Browser\nMIDI panel" as web
+participant "Tidal\nd1 … d12" as tidal
+
+group In: you play
+  kb -> sc : note on / off, pedal
+  sc -> sc : plays it now (own orbit)
+  sc -> srv : OSC /ts/midi
+  srv -> web : keys light up, take → Tidal code
+end
+group Out: the song plays on your keyboard
+  tidal -> sc : s "midi" # midichan 0
+  sc -> kb : notes (on time with the audio)
+  tidal -> sc : midicmd "midiClock*96", start / stop
+  sc -> kb : clock: arpeggiator and drums follow the tempo
+  web -> srv : keyboard sound (program change)
+  srv -> sc : midiprog
+  sc -> kb : program change
+end
+group Plug and unplug (checked every 2 s)
+  sc -> srv : /ts/midiplug, /ts/midiunplug
+  srv -> web : notice; held notes released
+  sc -> kb : All Notes Off when you press Hush
+end
+@enduml
