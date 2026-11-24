@@ -1,0 +1,50 @@
+@startuml
+!pragma layout smetana
+!include style.iuml
+title <size:20><b>Arquitectura de Maestro v2: versión aprobada (revisada por Claude)</b></size>
+top to bottom direction
+rectangle "<b>Tu petición</b>\npaso del curso / chat / paso del plan\n+ hash de versión de la canción" as in #fbe3db
+rectangle "<b>Enrutador (0.14)</b>\nlímites configurables: tokens, tiempo,\nopciones, capas, confianza\nprimero respuestas locales, sin LLM" as ro #fbe3db
+rectangle "<b>Validación de entrada (0.14)</b>\ncandados por pista y por parte:\nritmo, notas, sonido, efectos, mezcla\ncandados de BPM y tonalidad" as pf #fbe3db
+rectangle "<b>Capas de conocimiento</b>\n1 reglas  2 índice SQLite FTS5\n3 rasgos de audio (0.16, bajo demanda)\n4 embeddings locales (opcional)\n5 CLaMP 3 (0.16, 10+ ejemplos/género)" as rp #fbe3db
+rectangle "<b>Memoria (0.18)</b>\námbitos: canción, proyecto/curso,\ngénero, global\nlas muy claras se aprueban solas" as ms #fbe3db
+rectangle "<b>Biblioteca + skills</b>\nlo que hay de verdad en el disco\nsamples, instrumentos, loops\nskills y plugins" as is
+rectangle "<b>Plan + partitura MusicXML (0.15)</b>\n.musicxml estándar en vez de MusicalIR\nmelodía, armonía, bajo\nlos pasos del plan escriben en la partitura" as ir #fbe3db
+rectangle "<b>LLM (solo lo creativo o ambiguo)</b>\npuede combinar recetas (0.16)\npregunta si duda (frecuencia ajustable)\npartitura -> Tidal: cat / ur / seqP\ngroove y efectos en Tidal puro" as cp #fbe3db
+rectangle "<b>Validación de salida (0.14)</b>\nquita lo que toca candados\nmáximo de opciones, versión vieja -> opción" as cr #fbe3db
+rectangle "<b>Opciones A/B/C</b>\nmodo A/B a ciegas (0.14)\n«Otra versión» en cada paso del curso (0.15)" as ca #fbe3db
+rectangle "<b>Escucha (0.16)</b>\nsobre tu canción por defecto\nen solo como opción" as re #fbe3db
+actor "Eliges, deshaces\no votas de oído" as you
+rectangle "<b>Aplicar + deshacer</b>\ntus ediciones a mano siempre valen" as ap
+database "<b>Canción: .tidal + .musicxml</b>\nun solo bloque de composición\napp, disco, GitHub (manda el navegador)" as ss #fbe3db
+rectangle "<b>Votos -> dataset JSONL (0.14)</b>\nbandeja de memorias + registro reversible (0.18)\nentrenar un modelo en el futuro" as ev #fbe3db
+database "<b>SQLite</b>\ncopia de solo lectura (sync en un sentido)\nambos formatos, rasgos, votos, memorias" as db
+rectangle "<b>Monitor RAG (0.14)</b>\nrecorrido en vivo de cada petición:\ncapa, ms, aciertos, tokens, caché" as mon #fbe3db
+rectangle "<b>Graphiti</b>\naparcado" as gr #e4e0d8
+in --> ro
+ro --> pf
+pf --> rp
+pf --> ms
+pf --> is
+rp --> ir
+ms --> ir
+is --> ir
+ir --> cp
+cp --> cr
+cr --> ca
+ca --> re
+re --> you
+you --> ap
+ap --> ss
+ss --> ev
+ss ..> db : sync en un sentido
+rp ..> db
+ms ..> db
+ev ..> db
+ro ..> mon
+legend right
+  <back:#fbe3db>   </back> nuevo o cambiado respecto a ChatGPT
+  <back:#fffdf8>   </back> se mantiene como se propuso
+  <back:#e4e0d8>   </back> aparcado
+endlegend
+@enduml

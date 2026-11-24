@@ -56,6 +56,26 @@ User intention + lesson/project + exact SongState(version N)
 
 The LLM is a **director of high-value creative exceptions**. Eligibility, retrieval filters, authorization, version control, and invariant checks belong to the application. Simple queries must not trigger multi-agent reasoning.
 
+### 2.1 Diagram comparison (added by Claude, 2026-11-24 / añadido por Claude)
+
+> This subsection is Claude's, not part of the ChatGPT original. The text diagram above is drawn as PlantUML below, next to the approved version so both can be compared box by box. Pink boxes in the approved diagram are new or changed; white ones are kept as proposed. Sources: [diagrams/](diagrams/) (`render.sh` rebuilds the SVG and PNG).
+
+| ChatGPT original | Approved version (revised by Claude) |
+|---|---|
+| ![ChatGPT original](diagrams/architecture.chatgpt.png) | ![Approved version](diagrams/architecture.png) |
+
+Spanish version: [diagrams/architecture.es.png](diagrams/architecture.es.png).
+
+**Main differences**
+
+- **The skeleton is the same:** router, preflight checks, three knowledge sources, plan, composer, validation, candidates, audition, your choice, apply with undo, evidence. Library and apply are kept as proposed.
+- **MusicXML instead of MusicalIR:** the plan writes into a standard `.musicxml` score (melody, harmony, bass), translated to Tidal with cat/ur/seqP. Groove and effects stay in pure Tidal. Plan-by-steps mode writes into the score.
+- **The song stays in the browser** as one block (`.tidal` + `.musicxml`) on disk and GitHub. SQLite gets a one-way, read-only copy for search and learning, never the source of truth.
+- **The LLM is one layer among several,** called only for creative or ambiguous work; rules and the SQLite index answer first. There is no separate CriticProvider: a deterministic validation step runs before and after, and your ear decides.
+- **Locks per part** (rhythm, notes, sound, effects, mix, BPM, key) instead of one locked flag per track.
+- **New:** a live RAG monitor, configurable router limits, blind A/B, every vote saved as a JSONL dataset, memory scopes with an approval inbox and a revertible log.
+- **Parked:** Graphiti. CLaMP 3 only switches on per genre with 10+ examples (0.16).
+
 ## 3. Canonical SongState (D05)
 
 Design versioned `SongStateVn` with stable IDs and immutable revision references:

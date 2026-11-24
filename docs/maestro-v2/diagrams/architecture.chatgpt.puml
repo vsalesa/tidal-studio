@@ -1,0 +1,37 @@
+@startuml
+!pragma layout smetana
+!include style.iuml
+title <size:20><b>Maestro v2 architecture: ChatGPT original (section 2)</b></size>
+top to bottom direction
+rectangle "<b>User intention</b>\nlesson/project + exact SongState (version N)" as in
+rectangle "<b>Local ContextRouter</b>\nintent / scope / genre / budget" as ro
+rectangle "<b>Deterministic Preflight</b>\nrights, edit permissions, locks,\nkey, tempo, assets" as pf
+rectangle "<b>RetrievalProvider</b>\nlexical/metadata\nembeddings optional\nCLaMP 3 optional" as rp
+rectangle "<b>MemoryStore</b>\napproved songs, styles, cases\ngraph optional (Graphiti)" as ms
+rectangle "<b>InstrumentSelector</b>\nloaded inventory\nranked 2-3, deterministic" as is
+rectangle "<b>MusicalPlan + MusicalIR</b>\ncustom intermediate format" as ir
+rectangle "<b>ComposerProvider</b>\ncurrent engine first\noptional MIDI / generative audio" as cp
+rectangle "<b>CriticProvider</b>\n+ structural validators\nharmonic / groove / form / scope" as cr
+rectangle "<b>Candidates A/B/C</b>\nwith typed diffs" as ca
+rectangle "<b>Renderer</b>\n+ exact-context audition" as re
+actor "User accepts\na candidate" as you
+rectangle "<b>Atomic host revalidation + apply</b>" as ap
+database "<b>SongState N+1</b>\n+ undo + Git milestone" as ss
+rectangle "<b>Provisional evidence</b>\nand review queue" as ev
+in --> ro
+ro --> pf
+pf --> rp
+pf --> ms
+pf --> is
+rp --> ir
+ms --> ir
+is --> ir
+ir --> cp
+cp --> cr
+cr --> ca
+ca --> re
+re --> you
+you --> ap
+ap --> ss
+ss --> ev
+@enduml

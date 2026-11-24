@@ -1,0 +1,50 @@
+@startuml
+!pragma layout smetana
+!include style.iuml
+title <size:20><b>Maestro v2 architecture: approved version (revised by Claude)</b></size>
+top to bottom direction
+rectangle "<b>Your request</b>\ncourse step / chat / plan step\n+ song version hash" as in #fbe3db
+rectangle "<b>Router (0.14)</b>\nconfigurable limits: tokens, time,\ncandidates, layers, confidence\nlocal answers first, no LLM" as ro #fbe3db
+rectangle "<b>Validation in (0.14)</b>\nlocks per track and part:\nrhythm, notes, sound, effects, mix\nBPM and key locks" as pf #fbe3db
+rectangle "<b>Knowledge layers</b>\n1 rules  2 SQLite FTS5 index\n3 audio features (0.16, on demand)\n4 local embeddings (optional)\n5 CLaMP 3 (0.16, 10+ examples/genre)" as rp #fbe3db
+rectangle "<b>Memory (0.18)</b>\nscopes: song, project/course,\ngenre, global\nclear ones auto-approved" as ms #fbe3db
+rectangle "<b>Library + skills</b>\nwhat is really on disk\nsamples, instruments, loops\nskills and plugins" as is
+rectangle "<b>Plan + MusicXML score (0.15)</b>\nstandard .musicxml instead of MusicalIR\nmelody, harmony, bass\nplan steps write into the score" as ir #fbe3db
+rectangle "<b>LLM (creative or ambiguous only)</b>\ncan combine recipes (0.16)\nasks when unsure (frequency setting)\nscore -> Tidal: cat / ur / seqP\ngroove and FX stay in pure Tidal" as cp #fbe3db
+rectangle "<b>Validation out (0.14)</b>\ndrops what touches locks\nmax candidates, stale version -> option" as cr #fbe3db
+rectangle "<b>Candidates A/B/C</b>\nblind A/B mode (0.14)\n'Another version' in each course step (0.15)" as ca #fbe3db
+rectangle "<b>Audition (0.16)</b>\nover your song by default\nsolo as an option" as re #fbe3db
+actor "You pick, undo\nor vote by ear" as you
+rectangle "<b>Apply + undo</b>\nyour hand edits always allowed" as ap
+database "<b>Song: .tidal + .musicxml</b>\none composition block\napp, disk, GitHub (browser owns it)" as ss #fbe3db
+rectangle "<b>Votes -> JSONL dataset (0.14)</b>\nmemory inbox + revertible log (0.18)\nfuture model training" as ev #fbe3db
+database "<b>SQLite</b>\nread-only song copy (one-way sync)\nboth formats, features, votes, memories" as db
+rectangle "<b>RAG monitor (0.14)</b>\nlive path per request:\nlayer, ms, hits, tokens, cache" as mon #fbe3db
+rectangle "<b>Graphiti</b>\nparked" as gr #e4e0d8
+in --> ro
+ro --> pf
+pf --> rp
+pf --> ms
+pf --> is
+rp --> ir
+ms --> ir
+is --> ir
+ir --> cp
+cp --> cr
+cr --> ca
+ca --> re
+re --> you
+you --> ap
+ap --> ss
+ss --> ev
+ss ..> db : one-way sync
+rp ..> db
+ms ..> db
+ev ..> db
+ro ..> mon
+legend right
+  <back:#fbe3db>   </back> new or changed vs ChatGPT
+  <back:#fffdf8>   </back> kept as proposed
+  <back:#e4e0d8>   </back> parked
+endlegend
+@enduml
