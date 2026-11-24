@@ -87,6 +87,8 @@ El enrutador solo baja de capa cuando la anterior no tiene una respuesta con suf
 
 ## 5. Aparcado
 
+- *(Añadido 24-11-2026, Victor: opcional, más adelante)* Proveedores de composición externos (modelos MIDI especializados, audio generativo como MusicGen o Stable Audio) con la misma interfaz que el generador propio, apagados salvo que los actives.
+- *(Añadido 24-11-2026, Victor: opcional, más adelante)* Ficha de licencia por cada recurso de conocimiento (origen, licencia, restricciones, dónde se puede usar).
 - Mover la canción a SQLite en el servidor.
 - Cualquier formato de notas propio (`MusicalIR`).
 - Graphiti y un repo de datos aparte con fusión semántica.

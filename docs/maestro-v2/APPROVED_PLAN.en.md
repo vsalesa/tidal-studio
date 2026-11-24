@@ -87,6 +87,8 @@ The router only goes down a layer when the one above has no answer with enough c
 
 ## 5. Parked
 
+- *(Added 2026-11-24, Victor: optional, later)* External composition providers (specialised MIDI models, generative audio such as MusicGen or Stable Audio) behind the same interface as the built-in generator, off unless switched on.
+- *(Added 2026-11-24, Victor: optional, later)* A licence sheet for each knowledge resource (origin, licence, restrictions, where it may be used).
 - Moving the song to SQLite on the server.
 - Any custom note format (`MusicalIR`).
 - Graphiti and a separate data repo with semantic merge.
