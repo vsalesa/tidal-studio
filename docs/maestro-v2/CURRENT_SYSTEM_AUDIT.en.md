@@ -1,5 +1,7 @@
 # Maestro v2 — Audit Notes and Integration Inventory
 
+> **Revised by Claude, 2026-11-24 / Revisado por Claude, 24-11-2026.** The text below is the original ChatGPT blueprint, kept unchanged. Claude's review, agreed with Victor, is in [APPROVED_PLAN.en.md](APPROVED_PLAN.en.md) ([español](APPROVED_PLAN.es.md)). / El texto de abajo es el blueprint original de ChatGPT, sin cambios. La revisión de Claude, acordada con Victor, está en el plan aprobado.
+
 **Snapshot basis:** Spanish analysis v3.0 dated 2026-11-24, source tree around `main@268913598467ad25e8441f9593c364f3a7fe8690`. These are hypotheses and code observations to verify, **not measured listening conclusions**.
 
 ## Existing implementation areas

@@ -1,0 +1,32 @@
+@startuml
+!pragma layout smetana
+!include style.iuml
+title <size:20><b>Capas de conocimiento: el LLM va al final (revisado por Claude)</b></size>
+top to bottom direction
+rectangle "<b>Navegador</b>\nla canción (dueño)\n.tidal + .musicxml" as br
+rectangle "<b>Enrutador</b>\nlímites configurables:\ntokens, tiempo, candidatas,\ncapas, confianza" as ro #fbe3db
+rectangle "<b>1 Reglas + metadatos</b>\nsin LLM" as l1
+rectangle "<b>2 SQLite FTS5</b>\níndice de canciones, skills, notas" as l2
+rectangle "<b>3 Rasgos de audio</b>\n+ preferencias aprendidas" as l3
+rectangle "<b>4 Embeddings locales</b>\nopcional" as l4
+rectangle "<b>5 CLaMP 3</b>\nopcional, 10+ ejemplos" as l5
+rectangle "<b>6 LLM</b>\nsolo lo creativo o ambiguo" as l6
+rectangle "<b>Validación</b>\ncandados, hash de versión" as va
+rectangle "<b>Tú</b>\nA/B, elegir, deshacer\nvotos -> dataset JSONL" as you
+database "<b>SQLite</b>\ncopia de solo lectura\nrasgos, votos, memorias" as db
+rectangle "<b>Monitor RAG</b>\nrecorrido en vivo" as mon
+br --> db : sync en un sentido
+br --> ro : petición
+ro --> l1
+l1 --> l2 : no basta
+l2 --> l3 : no basta
+l3 --> l4 : no basta
+l4 --> l5 : no basta
+l5 --> l6 : no basta
+l2 ..> db
+l3 ..> db
+l6 --> va
+l1 --> va
+va --> you
+ro ..> mon
+@enduml

@@ -1,5 +1,7 @@
 # Maestro v2 — Phased Implementation and Claude Handoff
 
+> **Revised by Claude, 2026-11-24 / Revisado por Claude, 24-11-2026.** The text below is the original ChatGPT blueprint, kept unchanged. Claude's review, agreed with Victor, is in [APPROVED_PLAN.en.md](APPROVED_PLAN.en.md) ([español](APPROVED_PLAN.es.md)). / El texto de abajo es el blueprint original de ChatGPT, sin cambios. La revisión de Claude, acordada con Victor, está en el plan aprobado.
+
 **Status:** implementation roadmap proposed for review; only this documentation folder is currently authorized. Do not turn a selected milestone into code without a separate explicit user instruction.
 
 ## Work packages, dependencies and acceptance gates

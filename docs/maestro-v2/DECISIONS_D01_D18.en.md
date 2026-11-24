@@ -1,5 +1,7 @@
 # Approved Architecture Decision Record — D01 to D18
 
+> **Revised by Claude, 2026-11-24 / Revisado por Claude, 24-11-2026.** The text below is the original ChatGPT blueprint, kept unchanged. Claude's review, agreed with Victor, is in [APPROVED_PLAN.en.md](APPROVED_PLAN.en.md) ([español](APPROVED_PLAN.es.md)). / El texto de abajo es el blueprint original de ChatGPT, sin cambios. La revisión de Claude, acordada con Victor, está en el plan aprobado.
+
 **Status:** 18/18 confirmed by the user on 2026-11-24. These are binding design choices; **they do not by themselves authorize application-code changes**.
 
 | ID | Approved choice | Required behavior and boundary |

@@ -1,5 +1,7 @@
 # Maestro v2 — Technical Architecture (English)
 
+> **Revised by Claude, 2026-11-24 / Revisado por Claude, 24-11-2026.** The text below is the original ChatGPT blueprint, kept unchanged. Claude's review, agreed with Victor, is in [APPROVED_PLAN.en.md](APPROVED_PLAN.en.md) ([español](APPROVED_PLAN.es.md)). / El texto de abajo es el blueprint original de ChatGPT, sin cambios. La revisión de Claude, acordada con Victor, está en el plan aprobado.
+
 **Purpose:** turn approved D01–D18 into a coherent implementation target for an **expert music-composition engine**, not simply an extended assistant prompt.  
 **Status:** proposed architecture and contracts; not yet implemented. Named types and endpoints are illustrative until verified against Tidal Studio's current code.
 

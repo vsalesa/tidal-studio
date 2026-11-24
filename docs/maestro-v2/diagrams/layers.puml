@@ -1,0 +1,32 @@
+@startuml
+!pragma layout smetana
+!include style.iuml
+title <size:20><b>Knowledge layers: the LLM comes last (revised by Claude)</b></size>
+top to bottom direction
+rectangle "<b>Browser</b>\nthe song (owner)\n.tidal + .musicxml" as br
+rectangle "<b>Router</b>\nconfigurable limits:\ntokens, time, candidates,\nlayers, confidence" as ro #fbe3db
+rectangle "<b>1 Rules + metadata</b>\nno LLM" as l1
+rectangle "<b>2 SQLite FTS5</b>\nsong index, skills, notes" as l2
+rectangle "<b>3 Audio features</b>\n+ learned preferences" as l3
+rectangle "<b>4 Local embeddings</b>\noptional" as l4
+rectangle "<b>5 CLaMP 3</b>\noptional, 10+ examples" as l5
+rectangle "<b>6 LLM</b>\ncreative or ambiguous only" as l6
+rectangle "<b>Validation</b>\nlocks, version hash" as va
+rectangle "<b>You</b>\nA/B, pick, undo\nvotes -> JSONL dataset" as you
+database "<b>SQLite</b>\nread-only song copy\nfeatures, votes, memories" as db
+rectangle "<b>RAG monitor</b>\nlive path per request" as mon
+br --> db : one-way sync
+br --> ro : request
+ro --> l1
+l1 --> l2 : not enough
+l2 --> l3 : not enough
+l3 --> l4 : not enough
+l4 --> l5 : not enough
+l5 --> l6 : not enough
+l2 ..> db
+l3 ..> db
+l6 --> va
+l1 --> va
+va --> you
+ro ..> mon
+@enduml

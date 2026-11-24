@@ -1,0 +1,15 @@
+@startuml
+!pragma layout smetana
+!include style.iuml
+title <size:20><b>Maestro v2: una release cada vez (revisado por Claude)</b></size>
+left to right direction
+rectangle "<b>0.14</b>\nEscucha, candados, monitor\nA/B a ciegas + dataset JSONL\ncandados por parte, sync\nlímites, monitor RAG" as r14 #fbe3db
+rectangle "<b>0.15</b>\nBloque de composición\n.tidal + .musicxml\nmelodías con motivo\n<U+0022>Otra versión<U+0022> en cursos" as r15
+rectangle "<b>0.16</b>\nSonidos que aprenden\nanálisis bajo demanda\nrecetas de sonido\nCLaMP 3 (10+ ejemplos)" as r16
+rectangle "<b>0.17</b>\nGéneros\n11 actuales + reggae/dub,\nhip-hop, afrobeat, ¿bachata?" as r17
+rectangle "<b>0.18</b>\nMemoria y estilos\nmemorias autovalidadas\nregistro reversible, Mis estilos\npanel de almacenamiento" as r18
+r14 --> r15
+r15 --> r16
+r16 --> r17
+r17 --> r18
+@enduml
