@@ -29,6 +29,7 @@
     <button id="btn-samples" class="icon-btn" title="Librería: todos los sonidos" data-tt="Library: all sounds"><i data-icon="library" data-size="20"></i></button>
     <button id="btn-skills" class="icon-btn sk-hdr" title="Skills de Maestro: conocimiento experto que carga para responder" data-tt="Maestro's skills: expert knowledge it loads to answer"><i data-icon="skill" data-size="20"></i><span id="sk-count" class="sk-badge" hidden></span></button>
     <button id="btn-listen" class="icon-btn" title="Escucha: A/B a ciegas, línea base y tu dataset" data-tt="Listening: blind A/B, baseline and your dataset"><i data-icon="ear" data-size="20"></i></button>
+    <button id="btn-soundlab" class="icon-btn" title="Laboratorio de sonido: analiza tus sonidos, recetas y lo que aprende el estudio" data-tt="Sound lab: analyze your sounds, recipes and what the studio learns"><i data-icon="flask" data-size="20"></i></button>
     <button id="btn-score" class="icon-btn" title="Partitura: la melodía, los acordes y el bajo de tu canción (.musicxml)" data-tt="Score: your song's melody, chords and bass (.musicxml)"><i data-icon="score" data-size="20"></i></button>
     <button id="btn-monitor" class="icon-btn" title="Monitor RAG: por qué capas pasa cada petición a Maestro, y sus límites" data-tt="RAG monitor: which layers each request to Maestro goes through, and their limits"><i data-icon="monitor" data-size="20"></i></button>
     <button id="btn-tour" class="icon-btn" title="Tutorial interactivo" data-tt="Interactive tutorial"><i data-icon="cap" data-size="20"></i></button>
@@ -231,6 +232,13 @@
     <div id="monitor-body"></div>
   </dialog>
 
+  <dialog id="soundlab" class="wide sl-dlg">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="flask" data-size="16"></i> <span data-t="Sound lab: sounds that learn">Laboratorio de sonido: sonidos que aprenden</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="sl-body"></div>
+  </dialog>
   <dialog id="score" class="wide score-dlg">
     <div class="wz-head">
       <span class="wz-kicker"><i data-icon="score" data-size="16"></i> <span data-t="Score: your composition notebook">Partitura: tu cuaderno de composición</span></span>

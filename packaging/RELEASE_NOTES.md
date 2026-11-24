@@ -1,4 +1,18 @@
-## What's new in 0.15.0 / Novedades
+## What's new in 0.16.0 / Novedades
+
+Maestro v2, third release of five: sounds that learn.
+
+- **Sound Lab** (flask button): measures how each sound sounds (attack, decay, brightness, pitch, noise), only when you ask and all on your computer. Choose the sources: downloaded library instruments, your sounds and downloads, built-in Dirt-Samples, stems of imported songs, and bought packs (their folder; measured for you only, never shared). WAV needs nothing; mp3/ogg/flac/aiff use the audio tools. Measures are kept in `maestro-data/sounds.db`.
+- **Four states per sound**: in the catalog, downloaded, loaded in SuperDirt, plays. They show as dots in the library and the replace card; Maestro is told which sounds don't play right now and only suggests ones that do.
+- **Compare the best 3 by ear**: select a sound's name in a track and press it on the replace card. Your sound plus the 3 best matches that already play, on the same phrase, each described in words. Your pick teaches the ranking (per role and genre), without AI.
+- **Sound recipes**: 14 ready recipes as Tidal code; listen, add as a track, or combine two (layer, blend, in between) and save to My recipes. Maestro knows your recipes and can combine them itself.
+- **Optional automatic critic** (off by default): groove, harmony and form scores plus a one-line hint on Maestro's options and on «Another version».
+- **Questions**: choose how often Maestro asks you concrete questions (never, sometimes, often).
+- **CLaMP 3, experimental**: optional install into the audio tools; it turns on per genre once you have 10+ songs of that genre and gives Maestro your most similar songs as examples. Bought packs never go in. Not yet tested on many machines; everything works without it.
+
+**Español:** **Laboratorio de sonido** (botón del matraz): mide cómo suena cada sonido (ataque, caída, brillo, nota, ruido), solo cuando lo pides y todo en tu ordenador; eliges las fuentes: instrumentos de la librería, tus sonidos y descargas, Dirt-Samples, pistas separadas de canciones importadas y packs comprados (solo para ti, nunca se comparten). **Cuatro estados por sonido**: en el catálogo, descargado, cargado en SuperDirt y suena; Maestro solo propone lo que suena. **Comparar los 3 mejores de oído**: selecciona el nombre de un sonido y compáralo con los 3 que mejor encajan sobre la misma frase; tu elección enseña al orden, sin IA. **Recetas de sonido**: 14 recetas en código Tidal; escúchalas, añádelas o combina dos (capa, mezcla, intermedia) y guárdalas en Mis recetas; Maestro también las combina. **Crítico automático opcional** (apagado por defecto): groove, armonía y forma con una pista de una línea. **Preguntas**: elige cada cuánto Maestro te pregunta. **CLaMP 3, experimental**: instalación opcional que se activa por género desde 10 canciones tuyas; los packs comprados no entran nunca; aún sin probar en muchos ordenadores, y todo funciona sin él.
+
+## 0.15.0
 
 Maestro v2, second release of five: the score.
 

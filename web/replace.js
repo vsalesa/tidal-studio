@@ -109,6 +109,7 @@ function render() {
       ${inTrack ? `<label><input type="radio" name="rp-scope" value="track" ${S.scope === "track" ? "checked" : ""}> ${L("En esta pista", "In this track")}</label>` : ""}
       <label><input type="radio" name="rp-scope" value="song" ${S.scope === "song" ? "checked" : ""}> ${L("En toda la canción", "In the whole song")}</label>
     </div>
+    ${inTrack && ctx.compare ? `<button class="rp-compare" data-a="compare" title="${esc(L("Los 3 que mejor encajan y ya suenan, sobre la misma frase de tu pista: eliges de oído y el estudio aprende de tu elección", "The 3 best matches that already play, on the same phrase of your track: you pick by ear and the studio learns from your choice"))}">${icon("ear", 14)} ${L("Comparar los 3 mejores de oído", "Compare the best 3 by ear")}</button>` : ""}
     <div class="rp-foot"><span class="hint rp-msg">${esc(S.busy)}</span>${ctx.canAsk() ? `<button class="link" data-a="ask">${icon("brain", 13)} ${L("Más ideas de Maestro", "More ideas from Maestro")}</button>` : ""}</div>`;
   const q = card.querySelector(".rp-q");
   q.oninput = () => search(q.value);
@@ -122,6 +123,7 @@ async function onClick(ev) {
   const b = ev.target.closest("button[data-a]"); if (!b) return;
   const a = b.dataset.a;
   if (a === "close") return close();
+  if (a === "compare") { close(); return ctx.compare(S.base, S.ta); }
   if (a === "ask") {
     close();
     return ctx.ask(L(`Quiero cambiar el sonido «${S.base}» de mi canción por otro. Propón 3 alternativas que existan en mi librería y di en una frase qué aporta cada una.`,
