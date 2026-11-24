@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import sys
 import threading
 import time
@@ -57,6 +58,8 @@ import soundlab  # noqa: E402
 import recipes as recipemod  # noqa: E402
 import critic  # noqa: E402
 import clamp  # noqa: E402
+import memory as memorymod  # noqa: E402
+import storage  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
@@ -132,6 +135,9 @@ DEFAULT_CONFIG = {
     "router": json.loads(json.dumps(router.DEFAULT)),
     # Maestro v2, 0.16: sonidos que aprenden (crítico opcional, frecuencia de preguntas, CLaMP 3, packs comprados)
     "soundlab": {"critic": False, "questions": "sometimes", "clamp_auto": True, "clamp_min": 10, "packs": []},
+    # Maestro v2, 0.18: memoria (aprobar sola lo muy claro, apuntar lo que dices en el chat, aprender de tus
+    # elecciones de oído) y copia automática en GitHub de lo aprobado (memorias, estilos y casos)
+    "memory": {"auto_approve": True, "observe_chat": True, "learn_picks": True, "backup": True, "backup_folder": "tidal-studio"},
 }
 
 _config_lock = threading.Lock()
@@ -430,7 +436,92 @@ except Exception as _e:  # noqa: BLE001
     SOUNDS = None
 ANALYZER = soundlab.Analyzer(SOUNDS, audioimport.tools_python) if SOUNDS else None
 STEMS_DIR = os.path.join(os.path.dirname(audioimport.TOOLS), "stems")
+# 0.18: memoria con ámbitos, registro que se deshace, «Mis estilos» y casos musicales (maestro-data/memory.db)
+try:
+    MEMORY = memorymod.Store(os.path.join(DATA_DIR, "memory.db"))
+except Exception as _e:  # noqa: BLE001
+    print(f"[maestro-data] {_e}")
+    MEMORY = None
 PHOTOS = instphotos.Photos(LIBRARY.dir)
+
+
+def memory_cfg(cfg=None):
+    m = dict(DEFAULT_CONFIG["memory"])
+    m.update((cfg or load_config()).get("memory") or {})
+    return m
+
+
+_backup = {"timer": None, "state": "idle", "last": None, "error": "", "commit_url": ""}
+_backup_lock = threading.Lock()
+
+
+def backup_now():
+    """Copia en GitHub lo APROBADO (memorias, estilos y casos). Nunca la bandeja, ni votos ni audiciones."""
+    cfg = load_config()
+    mc = memory_cfg(cfg)
+    if not (MEMORY and mc.get("backup") and github.configured(cfg)):
+        return {"skipped": True}
+    with _backup_lock:
+        _backup["state"] = "running"
+    try:
+        folder = re.sub(r"[^\w./-]", "", str(mc.get("backup_folder") or "tidal-studio")).strip("/") or "tidal-studio"
+        r = github.commit_files(cfg, MEMORY.backup_files(folder), "Copia de la memoria y los estilos de Maestro (Tidal Studio)")
+        with _backup_lock:
+            _backup.update(state="done", last=time.time(), error="", commit_url=r.get("commit_url") or _backup["commit_url"])
+        return r
+    except Exception as e:  # noqa: BLE001
+        with _backup_lock:
+            _backup.update(state="error", error=str(e))
+        return {"error": str(e)}
+
+
+def schedule_backup(delay=20):
+    """Tras un cambio aprobado, espera un poco (por si hay más) y hace UN commit."""
+    with _backup_lock:
+        if _backup["timer"]:
+            _backup["timer"].cancel()
+        t = threading.Timer(delay, backup_now)
+        t.daemon = True
+        _backup["timer"] = t
+        t.start()
+
+
+if MEMORY:
+    MEMORY.on_change = schedule_backup
+
+
+def learn_picks(cfg=None):
+    mc = memory_cfg(cfg)
+    if not (MEMORY and SOUNDS and mc.get("learn_picks")):
+        return []
+    return MEMORY.learn_from_choices(SOUNDS.choice_rows(), auto_approve=bool(mc.get("auto_approve")))
+
+
+def memory_ctx(sess):
+    curso = sess.get("curso") if isinstance(sess.get("curso"), dict) else {}
+    cid = str(curso.get("id") or "")
+    return {"song_id": str(sess.get("song_id") or ""), "course": cid,
+            "genre": memorymod.genre_of(cid, sess.get("style"), [curso.get("nombre")])}
+
+
+def storage_paths():
+    return {"root": ROOT, "lib_dir": LIBRARY.dir, "data_dir": DATA_DIR, "tools": audioimport.TOOLS, "stems": STEMS_DIR}
+
+
+def storage_counts():
+    out = {}
+    try:
+        st = SONGS.stats() if SONGS else {}
+        out["songs"] = st.get("songs", 0)
+        out["index_bytes"] = SONGS.index_bytes() if SONGS else 0
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        out["features"] = sum((SOUNDS.stats().get("features") or {}).values()) if SOUNDS else 0
+        out["features_bytes"] = SOUNDS.features_bytes() if SOUNDS else 0
+    except Exception:  # noqa: BLE001
+        pass
+    return out
 
 
 def library_items():
@@ -682,6 +773,23 @@ class Handler(SimpleHTTPRequestHandler):
             sess["no_suenan"] = not_playable(tracks)
         except Exception:  # noqa: BLE001
             sess["no_suenan"] = []
+        if MEMORY:
+            try:
+                mctx = sess.get("_memory_ctx") or memory_ctx(sess)
+                mems = MEMORY.relevant(mctx["song_id"], mctx["course"], mctx["genre"])
+                cases = MEMORY.cases_for(last, mctx["genre"])
+                est = sess.get("estilo") if isinstance(sess.get("estilo"), dict) else {}
+                style = MEMORY.style(str(est.get("id") or "")) if est.get("id") else None
+                sess["memoria"] = memorymod.maestro_text(mems, cases, style, str(est.get("modo") or ""))
+                if mems or cases or style:
+                    tr.add("step", tr.L(f"Recuerdo {len(mems)} cosa(s) tuya(s)" + (f" y {len(cases)} caso(s) parecido(s)" if cases else "")
+                                        + (f"; estilo «{style['name']}»" if style else ""),
+                                        f"Remembering {len(mems)} thing(s) about you" + (f" and {len(cases)} similar case(s)" if cases else "")
+                                        + (f"; style «{style['name']}»" if style else "")))
+                if sess.get("_noted"):
+                    tr.add("step", tr.L(f"Apunto en tu memoria: «{sess['_noted'][0]['text'][:60]}»", f"Noting in your memory: «{sess['_noted'][0]['text'][:60]}»"))
+            except Exception:  # noqa: BLE001
+                sess["memoria"] = ""
         ps = plan_step(sess)
         if ps:
             tr.add("step", tr.L(f"Plan «{ps.get('titulo', '')}» · paso {int(ps.get('i') or 0) + 1} de {len(ps['pasos'])}",
@@ -767,6 +875,8 @@ class Handler(SimpleHTTPRequestHandler):
         finally:
             llmmod.set_cancel(None)
             tr.finish()
+        if sess.get("_noted"):
+            reply["memoria_nueva"] = sess["_noted"]
         return self._json({**reply, "skills": skills_report(sk, raw), "monitor": req.id,
                            **({"command": command} if command else {}),
                            **({"trace": tr.public()} if tr.id else {})})
@@ -813,6 +923,136 @@ class Handler(SimpleHTTPRequestHandler):
                 "states": states, "engine_ok": ok, "audio_tools": audioimport.status().get("ready", False),
                 "clamp": clamp.status(audioimport.TOOLS, song_counts(), int(slc.get("clamp_min") or 10), bool(slc.get("clamp_auto"))),
                 "recipes": {"builtin": recipemod.BUILTIN, "mine": SOUNDS.recipes() if SOUNDS else []}}
+
+    # ------------------------------------------------------------ 0.18: memoria, estilos, casos y almacenamiento
+    def _memory_status(self):
+        cfg = load_config()
+        with _backup_lock:
+            bk = {k: v for k, v in _backup.items() if k != "timer"}
+        return {"settings": memory_cfg(cfg), "memories": MEMORY.memories() if MEMORY else [], "stats": MEMORY.stats() if MEMORY else {},
+                "cases": MEMORY.cases() if MEMORY else [], "github": github.configured(cfg), "github_where": github.where(cfg),
+                "backup": bk, "styles_list": midigen.styles_list()}
+
+    def _memory_get(self, path):
+        if path == "/api/storage":
+            return self._json(storage.scan(storage_paths(), storage_counts()))
+        if not MEMORY:
+            return self._json({"error": "Sin carpeta de datos|No data folder"}, 500)
+        if path == "/api/memory":
+            try:
+                learn_picks()
+            except Exception:  # noqa: BLE001
+                pass
+            return self._json(self._memory_status())
+        if path == "/api/memory/log":
+            return self._json({"log": MEMORY.log()})
+        if path == "/api/styles":
+            return self._json({"styles": MEMORY.styles(), "github": github.configured(load_config()), "genres": midigen.styles_list()})
+
+    def _memory_post(self, path, data):
+        lang = data.get("lang") or "es"
+        if path == "/api/storage/delete":
+            gid, item = str(data.get("id") or ""), (str(data["item"]) if data.get("item") else None)
+            hooks = {"clear_index": lambda: SONGS and SONGS.clear_index(),
+                     "clear_features": lambda: SOUNDS and SOUNDS.clear_features(),
+                     "remove_instrument": INSTLIB.remove,
+                     "remove_sound": lambda n: (LIBRARY.delete(n), ENGINE.free_sample(safe_name(n)) if hasattr(ENGINE, "free_sample") else None)}
+            try:
+                r = storage.delete(storage_paths(), gid, item, hooks)
+            except KeyError:
+                return self._err("No existe|Not found", lang, 404)
+            except (ValueError, SampleError) as e:
+                return self._err(str(e), lang)
+            return self._json({**r, "storage": storage.scan(storage_paths(), storage_counts())})
+        if not MEMORY:
+            return self._err("Sin carpeta de datos|No data folder", lang, 500)
+        cfg = load_config()
+        mc = memory_cfg(cfg)
+        try:
+            if path == "/api/memory/settings":
+                cur = cfg.get("memory") or {}
+                for k in ("auto_approve", "observe_chat", "learn_picks", "backup"):
+                    if k in data:
+                        cur[k] = bool(data[k])
+                cfg["memory"] = {**DEFAULT_CONFIG["memory"], **cur}
+                save_config(cfg)
+                return self._json(self._memory_status())
+            if path == "/api/memory/add":
+                MEMORY.add(data.get("text"), data.get("scope") or "global", data.get("scope_key") or "", source="manual", by="user")
+            elif path == "/api/memory/status":
+                MEMORY.set_status(int(data.get("id")), str(data.get("status")))
+            elif path == "/api/memory/edit":
+                MEMORY.edit(int(data.get("id")), data.get("text"), data.get("scope"), data.get("scope_key"))
+            elif path == "/api/memory/delete":
+                MEMORY.delete(int(data.get("id")))
+            elif path == "/api/memory/revert":
+                MEMORY.revert(int(data.get("log_id")))
+                return self._json({**self._memory_status(), "log": MEMORY.log()})
+            elif path == "/api/memory/backup":
+                r = backup_now()
+                if r.get("error"):
+                    return self._err(r["error"], lang, 502)
+                if r.get("skipped"):
+                    return self._err("Conecta GitHub y activa la copia|Connect GitHub and turn the backup on", lang)
+            elif path == "/api/cases/add":
+                MEMORY.add_case(data)
+            elif path == "/api/cases/delete":
+                MEMORY.delete_case(int(data.get("id")))
+            elif path == "/api/styles/save":
+                st = data.get("style") if isinstance(data.get("style"), dict) else memorymod.style_from_song(
+                    data.get("song") or {}, data.get("name"), data.get("genre") or "", data.get("description") or "",
+                    keep_literal=data.get("literal", True) is not False)
+                return self._json({"style": MEMORY.save_style(st), "styles": MEMORY.styles()})
+            elif path == "/api/styles/delete":
+                MEMORY.delete_style(str(data.get("id")))
+                return self._json({"styles": MEMORY.styles()})
+            elif path == "/api/styles/transform":
+                st = MEMORY.style(str(data.get("id")))
+                if not st:
+                    return self._err("No existe ese estilo|That style doesn't exist", lang, 404)
+                ens = {str(k): str(v) for k, v in (data.get("ensemble") or {}).items() if v}
+                return self._json(memorymod.transform(st, str(data.get("genre") or ""), data.get("bpm"), str(data.get("key") or ""),
+                                                      ens, int(data.get("seed") or 1), lang))
+            elif path == "/api/styles/literal":
+                st = MEMORY.style(str(data.get("id")))
+                if not st or not st.get("literal"):
+                    return self._err("Este estilo no guarda una copia literal|This style keeps no literal copy", lang, 404)
+                MEMORY.log_literal(st["id"], st.get("from_song", ""))
+                return self._json({"bpm": st["bpm"], "tracks": st["literal"], "name": st["name"]})
+            elif path == "/api/styles/share":
+                st = MEMORY.style(str(data.get("id")))
+                if not st:
+                    return self._err("No existe ese estilo|That style doesn't exist", lang, 404)
+                if not github.configured(cfg):
+                    return self._err("Conecta GitHub en Ajustes para compartir|Connect GitHub in Settings to share", lang)
+                fpath = f"styles/{st['id']}.json"
+                body = json.dumps(memorymod.shareable(st, bool(data.get("literal"))), ensure_ascii=False, indent=2)
+                r = github.commit_files(cfg, {fpath: body}, f"Comparto mi estilo «{st['name']}» (Tidal Studio)")
+                return self._json({**r, "url": github.share_url(cfg, fpath), "path": fpath})
+            elif path == "/api/styles/import":
+                got, errs = [], []
+                for fp, txt in github.fetch_shared(cfg, str(data.get("link") or "")):
+                    try:
+                        raw = json.loads(txt)
+                        st = memorymod.validate_style(raw)
+                        st.pop("id", None)
+                        st["source"] = "imported"
+                        st["url"] = str(data.get("link") or "")[:200]
+                        got.append(MEMORY.save_style(st))
+                    except (ValueError, TypeError) as e:
+                        errs.append(f"{fp}: {str(e).split('|')[0]}")
+                if not got:
+                    return self._err("No he encontrado ningún estilo válido|No valid style found" + (": " + "; ".join(errs[:3]) if errs else ""), lang)
+                return self._json({"imported": got, "errors": errs, "styles": MEMORY.styles()})
+            else:
+                return self._err("No existe|Not found", lang, 404)
+        except KeyError:
+            return self._err("No existe|Not found", lang, 404)
+        except github.GitHubError as e:
+            return self._err(str(e), lang, 502)
+        except (ValueError, TypeError) as e:
+            return self._err(str(e), lang)
+        return self._json(self._memory_status())
 
     def _soundlab_get(self, path):
         q = parse_qs(urlparse(self.path).query)
@@ -895,10 +1135,15 @@ class Handler(SimpleHTTPRequestHandler):
             loaded, _, ok = sound_states()
             return self._json({"sounds": out, "engine_ok": ok})
         if path == "/api/sounds/choice":
+            learned = []
             if SOUNDS and data.get("chosen"):
                 SOUNDS.choose(str(data.get("role") or ""), str(data.get("style") or ""), str(data["chosen"]),
                               [str(x) for x in data.get("others") or []][:6])
-            return self._json({"ok": True})
+                try:  # 0.18: 3+ elecciones claras para lo mismo → una memoria de género
+                    learned = learn_picks()
+                except Exception:  # noqa: BLE001
+                    learned = []
+            return self._json({"ok": True, "memoria_nueva": learned})
         if path in ("/api/recipes/combine", "/api/recipes/save", "/api/recipes/delete", "/api/recipes/code"):
             if not SOUNDS:
                 return self._err("Sin carpeta de datos|No data folder", lang, 500)
@@ -1222,6 +1467,8 @@ class Handler(SimpleHTTPRequestHandler):
                                    "plugins_auto_update": bool(cfg.get("plugins", {}).get("auto_update", True))})
             if path in ("/api/soundlab", "/api/sounds/rank", "/api/recipes"):
                 return self._soundlab_get(path)
+            if path in ("/api/memory", "/api/memory/log", "/api/styles", "/api/storage"):
+                return self._memory_get(path)
             if path == "/api/monitor":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -1349,6 +1596,8 @@ class Handler(SimpleHTTPRequestHandler):
 
             if path.startswith("/api/score/"):
                 return self._score(path, data)
+            if path.startswith(("/api/memory/", "/api/styles/", "/api/cases/", "/api/storage/")):
+                return self._memory_post(path, data)
             if path.startswith(("/api/soundlab/", "/api/sounds/choice", "/api/sounds/check", "/api/recipes/", "/api/critic", "/api/clamp/")):
                 return self._soundlab_post(path, data)
             if path == "/api/course/variants":
@@ -1408,6 +1657,20 @@ class Handler(SimpleHTTPRequestHandler):
                 sess = data.get("session") or {}
                 last_txt = next((str(m.get("content", "")) for m in reversed(msgs) if isinstance(m, dict) and m.get("role") == "user"), "")
                 req = MONITOR.start(last_txt, str(data.get("trace") or "")[:64])
+                # 0.18: lo que pides que recuerde («recuerda que…», «nunca…», «prefiero…») pasa por la capa de
+                # validación: lo muy claro se aprueba solo y lo dudoso va a la bandeja de Memoria
+                noted, mctx = [], memory_ctx(sess)
+                mc = memory_cfg(cfg)
+                last_msg = msgs[-1] if msgs and isinstance(msgs[-1], dict) else {}
+                if MEMORY and mc.get("observe_chat") and last_msg.get("role") == "user" and not sess.get("plan_paso"):
+                    try:
+                        for o in memorymod.observe(last_txt, mctx):
+                            noted.append(MEMORY.add(o["text"], o["scope"], o["scope_key"], source="chat", clear=o["clear"],
+                                                    auto_approve=bool(mc.get("auto_approve")), by="maestro"))
+                    except Exception:  # noqa: BLE001
+                        noted = []
+                sess["_memory_ctx"] = mctx
+                sess["_noted"] = noted
                 try:
                     # Capa 1: lo que se puede contestar con tus propios datos no gasta ni un token
                     req.begin("rules")
@@ -1416,6 +1679,12 @@ class Handler(SimpleHTTPRequestHandler):
                         req.end("rules", "hit", hits=ans[2], note="local")
                         req.end("validate", "skip")
                         return self._json({**ans[0], "local": True, "monitor": req.id})
+                    if noted and memorymod.only_memory(last_txt):
+                        # «Recuerda que…» y nada más: se contesta sin IA
+                        req.end("rules", "hit", hits=len(noted), note="memory")
+                        req.end("validate", "skip")
+                        return self._json({**memorymod.noted_reply(noted, data.get("lang") == "en"), "local": True,
+                                           "memoria_nueva": noted, "monitor": req.id})
                     req.end("rules", "pass" if rcfg["local_answers"] else "off")
                     if not llm_configured(cfg):
                         return self._json({"error": "La IA no está configurada. Abre ⚙️ Ajustes."}, 400)

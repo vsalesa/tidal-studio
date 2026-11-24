@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.17.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.18.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -156,6 +156,72 @@ Cada variante cambia el tempo, la tradición y los pasos que la distinguen. Maes
 | La forma del curso en la partitura | Elige un sonido de oído dentro del curso |
 |---|---|
 | ![La forma del curso en la partitura](docs/screenshots/es/curso-partitura.png) | ![Elegir sonido de oído en un curso](docs/screenshots/es/curso-sonido-de-oido.png) |
+
+### Maestro te recuerda: memoria, tus estilos y casos musicales
+
+**Memoria con ámbitos.** Maestro recuerda lo que le dices y lo que eliges, para **esta canción**, **este curso**,
+**el género** o **siempre**. Antes de contestar lee solo lo que vale para lo que estás haciendo, lo más concreto
+primero. Se abre con el botón del cerebro.
+
+- **Díselo en el chat**: «recuerda que en house prefiero palmas con una sala corta». Un «recuerda que…» sin más se
+  contesta sin IA. También apunta frases como «nunca…», «prefiero…» o «no me gusta…».
+- **Aprendido de tu oído**: si eliges el mismo sonido de oído 3 veces o más para el mismo papel y género (laboratorio,
+  cursos, tarjeta de cambiar sonido), se convierte en una memoria de ese género.
+- **Una capa de validación**: lo muy claro (un «recuerda…» explícito, o 3+ elecciones sin otro favorito) se aprueba
+  solo. Lo dudoso espera en la **Bandeja**: una preferencia dicha de pasada, algo que contradice otra memoria o un tempo
+  lejos del habitual del género. Maestro no lo usa hasta que lo apruebes.
+- **Un registro que se deshace**: todo lo que se añade, cambia o borra, y quién lo hizo (tú, Maestro o automático).
+  Cada línea tiene **Deshacer**.
+
+| Lo que recuerda Maestro, por ámbito | La bandeja: lo que no está claro te espera |
+|---|---|
+| ![Memoria por ámbitos](docs/screenshots/es/memoria.png) | ![Bandeja de memoria con los motivos](docs/screenshots/es/memoria-bandeja.png) |
+
+| «Recuerda que…» en el chat, sin IA | El registro: cada cambio se puede deshacer |
+|---|---|
+| ![Recuerda que en el chat](docs/screenshots/es/memoria-chat.png) | ![Registro de memoria con Deshacer](docs/screenshots/es/memoria-registro.png) |
+
+**Mis estilos.** Guarda una canción como estilo: su groove (las pistas de ritmo tal cual), sus papeles,
+instrumentos, efectos y tempo. **No sus notas**: así haces canciones nuevas con tu sello sin repetirte. Hay tres maneras
+de usarlo (también desde **Nuevo proyecto → Desde uno de mis estilos**):
+
+- **Inspiración**: Maestro compone una canción nueva con las mismas relaciones (groove, papeles, instrumentos, tempo)
+  y material nuevo.
+- **Transformación**: el groove se queda y el bajo, los acordes y la melodía se escriben de nuevo en otra tonalidad,
+  tempo o conjunto de instrumentos, con el generador del estudio y sin IA. **Escúchalo** antes de usarlo y pide **Otra
+  versión**.
+- **Copia literal**: las pistas tal cual, con sus notas. Solo si la eliges, y queda en el registro.
+
+**Comparte estilos por GitHub**: **Compartir** sube el estilo a `styles/` en tu repositorio y copia el enlace.
+Cualquiera lo pega en **Importar desde un enlace** (`usuario/repo`, un enlace a un `.json` o un enlace `raw`). Un
+estilo compartido nunca lleva tus notas.
+
+| Mis estilos | Transformar un estilo: otra tonalidad y tempo, escuchando antes |
+|---|---|
+| ![Mis estilos](docs/screenshots/es/mis-estilos.png) | ![Transformar un estilo](docs/screenshots/es/estilo-transformar.png) |
+
+**Casos musicales.** Un caso es un problema que resolviste: el código de antes y el de después, y por qué lo
+aceptaste. Al elegir una opción de Maestro aparece **Guardar como caso**. Cuando más tarde pides algo parecido, Maestro
+lee tus casos más cercanos y lo resuelve a tu manera.
+
+![Casos musicales](docs/screenshots/es/casos-musicales.png)
+
+**Copia automática en GitHub.** Con GitHub conectado, las memorias aprobadas, tus estilos y tus casos se guardan en
+`tidal-studio/` unos segundos después de cada cambio. La bandeja, los votos y el audio nunca. Se puede desactivar.
+
+**Panel de almacenamiento** (Ajustes → Almacenamiento, o Memoria → Ajustes). Muestra qué ocupa sitio en tu ordenador y
+qué pasa si lo borras:
+
+- **Se rehace solo**: la caché y el índice de canciones.
+- **Se vuelve a bajar o analizar**: instrumentos de la librería, sonidos descargados, bateristas reales, pistas
+  separadas y modelos de audio.
+- **Apaga una función**: CLaMP 3 y las herramientas de audio.
+- **Tuyo**: no se recupera, así que se borra uno a uno.
+
+También marca lo que SuperDirt carga al arrancar, para que sepas qué hace que arranque antes. Tu aprendizaje (votos,
+elecciones, memoria) no se borra desde aquí. Nada se borra solo.
+
+![Panel de almacenamiento](docs/screenshots/es/almacenamiento.png)
 
 ### Maestro, tu profesor
 
@@ -589,13 +655,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.17.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.18.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.17.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.17.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/TidalStudio-0.17.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.17.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.17.0/tidal-studio_0.17.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.18.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.18.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.18.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/tidal-studio_0.18.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -1002,6 +1068,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.18.0** | Maestro v2, quinto paso: [memoria y estilos](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales). Memoria por ámbitos (canción, curso, género, siempre) desde el chat y desde tus elecciones de oído, con capa de validación (lo claro se aprueba solo, lo dudoso va a una bandeja), un registro donde cada cambio se deshace, **Mis estilos** (groove, papeles, instrumentos y tempo, no las notas) como inspiración, transformación o copia literal y compartidos por GitHub, casos musicales de los que aprende Maestro, copia automática en GitHub de lo aprobado y un panel de almacenamiento. |
 | **0.17.0** | Maestro v2, cuarto paso: [géneros](#cuatro-géneros-nuevos-variantes-de-cumbia-y-la-forma-de-la-canción). Cuatro cursos nuevos (reggae y dub, boom bap, afrobeat, bachata en beta), variantes de cumbia elegidas antes del ritmo (colombiana, sonidera, villera, chicha), la forma del curso como secciones en la partitura y en el `.musicxml`, elegir un sonido de oído dentro de cualquier curso (se aprende por género), aviso de sonidos que aún no suenan y bateristas reales para reggae, boom bap y afrobeat. |
 | **0.16.0** | Maestro v2, tercer paso: [sonidos que aprenden](#laboratorio-de-sonido-sonidos-que-aprenden). Un Laboratorio de sonido que mide tus sonidos cuando lo pides (librería, descargas, incluidos, pistas de canciones importadas y packs comprados solo en local); cuatro estados por sonido para que Maestro solo proponga lo que suena; 14 recetas de sonido que tú y Maestro podéis combinar (capa, mezcla, intermedia); **Comparar los 3 mejores de oído** sobre la misma frase, y el orden aprende de tus elecciones; crítico automático opcional (groove, armonía, forma); preguntas configurables; complemento experimental CLaMP 3, activo por género desde 10 canciones. |
 | **0.15.0** | Maestro v2, segundo paso: [la partitura](#la-partitura-melodía-acordes-y-bajo-de-tu-canción-en-notación). Cada canción es `.tidal` + `.musicxml` (lista para MuseScore) en la app, en disco, en GitHub y en el índice; Maestro compone melodía, acordes y bajo en la partitura y la app los traduce a Tidal, también paso a paso en los planes; al editar a mano te pregunta «llevar a la partitura» o «dejar como código libre»; melodías más musicales (motivo, respuesta, clímax, cadencia); **Otra versión** en los pasos de curso; huella por pista para los cambios de Maestro. |

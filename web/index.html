@@ -30,6 +30,7 @@
     <button id="btn-skills" class="icon-btn sk-hdr" title="Skills de Maestro: conocimiento experto que carga para responder" data-tt="Maestro's skills: expert knowledge it loads to answer"><i data-icon="skill" data-size="20"></i><span id="sk-count" class="sk-badge" hidden></span></button>
     <button id="btn-listen" class="icon-btn" title="Escucha: A/B a ciegas, línea base y tu dataset" data-tt="Listening: blind A/B, baseline and your dataset"><i data-icon="ear" data-size="20"></i></button>
     <button id="btn-soundlab" class="icon-btn" title="Laboratorio de sonido: analiza tus sonidos, recetas y lo que aprende el estudio" data-tt="Sound lab: analyze your sounds, recipes and what the studio learns"><i data-icon="flask" data-size="20"></i></button>
+    <button id="btn-memory" class="icon-btn mem-hdr" title="Memoria: lo que Maestro recuerda de ti, tus estilos y tus casos" data-tt="Memory: what Maestro remembers about you, your styles and your cases"><i data-icon="memory" data-size="20"></i><span id="mem-count" class="sk-badge" hidden></span></button>
     <button id="btn-score" class="icon-btn" title="Partitura: la melodía, los acordes y el bajo de tu canción (.musicxml)" data-tt="Score: your song's melody, chords and bass (.musicxml)"><i data-icon="score" data-size="20"></i></button>
     <button id="btn-monitor" class="icon-btn" title="Monitor RAG: por qué capas pasa cada petición a Maestro, y sus límites" data-tt="RAG monitor: which layers each request to Maestro goes through, and their limits"><i data-icon="monitor" data-size="20"></i></button>
     <button id="btn-tour" class="icon-btn" title="Tutorial interactivo" data-tt="Interactive tutorial"><i data-icon="cap" data-size="20"></i></button>
@@ -239,6 +240,20 @@
     </div>
     <div id="sl-body"></div>
   </dialog>
+  <dialog id="memory" class="wide sl-dlg mem-dlg">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="memory" data-size="16"></i> <span data-t="Memory: what Maestro remembers, your styles and cases">Memoria: lo que Maestro recuerda, tus estilos y tus casos</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="mem-body"></div>
+  </dialog>
+  <dialog id="storage" class="wide sl-dlg st-dlg">
+    <div class="wz-head">
+      <span class="wz-kicker"><i data-icon="disk" data-size="16"></i> <span data-t="Storage: what takes space and what to delete">Almacenamiento: qué ocupa sitio y qué borrar</span></span>
+      <button class="icon-btn" data-close title="Cerrar" data-tt="Close"><i data-icon="close" data-size="18"></i></button>
+    </div>
+    <div id="st-body"></div>
+  </dialog>
   <dialog id="score" class="wide score-dlg">
     <div class="wz-head">
       <span class="wz-kicker"><i data-icon="score" data-size="16"></i> <span data-t="Score: your composition notebook">Partitura: tu cuaderno de composición</span></span>
@@ -382,6 +397,11 @@
       <details id="upd-section">
         <summary><i data-icon="download" data-size="16"></i> <span data-t="Updates: new versions of Tidal Studio">Actualizaciones: versiones nuevas de Tidal Studio</span></summary>
         <div id="upd-settings"></div>
+      </details>
+      <details id="st-section">
+        <summary><i data-icon="disk" data-size="16"></i> <span data-t="Storage: what takes space on your computer">Almacenamiento: qué ocupa sitio en tu ordenador</span></summary>
+        <p class="hint"><span data-t="Choose what to delete by size and by what happens if you delete it. Nothing is deleted on its own.">Elige qué borrar por tamaño y por lo que pasa si lo borras. Nada se borra solo.</span></p>
+        <button type="button" id="btn-storage"><i data-icon="disk" data-size="14"></i> <span data-t="Open the storage panel">Abrir el panel de almacenamiento</span></button>
       </details>
       <div class="row">
         <button type="button" id="btn-test"><span data-t="Test connection">Probar conexión</span></button>

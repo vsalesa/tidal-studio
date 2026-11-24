@@ -674,7 +674,7 @@ BASS_LEGEND = [("R", "raíz", "root"), ("L", "quinta por debajo", "fifth below")
                ("A", "nota de paso hacia el acorde siguiente", "approach note into the next chord")]
 
 
-def course_variants(style, role, code="", bars=None, n=3, seed=1, lang="es"):
+def course_variants(style, role, code="", bars=None, n=3, seed=1, lang="es", key=None):
     """3 versiones de la pista de un paso del curso (melodía, bajo o acordes) sobre el resto de la canción congelado."""
     import score as _score
     st = STYLES.get(style)
@@ -682,7 +682,7 @@ def course_variants(style, role, code="", bars=None, n=3, seed=1, lang="es"):
         raise ValueError("Estilo desconocido|Unknown style")
     es = lang != "en"
     tx = lambda d: d["es"] if es else d["en"]  # noqa: E731
-    root, mode = COURSE_KEYS.get(style, (0, st["mode"]))
+    root, mode = key or COURSE_KEYS.get(style, (0, st["mode"]))
     key = {"root": root, "mode": mode, "name": KEY_NAMES[root] + ("m" if mode == "minor" else "")}
     cur = _score.tidal_to_bars(code) if code else None
     nb = bars or (len(cur) if cur else 4)

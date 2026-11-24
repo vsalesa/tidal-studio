@@ -1,4 +1,19 @@
-## What's new in 0.17.0 / Novedades
+## What's new in 0.18.0 / Novedades
+
+Maestro v2, fifth release of five: memory and styles.
+
+- **Maestro remembers you, by scope**: this song, this course, the genre or always. Say it in the chat («remember that in house I prefer claps with a short room», answered without AI) or just pick by ear: picking the same sound 3+ times for the same role and genre becomes a memory of that genre. Before answering, Maestro reads only what applies, the most specific first (brain button).
+- **A validation layer**: very clear memories are approved by themselves; doubtful ones (said in passing, contradicting another memory, a tempo far from the genre's) wait in the **Inbox** until you approve them. Auto-approve can be turned off.
+- **A log where everything can be undone**: every memory, style or case added, changed or deleted, and who did it.
+- **My styles**: save a song's groove, roles, instruments, effects and tempo (not its notes). Use it as **inspiration** (Maestro writes new material), **transformation** (another key, tempo or instruments with the studio's generator, listen first, ask for another version) or **literal copy** (only if you pick it, logged). Also from New project → From one of my styles.
+- **Share styles through GitHub** (`styles/` in your repository) and **import them from a link**. Shared styles never carry your notes.
+- **Musical cases**: a problem, the code before and after and why you accepted it. «Save as a case» appears when you pick one of Maestro's options; Maestro reads your closest cases when you ask for something similar.
+- **Automatic GitHub backup** of approved memories, styles and cases (`tidal-studio/`), never the inbox, votes or audio.
+- **Storage panel** (Settings → Storage): what takes space, what happens if you delete it (rebuilds itself, downloads again, turns a feature off, yours) and what SuperDirt loads at start. Nothing is deleted on its own.
+
+**Español:** **Maestro te recuerda, por ámbitos**: esta canción, este curso, el género o siempre. Díselo en el chat («recuerda que en house prefiero palmas con sala corta», se contesta sin IA) o simplemente elige de oído: elegir el mismo sonido 3+ veces para el mismo papel y género se convierte en una memoria de ese género. **Capa de validación**: lo muy claro se aprueba solo; lo dudoso (dicho de pasada, que contradice otra memoria o un tempo lejos del género) espera en la **Bandeja**. **Registro donde todo se deshace**. **Mis estilos**: guarda el groove, los papeles, los instrumentos, los efectos y el tempo de una canción (no sus notas) y úsalo como **inspiración**, **transformación** (otra tonalidad, tempo o instrumentos, escuchando antes) o **copia literal** (solo si la eliges, y queda registrada); compártelo por GitHub e impórtalo desde un enlace. **Casos musicales**: un problema, el antes y el después y por qué lo aceptaste; Maestro los usa como ejemplo. **Copia automática en GitHub** de lo aprobado. **Panel de almacenamiento**: qué ocupa sitio, qué pasa si lo borras y qué carga SuperDirt al arrancar; nada se borra solo.
+
+## 0.17.0
 
 Maestro v2, fourth release of five: genres.
 

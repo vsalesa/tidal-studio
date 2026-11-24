@@ -232,6 +232,93 @@ def save_song(cfg, project, message="", slug=None):
     return {"slug": slug, "sha": sha, "commit_url": url or f"https://github.com/{g['repo']}/commit/{sha}", **remote_where(g, slug)}
 
 
+def commit_files(cfg, files, message):
+    """Un commit con varios ficheros {ruta: texto} en la rama configurada (estilos compartidos, copia de la memoria)."""
+    g = _cfg(cfg)
+    repo = f"/repos/{g['repo']}"
+    head = _branch_head(g, repo)
+    base_tree = _req(g, "GET", f"{repo}/git/commits/{head}")["tree"]["sha"]
+    tree = _req(g, "POST", f"{repo}/git/trees", {"base_tree": base_tree, "tree": [
+        {"path": p, "mode": "100644", "type": "blob", "content": c} for p, c in files.items()]})
+    if tree.get("sha") == base_tree:
+        return {"unchanged": True}
+    commit = _req(g, "POST", f"{repo}/git/commits", {"message": message, "tree": tree["sha"], "parents": [head]})
+    _req(g, "PATCH", f"{repo}/git/refs/heads/{urllib.parse.quote(g['branch'])}", {"sha": commit["sha"]})
+    return {"sha": commit["sha"], "commit_url": commit.get("html_url") or f"https://github.com/{g['repo']}/commit/{commit['sha']}"}
+
+
+def share_url(cfg, path):
+    g = _cfg(cfg)
+    return f"https://github.com/{g['repo']}/blob/{urllib.parse.quote(g['branch'])}/{path}"
+
+
+MAX_SHARED = 300_000
+
+
+def _raw_get(url, token=""):
+    headers = {"User-Agent": "tidal-studio", "Accept": "application/vnd.github.raw+json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with net.urlopen(req, timeout=20) as r:
+            data = r.read(MAX_SHARED + 1)
+    except urllib.error.HTTPError as e:
+        raise GitHubError(f"GitHub {e.code}: no encuentro ese estilo (¿enlace correcto? ¿repositorio público?)", e.code)
+    except urllib.error.URLError as e:
+        raise GitHubError(f"No se pudo conectar con GitHub: {e.reason}")
+    if len(data) > MAX_SHARED:
+        raise GitHubError("Ese fichero es demasiado grande para ser un estilo")
+    return data.decode("utf-8", "replace")
+
+
+def fetch_shared(cfg, link):
+    """Lee uno o varios ficheros .json compartidos en GitHub a partir de un enlace.
+
+    Acepta https://github.com/u/r/blob/rama/ruta.json, https://raw.githubusercontent.com/u/r/rama/ruta.json,
+    u/r/ruta.json y u/r (entonces lee todos los .json de su carpeta styles/). Con tu token se pueden leer
+    también repositorios privados a los que tengas acceso. Devuelve [(ruta, texto)]."""
+    g = _cfg(cfg)
+    link = (link or "").strip()
+    m = re.match(r"^https?://raw\.githubusercontent\.com/([\w.-]+)/([\w.-]+)/([^/]+)/(.+)$", link)
+    if m:
+        return [(m.group(4), _raw_get(link))]
+    m = re.match(r"^(?:https?://)?(?:www\.)?github\.com/([\w.-]+)/([\w.-]+)(?:/(?:blob|tree)/([^/]+)/(.+?))?/?$", link)
+    if m:
+        owner, repo, ref, path = m.groups()
+    else:
+        m = re.match(r"^([\w.-]+)/([\w.-]+)(?:/(.+?))?/?$", link)
+        if not m:
+            raise GitHubError("No entiendo ese enlace de GitHub")
+        owner, repo, path = m.groups()
+        ref = None
+    repo = repo[:-4] if repo.lower().endswith(".git") else repo
+    path = (path or "styles").strip("/")
+    q = f"?ref={urllib.parse.quote(ref)}" if ref else ""
+    api = f"{g['api_url']}/repos/{owner}/{repo}/contents/{urllib.parse.quote(path)}{q}"
+    tok = g["token"]
+    if path.lower().endswith(".json"):
+        return [(path, _raw_get(api, tok))]
+    listing = json.loads(_list_get(api, tok))
+    files = [x for x in listing if isinstance(x, dict) and x.get("type") == "file" and x.get("name", "").lower().endswith(".json")][:20]
+    if not files:
+        raise GitHubError("En esa carpeta no hay estilos (.json)")
+    return [(x["path"], _raw_get(f"{g['api_url']}/repos/{owner}/{repo}/contents/{urllib.parse.quote(x['path'])}{q}", tok)) for x in files]
+
+
+def _list_get(url, token=""):
+    headers = {"User-Agent": "tidal-studio", "Accept": "application/vnd.github+json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    try:
+        with net.urlopen(urllib.request.Request(url, headers=headers), timeout=20) as r:
+            return r.read(MAX_SHARED).decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        raise GitHubError(f"GitHub {e.code}: no encuentro esa carpeta (¿enlace correcto? ¿repositorio público?)", e.code)
+    except urllib.error.URLError as e:
+        raise GitHubError(f"No se pudo conectar con GitHub: {e.reason}")
+
+
 def _empty_ok(fn):
     """En un repo vacío (409) no hay canciones ni historial: devuelvo una lista vacía, no un error."""
     try:
