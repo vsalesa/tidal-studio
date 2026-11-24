@@ -33,6 +33,7 @@ import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments 
 import { initMidi, toggleMidi, clockLines, midiSilence } from "./midikeys.js";
 import { initAudioStatus } from "./audiostatus.js";
 import { initLibrary, openLibrary, loadLibrary } from "./library.js";
+import { initReplace, replaceSound } from "./replace.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
 
@@ -2781,6 +2782,24 @@ function wireLibrary() {
     toast, hear: hearEntry, install: installEntry,
     add: (e) => { const kind = e.kind === "hit" || e.kind === "loop" ? "percusion" : e.family === "basses" || e.family === "synth_bass" ? "bajo" : e.family === "synth_pad" ? "textura" : "melodia"; addTrack(L(e.es, e.en) || e.sound, kind, entryCode(e)); },
     openSamples: () => openSamples(), openInstLib: (o) => openInstLib(o),
+  });
+  // Asistente para cambiar un instrumento (web/replace.js): selecciona su nombre en el código
+  initReplace({
+    toast, hear: hearEntry, install: installEntry,
+    canAsk: () => useLLM(), ask: (text) => send(text),
+    // un cambio en una caja de código: igual que si lo hubieras escrito tú
+    commit: (ta) => {
+      if (ta.id === "code") { $("#btn-apply-code").click(); return; }
+      ta.dispatchEvent(new Event("input")); ta.dispatchEvent(new Event("change"));
+    },
+    replaceEverywhere: (from, to, keepIdx) => {
+      let n = 0;
+      for (const t of state.tracks) { const c = replaceSound(t.code, from, to, keepIdx); if (c !== t.code) { t.code = c; t.explain = null; n++; } }
+      if (state.extra) state.extra = replaceSound(state.extra, from, to, keepIdx);
+      changed();
+      $("#code").value = buildCode();
+      if (n && live()) playAll();
+    },
   });
   // Los dos botones de siempre abren la misma librería, con el filtro puesto
   $("#btn-instlib").onclick = () => openLibrary({ kind: "pitched", show: "" });
