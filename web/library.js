@@ -30,10 +30,22 @@ export async function loadLibrary(force) {
 }
 export const familyName = (id) => { const f = S.families.find((x) => x.id === id); return f ? (LANG === "en" ? f.en : f.es) : id; };
 export const entryName = (e) => (LANG === "en" ? e.en : e.es) || e.sound;
+// 0.16: cuatro estados de un sonido: en el catálogo → descargado → cargado en SuperDirt → suena de verdad
+export const STATE_NAME = {
+  catalog: ["en el catálogo", "in the catalog"], downloaded: ["descargado", "downloaded"],
+  loaded: ["cargado", "loaded"], playable: ["suena", "plays"],
+};
+const STATE_ORDER = ["catalog", "downloaded", "loaded", "playable"];
+export function stateBadge(st) {
+  if (!st || !STATE_NAME[st]) return "";
+  const n = STATE_ORDER.indexOf(st);
+  const tip = STATE_ORDER.map((s, i) => `${i <= n ? "✓" : "·"} ${L(STATE_NAME[s][0], STATE_NAME[s][1])}`).join("  ");
+  return `<span class="lb-state s-${st}" title="${esc(tip)}"><i>${STATE_ORDER.map((_, i) => `<b class="${i <= n ? "on" : ""}"></b>`).join("")}</i>${L(STATE_NAME[st][0], STATE_NAME[st][1])}</span>`;
+}
 export function entryBadges(e) {
   const o = ORIGIN[e.origin] || ["", ""];
   const k = KIND_NAME[e.kind] || ["", ""];
-  return `<span class="lb-badge o-${esc(e.origin)}">${L(o[0], o[1])}</span><span class="lb-badge">${L(k[0], k[1])}</span>`
+  return stateBadge(e.state) + `<span class="lb-badge o-${esc(e.origin)}">${L(o[0], o[1])}</span><span class="lb-badge">${L(k[0], k[1])}</span>`
     + (e.installed ? "" : `<span class="lb-badge dl">${icon("download", 11)} ${e.mb ? `${e.mb} MB` : L("descargar", "download")}</span>`)
     + (e.shadowed ? `<span class="lb-badge warn" title="${L("Tienes un sonido tuyo con el mismo nombre: suena el tuyo", "You have a sound of your own with the same name: yours plays")}">${L("tapado por el tuyo", "yours plays instead")}</span>` : "")
     + (e.license ? `<span class="lb-badge">${esc(e.license)}</span>` : "");

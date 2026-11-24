@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.15.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.16.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -530,13 +530,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.15.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.16.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.15.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.15.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.15.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/tidal-studio_0.15.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.16.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.16.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.16.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/tidal-studio_0.16.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -872,6 +872,50 @@ rest of your song stays frozen: listen to them over it and pick one.
 
 ![Another version: three new bass lines over the rest of the song](docs/screenshots/course-another-version.png)
 
+### Sound Lab: sounds that learn
+
+The **Sound Lab** (flask button in the top bar) teaches the studio how each sound actually *sounds*, so Maestro and
+the instrument picker choose by sound, not just by name.
+
+**Analyze.** Only when you ask, and all on your computer, it measures the attack, the decay, how bright it is, its
+pitch and how noisy it is. Choose what to analyze: the instrument library you downloaded, your own sounds and downloads
+(Freesound, packs, Maestro's), the built-in Dirt-Samples, the stems of songs you imported, and **bought packs** (add
+their folder: they are measured for you but never leave your computer or go into shared data). WAV files need nothing
+extra; mp3, ogg, flac or aiff use the audio tools. Every sound has one of **four states**: in the catalog, downloaded,
+loaded in SuperDirt and **plays**. Maestro only suggests sounds that play.
+
+![Sound Lab: measure your sounds and see how many play](docs/screenshots/soundlab-analyze.png)
+
+**Recipes.** Fourteen sound recipes (lo-fi keys, dub stab, 808 sub, acid saw, FM bell, vinyl kick…) as ready Tidal
+code: listen, add one as a new track, or **combine two**: *layer* (both at once), *blend* (the sound of one with the
+effects of the other) or *in between* (the effects halfway). Save the result to **My recipes**; Maestro knows them and
+can combine recipes itself when you ask for a new sound.
+
+![Recipes: combine lo-fi keys and dub stab into a new sound](docs/screenshots/soundlab-recipes.png)
+
+**Pick sounds by ear.** Select a sound's name in a track: the replace card now shows the state of each option and a
+**Compare the best 3 by ear** button. You get four cards on the same phrase of your track (yours plus the 3 best
+matches that already play), each described in words («percussive attack, dark, note c2»). Pick one and the studio
+**learns from your choice** without any AI: next time that role in that genre ranks your favourites higher.
+
+![The replace card with the four states of each sound](docs/screenshots/picker-states.png)
+
+![Compare the best 3 by ear: your sound and three that already play](docs/screenshots/compare-sounds.png)
+
+**Learning.** Turn on the optional **automatic critic** (off by default): every option Maestro gives you shows a score
+for groove, harmony and form plus a one-line hint, so you know what to listen for. Choose how often Maestro asks you
+concrete questions (never, sometimes, often), and see what the studio has learned from your picks.
+
+![Learning: critic, questions and what the studio has learned](docs/screenshots/soundlab-learning.png)
+
+![The critic on Maestro's options: groove, harmony and form](docs/screenshots/critic.png)
+
+**CLaMP 3 (experimental, optional).** From the Learning tab you can install [CLaMP 3](https://github.com/sanderwood/clamp3)
+into the audio tools. It finds which of your songs of a genre sound most like the one you're making and gives them to
+Maestro as examples. It turns itself on per genre once that genre has 10 or more of your songs (you can change the
+number); with fewer, Maestro keeps using text search and the sound measures. Bought packs never go in. It is new and
+has not been tested on many machines yet: if it fails, everything else works without it.
+
 ### And also
 
 - **Your progress**: the code and music concepts you have already used.
@@ -887,6 +931,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.16.0** | Maestro v2, third step: [sounds that learn](#sound-lab-sounds-that-learn). A Sound Lab that measures your sounds on demand (library, downloads, built-in, imported stems and bought packs kept local); four states per sound so Maestro only suggests what plays; 14 sound recipes you and Maestro can combine (layer, blend, in between); **Compare the best 3 by ear** on the same phrase, and the ranking learns from your picks; optional automatic critic (groove, harmony, form); configurable questions; experimental CLaMP 3 add-on, on per genre at 10+ songs. |
 | **0.15.0** | Maestro v2, second step: [the score](#the-score-your-songs-melody-chords-and-bass-as-sheet-music). Every song is `.tidal` + `.musicxml` (MuseScore-ready) in the app, on disk, on GitHub and in the index; Maestro composes melody, chords and bass in the score and the app translates them to Tidal, also step by step in plans; hand edits ask «send to the score» or «keep as free code»; smarter melodies (motif, answer, climax, cadence); **Another version** on course steps; per-track fingerprints for Maestro's changes. |
 | **0.14.0** | Maestro v2, first step: [lock](#lock-what-you-like-maestro-cant-change-it) a whole track or just its rhythm, notes, sound, effects or mix, and the BPM; [blind A/B](#blind-ab-your-ear-is-the-judge) with every vote stored as an exportable dataset, plus baseline ratings per genre; and a [live RAG monitor](#rag-monitor-see-which-layer-answered) of Maestro's layers with configurable limits, local answers without AI and a read-only SQLite index of your songs. |
 | **0.13.1** | [Your songs on GitHub](#your-songs-on-github-remote-paths-upload-in-bulk-start-new-songs-there): a song opened from GitHub shows its GitHub path, never a local one; upload many `.tidal` files at once from Settings, optionally deleting the local copies (to the Trash, only after a verified upload); and an option to create every new song directly on GitHub. |

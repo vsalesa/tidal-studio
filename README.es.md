@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.15.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.16.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -544,13 +544,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.15.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.16.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.15.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.15.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/TidalStudio-0.15.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.15.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.15.0/tidal-studio_0.15.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.16.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.16.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/TidalStudio-0.16.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.16.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.16.0/tidal-studio_0.16.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -897,6 +897,51 @@ posiciones de acordes. El resto de tu canción queda congelado: escúchalas enci
 
 ![Otra versión: tres bajos nuevos sobre el resto de la canción](docs/screenshots/es/curso-otra-version.png)
 
+### Laboratorio de sonido: sonidos que aprenden
+
+El **Laboratorio de sonido** (botón del matraz en la barra de arriba) enseña al estudio cómo *suena* de verdad cada
+sonido, para que Maestro y el selector de instrumentos elijan por cómo suena y no solo por el nombre.
+
+**Analizar.** Solo cuando lo pides, y todo en tu ordenador, mide el ataque, la caída, el brillo, la nota y cuánto ruido
+tiene. Eliges qué analizar: la librería de instrumentos que has descargado, tus sonidos y descargas (Freesound, packs,
+los de Maestro), los Dirt-Samples incluidos, las pistas separadas de las canciones que importaste y los **packs
+comprados** (añade su carpeta: se miden para ti, pero nunca salen de tu ordenador ni van a datos compartidos). Los WAV
+no necesitan nada; mp3, ogg, flac o aiff usan las herramientas de audio. Cada sonido tiene uno de **cuatro estados**:
+en el catálogo, descargado, cargado en SuperDirt y **suena**. Maestro solo propone sonidos que suenan.
+
+![Laboratorio de sonido: mide tus sonidos y mira cuántos suenan](docs/screenshots/es/laboratorio-analizar.png)
+
+**Recetas.** Catorce recetas de sonido (teclado lo-fi, stab dub, sub 808, sierra ácida, campana FM, bombo de vinilo…)
+como código Tidal listo: escúchalas, añade una como pista nueva o **combina dos**: *capa* (las dos a la vez),
+*mezcla* (el sonido de una con los efectos de la otra) o *intermedia* (los efectos a medio camino). Guarda el resultado
+en **Mis recetas**; Maestro las conoce y puede combinar recetas él mismo cuando le pides un sonido nuevo.
+
+![Recetas: combina teclado lo-fi y stab dub en un sonido nuevo](docs/screenshots/es/laboratorio-recetas.png)
+
+**Elige sonidos de oído.** Selecciona el nombre de un sonido en una pista: la tarjeta de cambiar sonido muestra ahora el
+estado de cada opción y un botón **Comparar los 3 mejores de oído**. Te salen cuatro tarjetas sobre la misma frase de
+tu pista (el tuyo y los 3 que mejor encajan y ya suenan), cada una descrita con palabras («ataque percusivo, oscuro,
+nota c2»). Elige una y el estudio **aprende de tu elección** sin IA: la próxima vez ese papel en ese género pone tus
+favoritos más arriba.
+
+![La tarjeta de cambiar sonido con los cuatro estados de cada sonido](docs/screenshots/es/selector-estados.png)
+
+![Comparar los 3 mejores de oído: tu sonido y tres que ya suenan](docs/screenshots/es/comparar-sonidos.png)
+
+**Aprender.** Activa el **crítico automático** opcional (apagado por defecto): cada opción que te da Maestro muestra una
+nota de groove, armonía y forma con una pista de una línea, para que sepas qué escuchar. Elige cada cuánto Maestro te
+hace preguntas concretas (nunca, a veces, a menudo) y mira lo que el estudio ha aprendido de tus elecciones.
+
+![Aprender: crítico, preguntas y lo que ha aprendido el estudio](docs/screenshots/es/laboratorio-aprender.png)
+
+![El crítico en las opciones de Maestro: groove, armonía y forma](docs/screenshots/es/critico.png)
+
+**CLaMP 3 (experimental, opcional).** Desde la pestaña Aprender puedes instalar [CLaMP 3](https://github.com/sanderwood/clamp3)
+en las herramientas de audio. Busca cuáles de tus canciones de un género se parecen más a la que estás haciendo y se
+las da a Maestro como ejemplos. Se activa solo por género cuando ese género tiene 10 canciones tuyas o más (puedes
+cambiar el número); con menos, Maestro sigue usando la búsqueda de texto y las medidas de sonido. Los packs comprados no
+entran nunca. Es nuevo y aún no se ha probado en muchos ordenadores: si falla, todo lo demás funciona sin él.
+
 ### Y además
 
 - **Tu progreso**: conceptos de código y de música que ya has usado.
@@ -912,6 +957,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.16.0** | Maestro v2, tercer paso: [sonidos que aprenden](#laboratorio-de-sonido-sonidos-que-aprenden). Un Laboratorio de sonido que mide tus sonidos cuando lo pides (librería, descargas, incluidos, pistas de canciones importadas y packs comprados solo en local); cuatro estados por sonido para que Maestro solo proponga lo que suena; 14 recetas de sonido que tú y Maestro podéis combinar (capa, mezcla, intermedia); **Comparar los 3 mejores de oído** sobre la misma frase, y el orden aprende de tus elecciones; crítico automático opcional (groove, armonía, forma); preguntas configurables; complemento experimental CLaMP 3, activo por género desde 10 canciones. |
 | **0.15.0** | Maestro v2, segundo paso: [la partitura](#la-partitura-melodía-acordes-y-bajo-de-tu-canción-en-notación). Cada canción es `.tidal` + `.musicxml` (lista para MuseScore) en la app, en disco, en GitHub y en el índice; Maestro compone melodía, acordes y bajo en la partitura y la app los traduce a Tidal, también paso a paso en los planes; al editar a mano te pregunta «llevar a la partitura» o «dejar como código libre»; melodías más musicales (motivo, respuesta, clímax, cadencia); **Otra versión** en los pasos de curso; huella por pista para los cambios de Maestro. |
 | **0.14.0** | Maestro v2, primer paso: [bloquea](#bloquea-lo-que-te-gusta-maestro-no-puede-cambiarlo) una pista entera o solo su ritmo, notas, sonido, efectos o mezcla, y el BPM; [A/B a ciegas](#ab-a-ciegas-tu-oído-es-el-juez) con cada voto guardado como dataset exportable, más notas de línea base por género; y un [monitor RAG en vivo](#monitor-rag-mira-qué-capa-respondió) de las capas de Maestro con límites configurables, respuestas locales sin IA y un índice SQLite de solo lectura de tus canciones. |
 | **0.13.1** | [Tus canciones en GitHub](#tus-canciones-en-github-ruta-remota-subir-varias-a-la-vez-y-crear-las-nuevas-allí): una canción abierta desde GitHub enseña su ruta en GitHub, nunca una local; sube muchos `.tidal` a la vez desde Ajustes, con la opción de eliminar las copias locales (a la Papelera, solo tras comprobar la subida); y una casilla para crear cada canción nueva directamente en GitHub. |

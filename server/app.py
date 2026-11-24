@@ -53,6 +53,10 @@ import inventory  # noqa: E402
 import router  # noqa: E402
 import songindex  # noqa: E402
 import score as scoremod  # noqa: E402
+import soundlab  # noqa: E402
+import recipes as recipemod  # noqa: E402
+import critic  # noqa: E402
+import clamp  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
@@ -126,6 +130,8 @@ DEFAULT_CONFIG = {
     "language": "es",
     # Maestro v2: enrutador por capas (ver server/router.py y la ventana Monitor RAG)
     "router": json.loads(json.dumps(router.DEFAULT)),
+    # Maestro v2, 0.16: sonidos que aprenden (crítico opcional, frecuencia de preguntas, CLaMP 3, packs comprados)
+    "soundlab": {"critic": False, "questions": "sometimes", "clamp_auto": True, "clamp_min": 10, "packs": []},
 }
 
 _config_lock = threading.Lock()
@@ -416,6 +422,14 @@ except Exception as _e:  # noqa: BLE001  sin disco escribible el estudio sigue f
     print(f"[maestro-data] {_e}")
     SONGS = None
 MONITOR = router.Monitor()
+# 0.16: medidas de sonido, elecciones y recetas (maestro-data/sounds.db). Los packs comprados se marcan «solo local».
+try:
+    SOUNDS = soundlab.Store(os.path.join(DATA_DIR, "sounds.db"))
+except Exception as _e:  # noqa: BLE001
+    print(f"[maestro-data] {_e}")
+    SOUNDS = None
+ANALYZER = soundlab.Analyzer(SOUNDS, audioimport.tools_python) if SOUNDS else None
+STEMS_DIR = os.path.join(os.path.dirname(audioimport.TOOLS), "stems")
 PHOTOS = instphotos.Photos(LIBRARY.dir)
 
 
@@ -429,7 +443,83 @@ def library_items():
         lps = loops.listing(LIBRARY)["loops"]
     except Exception:  # noqa: BLE001
         lps = []
-    return soundlib.build(LIBRARY, INSTLIB, lps, loaded)
+    items = soundlib.build(LIBRARY, INSTLIB, lps, loaded)
+    # 0.16: cuatro estados por sonido (catálogo → descargado → cargado → suena)
+    _, missing, ok = sound_states()
+    for e in items:
+        e["state"] = soundlab.state_of(e, loaded, missing, ok)
+    return items
+
+
+def sound_states():
+    """(cargados en SuperDirt, los que dijo que no encuentra, si el motor suena) para los 4 estados."""
+    try:
+        sl = ENGINE.sound_list() or {}
+        st = ENGINE.status()
+    except Exception:  # noqa: BLE001
+        return set(), set(), False
+    ok = bool(st.get("superdirt_ready") and st.get("tidal_running")) or bool(st.get("simulation"))
+    return set(sl.get("sounds") or []), set(sl.get("missing") or []), ok
+
+
+def soundlab_cfg(cfg=None):
+    sc = dict(DEFAULT_CONFIG["soundlab"])
+    sc.update((cfg or load_config()).get("soundlab") or {})
+    return sc
+
+
+def song_counts():
+    """Canciones por género en el índice (para activar CLaMP 3 por género)."""
+    if not SONGS:
+        return {}
+    with SONGS.lock:
+        rows = SONGS.db.execute("SELECT style, COUNT(*) n FROM songs GROUP BY style").fetchall()
+    return {r["style"]: r["n"] for r in rows if r["style"]}
+
+
+def not_playable(tracks):
+    """Sonidos que usa la canción y que ahora no suenan (en el catálogo o descargados, sin cargar)."""
+    loaded, missing, ok = sound_states()
+    if not loaded:
+        return []
+    items = library_items()
+    out = []
+    for snd in sorted({w for t in tracks for w in songindex.sounds_of(t.get("code") or "")}):
+        e = soundlib.find(items, snd)
+        if e and soundlab.state_of(e, loaded, missing, ok) in ("catalog", "downloaded"):
+            out.append(snd)
+    return out
+
+
+def critic_on(reply, sess, lang):
+    """Si el crítico está encendido, cada opción lleva su nota (groove, armonía, forma) como pista."""
+    tracks = [{"id": t.get("id"), "code": t.get("code"), "kind": t.get("kind"), "muted": t.get("muted")}
+              for t in sess.get("tracks") or [] if isinstance(t, dict)]
+    sc = sess.get("score") if isinstance(sess.get("score"), dict) else None
+    for v in reply.get("variantes") or []:
+        if isinstance(v, dict) and isinstance(v.get("cambios"), dict):
+            v["critica"] = critic.judge(v["cambios"], tracks, sc, lang)
+
+
+def save_recipes(reply, lang):
+    """Las recetas que combina Maestro van al recetario del alumno."""
+    if not SOUNDS:
+        return []
+    mine = {r["id"]: r for r in SOUNDS.recipes()}
+    saved = []
+    for c in [reply.get("cambios")] + [v.get("cambios") for v in reply.get("variantes") or [] if isinstance(v, dict)]:
+        for r in (c or {}).pop("recetas", None) or []:
+            ids = [str(x) for x in r.get("de") or []][:2]
+            src = [recipemod.BY_ID.get(i) or mine.get(i) for i in ids]
+            if len(src) != 2 or not all(src):
+                continue
+            mode = {"capa": "layer", "mezcla": "blend", "intermedia": "morph"}.get(str(r.get("modo") or ""), str(r.get("modo") or "layer"))
+            rec = recipemod.combine(src[0], src[1], mode)
+            if r.get("nombre"):
+                rec["name_es"] = rec["name_en"] = str(r["nombre"])[:60]
+            rec["by"] = "maestro"
+            saved.append(SOUNDS.save_recipe(rec))
+    return saved
 
 
 def instrument_listing():
@@ -585,6 +675,13 @@ class Handler(SimpleHTTPRequestHandler):
             req.end("library", "pass", hits=(len(inv["samples"]) + len(inv["instrumentos"])) if inv else 0)
         else:
             req.end("library", "off")
+        slc = soundlab_cfg(cfg)
+        sess["preguntas"] = slc.get("questions") or "sometimes"
+        try:
+            sess["recetas"] = recipemod.maestro_text(SOUNDS.recipes() if SOUNDS else [], data.get("lang") == "en")
+            sess["no_suenan"] = not_playable(tracks)
+        except Exception:  # noqa: BLE001
+            sess["no_suenan"] = []
         ps = plan_step(sess)
         if ps:
             tr.add("step", tr.L(f"Plan «{ps.get('titulo', '')}» · paso {int(ps.get('i') or 0) + 1} de {len(ps['pasos'])}",
@@ -646,6 +743,15 @@ class Handler(SimpleHTTPRequestHandler):
             if reply.get("descargar") and fetch_on(sess):
                 reply["descargas"] = fetch_samples(cfg, reply, sess, tr)
             loops.fix_reply(LIBRARY, reply, float(sess.get("bpm") or 120))
+            try:
+                new_recipes = save_recipes(reply, data.get("lang"))
+            except Exception:  # noqa: BLE001
+                new_recipes = []
+            if new_recipes:
+                reply["recetas_nuevas"] = new_recipes
+                tr.add("step", tr.L(f"Guardo {len(new_recipes)} receta(s) nueva(s) en tu recetario", f"Saving {len(new_recipes)} new recipe(s) to your recipe book"))
+            if slc.get("critic") and reply.get("variantes"):
+                critic_on(reply, sess, data.get("lang"))
             # Instrumentos de la biblioteca que usa Maestro: los pequeños se descargan ya
             def _ilog(item):
                 name = tr.L(item["es"], item["en"])
@@ -691,6 +797,127 @@ class Handler(SimpleHTTPRequestHandler):
             msg = str(e)
             return self._json({"error": msg if lang != "en" else f"Couldn't read the score: {msg}"}, 400)
         return self._json({"error": "Ruta no encontrada"}, 404)
+
+    # ---------- 0.16: sonidos que aprenden ----------
+    def _soundlab_status(self):
+        cfg = load_config()
+        slc = soundlab_cfg(cfg)
+        items = library_items()
+        loaded, missing, ok = sound_states()
+        states = {k: 0 for k in soundlab.STATES}
+        for e in items:
+            if e["kind"] not in ("loop",):
+                states[soundlab.state_of(e, loaded, missing, ok)] += 1
+        return {"settings": slc, "sources": soundlab.sources(LIBRARY.dir, items, slc.get("packs"), STEMS_DIR),
+                "job": ANALYZER.status() if ANALYZER else None, "stats": SOUNDS.stats() if SOUNDS else None,
+                "states": states, "engine_ok": ok, "audio_tools": audioimport.status().get("ready", False),
+                "clamp": clamp.status(audioimport.TOOLS, song_counts(), int(slc.get("clamp_min") or 10), bool(slc.get("clamp_auto"))),
+                "recipes": {"builtin": recipemod.BUILTIN, "mine": SOUNDS.recipes() if SOUNDS else []}}
+
+    def _soundlab_get(self, path):
+        q = parse_qs(urlparse(self.path).query)
+        arg = lambda k: q.get(k, [""])[0]  # noqa: E731
+        if path == "/api/soundlab":
+            return self._json(self._soundlab_status())
+        if path == "/api/recipes":
+            mine = SOUNDS.recipes() if SOUNDS else []
+            return self._json({"builtin": [dict(r, code=recipemod.code(r)) for r in recipemod.BUILTIN],
+                               "mine": [dict(r, code=recipemod.code(r)) for r in mine]})
+        # /api/sounds/rank?sound=&role=&style=&n=3: los mejores para elegir de oído, con su estado
+        loaded, missing, ok = sound_states()
+        r = soundlab.rank(library_items(), arg("sound"), SOUNDS, arg("role"), arg("style"), loaded, missing, ok,
+                          int(arg("n") or 3), playable_only=arg("all") != "1")
+        r["engine_ok"] = ok
+        return self._json(r)
+
+    def _soundlab_post(self, path, data):
+        lang = data.get("lang")
+        en = lang == "en"
+        cfg = load_config()
+        slc = soundlab_cfg(cfg)
+        if path == "/api/soundlab/settings":
+            for k in ("critic", "clamp_auto"):
+                if isinstance(data.get(k), bool):
+                    slc[k] = data[k]
+            if data.get("questions") in ("never", "sometimes", "often"):
+                slc["questions"] = data["questions"]
+            if data.get("clamp_min") is not None:
+                slc["clamp_min"] = max(2, min(200, int(data["clamp_min"])))
+            cfg["soundlab"] = slc
+            save_config(cfg)
+            return self._json(self._soundlab_status())
+        if path == "/api/soundlab/packs":
+            # Packs comprados: se analizan donde están (solo local, nunca se suben ni se exportan)
+            if not self._same_origin():
+                return self._json({"error": "forbidden"}, 403)
+            packs = [p for p in slc.get("packs") or [] if isinstance(p, dict)]
+            pth = os.path.abspath(os.path.expanduser(str(data.get("path") or "").strip()))
+            if data.get("remove"):
+                packs = [p for p in packs if p.get("path") != pth]
+                if SOUNDS:
+                    SOUNDS.forget_source("pack")
+            else:
+                if not os.path.isdir(pth):
+                    return self._err("No encuentro esa carpeta|I can't find that folder", lang)
+                if not any(p.get("path") == pth for p in packs):
+                    packs.append({"path": pth, "name": str(data.get("name") or os.path.basename(pth))[:60]})
+            slc["packs"] = packs
+            cfg["soundlab"] = slc
+            save_config(cfg)
+            return self._json(self._soundlab_status())
+        if path == "/api/soundlab/analyze":
+            if not ANALYZER:
+                return self._err("Sin carpeta de datos|No data folder", lang, 500)
+            items = library_items()
+            plan = []
+            for src in data.get("sources") or []:
+                plan += soundlab.targets(str(src), LIBRARY.dir, items, STEMS_DIR)
+            return self._json(ANALYZER.start(plan))
+        if path == "/api/soundlab/stop":
+            if ANALYZER:
+                ANALYZER.stop()
+            return self._json({"ok": True})
+        if path == "/api/sounds/choice":
+            if SOUNDS and data.get("chosen"):
+                SOUNDS.choose(str(data.get("role") or ""), str(data.get("style") or ""), str(data["chosen"]),
+                              [str(x) for x in data.get("others") or []][:6])
+            return self._json({"ok": True})
+        if path in ("/api/recipes/combine", "/api/recipes/save", "/api/recipes/delete", "/api/recipes/code"):
+            if not SOUNDS:
+                return self._err("Sin carpeta de datos|No data folder", lang, 500)
+            mine = {r["id"]: r for r in SOUNDS.recipes()}
+            get = lambda i: recipemod.BY_ID.get(i) or mine.get(i)  # noqa: E731
+            if path == "/api/recipes/delete":
+                SOUNDS.delete_recipe(str(data.get("id") or ""))
+                return self._json({"ok": True})
+            if path == "/api/recipes/code":
+                rec = get(str(data.get("id") or "")) or data.get("recipe")
+                if not isinstance(rec, dict):
+                    return self._err("Esa receta no existe|That recipe doesn't exist", lang, 404)
+                return self._json({"code": recipemod.code(rec, data.get("pattern") or None)})
+            if path == "/api/recipes/combine":
+                a, b = get(str(data.get("a") or "")), get(str(data.get("b") or ""))
+                if not a or not b:
+                    return self._err("Elige dos recetas|Pick two recipes", lang)
+                rec = recipemod.combine(a, b, str(data.get("mode") or "layer"), en)
+                if data.get("save"):
+                    rec = SOUNDS.save_recipe(rec)
+                return self._json({"recipe": rec, "code": recipemod.code(rec)})
+            rec = data.get("recipe") if isinstance(data.get("recipe"), dict) else None
+            if not rec or not rec.get("sound"):
+                return self._err("Receta vacía|Empty recipe", lang)
+            rec = SOUNDS.save_recipe({k: rec.get(k) for k in ("id", "name_es", "name_en", "kind", "sound", "n", "fx", "role", "tags",
+                                                               "from", "mode", "layers") if rec.get(k) is not None})
+            return self._json({"recipe": rec, "code": recipemod.code(rec)})
+        if path == "/api/critic":
+            cand = data.get("cambios") if isinstance(data.get("cambios"), dict) else {}
+            return self._json(critic.judge(cand, data.get("tracks") or [], data.get("score"), lang))
+        if path == "/api/clamp/install":
+            try:
+                return self._json(clamp.install(audioimport.tools_python, audioimport.TOOLS))
+            except ValueError as e:
+                return self._err(str(e), lang)
+        return self._json({"error": "not found"}, 404)
 
     def _midi(self, path, data):
         """Teclado MIDI: notas de la web, ajustes, buscar teclados, grabar una toma y traducirla a Tidal."""
@@ -976,6 +1203,8 @@ class Handler(SimpleHTTPRequestHandler):
                                    "default_plugins": DEFAULT_PLUGINS["state"],
                                    "plugin_updates": PLUGIN_UPDATES,
                                    "plugins_auto_update": bool(cfg.get("plugins", {}).get("auto_update", True))})
+            if path in ("/api/soundlab", "/api/sounds/rank", "/api/recipes"):
+                return self._soundlab_get(path)
             if path == "/api/monitor":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -1103,6 +1332,8 @@ class Handler(SimpleHTTPRequestHandler):
 
             if path.startswith("/api/score/"):
                 return self._score(path, data)
+            if path.startswith(("/api/soundlab/", "/api/sounds/choice", "/api/recipes/", "/api/critic", "/api/clamp/")):
+                return self._soundlab_post(path, data)
             if path == "/api/course/variants":
                 # «Otra versión» de un paso del curso: 3 candidatas de esa pista, el resto de la canción congelado (sin IA)
                 tk = data.get("track") if isinstance(data.get("track"), dict) else {}
@@ -1116,7 +1347,10 @@ class Handler(SimpleHTTPRequestHandler):
                         pistas = [{"id": tid, "nombre": str(tk.get("nombre") or tid), "tipo": role, "codigo": v["codigo"]}]
                         scoremod.attach_parts(pistas)
                         variantes.append({"titulo": v["titulo"], "descripcion": v["descripcion"], "concepto": v["concepto"], "cambios": {"pistas": pistas}})
-                    return self._json({"key": r["key"], "chords": r["chords"], "variantes": variantes})
+                    out = {"key": r["key"], "chords": r["chords"], "variantes": variantes}
+                    if soundlab_cfg().get("critic"):
+                        critic_on(out, {"tracks": data.get("tracks") or []}, data.get("lang"))
+                    return self._json(out)
                 except ValueError as e:
                     es, _, en = str(e).partition("|")
                     return self._json({"error": en if data.get("lang") == "en" and en else es}, 400)

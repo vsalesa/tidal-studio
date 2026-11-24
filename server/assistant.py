@@ -152,6 +152,15 @@ def session_summary(session):
     if loops_lines:
         from loops import LOOPS_PROMPT
         lines.append(LOOPS_PROMPT.format(lista="\n".join(loops_lines)))
+    if session.get("recetas"):
+        lines.append(SOUNDS_PROMPT.format(lista=str(session["recetas"])[:6000]))
+    no_suenan = [str(x)[:40] for x in (session.get("no_suenan") or [])][:20]
+    if no_suenan:
+        lines.append("SONIDOS QUE AHORA NO SUENAN (están en el catálogo o descargados pero SuperDirt no los tiene cargados): "
+                     + ", ".join(no_suenan) + ". No los propongas como novedad; si la canción ya los usa, dilo y sugiere uno parecido que sí suene.")
+    q = QUESTIONS.get(str(session.get("preguntas") or "sometimes"))
+    if q:
+        lines.append(q)
     inst_lines = [str(x)[:3000] for x in (session.get("instrument_lines") or [])][:4]
     from instlib import PROMPT as INST_PROMPT
     lines.append(INST_PROMPT.format(lista="\n".join(inst_lines)).strip())
@@ -205,6 +214,22 @@ MODO PLAN POR PASOS (activado; tiene prioridad sobre el modo opciones cuando cho
 - Si el alumno pide cambiar el plan, devuelve el "plan" entero corregido. Si pide «hazlo todo de golpe», hazlo sin plan.
 - Peticiones pequeñas (una pista, un efecto, una duda, un arreglo): responde normal, sin plan."""
 
+
+SOUNDS_PROMPT = """RECETAS DE SONIDO (un sonido con su tratamiento; úsalas tal cual en una pista o combínalas):
+{lista}
+Para crear un sonido nuevo COMBINANDO dos recetas, añade en "cambios" (o en el "cambios" de una opción):
+"recetas": [{{"de": ["id1", "id2"], "modo": "capa" | "mezcla" | "intermedia", "nombre": "nombre corto"}}]
+- capa: suenan las dos a la vez (stack); mezcla: el sonido de la primera con los efectos de la segunda; intermedia: parámetros a medio camino.
+La app la guarda en el recetario del alumno. Escribe tú mismo el código combinado en la pista (stack [..] para una capa).
+"""
+
+QUESTIONS = {
+    "never": "PREGUNTAS: el alumno prefiere que NO le preguntes; decide tú y explica por qué.",
+    "sometimes": "PREGUNTAS: si de verdad dudas entre dos caminos musicales (p. ej. qué sonido de bajo), haz UNA pregunta concreta en "
+                 "\"opciones\" (2-3 respuestas cortas) en vez de adivinar. Si no dudas, no preguntes.",
+    "often": "PREGUNTAS: al alumno le gusta decidir: cuando haya una elección musical (sonido, ritmo, densidad), pregúntale con una "
+             "pregunta concreta y 2-3 respuestas cortas en \"opciones\" antes de cambiar mucho.",
+}
 
 SCORE_PROMPT = """
 
@@ -358,6 +383,9 @@ def _parse_changes(cambios):
     pt = cambios.get("partitura")
     if isinstance(pt, dict) and isinstance(pt.get("partes"), list):
         out["partitura"] = {k: pt.get(k) for k in ("clave", "compas", "partes") if pt.get(k) is not None}
+    rec = cambios.get("recetas")
+    if isinstance(rec, list):
+        out["recetas"] = [r for r in rec if isinstance(r, dict) and (r.get("de") or r.get("sonido"))][:4]
     return out
 
 

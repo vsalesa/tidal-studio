@@ -37,6 +37,7 @@ import { initInstLib, openInstLib, mountInstLib, instLibData, pinnedInstruments 
 import { initMidi, toggleMidi, clockLines, midiSilence } from "./midikeys.js";
 import { initAudioStatus } from "./audiostatus.js";
 import { initLibrary, openLibrary, loadLibrary } from "./library.js";
+import { initSoundLab } from "./soundlab.js";
 import { initReplace, replaceSound } from "./replace.js";
 import { initLoops, mountLoops, loadLoops, loadFiles, filesFromDrop, isFileDrag, stopLoop, loopCodeFor, loopKindFor } from "./loops.js";
 import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, EFFECTS } from "./builder.js";
@@ -1081,6 +1082,8 @@ async function pickVariant(mi, k) {
   m.picked = k;
   recordVote({ kind: "pick", ...songContext(state), request: lastRealRequest().slice(0, 500), blind: !!m.blind,
     candidates: m.variantes.map((x) => ({ title: x.titulo, concept: x.concepto || "", changes: x.cambios })), chosen: k });
+  // 0.16: al elegir un sonido entre varios, el ranking aprende (sin IA)
+  if (m.soundPick) api("/api/sounds/choice", { role: m.soundPick.role, style: m.soundPick.style, chosen: m.soundPick.sounds[k], others: m.soundPick.sounds }).catch(() => {});
   state.chat.push({ role: "user", content: L(`Me quedo con la opción ${LETTERS[k]}: «${v.titulo}».`, `I'll keep option ${LETTERS[k]}: «${v.titulo}».`) });
   const summary = applyChanges(v.cambios);
   if (v.concepto && !state.learnedMusic.includes(v.concepto)) state.learnedMusic.push(v.concepto);
@@ -1830,6 +1833,7 @@ async function askLLM(opts = {}) {
     const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
     let summary = applyChanges(r.cambios || {});
     if (r.bloqueado && r.bloqueado.length) summary = (summary ? summary + " · " : "") + L("candados (descartado por el servidor): ", "locks (dropped by the server): ") + r.bloqueado.join(", ");
+    if (r.recetas_nuevas && r.recetas_nuevas.length) summary = (summary ? summary + " · " : "") + L("receta nueva en tu recetario: ", "new recipe in your recipe book: ") + r.recetas_nuevas.map((x) => L(x.name_es, x.name_en)).join(", ");
     const diff = diffFor(before, r.cambios || {});
     if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias.filter((x) => !isDismissed(x));
     let controles = normalizeControls(r.controles, state.tracks);
@@ -2845,6 +2849,36 @@ function hearEntry(e) {
   if (e.kind === "hit") return hearDirt(e.sound, 0);
   beep(60, "piano", 0.6);
 }
+// 0.16: selector de instrumentos. Los 3 sonidos que mejor encajan y YA SUENAN, sobre la misma frase de tu pista,
+// junto al que tienes: eliges de oído (también a ciegas) y el ranking aprende de tu elección.
+async function compareSounds(base, ta) {
+  const card = ta && ta.closest(".track");
+  const t = card && state.tracks.find((x) => x.id === card.dataset.id);
+  if (!t) return;
+  let r = null;
+  try { r = await (await fetch(`/api/sounds/rank?sound=${encodeURIComponent(base)}&role=${encodeURIComponent(t.kind || "")}&style=${encodeURIComponent(state.style || "")}&n=3`)).json(); } catch { /* sin servidor */ }
+  const top = (r && r.top) || [];
+  if (!top.length) {
+    return sysMsg(L(`Ningún sonido parecido a «${base}» suena ahora mismo${r && !r.engine_ok ? " (el motor de sonido no está listo)" : ""}. Descarga alguno desde la Librería o el Laboratorio de sonido.`,
+      `No sound similar to «${base}» plays right now${r && !r.engine_ok ? " (the sound engine isn't ready)" : ""}. Download one from the Library or the Sound lab.`));
+  }
+  const hit = r.base && r.base.kind === "hit";
+  const opt = (e, current) => ({
+    titulo: current ? L(`El que tienes: ${base}`, `The one you have: ${base}`) : L(e.es, e.en) || e.sound,
+    descripcion: current ? L("Tu sonido de ahora, para comparar.", "Your current sound, to compare.")
+      : L(`${e.sound}${e.learned > 0 ? " · te ha gustado antes" : ""}`, `${e.sound}${e.learned > 0 ? " · you liked it before" : ""}`),
+    concepto: current ? "" : L("Sonido", "Sound"),
+    suena: current ? L((r.base && r.base.sounds_like) || "", (r.base && r.base.sounds_like_en) || "") : L(e.sounds_like, e.sounds_like_en),
+    cambios: { pistas: [{ id: t.id, nombre: t.name, tipo: t.kind, codigo: current ? t.code : replaceSound(t.code, base, e.sound, hit && e.kind === "hit") }] },
+  });
+  const variantes = [opt(null, true), ...top.map((e) => opt(e, false))];
+  stopAudition();
+  state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
+  say(L(`Cuatro sonidos para ${t.id} «${t.name}», sobre la misma frase: el tuyo y los 3 que mejor encajan entre los que ya suenan. Escúchalos (o pulsa «A ciegas») y elige: el estudio aprende de tu elección.`,
+    `Four sounds for ${t.id} «${t.name}», on the same phrase: yours and the 3 best matches among the ones that already play. Listen (or press «Blind») and pick: the studio learns from your choice.`),
+    state.options, { variantes, soundPick: { role: t.kind || "", style: state.style || "", sounds: [base, ...top.map((e) => e.sound)] } });
+}
+
 async function installEntry(e) {
   if (e.kind === "engine") { $("#library").close(); openInstLib({ id: e.id }); throw new Error(L("Los motores se instalan desde su ficha.", "Engines are installed from their page.")); }
   const r = await api("/api/instruments/install", { id: e.id || e.sound });
@@ -2865,7 +2899,7 @@ function wireLibrary() {
   });
   // Asistente para cambiar un instrumento (web/replace.js): selecciona su nombre en el código
   initReplace({
-    toast, hear: hearEntry, install: installEntry,
+    toast, hear: hearEntry, install: installEntry, compare: compareSounds,
     canAsk: () => useLLM(), ask: (text) => send(text),
     // un cambio en una caja de código: igual que si lo hubieras escrito tú
     commit: (ta) => {
@@ -4442,7 +4476,8 @@ async function courseOther() {
   const btn = $("#course-dock [data-cs=other]");
   if (btn) btn.disabled = true;
   try {
-    const r = await api("/api/course/variants", { style: c.id, track: { id: t.id, nombre: t.nombre, tipo: t.tipo, codigo: (cur && cur.code) || t.codigo }, seed: Math.floor(Math.random() * 1e6) });
+    const r = await api("/api/course/variants", { style: c.id, track: { id: t.id, nombre: t.nombre, tipo: t.tipo, codigo: (cur && cur.code) || t.codigo }, seed: Math.floor(Math.random() * 1e6),
+      tracks: state.tracks.map((x) => ({ id: x.id, code: x.code, kind: x.kind, muted: x.muted })) });
     if (!r.variantes || !r.variantes.length) return toast(L("No he podido generar versiones para esta pista.", "I couldn't make versions of this track."));
     state.chat.forEach((m) => { if (m.variantes && m.picked == null) m.dismissed = true; });
     say(L(`Tres versiones nuevas de «${t.nombre}» en ${r.key} (${(r.chords || []).join(" ")}). El resto de tu canción no cambia: escúchalas encima y elige.`,
@@ -4621,6 +4656,7 @@ function init() {
   $("#btn-settings").onclick = openSettings;
   initListen({ api, getState: () => state, genres: COURSES.map((c) => ({ id: c.id, name: c.name })) });
   initMonitor({ api });
+  initSoundLab({ api, toast, wireHear: wirePreHear, freeId, addTrack });
   initScore({ api, getState: () => state, changed, sysMsg, toast, playTrack: (t) => live() && playTrack(t) });
   $("#bpm-lock").onclick = () => { state.bpmLock = !state.bpmLock; save(); renderBpmLock(); };
   renderBpmLock();

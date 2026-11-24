@@ -50,6 +50,8 @@ export function variantsHTML(m, mi, a, diffHTML) {
       <div class="va-top"><span class="va-letter">${LETTERS[k]}</span><span class="va-title">${esc(v.titulo)}</span>
         ${v.concepto ? `<span class="tag">${esc(v.concepto)}</span>` : ""}<span class="va-meta">${esc(tracks.join(" · "))}${v.cambios.bpm ? ` · ${Math.round(v.cambios.bpm)} BPM` : ""}</span></div>
       ${v.descripcion ? `<div class="va-desc">${esc(v.descripcion)}</div>` : ""}
+      ${criticHTML(v.critica)}
+      ${v.suena ? `<div class="va-sounds">${icon("speaker", 12)} ${esc(v.suena)}</div>` : ""}
       ${done ? (picked === k ? `<div class="va-badge">${icon("check", 12)} ${L("Elegida", "Picked")}</div>` : "")
         : `<div class="va-row">
         <button class="va-play${playing ? " on" : ""}" data-va="play" data-mi="${mi}" data-k="${k}" title="${esc(L("Suena en directo sobre tu canción hasta que pares o cambies de opción", "Plays live over your song until you stop or switch options"))}">${playing ? `${icon("stop", 12)} ${L("Sonando", "Playing")}` : `${icon("speaker", 13)} ${L("Escuchar", "Listen")}`}</button>
@@ -73,6 +75,15 @@ export function variantsHTML(m, mi, a, diffHTML) {
     ${done ? `<div class="va-head">${picked != null ? L(`Elegiste la ${LETTERS[picked]}; las demás se descartaron.`, `You picked ${LETTERS[picked]}; the others were discarded.`) : L("Opciones descartadas.", "Options discarded.")}</div>`
       : `<div class="va-head">${L("Suenan en directo sobre tu canción · teclas 1-4 para cambiar, Esc para parar", "They play live over your song · keys 1-4 to switch, Esc to stop")}</div>`}
     ${cards}${foot}</div>`;
+}
+
+// 0.16: nota del crítico automático (opcional, apagado por defecto). Es una pista: tu oído decide.
+function criticHTML(c) {
+  if (!c || c.total == null) return "";
+  const part = (v, es, en) => v == null ? "" : `<span>${L(es, en)} <b>${v}</b></span>`;
+  return `<div class="va-critic" title="${esc(L("Crítico automático: una pista, no un juez. Se apaga en Laboratorio de sonido → Aprender.", "Automatic critic: a hint, not a judge. Turn it off in Sound lab → Learning."))}">
+    ${icon("ear", 12)} ${part(c.groove, "groove", "groove")}${part(c.harmony, "armonía", "harmony")}${part(c.form, "forma", "form")}
+    ${c.notes && c.notes.length ? `<em>${esc(c.notes[0])}</em>` : ""}</div>`;
 }
 
 function blindHTML(m, mi, a) {

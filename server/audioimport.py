@@ -170,6 +170,7 @@ def start_job(filename, data, engine=None):
             _run([tools_python(), os.path.join(HERE, "audio_worker.py"), src, out, work, eng, MODELS], line)
             with open(out, "rb") as f:
                 job["midi"] = f.read()
+            keep_stems(work, job["name"], jid)
             job.update(state="done", pct=100)
         except Exception as e:  # noqa: BLE001
             job.update(state="error", error=str(e)[-600:])
@@ -178,6 +179,26 @@ def start_job(filename, data, engine=None):
 
     threading.Thread(target=work_fn, daemon=True).start()
     return job_public(job)
+
+
+STEMS = os.path.join(os.path.dirname(TOOLS), "stems")
+STEM_KEYS = ("drums", "bass", "vocals", "other")
+
+
+def keep_stems(work, name, jid):
+    """Guarda las pistas separadas (batería, bajo, voz, resto) para poder analizarlas luego en el Laboratorio de sonido.
+    Van a ~/.tidal-studio/stems/<canción>-<id>/; se pueden borrar sin problema."""
+    safe = "".join(c if c.isalnum() or c in "-_" else "_" for c in (name or "song"))[:40] or "song"
+    dst = os.path.join(STEMS, f"{safe}-{jid[:6]}")
+    try:
+        for d, _, files in os.walk(work):
+            for f in files:
+                low = f.lower()
+                if low.endswith((".wav", ".flac")) and any(k in low for k in STEM_KEYS):
+                    os.makedirs(dst, exist_ok=True)
+                    shutil.copy2(os.path.join(d, f), os.path.join(dst, f))
+    except OSError:
+        pass
 
 
 def job_public(job):
