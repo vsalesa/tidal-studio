@@ -339,31 +339,126 @@ def _transpose(notes, scale, steps):
     return out
 
 
-def new_melody(lead, chords, key, rng):
-    """Frases de pregunta y respuesta: A (pregunta), B (respuesta), A repetida sobre el acorde nuevo, y cierre."""
+def _fill(rhythm, notes):
+    it = iter(notes)
+    return TOKEN.sub(lambda m: nm(next(it)) if m.group(0) == "x" else m.group(0), rhythm)
+
+
+def _top_tokens(r):
+    """Trozos de primer nivel de un ritmo («[x ~] x ~ x» → ["[x ~]", "x", "~", "x"])."""
+    out, depth, cur = [], 0, ""
+    for ch in r:
+        if ch == " " and depth == 0:
+            if cur:
+                out.append(cur)
+            cur = ""
+            continue
+        depth += ch == "["
+        depth -= ch == "]"
+        cur += ch
+    if cur:
+        out.append(cur)
+    return out
+
+
+def _displace(r):
+    """Desplazamiento rítmico: el motivo empieza un paso más tarde (la última parte pasa al principio)."""
+    t = _top_tokens(r)
+    return " ".join(t[-1:] + t[:-1]) if len(t) > 2 else r
+
+
+def _breathe(r):
+    """Cadencia: la primera mitad del ritmo y luego silencio (la frase respira)."""
+    t = _top_tokens(r)
+    if len(t) < 4:
+        return r
+    half = len(t) // 2
+    xs = [i for i, x in enumerate(t[:half]) if "x" in x]
+    if not xs:
+        return r
+    last = xs[-1]
+    return " ".join(t[:last + 1] + ["~"] * (len(t) - last - 1))
+
+
+def _invert(notes, scale):
+    """Inversión: los mismos pasos de escala, pero hacia el otro lado."""
+    if not notes:
+        return notes
+    idx = [min(range(len(scale)), key=lambda j: abs(scale[j] - p)) for p in notes]
+    first = idx[0]
+    return [scale[max(0, min(len(scale) - 1, first - (i - first)))] for i in idx]
+
+
+def _to_chord(notes, c, lo, hi, scale):
+    """La primera nota del motivo cae en una nota del acorde; el resto se mueve los mismos pasos de escala."""
+    if not notes:
+        return notes
+    tones = _chord_tones(c, lo - 5, hi + 5)
+    target = min(tones, key=lambda t: abs(t - notes[0]))
+    i0 = min(range(len(scale)), key=lambda j: abs(scale[j] - notes[0]))
+    it = min(range(len(scale)), key=lambda j: abs(scale[j] - target))
+    return _transpose(notes, scale, it - i0)
+
+
+def new_melody(lead, chords, key, rng, plan=None):
+    """Melodía con motivo (Maestro v2): un motivo de un compás que se desarrolla.
+
+    Por cada frase de 4 compases: 1 motivo (pregunta) · 2 respuesta con el motivo desplazado · 3 el motivo en secuencia
+    sobre su acorde (o invertido en la segunda frase) · 4 cadencia que respira (silencio al final). El clímax (la nota más
+    aguda) llega en el compás 3 de la última frase, y la última nota es la tónica. `plan` recibe qué hace cada compás.
+    """
     lo, hi = lead["center"] - 7, lead["center"] + 10
     ra, rb = lead["rhythms"][0], lead["rhythms"][-1]
-    scale = sorted(set(_scale_notes(key, lo - 12, hi + 12)))
-    bars, prev, first = [], lead["center"], None
+    scale = _scale_notes(key, lo - 12, hi + 12)
+    n = len(chords)
+    climax = ((n - 1) // 4) * 4 + 2 if n >= 4 and ((n - 1) // 4) * 4 + 2 < n - 1 else -1
+    bars, prev, motif = [], lead["center"], None
+    plan = plan if plan is not None else []
     for b, c in enumerate(chords):
-        pos = b % 4
-        if pos == 0:
-            s, notes = _phrase(ra, c, key, prev, rng, lo, hi)
-            first = (notes, c)
-        elif pos == 2 and first and len(first[0]) == ra.count("x"):
-            # misma frase, movida por la escala hasta el acorde de este compás: el oído reconoce el motivo
-            deg = (c["root"] - first[1]["root"]) % 12
-            steps = round(deg / 12 * 7)
-            steps = steps - 7 if steps > 3 else steps
-            notes = _transpose(first[0], scale, steps)
-            notes = [min(max(p, lo - 2), hi + 2) for p in notes]
-            it = iter(notes)
-            s = TOKEN.sub(lambda m: nm(next(it)) if m.group(0) == "x" else m.group(0), ra)
+        pos, phrase = b % 4, b // 4
+        last = b == n - 1
+        if motif is None:
+            r = ra
+            _, notes = _phrase(ra, c, key, prev, rng, lo, hi)
+            motif = notes
+            what = "motivo"
+        elif pos == 0 and not last:
+            r = ra
+            notes = _to_chord(_invert(motif, scale) if phrase % 2 else motif, c, lo, hi, scale)
+            what = "motivo invertido" if phrase % 2 else "motivo"
+        elif pos == 1 and not last and _displace(ra).count("x") == len(motif):
+            r = _displace(ra)
+            notes = _to_chord(_transpose(motif, scale, -1), c, lo, hi, scale)
+            what = "respuesta (motivo desplazado)"
+        elif pos == 2 and not last:
+            r = ra
+            notes = _to_chord(_transpose(motif, scale, 2 if b == climax else 1), c, lo, hi, scale)
+            if b == climax:
+                # clímax: el motivo sube hasta lo más agudo de la tesitura
+                up = 0
+                while max(notes) + 1 <= hi + 3 and up < 2:
+                    notes = _transpose(notes, scale, 1)
+                    up += 1
+                what = "clímax"
+            else:
+                what = "secuencia"
+        elif pos == 1 and not last:
+            r = rb
+            _, notes = _phrase(rb, c, key, prev, rng, lo, hi)
+            what = "respuesta"
         else:
-            s, notes = _phrase(rb, c, key, prev, rng, lo, hi, end_long=pos == 3 or b == len(chords) - 1)
+            r = _breathe(rb)
+            _, notes = _phrase(r, c, key, prev, rng, lo, hi, end_long=True)
+            if last and notes:
+                tonic = [p for p in range(lo - 5, hi + 6) if p % 12 == key["root"]]
+                if tonic:
+                    notes[-1] = min(tonic, key=lambda p: abs(p - notes[-1]))
+            what = "cadencia"
+        notes = [min(max(p, lo - 3), hi + 5) for p in notes]
         if notes:
             prev = notes[-1]
-        bars.append(s)
+        plan.append(what)
+        bars.append(_fill(r, notes))
     return bars
 
 
@@ -484,8 +579,8 @@ def generate(data, style="merengue", keep=("melody", "chords"), seed=1, lang="es
             notes.append(T("No encuentro una melodía en tu MIDI en este trozo: invento una.", "I can't find a melody in your MIDI in this section: I make one up."))
         mb = new_melody(ld, chords, key, rng)
         out.append({"nombre": tx(ld["name"]), "tipo": "melodia", "codigo": f'{wrap}note "{join_bars(mb)}" # s "{ld["sound"]}" {ld["fx"]}', "origen": "new",
-                    "explicacion": T("Melodía nueva de pregunta y respuesta: el compás 1 pregunta, el 2 contesta, el 3 repite la pregunta sobre su acorde y el 4 cierra en una nota del acorde.",
-                                     "New call-and-response melody: bar 1 asks, bar 2 answers, bar 3 repeats the question over its chord and bar 4 closes on a chord note.")})
+                    "explicacion": T("Melodía nueva con motivo: el compás 1 presenta el motivo, el 2 le contesta desplazado, el 3 lo lleva en secuencia sobre su acorde y el 4 respira en una cadencia; la segunda frase lo invierte y sube al clímax antes de cerrar en la tónica.",
+                                     "New motif melody: bar 1 states the motif, bar 2 answers it displaced, bar 3 sequences it over its chord and bar 4 breathes in a cadence; the second phrase inverts it and climbs to the climax before closing on the tonic.")})
 
     bpm = s["studio_bpm"] if "tempo" in keep else st["bpm"]
     out = out[:12]
@@ -501,6 +596,108 @@ def generate(data, style="merengue", keep=("melody", "chords"), seed=1, lang="es
         + "; ".join(f'{t["nombre"]} ({t["origen"]})' for t in out) + ". Si te pide variarla o alargarla, mantén lo que ha decidido conservar.")
     return {"summary": s, "generated": gen, "tracks": [{k: v for k, v in t.items() if k != "explicacion"} | {"explicacion": tx(t["explicacion"])} for t in out],
             "reference": ref}
+
+
+# ---------------------------------------------------------------- «Otra versión» en los pasos de los cursos
+
+# Tonalidad de cada curso (la misma que su progresión en web/courses.js)
+COURSE_KEYS = {"merengue": (0, "major"), "salsa": (9, "minor"), "cumbia": (9, "minor"), "reggaeton": (9, "minor"), "bossa": (0, "major"),
+               "jazz": (0, "major"), "funk": (4, "minor"), "house": (9, "minor"), "techno": (9, "minor"), "dnb": (2, "minor"), "lofi": (0, "major")}
+PLAN_TXT = {"motivo": ("motivo", "motif"), "motivo invertido": ("motivo invertido", "inverted motif"),
+            "respuesta (motivo desplazado)": ("respuesta desplazada", "displaced answer"), "respuesta": ("respuesta", "answer"),
+            "secuencia": ("secuencia", "sequence"), "clímax": ("clímax", "climax"), "cadencia": ("cadencia", "cadence")}
+
+
+def _keep_sound(code, sound, fx):
+    """Si la pista del curso es `note "…" # s … # efectos`, la versión nueva conserva su sonido y sus efectos."""
+    import score as _score
+    s, f = _score.fx_of(code or "")
+    return (s or sound), (f if s else fx)
+
+
+BASS_LEGEND = [("R", "raíz", "root"), ("L", "quinta por debajo", "fifth below"), ("F", "quinta", "fifth"), ("T", "tercera", "third"),
+               ("O", "octava", "octave"), ("S", "séptima", "seventh"), ("N", "anticipa el acorde siguiente", "anticipates the next chord"),
+               ("A", "nota de paso hacia el acorde siguiente", "approach note into the next chord")]
+
+
+def course_variants(style, role, code="", bars=None, n=3, seed=1, lang="es"):
+    """3 versiones de la pista de un paso del curso (melodía, bajo o acordes) sobre el resto de la canción congelado."""
+    import score as _score
+    st = STYLES.get(style)
+    if not st:
+        raise ValueError("Estilo desconocido|Unknown style")
+    es = lang != "en"
+    tx = lambda d: d["es"] if es else d["en"]  # noqa: E731
+    root, mode = COURSE_KEYS.get(style, (0, st["mode"]))
+    key = {"root": root, "mode": mode, "name": KEY_NAMES[root] + ("m" if mode == "minor" else "")}
+    cur = _score.tidal_to_bars(code) if code else None
+    nb = bars or (len(cur) if cur else 4)
+    nb = max(4, min(16, nb - nb % len(st["prog"]) if nb >= len(st["prog"]) else len(st["prog"])))
+    chords = [roman_chord(st["prog"][b % len(st["prog"])], root, mode) for b in range(nb)]
+    out = []
+    for k in range(n):
+        rng = random.Random(f"{style}:{role}:{seed}:{k}")
+        if role == "melodia":
+            ld = dict(st["lead"])
+            rh = list(ld["rhythms"])
+            # cada versión parte de otro ritmo de motivo: el del estilo, el de respuesta, o el del estilo desplazado
+            ld["rhythms"] = [[rh[0], rh[-1], _displace(rh[0])][k % 3]] + rh[1:]
+            ld["center"] = ld["center"] + (0, -3, 2)[k % 3]
+            snd, fx = _keep_sound(code, ld["sound"], ld["fx"])
+            plan = []
+            mb = new_melody(ld, chords, key, rng, plan)
+            c = f'note "{join_bars(mb)}" # s "{snd}" {fx}'.strip()
+            seen = []
+            for w in plan:
+                if w not in seen:
+                    seen.append(w)
+            title = T(f"Motivo {k + 1}", f"Motif {k + 1}")
+            desc = T("Desarrollo: " + ", ".join(PLAN_TXT[w][0] for w in seen) + ".", "Development: " + ", ".join(PLAN_TXT[w][1] for w in seen) + ".")
+            concept = T("Motivo y desarrollo", "Motif and development")
+        elif role == "bajo":
+            b = st["bass"]
+            snd, fx = _keep_sound(code, b["sound"], b["fx"])
+            pats = b["patterns"]
+            pat = pats[k % len(pats)]
+            extra = ("", "")
+            if k >= len(pats):
+                # anticipación: el último golpe del compás ya toca la raíz del acorde siguiente
+                # (solo en patrones planos: en «[~ R]*4» cambiar la R cambiaría todos los golpes)
+                hits = [m for m in re.finditer(r"\b[RLFTOSNA]\b", pat)]
+                if hits and "*" not in pat and "!" not in pat and hits[-1].group(0) != "N":
+                    j = hits[-1].start()
+                    pat = pat[:j] + "N" + pat[j + 1:]
+                    extra = (" El último golpe ya toca el acorde que viene.", " The last hit already plays the coming chord.")
+            shift = (0, 12, -5)[k % 3] if k >= len(pats) else 0
+            if shift:
+                extra = (extra[0] + (" Una octava más arriba." if shift > 0 else " Más grave."),
+                         extra[1] + (" One octave higher." if shift > 0 else " Lower."))
+            center = b["center"] + shift
+            bb = [bass_bar(pat, c_, chords[(i + 1) % nb], center) for i, c_ in enumerate(chords)]
+            c = f'note "{join_bars(bb)}" # s "{snd}" {fx}'.strip()
+            title = T(f"Bajo {k + 1}", f"Bass {k + 1}")
+            legend = [(ch, es_, en_) for ch, es_, en_ in BASS_LEGEND if ch in pat]
+            desc = T(f"Patrón «{pat}»: " + ", ".join(f"{ch} {es_}" for ch, es_, _ in legend) + "." + extra[0],
+                     f"Pattern «{pat}»: " + ", ".join(f"{ch} {en_}" for ch, _, en_ in legend) + "." + extra[1])
+            concept = T("Bajo que anticipa", "Anticipating bass")
+        else:
+            cp = st["comp"]
+            snd, fx = _keep_sound(code, cp["sound"], cp["fx"])
+            pats = cp["patterns"]
+            pat = pats[k % len(pats)]
+            center = cp["center"] + (0, 5, -4)[k % 3]
+            prev, cb = None, []
+            for c_ in chords:
+                v = voicing(c_, center, prev)
+                prev = v
+                cb.append(comp_bar(pat, v))
+            c = f'note "{join_bars(cb)}" # s "{snd}" {fx}'.strip()
+            title = T(f"Acordes {k + 1}", f"Chords {k + 1}")
+            desc = T("Otra posición de los acordes (voicing), con las notas comunes en su sitio.", "Another chord position (voicing), keeping the common notes in place.")
+            concept = T("Voicings", "Voicings")
+        out.append({"titulo": tx(title), "descripcion": tx(desc), "concepto": tx(concept), "codigo": c,
+                    "bars": _score.tidal_to_bars(c)})
+    return {"key": key["name"], "chords": [chord_name(c_) for c_ in chords], "variants": out}
 
 
 def styles_list(lang="es"):

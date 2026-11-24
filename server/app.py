@@ -15,6 +15,7 @@ import platform
 import sys
 import threading
 import time
+from xml.etree.ElementTree import ParseError as ET_ParseError
 import webbrowser
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -51,6 +52,7 @@ import references  # noqa: E402
 import inventory  # noqa: E402
 import router  # noqa: E402
 import songindex  # noqa: E402
+import score as scoremod  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
 from samples import Library, SampleError, safe_name, pack_index, check_remote, TYPES as SAMPLE_TYPES  # noqa: E402
@@ -245,6 +247,33 @@ DEFAULT_PLUGINS = {"state": "idle", "installed": []}
 # pasos (skills cargadas, a quién pregunta…) y el razonamiento de la IA, si el proveedor lo da.
 TRACES = {}
 _traces_lock = threading.Lock()
+
+
+def _score_reply(reply, sess):
+    """La «partitura» que escribe Maestro se convierte en pistas de Tidal, y cada pista de melodía, acordes o bajo
+    que sea una partitura lleva su parte para el cuaderno. Igual en las opciones y en los pasos de un plan."""
+    tracks = [t for t in sess.get("tracks") or [] if isinstance(t, dict)]
+    sc = sess.get("score") if isinstance(sess.get("score"), dict) else None
+
+    def one(c):
+        if not isinstance(c, dict):
+            return
+        if isinstance(c.get("partitura"), dict):
+            try:
+                new, pistas = scoremod.apply_partitura(sc, c["partitura"], tracks)
+            except ValueError as e:
+                c.setdefault("avisos", []).append(f"partitura: {e}")
+                new, pistas = None, []
+            if new:
+                ids = {p["id"] for p in pistas}
+                c["pistas"] = [p for p in (c.get("pistas") or []) if p.get("id") not in ids] + pistas
+                c["score_meta"] = {"key": new["key"], "meter": new["meter"]}
+            c.pop("partitura", None)
+        scoremod.attach_parts(c.get("pistas"), (sc or {}).get("meter") or "4/4", sc)
+
+    one(reply.get("cambios"))
+    for v in reply.get("variantes") or []:
+        one(v.get("cambios") if isinstance(v, dict) else None)
 
 
 def fetch_samples(cfg, reply, sess, tr):
@@ -607,6 +636,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"error": "Cancelado", "cancelled": True}, 409)
             tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
             reply = parse_reply(raw)
+            _score_reply(reply, sess)
             req.begin("validate")
             blocked = router.validate(reply, sess, rcfg["max_candidates"])
             req.end("validate", "blocked" if blocked else "pass", hits=len(blocked), note=", ".join(blocked) or None)
@@ -634,6 +664,33 @@ class Handler(SimpleHTTPRequestHandler):
         return self._json({**reply, "skills": skills_report(sk, raw), "monitor": req.id,
                            **({"command": command} if command else {}),
                            **({"trace": tr.public()} if tr.id else {})})
+
+    def _score(self, path, data):
+        """Partitura (release 0.15): MusicXML de ida y vuelta y traducción entre partitura y Tidal."""
+        lang = data.get("lang")
+        try:
+            if path == "/api/score/xml":
+                sc = scoremod.normalize(data.get("score")) or scoremod.empty_score()
+                return self._json({"xml": scoremod.to_musicxml(sc, str(data.get("title") or ""))})
+            if path == "/api/score/parse":
+                return self._json({"score": scoremod.to_json(scoremod.from_musicxml(str(data.get("xml") or "")))})
+            if path == "/api/score/render":
+                # Una partitura (p. ej. editada en MuseScore) → el código de cada pista que sale de ella
+                sc = scoremod.normalize(data.get("score")) or scoremod.empty_score()
+                return self._json({"tracks": [{"id": p["track"], "part": p["id"], "role": p["role"], "name": p["name"], "code": scoremod.part_to_tidal(p)}
+                                              for p in sc["parts"] if p.get("track")]})
+            if path == "/api/score/from-tidal":
+                code = str(data.get("code") or "")
+                bars = scoremod.tidal_to_bars(code, str(data.get("meter") or "4/4"))
+                if bars is None:
+                    return self._json({"bars": None})
+                sound, fx = scoremod.fx_of(code)
+                part = scoremod.new_part("x", "", "melodia", None, sound, bars, fx)
+                return self._json({"bars": scoremod.part_json(part)["bars"], "sound": sound, "fx": fx})
+        except (ValueError, ET_ParseError) as e:
+            msg = str(e)
+            return self._json({"error": msg if lang != "en" else f"Couldn't read the score: {msg}"}, 400)
+        return self._json({"error": "Ruta no encontrada"}, 404)
 
     def _midi(self, path, data):
         """Teclado MIDI: notas de la web, ajustes, buscar teclados, grabar una toma y traducirla a Tidal."""
@@ -1044,6 +1101,25 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._json(llmdiag.diagnose_api(cfg, data.get("lang", "es")))
                 return self._json(llmdiag.test_models(cfg, data.get("lang", "es")))
 
+            if path.startswith("/api/score/"):
+                return self._score(path, data)
+            if path == "/api/course/variants":
+                # «Otra versión» de un paso del curso: 3 candidatas de esa pista, el resto de la canción congelado (sin IA)
+                tk = data.get("track") if isinstance(data.get("track"), dict) else {}
+                role = str(tk.get("tipo") or data.get("role") or "melodia")
+                try:
+                    r = midigen.course_variants(str(data.get("style") or ""), role, str(tk.get("codigo") or ""),
+                                                int(data.get("bars") or 0) or None, 3, int(data.get("seed") or 1), data.get("lang") or "es")
+                    tid = str(tk.get("id") or "d6")
+                    variantes = []
+                    for v in r["variants"]:
+                        pistas = [{"id": tid, "nombre": str(tk.get("nombre") or tid), "tipo": role, "codigo": v["codigo"]}]
+                        scoremod.attach_parts(pistas)
+                        variantes.append({"titulo": v["titulo"], "descripcion": v["descripcion"], "concepto": v["concepto"], "cambios": {"pistas": pistas}})
+                    return self._json({"key": r["key"], "chords": r["chords"], "variantes": variantes})
+                except ValueError as e:
+                    es, _, en = str(e).partition("|")
+                    return self._json({"error": en if data.get("lang") == "en" and en else es}, 400)
             if path == "/api/songs/sync":
                 # Copia de SOLO LECTURA de la canción del navegador: el servidor nunca la escribe de vuelta
                 if not SONGS:
@@ -1375,9 +1451,24 @@ class Handler(SimpleHTTPRequestHandler):
                     if path == "/api/file/dialog":
                         return self._json(tfiles.dialog(data.get("mode", "open"), data.get("name", ""), data.get("dir", ""), data.get("title", "")))
                     if path == "/api/file/read":
-                        return self._json(tfiles.read(data.get("path")))
+                        r = tfiles.read(data.get("path"))
+                        if not str(r["path"]).lower().endswith(".txt"):
+                            sx = tfiles.read_score(r["path"])
+                            if sx:
+                                # cancion.tidal + cancion.musicxml: la partitura viaja con el código
+                                try:
+                                    r["score"] = scoremod.to_json(scoremod.from_musicxml(sx["xml"]))
+                                    r["score_path"], r["score_mtime"] = sx["path"], sx["mtime"]
+                                except (ValueError, ET_ParseError) as e:
+                                    r["score_error"] = str(e)
+                        return self._json(r)
                     if path == "/api/file/write":
-                        return self._json(tfiles.write(data.get("path"), data.get("content", ""), bool(data.get("overwrite", True))))
+                        r = tfiles.write(data.get("path"), data.get("content", ""), bool(data.get("overwrite", True)))
+                        sc = scoremod.normalize(data.get("score")) if data.get("score") else None
+                        if sc and sc["parts"] and not r.get("exists"):
+                            w = tfiles.write_score(r["path"], scoremod.to_musicxml(sc, data.get("title") or os.path.splitext(r["name"])[0]))
+                            r["score_path"], r["score_mtime"] = w["path"], w["mtime"]
+                        return self._json(r)
                     if path == "/api/file/list":
                         return self._json(tfiles.list_dir(data.get("dir", "")))
                     if path == "/api/file/trash":

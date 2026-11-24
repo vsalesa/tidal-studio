@@ -1657,3 +1657,29 @@ a.btn { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; 
 .mn-limits label.check { justify-content: flex-start; }
 .mn-limits input[type=number] { width: 90px; }
 .mn-limits .row { grid-column: 1 / -1; }
+
+/* ===== 0.15 · Partitura (MusicXML) ===== */
+.sc-badge { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 1px 7px; border-radius: 99px; background: var(--plum-soft); color: var(--plum); font-weight: 600; white-space: nowrap; }
+.sc-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 8px; padding: 8px 10px; border-radius: var(--r-sm); background: var(--plum-soft); color: var(--ink-2); font-size: 12.5px; border: 1px solid color-mix(in srgb, var(--plum) 25%, transparent); }
+.sc-bar > svg { color: var(--plum); flex: none; }
+.sc-bar > span { flex: 1 1 200px; }
+.sc-bar button { font-size: 12px; padding: 4px 10px; }
+.score-dlg { width: min(860px, calc(100vw - 32px)); }
+.sc-meta { display: flex; flex-wrap: wrap; gap: 16px; margin: 6px 0 12px; color: var(--ink-2); font-size: 13px; }
+.sc-meta b { font-family: var(--serif); font-size: 18px; color: var(--ink); margin-right: 4px; }
+.sc-part { border: 1px solid var(--rule); border-left: 4px solid var(--k); border-radius: var(--r-sm); background: var(--card); padding: 10px 12px; margin-bottom: 10px; }
+.sc-phead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 6px; }
+.sc-phead b { font-size: 14px; }
+.sc-role { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--k); font-weight: 700; }
+.sc-trk, .sc-n { font-size: 12px; color: var(--ink-3); }
+.sc-n { margin-left: auto; }
+.sc-roll { display: block; width: 100%; height: auto; background: var(--paper); border-radius: 6px; }
+.sc-barline { stroke: var(--rule-strong); stroke-width: 1; }
+.sc-cline { stroke: var(--rule); stroke-dasharray: 3 3; }
+.sc-cname, .sc-barnum { font: 9px var(--mono); fill: var(--ink-3); }
+.sc-part details { margin-top: 6px; }
+.sc-part summary { cursor: pointer; font-size: 12px; color: var(--ink-2); }
+.sc-text { white-space: pre-wrap; word-break: break-word; font: 12px/1.6 var(--mono); background: var(--sunk); padding: 8px 10px; border-radius: 6px; margin: 6px 0 0; max-height: 180px; overflow: auto; }
+.sc-empty { display: grid; justify-items: center; text-align: center; gap: 4px; padding: 28px 16px; color: var(--ink-3); border: 1px dashed var(--rule-strong); border-radius: var(--r); }
+.sc-empty p { max-width: 460px; margin: 0; }
+.sc-actions { margin-top: 12px; gap: 8px; flex-wrap: wrap; }
