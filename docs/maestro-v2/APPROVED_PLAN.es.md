@@ -62,16 +62,19 @@ El enrutador solo baja de capa cuando la anterior no tiene una respuesta con suf
 - midigen v2: motivo, transformaciones (repetir, secuencia, inversión, desplazamiento rítmico), frases pregunta-respuesta con silencios, clímax y cadencia; bajo que anticipa y piano que deja hueco.
 - Botón "Otra versión" en cada paso del curso: 3 candidatas sobre el resto de la canción congelado.
 - Lectura y escritura básicas de MusicXML con Python estándar; music21 en el entorno de audio para el análisis profundo.
+- *(Añadido 24-11-2026, Victor)* Hash por pista: cada propuesta dice qué pistas espera sin cambios; si alguna cambió, la propuesta llega como opción en vez de aplicarse.
 
 ### 0.16 — Sonidos que aprenden
 - Análisis profundo de sonidos **bajo demanda**, eligiendo qué incluir (biblioteca, descargas, packs comprados, stems de MSST/Demucs). Los rasgos (ataque, caída, brillo, tono, ruido) van a SQLite, con librosa del entorno de audio.
 - Recetas de sonido: una muestra más su procesado, o un synth de SuperCollider con parámetros. Maestro puede **combinar recetas** para crear sonidos nuevos.
 - Las candidatas suenan sobre la canción de Victor por defecto (solas, opcional). Maestro hace preguntas concretas cuando duda (frecuencia configurable). El ranking aprende de las elecciones sin LLM.
 - Complemento CLaMP 3 como se describe en la sección 2.
+- *(Añadido 24-11-2026, Victor)* Crítico automático opcional (apagado por defecto): puntúa groove, armonía y forma de cada candidata como pista a su lado. Es un extra; el juez sigue siendo tu oído.
 
 ### 0.17 — Géneros
 - Subir al nuevo nivel los 11 géneros que ya existen (merengue orquesta, salsa, cumbia, reggaeton, bossa, jazz, funk, house, techno, drum & bass, lo-fi): composición por secciones en la partitura, selector de sonidos aprendido, aviso cuando falta un sonido con licencia, ejemplos de referencia.
 - Nuevos: reggae/dub, hip-hop boom bap, afrobeat (grooves reales en el Groove MIDI Dataset, CC BY 4.0) y bachata si la guitarra suena bien.
+- *(Añadido 24-11-2026, Victor)* Variantes de cumbia elegidas antes del ritmo y los instrumentos: colombiana, sonidera, villera, chicha.
 
 ### 0.18 — Memoria y estilos
 - Alcances de memoria: canción, proyecto/curso, género, global.
@@ -79,6 +82,8 @@ El enrutador solo baja de capa cuando la anterior no tiene una respuesta con suf
 - Un registro de todo lo añadido, con cada entrada reversible.
 - "Mis estilos" (groove, roles, instrumentos, BPM; no las notas), compartibles por GitHub.
 - Panel de almacenamiento para decidir qué borrar según tamaño e impacto en rendimiento.
+- *(Añadido 24-11-2026, Victor)* Tres formas de usar una plantilla o estilo: **inspiración** (material nuevo a partir de sus relaciones), **transformación** (adaptar estructura, groove y partes a otra tonalidad, tempo o formación, con vista previa) y **copia literal** (solo si la eliges, queda registrada). Más los "casos musicales": un problema, el antes/después y por qué lo aceptaste.
+- *(Añadido 24-11-2026, Victor)* Con GitHub conectado, los estilos y memorias aprobados se guardan solos como copia de seguridad (nunca las escuchas ni lo pendiente).
 
 ## 5. Aparcado
 

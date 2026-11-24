@@ -62,16 +62,19 @@ The router only goes down a layer when the one above has no answer with enough c
 - midigen v2: motif, transformations (repeat, sequence, inversion, rhythmic displacement), question/answer phrases with rests, climax and cadence; bass that anticipates, piano that leaves room.
 - "Another version" button on each course step: 3 candidates over the frozen rest of the song.
 - Basic MusicXML read/write with the Python standard library; music21 in the audio-tools env for deep analysis.
+- *(Added 2026-11-24, Victor)* Per-track hashes: each proposal says which tracks it expects unchanged; if one of them changed, the proposal becomes an option instead of being applied.
 
 ### 0.16 — Sounds that learn
 - Deep sound analysis **on demand**, choosing what to include (library, downloads, bought packs, MSST/Demucs stems). Features (attack, decay, brightness, pitch, noise) go to SQLite, using librosa from the audio-tools env.
 - Sound recipes: a sample plus processing, or a SuperCollider synth with parameters. Maestro can **combine recipes** to create new sounds.
 - Candidates are heard over Victor's song by default (solo optional). Maestro asks concrete questions when unsure (frequency configurable). The ranking learns from choices without the LLM.
 - CLaMP 3 add-on as described in section 2.
+- *(Added 2026-11-24, Victor)* Optional automatic critic (off by default): scores groove, harmony and form of each candidate as a hint next to it. It is an extra; your ear stays the judge.
 
 ### 0.17 — Genres
 - Bring the 11 existing genres (merengue orquesta, salsa, cumbia, reggaeton, bossa, jazz, funk, house, techno, drum & bass, lo-fi) to the new level: section composition in the score, learned sound selector, warning when a licensed sound is missing, reference examples.
 - New: reggae/dub, hip-hop boom bap, afrobeat (real grooves in the Groove MIDI Dataset, CC BY 4.0) and bachata if the guitar sounds right.
+- *(Added 2026-11-24, Victor)* Cumbia variants chosen before the rhythm and instruments: Colombian, sonidera, villera, chicha.
 
 ### 0.18 — Memory and styles
 - Memory scopes: song, project/course, genre, global.
@@ -79,6 +82,8 @@ The router only goes down a layer when the one above has no answer with enough c
 - A log of everything added, each entry revertible.
 - "My styles" (groove, roles, instruments, BPM — not the notes), shareable through GitHub.
 - Storage panel to decide what to delete by size and performance impact.
+- *(Added 2026-11-24, Victor)* Three ways to use a template or style: **inspiration** (new material from its relations), **transformation** (remap structure, groove and parts to another key, tempo or ensemble, with preview) and **literal copy** (only when you pick it, logged). Plus "musical cases": a problem, the before/after and why you accepted it.
+- *(Added 2026-11-24, Victor)* When GitHub is connected, approved styles and memories are committed automatically as a backup (never auditions or pending items).
 
 ## 5. Parked
 
