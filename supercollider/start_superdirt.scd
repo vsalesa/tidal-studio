@@ -41,9 +41,11 @@ if(\SuperDirt.asClass.isNil) {
             // Biblioteca de sintetizadores propios (ts_rhodes, ts_pad, ts_acid…): ver studio-synthlib.scd
             (~studioDir +/+ "studio-synthlib.scd").load;
             s.sync;
-            // 13 "orbits": una por pista d1..d12 y la 13.ª (índice 12) solo para el teclado MIDI,
-            // así tocar el piano no le cambia la reverb ni el delay a d12
-            ~dirt.start(57120, 0 ! 13);
+            // N + 1 "orbits": una por pista d1..dN (Ajustes → Pistas, 12 por defecto; lo manda el servidor en
+            // TIDAL_STUDIO_TRACKS) y la última (índice N) solo para el teclado MIDI, así tocar el piano no le
+            // cambia la reverb ni el delay a dN. Cada orbit tiene sus efectos encendidos: más pistas, más CPU.
+            ~studioTracks = ("TIDAL_STUDIO_TRACKS".getenv ? "12").asInteger.clip(12, 32);
+            ~dirt.start(57120, 0 ! (~studioTracks + 1));
             // Instrumentos de la biblioteca (una grabación por nota): ver studio-instruments.scd
             (~studioDir +/+ "studio-instruments.scd").load;
             // Motores de synth opcionales (Mi-UGens, VSTPlugin con Surge XT / Vital): ver studio-engines.scd

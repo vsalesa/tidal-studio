@@ -3,6 +3,7 @@
 // inspirada en ella con Maestro. Todo pasa en este ordenador; no se sube nada.
 import { L, LANG } from "./i18n.js";
 import { icon } from "./icons.js";
+import { maxTracks } from "./tracklimit.js";
 import { courseById } from "./courses.js";
 
 const MIDI_EXT = /\.(mid|midi|kar|rmi)$/i;
@@ -245,7 +246,7 @@ function resultView() {
     </div>
     <h3>${L("Pistas de Tidal", "Tidal tracks")} <span class="hint">${L("· quita las que no quieras", "· untick the ones you don't want")}</span></h3>
     <div class="imp-tracks">${tracks.map((t, i) => `<label class="imp-track k-${esc(t.tipo)}"><input type="checkbox" data-i="${i}" ${cur.off.has(i) ? "" : "checked"}>${icon(KIND_ICON[t.tipo] || "textura", 16)}<b>${esc(t.nombre)}</b><code>${esc(t.codigo)}</code></label>`).join("")}</div>
-    ${s.dropped && s.dropped.length ? `<p class="hint">${L("No caben más de 12 pistas; he dejado fuera: ", "Only 12 tracks fit; I left out: ")}${esc(s.dropped.join(", "))}</p>` : ""}
+    ${s.dropped && s.dropped.length ? `<p class="hint">${L(`No caben más de ${maxTracks()} pistas (Ajustes → Pistas); he dejado fuera: `, `Only ${maxTracks()} tracks fit (Settings → Tracks); I left out: `)}${esc(s.dropped.join(", "))}</p>` : ""}
     <div class="wz-nav">
       <button data-a="back">${icon("back", 16)} ${L("Otro archivo", "Another file")}</button>
       <div class="right">

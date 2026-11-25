@@ -34,6 +34,7 @@ import { initMonitor } from "./monitor.js";
 import { initScore, linkPart, unlinkTrack, scoreBadgeHTML, scoreBarHTML, scoreBarAction, adoptScore } from "./score.js";
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { planHTML, planContext, planEnabled, setPlanEnabled, newPlan, nextStep as nextPlanStep, planDone, PLAN_START, PLAN_STEPWISE, PLAN_ALL, PLAN_SPLIT, PLAN_CONTINUE, PLAN_RETRY, planBarHTML } from "./plan.js";
+import { maxTracks, setMaxTracks, TRACKS_MIN, TRACKS_MAX } from "./tracklimit.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { initAppUpdate } from "./appupdate.js";
 import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
@@ -50,7 +51,6 @@ import { steps as builderSteps, defaultsFor, compose, SLOTS, STRUCTURE_EXPLAIN, 
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const MAX_TRACKS = 12;
 const STORE_KEY = "tidal-studio-session-v2";
 const KIND_COLOR = { percusion: "var(--k-percusion)", bajo: "var(--k-bajo)", armonia: "var(--k-armonia)", melodia: "var(--k-melodia)",
   textura: "var(--k-textura)", efecto: "var(--k-fx)", estructura: "var(--ink)" };
@@ -206,7 +206,7 @@ function fileText() {
   return lines.join("\n").replace(/\n+$/, "") + "\n";
 }
 
-// Lee código de Tidal (pestaña Código o un archivo): pistas d1…d12 / p "nombre", el resto a «código extra»
+// Lee código de Tidal (pestaña Código o un archivo): pistas d1…dN / p "nombre", el resto a «código extra»
 function parseCode(text, master = state.master) {
   const r = parseTidalFile(text, { parseMixLine: (l) => parseMixLine(l, { master }) });
   for (const t of r.tracks) {
@@ -271,7 +271,7 @@ function hushAll() {
 
 // ------------------------------------------------------------------ pistas
 function freeId() {
-  for (let i = 1; i <= MAX_TRACKS; i++) if (!state.tracks.find((t) => t.id === "d" + i)) return "d" + i;
+  for (let i = 1; i <= maxTracks(); i++) if (!state.tracks.find((t) => t.id === "d" + i)) return "d" + i;
   return null;
 }
 function selectedTrack() {
@@ -279,7 +279,7 @@ function selectedTrack() {
 }
 function addTrack(name, kind, code) {
   const id = freeId();
-  if (!id) { toast(L("Máximo 12 pistas. Borra alguna primero.", "Maximum 12 tracks. Delete one first.")); return null; }
+  if (!id) { toast(L(`Máximo ${maxTracks()} pistas. Borra alguna o sube el número en Ajustes → Pistas.`, `Maximum ${maxTracks()} tracks. Delete one or raise the number in Settings → Tracks.`)); return null; }
   const t = { id, name, kind, code, muted: false };
   state.tracks.push(t);
   state.selected = id;
@@ -1989,7 +1989,7 @@ async function askLLM(opts = {}) {
     if (!server.samples) { try { server.samples = (await api("/api/samples")).sounds.map((x) => ({ name: x.name, type: x.type, n: x.files.length })); } catch { server.samples = []; } }
     const session = {
       curso: state.course ? (() => { const c = curCourse(); return c ? { id: state.course.id, nombre: c.name, tradicion: c.tradition, skill: c.skill, paso: state.course.i + 1, ...(c.variant ? { variante: c.variant.name } : {}), ...(c.form ? { forma: c.form.map((f) => `${f.name} (${f.bars} compases)`).join(" · ") } : {}), ...(c.ref ? { ejemplo_real: `${c.ref.style}: ${c.ref.note}` } : {}), ...(state.course.mine ? { ejemplo_del_alumno: state.course.mine.reference } : {}) } : undefined; })() : undefined,
-      bpm: state.bpm, bpm_lock: !!state.bpmLock, song_id: state.projectId || "", step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
+      max_tracks: maxTracks(), bpm: state.bpm, bpm_lock: !!state.bpmLock, song_id: state.projectId || "", step: state.step, style: state.style, lastError: state.lastError, samples: server.samples, variantes: variantsEnabled(), descargas: fetchEnabled(),
       plan_modo: planEnabled() && !state.course, ...(opts.planStep ? { plan_paso: opts.planStep } : {}), ...(opts.forcePlan ? { plan_forzar: true } : {}),
       referencia: state.reference || undefined,
       master: state.master || undefined,
@@ -2432,7 +2432,7 @@ function adoptImport(r) {
   startFresh();
   state.name = r.name;
   state.bpm = Math.max(40, Math.min(220, Math.round(r.bpm || 120)));
-  state.tracks = r.tracks.slice(0, 12).map((t, i) => ({ id: "d" + (i + 1), name: t.nombre, kind: t.tipo, code: fixNegatives(t.codigo), muted: false }));
+  state.tracks = r.tracks.slice(0, maxTracks()).map((t, i) => ({ id: "d" + (i + 1), name: t.nombre, kind: t.tipo, code: fixNegatives(t.codigo), muted: false }));
   state.reference = r.reference; state.refSummary = r.summary;
   state.step = "libre";
   resetHistory(state);
@@ -2487,7 +2487,7 @@ function adoptStyleTracks(st, tracks, bpm, mode, res, prefix = "") {
   state.bpm = Math.max(40, Math.min(220, Math.round(bpm || st.bpm || 120))); $("#bpm").value = state.bpm;
   state.style = (res && res.genre) || st.genre || state.style;
   state.styleUse = { id: st.id, modo: mode };
-  state.tracks = tracks.slice(0, 12).map((t, i) => ({ id: t.id || "d" + (i + 1), name: t.name || t.id, kind: t.kind || "", code: fixNegatives(t.code), muted: false }));
+  state.tracks = tracks.slice(0, maxTracks()).map((t, i) => ({ id: t.id || "d" + (i + 1), name: t.name || t.id, kind: t.kind || "", code: fixNegatives(t.code), muted: false }));
   state.step = "libre";
   resetHistory(state);
   renderAll(); renderBlocks(); renderMixer(true); renderArrange(); renderHistoryButtons();
@@ -3042,8 +3042,8 @@ function wireMidi() {
     ensure: (snd) => ensureInstruments([`note "c" # s "${snd}"`], { quiet: true }),
     preview: async (tracks, bpm, synced) => {
       await ensureInstruments(tracks.map((t) => t.codigo), { quiet: true });
-      const ids = []; for (let i = MAX_TRACKS; i >= 1 && ids.length < tracks.length; i--) if (!state.tracks.find((t) => t.id === "d" + i)) ids.push("d" + i);
-      preHear({ bpm: synced || bpm === state.bpm ? undefined : bpm, pistas: tracks.map((t, i) => ({ id: ids[i] || "d" + (MAX_TRACKS - i), codigo: fixNegatives(t.codigo) })) });
+      const ids = []; for (let i = maxTracks(); i >= 1 && ids.length < tracks.length; i--) if (!state.tracks.find((t) => t.id === "d" + i)) ids.push("d" + i);
+      preHear({ bpm: synced || bpm === state.bpm ? undefined : bpm, pistas: tracks.map((t, i) => ({ id: ids[i] || "d" + (maxTracks() - i), codigo: fixNegatives(t.codigo) })) });
     },
     stopPreview: () => stopPreHear(),
     // salida al teclado: pasar pistas a tu piano (s "midi") y volver
@@ -3684,6 +3684,7 @@ async function refreshStatus() {
     const s = await api("/api/status");
     server.llm = s.llm_configured; server.engine = s.engine; server.github = s.github_configured;
     server.ghWhere = s.github_where || null; server.ghNew = !!s.github_create_new;
+    if (s.max_tracks) setMaxTracks(s.max_tracks);
     if (!dataNoticed && s.data) noticeData(s.data);
     syncSounds(s.engine && s.engine.sounds_rev, api);
     refreshHighlights();
@@ -3727,6 +3728,7 @@ async function openSettings() {
   $("#gh-branch").value = g.branch || "main"; $("#gh-folder").value = g.folder || "songs";
   $("#gh-create-new").checked = !!g.create_new;
   $("#gh-msg").textContent = ""; $("#btn-gh-create").hidden = true;
+  $("#tracks-count").value = c.tracks?.count || maxTracks(); tracksCpuHint();
   toggleProvider(); $("#test-msg").textContent = "";
   $("#settings").showModal();
 }
@@ -3734,8 +3736,24 @@ function toggleProvider() {
   const p = document.querySelector("input[name=provider]:checked").value;
   $("#fs-openai").hidden = p !== "openai"; $("#fs-anthropic").hidden = p !== "anthropic"; $("#fs-claudecode").hidden = p !== "claudecode";
 }
+// Ajustes → Pistas: lo que cuesta cada número, en una frase
+function tracksCpuHint() {
+  const n = Math.max(TRACKS_MIN, Math.min(TRACKS_MAX, Math.round(+$("#tracks-count").value || 12)));
+  const extra = Math.round((n + 1) / 13 * 100) - 100;
+  $("#tracks-cpu").textContent = n === 12 ? L("Arranque estándar.", "Standard start.")
+    : L(`${n} pistas + 1 para el teclado MIDI = ${n + 1} orbits: unos ${extra} % más de CPU en efectos que con 12.`,
+      `${n} tracks + 1 for the MIDI keyboard = ${n + 1} orbits: about ${extra}% more effects CPU than with 12.`);
+}
 async function saveSettings() {
+  const nTracks = Math.max(TRACKS_MIN, Math.min(TRACKS_MAX, Math.round(+$("#tracks-count").value || 12)));
+  const tracksChanged = nTracks !== maxTracks();
+  if (tracksChanged && state.tracks.some((t) => +t.id.slice(1) > nTracks)) {
+    toast(L(`Tu canción usa pistas por encima de d${nTracks}: bórralas o muévelas antes de bajar el número.`,
+      `Your song uses tracks above d${nTracks}: delete or move them before lowering the number.`));
+    return false;
+  }
   await api("/api/config", {
+    tracks: { count: nTracks },
     provider: document.querySelector("input[name=provider]:checked").value,
     openai: { base_url: $("#oa-url").value, api_key: $("#oa-key").value, model: $("#oa-model").value },
     anthropic: { api_key: $("#an-key").value, model: $("#an-model").value },
@@ -3745,6 +3763,8 @@ async function saveSettings() {
       branch: $("#gh-branch").value, folder: $("#gh-folder").value, create_new: $("#gh-create-new").checked },
   });
   state.offline = false; save();
+  setMaxTracks(nTracks);
+  if (tracksChanged) toast(L(`Ahora tienes ${nTracks} pistas (d1…d${nTracks}). Reiniciando el sonido: dale a Play cuando ponga «Sonido listo».`, `You now have ${nTracks} tracks (d1…d${nTracks}). Restarting the sound: press Play when it says «Sound ready».`));
   await refreshStatus();
 }
 
@@ -4578,7 +4598,7 @@ async function courseMineLoad(f) {
     const s = data.summary;
     rememberMidi(s.name, bytes);
     state.course.mine = { name: s.name, bpm: s.studio_bpm, key: s.key && s.key.name, chords: s.window.chords, instruments: s.instruments,
-      tracks: data.tracks.slice(0, 12).map((t) => ({ nombre: t.nombre, tipo: t.tipo, codigo: t.codigo })), reference: (data.reference || "").slice(0, 3000) };
+      tracks: data.tracks.slice(0, maxTracks()).map((t) => ({ nombre: t.nombre, tipo: t.tipo, codigo: t.codigo })), reference: (data.reference || "").slice(0, 3000) };
     save(); renderCourse();
     say(L(`He cargado «${s.name}» como ejemplo del curso: ${s.bpm} BPM, ${s.meter}, ${s.key ? s.key.name : "?"}, acordes ${s.progression.slice(0, 4).join(" → ")}. Pulsa Escuchar en el panel del curso para oír cuatro compases con todos sus instrumentos. Cuando me preguntes por un paso, lo compararé con este ejemplo.`,
       `I loaded «${s.name}» as the course example: ${s.bpm} BPM, ${s.meter}, ${s.key ? s.key.name : "?"}, chords ${s.progression.slice(0, 4).join(" → ")}. Press Listen in the course panel to hear four bars with all its instruments. When you ask me about a step, I'll compare it with this example.`), [COURSE_ASK()]);
@@ -5036,7 +5056,8 @@ function init() {
     if (e.target.value === "custom") return;
     const [url, model] = e.target.value.split("|"); $("#oa-url").value = url; $("#oa-model").value = model;
   };
-  $("#btn-save").onclick = async () => { await saveSettings(); $("#settings").close(); };
+  $("#btn-save").onclick = async () => { if (await saveSettings() !== false) $("#settings").close(); };
+  $("#tracks-count").addEventListener("input", tracksCpuHint);
   $("#btn-gh").onclick = openGitHubSave;
   $("#btn-samples").onclick = () => openSamples();
   $("#btn-tour").onclick = runTour;

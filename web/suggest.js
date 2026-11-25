@@ -1,11 +1,12 @@
 import { L } from "./i18n.js";
+import { maxTracks } from "./tracklimit.js";
 // Ideas de Maestro sin IA: miran tu canción y proponen algo, como un productor a tu lado.
 // Cada idea enseña un concepto musical. Devuelven cambios en el mismo formato que la IA.
 import { COMPONENTS, byId } from "./catalog.js";
 
 const has = (tracks, re) => tracks.some((t) => re.test(t.code));
 const kindOf = (tracks, k) => tracks.filter((t) => t.kind === k);
-const freeId = (tracks) => { for (let i = 1; i <= 12; i++) if (!tracks.find((t) => t.id === "d" + i)) return "d" + i; return null; };
+const freeId = (tracks) => { for (let i = 1; i <= maxTracks(); i++) if (!tracks.find((t) => t.id === "d" + i)) return "d" + i; return null; };
 
 function addComp(tracks, compId, style) {
   const c = byId[compId];

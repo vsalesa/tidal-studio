@@ -13,7 +13,7 @@ import struct
 from collections import Counter, defaultdict
 
 MAX_BYTES = 4 * 1024 * 1024
-MAX_TRACKS = 12
+MAX_TRACKS = 12  # por defecto; el estudio pasa su número de pistas (Ajustes → Pistas)
 
 
 class ImportError_(Exception):
@@ -317,7 +317,7 @@ def _tempo_bpm(midi):
     return 60_000_000 / us
 
 
-def analyse(data, lang="es", start_bar=None, bars=4, name=""):
+def analyse(data, lang="es", start_bar=None, bars=4, name="", max_tracks=MAX_TRACKS):
     """Analiza el MIDI y genera las pistas de Tidal del trozo [start_bar, start_bar + bars)."""
     midi = parse_midi(data)
     es = lang != "en"
@@ -469,8 +469,8 @@ def analyse(data, lang="es", start_bar=None, bars=4, name=""):
         tracks.append({"nombre": label[:40], "tipo": kind, "codigo": f'note "{multi_bar(strs)}" # s "{snd}"{extra}',
                        "notas": len(notes), "origen": p["name"] or f"ch {p['ch'] + 1}", "low": low,
                        "avg": round(sum(n[2] for n in notes) / len(notes), 1)})
-    if len(tracks) > MAX_TRACKS:
-        keep = sorted(tracks, key=lambda t: -t["notas"])[:MAX_TRACKS]
+    if len(tracks) > max_tracks:
+        keep = sorted(tracks, key=lambda t: -t["notas"])[:max_tracks]
         dropped = [t["nombre"] for t in tracks if t not in keep]
         tracks = [t for t in tracks if t in keep]
     for t in tracks:

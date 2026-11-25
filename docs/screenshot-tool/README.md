@@ -30,6 +30,7 @@ OUT=../screenshots node scenes.js studio mixer     # just some scenes
 - `tabs.js` checks the tabs (open from disk, switch, close with unsaved changes, reload) and takes `tabs*.png`: put two `.tidal` files in `$SONGS`, then `OUT=../screenshots node tabs.js` (`L=es` for Spanish, then rename to `pestanas*.png`).
 - `v0201.js` takes the «save options as styles» shots (`styles-*.png`, `es/estilos-*.png`): one studio at a time with an empty `TIDAL_STUDIO_DATA`, no LLM needed (the save is answered locally).
 - `v024.js` takes the answer-length setting (`short-answers.png`, `es/respuestas-cortas.png`): Sound Lab → Learning, no LLM needed.
+- `v0251.js` takes Settings → Tracks (`tracks-setting.png`, `es/numero-de-pistas.png`), no LLM needed.
 - `v025.js` takes «your data, safe» (`data-safe.png`, `songs-recovered.png` and the Spanish `datos-a-salvo.png`, `canciones-recuperadas.png`): start the studio with `TIDAL_STUDIO_USERDATA` pointing to a folder with a couple of backups and songs in `songs/`.
 - `v014.js` takes the 0.14 shots (locks, blind A/B, Listening, RAG monitor): it needs an OpenAI-compatible test LLM that answers with fixed options for d1..d4 (`LANGS=es` for Spanish).
 - `ghimport.js` takes `github-*.png` (remote path, Settings, importer, create new songs on GitHub): start `fake-github.py 8799`, set `github.api_url` to `http://127.0.0.1:8799` in `config.json`, save a song called `night-drive` and put a few `.tidal` files in `$SONGS` (`L=es` for Spanish).

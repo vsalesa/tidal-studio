@@ -90,3 +90,7 @@ These edits make the main document consistent with this file:
 ![Maestro Core release plan](diagrams/release-plan.png)
 
 Source: [diagrams/release-plan.puml](diagrams/release-plan.puml). Each release starts only when the previous one passes its gate. Parked until 0.26 measurements say otherwise: TOON, embeddings, MCP/OpenAPI, the parallel DAG and the batch Learning Analyst.
+
+## 7. Track count is a setting (0.25.1)
+
+Since 0.25.1 the number of tracks is `config.json → tracks.count` (12 by default, 12–32, `server/tracklimit.py`). Every later release must read it instead of assuming 12: generated tracks, templates, imports and anything that picks free `dN` ids use `max_tracks` (in `/api/status` and in the session Maestro receives); SuperDirt orbits are `N + 1` (the last one is the MIDI keyboard); the reference drummer stays on `d9..d12`. It is a user setting, so it lives in the user data folder and is covered by backups, like the rest of `config.json`.

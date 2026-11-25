@@ -138,13 +138,14 @@ class AudioState(unittest.TestCase):
 
 
 class ScripsStayConsistent(unittest.TestCase):
-    """El teclado suena en su propia orbit (índice 12) y SuperDirt arranca con 13."""
+    """El teclado suena en su propia orbit (la última, índice N) y SuperDirt arranca con N + 1 (0.25.1)."""
 
     def test_orbits(self):
         sd = open(os.path.join(ROOT, "supercollider", "start_superdirt.scd"), encoding="utf-8").read()
         mi = open(os.path.join(ROOT, "supercollider", "studio-midi.scd"), encoding="utf-8").read()
-        self.assertIn("0 ! 13", sd)
-        self.assertIn("orbit: 12", mi)
+        self.assertIn("0 ! (~studioTracks + 1)", sd)
+        self.assertIn('"TIDAL_STUDIO_TRACKS".getenv', sd)
+        self.assertIn("orbit: ~studioTracks ? 12", mi)
         self.assertIn("\"midicut\"", sd)
         self.assertIn("~studioMidiWatch", mi)
 

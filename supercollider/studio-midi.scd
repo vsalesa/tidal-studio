@@ -3,8 +3,8 @@
 // - Escucha los teclados MIDI conectados (CoreMIDI en Mac, Windows MIDI, ALSA en Linux). Un piano USB
 //   "class compliant" (USB-B → USB-C) aparece solo, sin drivers.
 // - Toca cada nota al momento con el sonido elegido en la web (superpiano, un instrumento de la biblioteca…)
-//   por SuperDirt, en su propia orbit (la 13.ª, índice 12), para que suene con la latencia más baja posible
-//   sin tocar los efectos de d12.
+//   por SuperDirt, en su propia orbit (la última, índice N = número de pistas), para que suene con la latencia más baja posible
+//   sin tocar los efectos de dN.
 // - Avisa al servidor de Tidal Studio de cada nota (OSC /ts/midi al puerto 57140): con eso la web
 //   ilumina el teclado, graba la frase y la traduce a código de Tidal.
 // - Vigila cada 2 s si enchufas o desenchufas un teclado: se conecta solo y, al quitarlo, se sueltan sus notas.
@@ -12,7 +12,7 @@
 (
 var dirt = ~dirt;
 var to = NetAddr("127.0.0.1", 57140);
-var conf = (sound: \superpiano, orbit: 12, play: true, chan: -1, device: "", length: 1.2, transpose: 0, volume: 1.0);
+var conf = (sound: \superpiano, orbit: ~studioTracks ? 12, play: true, chan: -1, device: "", length: 1.2, transpose: 0, volume: 1.0);
 var ready = false;
 var currentNames = { MIDIClient.sources.collect { |d| d.device ++ " · " ++ d.name } };
 var knownOuts = [];   // salidas MIDI la última vez que miramos
