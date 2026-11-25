@@ -1,11 +1,11 @@
 # Maestro V24 — Adaptive Hybrid Musical Intelligence Engine
 
-**Status:** consolidated target architecture, not deployed. 2026-11-25.
+**Status:** proposed unified architecture, not implemented. 2026-11-25.
 **Current application baseline:** [main@d2af885](https://github.com/vsalesa/tidal-studio/commit/d2af88591cc5bf9929b32d544530c41b92fdec1a), already version **0.24.0**. The actual release added brief answers/result first and CLI effort support. This specification is the next architectural increment in the V24 family; do not overwrite or silently renumber that release.
 **Historical baseline:** [0.23.0@f256b6b](https://github.com/vsalesa/tidal-studio/commit/f256b6ba9e2eca39205ba603e7147f16fcc99c69). Earlier audits in this document refer to this commit.
 **Companions:** [MultiProfile execution](MULTIPROFILE_EXECUTION_V23.en.md), [Specialized Agent Architecture](SPECIALIZED_AGENT_ARCHITECTURE_V23.en.md), [approved Maestro v2 plan](https://github.com/vsalesa/tidal-studio/blob/feature/maestro-v2-blueprint/docs/maestro-v2/APPROVED_PLAN.es.md).
 
-**Reading order and precedence:** Part 0 is the governing architecture. Parts I–IV retain the detailed observability, learning, 18 generative profiles, 36 schema roots and prompt instructions. Their terms “agent”, “worker” and “LLM specialist” refer only to optional inference implementations of capabilities, not a mandatory execution layer. Part 0 supersedes earlier routing diagrams, mandatory prompt/example inclusion, release targets and agent-centric terminology wherever they conflict. Part III remains the baseline full-task JSON contract library; Part 0 introduces additional internal contracts for tools, partial completion and normalized subprocess results.
+**Reading guide:** Part 0 defines the unified adaptive architecture. Parts I–IV specify observability, learning, 18 optional inference profiles, 36 full-task schema roots and model-facing instructions. A worker is an optional inference implementation of a functional subprocess. Full-task and fragment contracts coexist; only the active compact contract reaches the model.
 
 # Part 0 — Governing architecture and implementation decisions
 
@@ -19,39 +19,26 @@ A **Tool** is the smallest reusable, host-controlled deterministic operation: gi
 
 A **Profile** is a scoped generative implementation of an operation or unresolved fragment. The profile does not own the entire subprocess. No peer dialogue, autonomous delegation, mandatory LLM routing or tool-definition catalogue in the model context.
 
-## 0.2 Architecture — before and after
+## 0.2 Unified architecture
 
 ```mermaid
-flowchart LR
- subgraph OLD["Earlier agent-centric design"]
- O[Orchestrator] --> A[Rhythm LLM]
- O --> B[Bass LLM]
- O --> H[Harmony LLM]
- A --> V[Tools and validation]
- B --> V
- H --> V
- end
- subgraph NEW["Capability-centric V24"]
- C[Conductor] --> R[Rhythm subprocess]
- C --> S[Bass subprocess]
- C --> T[Harmony subprocess]
- R --> E[Adaptive execution]
- S --> E
- T --> E
- E --> D[Deterministic Tools]
- E --> K[Local knowledge retrieval]
- E --> G[Optional generative completion]
- D --> X[Validated artifact]
- K --> X
- G --> X
- end
- classDef local fill:#e7f5e9,stroke:#26804a,color:#174b2b
- classDef gen fill:#f1eafa,stroke:#8153bd,color:#412478
- class D,K local
- class A,B,H,G gen
+flowchart TD
+ C[Maestro Conductor] --> S[Adaptive musical subprocess]
+ C -->|Exact operation| T[Deterministic tool]
+ S --> T
+ S --> K[Local knowledge retrieval]
+ S --> G[Optional generative profile]
+ T --> V[Validate and assemble]
+ K --> V
+ G --> V
+ V --> U[Preview or authorized result]
+ V -. execution events .-> E[Execution Studio]
+ E --> L[Learning Lab]
+ L -->|Reviewed promotion| T
+ L -->|Approved knowledge| K
 ```
 
-The earlier diagram is conceptual, not a claim that V23 always invoked multiple agents. The new design selects a capability, not a model.
+The Conductor selects functional capabilities, not models. This is the proposed unified design; no agent-centric implementation is assumed.
 
 ## 0.3 Layers and shared primitives
 
@@ -535,11 +522,113 @@ Instrument execution from slice A, not after implementing all profiles. Optional
 
 Acceptance: run the three fixtures above, verify zero/one/one normal LLM calls respectively, actual tool spans and no hidden classification/critique, no unauthorized mutations, scope and timing checks, exact model-facing prompt capture, source and schema versions, user audition and feedback, replay, and secure export. Add regression cases for failed local sufficiency, novel request incorrectly reused, partial patch attempting a fixed-note change, stale snapshot and unsupported free-code transformation. Benchmark against actual 0.24.0; historical V23 comparison is supplementary. No benchmark has yet been run and no implementation or release is authorized by this documentation alone.
 
+## 0.13 Orchestration runtime — framework evaluation and decision
+
+Maestro is a hybrid workflow engine, not an autonomous agent framework. Its orchestration runtime must execute ordinary Python operations, conditional transitions, typed artifact dependencies, bounded inference, local persistence and observable nested executions. No scheduler should require an LLM call, cloud service or API-key migration.
+
+### Candidate assessment
+
+| Candidate | Strength for Maestro | Limitation / tradeoff |
+|---|---|---|
+| Apache Burr | Lightweight state-machine actions, explicit read/write state, conditional transitions, nested applications, parallel subgraphs, local tracking UI and pluggable persistence | Incubating Apache project; verify maintenance, package compatibility, parallel scheduling and tracking/privacy behavior |
+| LangGraph StateGraph | Conditional edges, subgraphs, fan-out/join, checkpointing and interrupts; strong fit for advanced dependency graphs | Additional dependency and runtime state complexity; custom observability still needed for exact provider payloads and musical artifacts |
+| Pydantic Graph | Typed Python graph, parallel broadcast/map and joins; good fit for contract-first design | Current V2 graph APIs do not snapshot graph state; resume/durability needs separate implementation |
+| Plain Python | Minimal dependencies and latency, natural direct tool execution | Custom scheduling, visualization, checkpoints and nested tracing become costly as workflows grow |
+| Prefect | Python workflow/task orchestration, retries and monitoring | More infrastructure-oriented than embedded interactive musical execution; evaluate only if background batch processing becomes a major need |
+
+References: [Burr core and tracking](https://burr.apache.org/docs/concepts/overview/), [Burr local tracking](https://burr.apache.org/docs/concepts/tracking/), [Burr parallelism](https://burr.apache.org/docs/concepts/parallelism/), [Burr state persistence](https://burr.apache.org/docs/concepts/state-persistence/), [Burr project status](https://burr.apache.org/), [LangGraph graph API](https://docs.langchain.com/oss/python/langgraph/graph-api), [LangGraph durable execution](https://docs.langchain.com/oss/python/langgraph/durable-execution), [Pydantic Graph builder](https://pydantic.dev/docs/ai/graph/builder/), [Prefect](https://www.prefect.io/how-it-works).
+
+**Recommendation:** shortlist Apache Burr and LangGraph, with Burr as first candidate for an embedded, observable state-machine runtime and LangGraph as strong alternative for complex graph scheduling and durable plans. Do not choose on popularity or agent-specific features. Use one framework only if a small comparative spike proves its fit. Direct Python remains the baseline and fast path. No framework is a required dependency until approved and tested.
+
+```mermaid
+flowchart TD
+ U[UI] --> C[Maestro Conductor]
+ C --> P{Execution policy}
+ P -->|Exact or simple| D[Direct Python executor]
+ P -->|Stateful or complex| G[Selected workflow runtime]
+ G --> S[Adaptive subprocess graph]
+ D --> R[Shared capability registry]
+ S --> R
+ R --> T[Deterministic tools]
+ R --> K[Local knowledge]
+ R --> I[Provider neutral inference adapter]
+ I --> CLI[Existing claude -p]
+ I --> API[Existing API providers]
+ T --> V[Host validation]
+ K --> V
+ CLI --> V
+ API --> V
+ V --> A[Preview or authorized apply]
+ G -. events .-> E[Execution Studio]
+ D -. events .-> E
+ I -. events .-> E
+ R -. events .-> E
+ E --> L[Learning and authorized export]
+```
+
+### Existing Claude CLI compatibility
+
+At application baseline 0.24.0, [server/llm.py:512–548](https://github.com/vsalesa/tidal-studio/blob/d2af88591cc5bf9929b32d544530c41b92fdec1a/server/llm.py#L512-L548) already executes claude -p using temporary system file, task stdin, JSON/stream-json, empty tools, disabled session persistence, strict MCP configuration, isolation and supported effort. All candidates can call ordinary Python functions; wrap the existing provider adapter instead of building a separate CLI runner or requiring a LangChain Anthropic API model. Preserve subscription authentication, streaming, cancellation, timeout, actual usage and model reporting. Do not send tool definitions, graph state or other profiles to the model. No API fallback unless explicitly configured.
+
+```mermaid
+sequenceDiagram
+ participant G as Workflow executor
+ participant N as Scoped inference action
+ participant L as Existing llm.py
+ participant C as claude -p
+ participant E as Execution Studio
+ G->>N: Task and budget references
+ N->>N: Validate and build minimal payload
+ N->>E: Record actual prompt and attempt
+ N->>L: Existing provider call
+ L->>C: System file and task stdin
+ C-->>L: JSON or stream-json
+ L-->>E: Available events and usage
+ L-->>N: Response
+ N->>N: Validate active contract
+ N-->>G: Artifact reference or blocker
+```
+
+### Framework-independent implementation
+
+Keep one capability/tool registry and one execution policy. Graph nodes/actions call the same services as the direct executor. State contains compact run, task, revision and artifact references, not raw prompts, credentials or subprocess handles. Host controls routing, sufficiency, budgets, permissions and musical validation. Framework tracking is supplementary to Execution Studio's exact payload capture and normalized token accounting. Disable external telemetry by default and verify privacy. No automatic LLM router or tool selection.
+
+Illustrative LangGraph mapping (not standalone code):
+
+```python
+from langgraph.graph import StateGraph, START, END
+
+g = StateGraph(RunState)
+g.add_node("prepare", prepare_local_draft)
+g.add_node("infer", complete_unresolved_fragment)
+g.add_node("validate", validate_and_assemble)
+g.add_node("blocked", record_blocked)
+g.add_edge(START, "prepare")
+g.add_conditional_edges("prepare", select_route, {
+    "local": "validate", "infer": "infer", "blocked": "blocked"
+})
+g.add_edge("infer", "validate")
+g.add_edge("validate", END)
+g.add_edge("blocked", END)
+graph = g.compile()
+```
+
+Burr equivalent: define prepare/infer/validate/blocked as actions with declared read/write keys, conditional transitions from prepare, and a terminal action or halt condition. Use local tracking and nested applications if selected. Validate the actual pinned APIs during the spike. Both examples use shared business functions, not competing implementations.
+
+### Durability and safety
+
+Checkpoints are operational resume state, not canonical song or knowledge storage. Keep local, use artifact references and record exact run/attempt IDs. On resume check browser revision, scope, approval and budget. A framework may rerun nodes; do not assume exactly-once provider calls or side effects. Use idempotent action boundaries and actual outcome records; ambiguous interrupted inference requires explicit recovery policy. Do not put GitHub commits, downloads or live song mutations inside blindly replayable steps. Propagate cancellation to the existing CLI process; graph interruption alone does not guarantee termination. No partial cancelled output may be applied.
+
+### Selection spike and acceptance
+
+Test Direct Python, Burr and LangGraph using shared mock/provider adapters and the three scenarios in 0.9. Compare real packaging compatibility, supported Python versions, dependency size, cold/warm startup, graph-only latency, state size, local observability, nested spans, parallel joins, blocked/cancelled handling and pause/resume. Verify exactly 0/1/1 normal provider calls, no additional classifier/critic, same validated output semantics, no duplicate side effects, no sensitive external telemetry. Test actual Claude subscription CLI locally after mocks. Record measured overhead, not assumed savings. Select one backend for complex workflows only; retain direct path if useful. Pydantic Graph is a secondary candidate if typed execution outweighs built-in resume requirements. Optional local neural classifiers remain separate and deferred.
+
+
 ---
 
 # Part I — Execution Studio, Prompt Observatory and Learning Repository
 
-The detailed sections below are retained and interpreted under Part 0. Their baseline source audit is historical V23; current V24 brief/effort support is documented above. An inference worker is only the generative implementation of a functional subprocess. Tool and local retrieval spans are first-class, not merely preparatory steps.
+The following sections detail observability and learning within the unified architecture. Their baseline source audit is historical V23; current V24 brief/effort support is documented above. An inference worker is only the generative implementation of a functional subprocess. Tool and local retrieval spans are first-class, not merely preparatory steps.
 
 ## 1. Product objective
 
