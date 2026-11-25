@@ -1,4 +1,17 @@
-## What's new in 0.18.0 / Novedades
+## What's new in 0.19.0 / Novedades
+
+Memory synced with GitHub: move to another computer, or share it with someone.
+
+- **Both ways**: approved memories, your styles and your cases in `tidal-studio/` of your repository are now synced, not just copied. On a **new computer**, connect the same repository and everything comes back by itself a few seconds after starting; anything you had already added there is merged, never overwritten.
+- **Deletions travel both ways**: what you delete (or send back to the inbox) here is deleted on GitHub, and what you deleted on another computer is deleted here. Everything brought from GitHub goes in the Log and can be undone. If both computers changed the same thing, this computer wins.
+- **See where each thing is**: every memory, style and case shows **on GitHub**, **change not uploaded** or **only here**. **Compare with GitHub** lists what would be uploaded, brought or deleted, without touching anything.
+- **Automatic retries** after 1, 5, 15 and 30 minutes when a sync fails, and the app says when.
+- **Someone else's memory**: paste the link to their repository (Memory → Settings). Their memories land in your inbox so you choose, their cases in Cases and their styles in My styles, without the notes of their songs.
+- Fixes a 0.18 risk: on a fresh install, the first backup could overwrite the memories already saved on GitHub. Backups made by 0.18 are read and upgraded.
+
+**Español:** **Sincronización en los dos sentidos** de las memorias aprobadas, tus estilos y tus casos (`tidal-studio/` en tu repositorio): en un **ordenador nuevo** conectas el mismo repositorio y todo vuelve solo al arrancar, juntándose con lo que ya tuvieras. **Los borrados viajan en los dos sentidos** y todo lo que llega de GitHub queda en el Registro y se puede deshacer; si los dos ordenadores cambiaron lo mismo, gana este. **Ves dónde está cada cosa** (en GitHub, cambio sin subir, solo aquí) y **Comparar con GitHub** te enseña qué pasaría sin tocar nada. **Reintentos automáticos** si falla. **La memoria de otra persona**: pega el enlace de su repositorio y sus memorias llegan a tu bandeja para que elijas, sus casos a Casos y sus estilos a Mis estilos, sin las notas de sus canciones. Corrige un riesgo de la 0.18: en una instalación nueva, la primera copia podía pisar las memorias que ya estaban en GitHub.
+
+## 0.18.0
 
 Maestro v2, fifth release of five: memory and styles.
 

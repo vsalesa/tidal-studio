@@ -6,13 +6,14 @@
 // - Mis estilos: el groove, los papeles, los instrumentos y el tempo de una canción (no las notas). Úsalos como
 //   inspiración, transfórmalos (otra tonalidad, tempo o instrumentos, con escucha previa) o cópialos tal cual.
 //   Se comparten por GitHub y se importan desde un enlace.
-// - Ajustes: aprobar solo lo claro, apuntar lo que dices en el chat, aprender de tus elecciones y copia en GitHub.
+// - Ajustes: aprobar solo lo claro, apuntar lo que dices en el chat, aprender de tus elecciones y sincronizar con
+//   GitHub (0.19: en los dos sentidos, para recuperarlo en otro ordenador) o traer la memoria de otra persona.
 import { L } from "./i18n.js";
 import { icon } from "./icons.js";
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
 const two = (s) => { const [es, en] = String(s || "").split("|"); return L(es, en || es); };
-let ctx = null, dlg = null, data = null, styles = null, log = null, tab = "memories";
+let ctx = null, dlg = null, data = null, styles = null, log = null, tab = "memories", cmp = null;
 const T = { style: null, mode: null, result: null, seed: 1, form: {}, caseDraft: null, edit: null, shared: {} };
 const SCOPE = { song: () => L("Esta canción", "This song"), course: () => L("Este curso", "This course"), genre: () => L("Género", "Genre"), global: () => L("Siempre", "Always") };
 const KEYS = ["C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"];
@@ -73,7 +74,16 @@ function curGenre() {
 }
 const genreName = (g) => ((data.styles_list || []).find((x) => x.id === g) || {}).name || g;
 const mtext = (m) => (L(m.text, m.text_en || m.text));
-const srcName = (s) => ({ chat: L("lo dijiste en el chat", "you said it in the chat"), picks: L("tus elecciones de oído", "your picks by ear"), manual: L("lo escribiste tú", "you wrote it") })[s] || s;
+const srcName = (s) => ({ chat: L("lo dijiste en el chat", "you said it in the chat"), picks: L("tus elecciones de oído", "your picks by ear"), manual: L("lo escribiste tú", "you wrote it"), shared: L("de otra persona", "from someone else") })[s] || s;
+// Cómo está cada cosa respecto a GitHub (sin red: según la última sincronización)
+const SYNC = { synced: ["cloud", () => L("en GitHub", "on GitHub"), "ok"], changed: ["cloud", () => L("cambio sin subir", "change not uploaded"), "warn"], local: ["cloud", () => L("solo aquí", "only here"), "warn"] };
+function syncTag(key) {
+  if (!data || !data.github || !(data.settings || {}).backup) return "";
+  const st = (data.sync || {})[key];
+  if (!st) return "";
+  const [ic, lab, cls] = SYNC[st];
+  return `<span class="mem-sync ${cls}" title="${L("Sincronización con GitHub", "GitHub sync")}">${icon(ic, 11)} ${lab()}</span>`;
+}
 
 function memRow(m, inbox) {
   if (T.edit === m.id) {
@@ -83,7 +93,7 @@ function memRow(m, inbox) {
   const note = m.note ? `<span class="mem-note">${icon("explain", 12)} ${esc(two(m.note))}</span>` : "";
   return `<div class="mem-row ${m.status}" data-id="${m.id}">
     <div class="mem-txt"><b>${esc(mtext(m))}</b>
-      <span class="hint">${esc(scopeLabel(m))} · ${esc(srcName(m.source))}${m.evidence > 1 ? ` · ${m.evidence} ${L("veces", "times")}` : ""}${m.auto ? ` · ${L("aprobada sola", "auto-approved")}` : ""}</span>${note}</div>
+      <span class="hint">${esc(scopeLabel(m))} · ${esc(srcName(m.source))}${m.evidence > 1 ? ` · ${m.evidence} ${L("veces", "times")}` : ""}${m.auto ? ` · ${L("aprobada sola", "auto-approved")}` : ""}${m.status === "approved" ? " " + syncTag("memory:" + m.uid) : ""}</span>${note}</div>
     <div class="mem-acts">${inbox ? `<button class="primary" data-a="approve">${icon("check", 13)} ${L("Aprobar", "Approve")}</button><button data-a="reject">${L("Descartar", "Discard")}</button>` : ""}
       <button class="icon-btn" data-a="edit" title="${L("Cambiar", "Edit")}">${icon("sliders", 15)}</button>
       <button class="icon-btn" data-a="delete" title="${L("Borrar (se puede deshacer en el Registro)", "Delete (can be undone in the Log)")}">${icon("trash", 15)}</button></div></div>`;
@@ -115,7 +125,7 @@ function inboxHTML() {
 // ---------------------------------------------------------------- registro
 const OBJ = { memory: () => L("memoria", "memory"), style: () => L("estilo", "style"), case: () => L("caso", "case") };
 const ACT = { add: () => L("añadida", "added"), reinforce: () => L("reforzada", "reinforced"), approve: () => L("aprobada", "approved"), reject: () => L("descartada", "discarded"), pending: () => L("a la bandeja", "to the inbox"), edit: () => L("cambiada", "changed"), delete: () => L("borrada", "deleted"), revert: () => L("deshecho", "undone"), literal: () => L("copia literal usada", "literal copy used") };
-const BY = { user: () => L("tú", "you"), auto: () => L("solo", "automatic"), maestro: () => L("Maestro", "Maestro") };
+const BY = { user: () => L("tú", "you"), auto: () => L("solo", "automatic"), maestro: () => L("Maestro", "Maestro"), github: () => L("GitHub (otro ordenador)", "GitHub (another computer)"), shared: () => L("importado de otra persona", "imported from someone else") };
 function logLabel(e) {
   const o = e.after || e.before || {};
   if (e.obj === "memory") return L(o.text || "", o.text_en || o.text || "");
@@ -147,7 +157,7 @@ function casesHTML() {
       <div class="row"><button class="primary" data-a="case-save">${icon("save", 13)} ${L("Guardar el caso", "Save the case")}</button><button data-a="case-cancel">${L("Cancelar", "Cancel")}</button></div></div>` : "";
   return `<p class="sl-lead">${L("Un caso es un problema que resolviste, con el código de antes y el de después y por qué te convenció. Cuando pides algo parecido, Maestro lee tus casos y resuelve a tu manera.", "A case is a problem you solved, with the code before and after and why it convinced you. When you ask for something similar, Maestro reads your cases and solves it your way.")}</p>
     ${form || `<p class="hint">${L("Al elegir una opción de Maestro aparece «Guardar como caso». También puedes crear uno a mano.", "When you pick one of Maestro's options, «Save as a case» shows up. You can also create one by hand.")} <button data-a="case-new">${icon("plus", 13)} ${L("Caso nuevo", "New case")}</button></p>`}
-    ${cs.length ? cs.map((c) => `<div class="mem-case" data-case="${c.id}"><div class="mem-case-top"><b>${esc(c.title || c.problem)}</b>${c.genre ? `<span class="tag">${esc(genreName(c.genre))}</span>` : ""}
+    ${cs.length ? cs.map((c) => `<div class="mem-case" data-case="${c.id}"><div class="mem-case-top"><b>${esc(c.title || c.problem)}</b>${c.genre ? `<span class="tag">${esc(genreName(c.genre))}</span>` : ""}${syncTag("case:" + c.uid)}
         <button class="icon-btn" data-a="case-del" title="${L("Borrar", "Delete")}">${icon("trash", 15)}</button></div>
         ${c.title ? `<p>${esc(c.problem)}</p>` : ""}<div class="mem-ab"><pre>${esc(c.before)}</pre><pre>${esc(c.after)}</pre></div>
         ${c.why ? `<p class="hint">${L("Por qué", "Why")}: ${esc(c.why)}</p>` : ""}</div>`).join("") : `<p class="hint mem-empty">${L("Aún no hay casos.", "No cases yet.")}</p>`}`;
@@ -164,7 +174,7 @@ function stylesHTML() {
     <div class="mem-add"><input data-f="link" placeholder="${L("Enlace de GitHub: usuario/repo, …/styles/estilo.json", "GitHub link: user/repo, …/styles/style.json")}">
       <button data-a="style-import">${icon("link", 13)} ${L("Importar desde un enlace", "Import from a link")}</button></div>
     ${list.length ? `<div class="mem-styles">${list.map((st) => `<div class="mem-style" data-sid="${esc(st.id)}">
-      <div class="mem-case-top"><b>${esc(st.name)}</b>${st.genre ? `<span class="tag">${esc(genreName(st.genre))}</span>` : ""}<span class="tag">${st.bpm} BPM</span>${st.key ? `<span class="tag">${esc(st.key)}</span>` : ""}${st.source === "imported" ? `<span class="tag">${L("importado", "imported")}</span>` : ""}
+      <div class="mem-case-top"><b>${esc(st.name)}</b>${st.genre ? `<span class="tag">${esc(genreName(st.genre))}</span>` : ""}<span class="tag">${st.bpm} BPM</span>${st.key ? `<span class="tag">${esc(st.key)}</span>` : ""}${st.source === "imported" ? `<span class="tag">${st.author ? L(`de ${esc(st.author)}`, `from ${esc(st.author)}`) : L("importado", "imported")}</span>` : ""}${syncTag("style:" + st.id)}
         <button class="icon-btn" data-a="style-del" title="${L("Borrar (se puede deshacer en el Registro)", "Delete (can be undone in the Log)")}">${icon("trash", 15)}</button></div>
       <p class="hint">${st.roles.map((r) => `${esc(r.name)} (${esc(roleName(r.role))}${r.sounds.length ? ": " + esc(r.sounds.slice(0, 2).join(", ")) : ""})`).join(" · ")}</p>
       <div class="mem-modes">
@@ -206,13 +216,30 @@ function settingsHTML() {
       ${sw("auto_approve", "Aprobar solo lo muy claro", "Approve what's very clear by itself", "«Recuerda que…» en el chat, o 3+ elecciones de oído del mismo sonido sin otro favorito. Lo que contradiga otra memoria o el tempo del género siempre va a la bandeja.", "«Remember that…» in the chat, or 3+ picks by ear of the same sound with no other favourite. Anything that contradicts another memory or the genre's tempo always goes to the inbox.")}
       ${sw("observe_chat", "Apuntar lo que digo en el chat", "Note what I say in the chat", "Frases como «recuerda…», «nunca…», «prefiero…», «no me gusta…».", "Phrases like «remember…», «never…», «I prefer…», «I don't like…».")}
       ${sw("learn_picks", "Aprender de mis elecciones de oído", "Learn from my picks by ear", "Al comparar sonidos de oído (laboratorio, cursos, tarjeta de cambiar sonido).", "When comparing sounds by ear (Sound lab, courses, replace card).")}</section>
-    <section><h4>${icon("cloud", 15)} ${L("Copia en GitHub", "GitHub backup")}</h4>
-      ${sw("backup", "Copiar lo aprobado en mi repositorio", "Copy what's approved to my repository", "Memorias aprobadas, tus estilos y tus casos, en la carpeta tidal-studio/ (un commit unos segundos después de cada cambio). Nunca la bandeja, ni votos, ni audio.", "Approved memories, your styles and your cases, in the tidal-studio/ folder (one commit a few seconds after each change). Never the inbox, votes or audio.")}
-      <div class="row">${data.github ? `<span class="lb-badge o-library">${esc((data.github_where || {}).repo || "GitHub")}</span><button data-a="backup" ${s.backup ? "" : "disabled"}>${icon("cloud", 13)} ${L("Copiar ahora", "Back up now")}</button>` : `<span class="hint">${L("GitHub no está conectado (Ajustes → GitHub).", "GitHub isn't connected (Settings → GitHub).")}</span>`}</div>
-      ${bk.last ? `<p class="hint">${L("Última copia", "Last backup")}: ${new Date(bk.last * 1000).toLocaleString(L("es-ES", "en-GB"))}${bk.commit_url ? ` · <a href="${esc(bk.commit_url)}" target="_blank" rel="noopener">commit</a>` : ""}</p>` : ""}
-      ${bk.state === "error" ? `<p class="hint bad">${esc(two(bk.error))}</p>` : ""}</section>
+    <section><h4>${icon("cloud", 15)} ${L("Sincronizar con GitHub", "Sync with GitHub")}</h4>
+      ${sw("backup", "Sincronizar lo aprobado con mi repositorio", "Sync what's approved with my repository", "Memorias aprobadas, tus estilos y tus casos, en la carpeta tidal-studio/. Va en los dos sentidos: en un ordenador nuevo, al conectar GitHub, se trae todo solo; lo que borras aquí se borra allí. Nunca la bandeja, ni votos, ni audio.", "Approved memories, your styles and your cases, in the tidal-studio/ folder. It goes both ways: on a new computer, once GitHub is connected, everything comes back by itself; what you delete here is deleted there. Never the inbox, votes or audio.")}
+      <div class="row">${data.github ? `<span class="lb-badge o-library">${esc((data.github_where || {}).repo || "GitHub")}</span><button data-a="backup" ${s.backup ? "" : "disabled"}>${icon("cloud", 13)} ${L("Sincronizar ahora", "Sync now")}</button><button data-a="compare">${icon("search", 13)} ${L("Comparar con GitHub", "Compare with GitHub")}</button>` : `<span class="hint">${L("GitHub no está conectado (Ajustes → GitHub).", "GitHub isn't connected (Settings → GitHub).")}</span>`}</div>
+      ${bk.last ? `<p class="hint">${L("Última sincronización", "Last sync")}: ${new Date(bk.last * 1000).toLocaleString(L("es-ES", "en-GB"))}${bk.pulled ? ` · ${L(`${bk.pulled} traídas de GitHub`, `${bk.pulled} brought from GitHub`)}` : ""}${bk.pushed ? ` · ${L(`${bk.pushed} subidas`, `${bk.pushed} uploaded`)}` : ""}${bk.commit_url ? ` · <a href="${esc(bk.commit_url)}" target="_blank" rel="noopener">commit</a>` : ""}</p>` : ""}
+      ${bk.state === "error" ? `<p class="hint bad">${esc(two(bk.error))}${bk.next_retry ? ` · ${L("lo reintento a las", "retrying at")} ${new Date(bk.next_retry * 1000).toLocaleTimeString(L("es-ES", "en-GB"), { timeStyle: "short" })}` : ""}</p>` : ""}
+      ${cmp ? compareHTML() : ""}</section>
+    <section><h4>${icon("share", 15)} ${L("La memoria de otra persona", "Someone else's memory")}</h4>
+      <p class="hint">${L("Pega el enlace de su repositorio (usuario/repo). Sus memorias llegan a tu bandeja para que decidas cuáles quieres, sus casos a Casos y sus estilos a Mis estilos. Las notas de sus canciones no viajan. Para compartir la tuya, dale el enlace de tu repositorio (tiene que ser público, o darle acceso).", "Paste the link to their repository (user/repo). Their memories land in your inbox so you choose which ones you want, their cases in Cases and their styles in My styles. The notes of their songs don't travel. To share yours, give them your repository's link (it must be public, or give them access).")}</p>
+      <div class="mem-add"><input data-f="mlink" placeholder="${L("usuario/repo o https://github.com/usuario/repo", "user/repo or https://github.com/user/repo")}"><button data-a="mem-import">${icon("link", 13)} ${L("Traer su memoria", "Bring their memory")}</button></div></section>
     <section><h4>${icon("disk", 15)} ${L("Almacenamiento", "Storage")}</h4>
       <p class="hint">${L("Qué ocupa sitio en tu ordenador y qué pasa si lo borras.", "What takes space on your computer and what happens if you delete it.")} <button data-a="storage">${icon("disk", 13)} ${L("Abrir el panel", "Open the panel")}</button></p></section></div>`;
+}
+
+const ACTION = { ok: ["check", () => L("igual en los dos", "same in both"), "ok"], push: ["cloud", () => L("se sube", "will be uploaded"), "warn"],
+  pull: ["cloud", () => L("se trae de GitHub", "will be brought from GitHub"), "warn"], both: ["explain", () => L("cambió en los dos: gana este ordenador", "changed in both: this computer wins"), "warn"],
+  delete_remote: ["trash", () => L("se borra en GitHub", "will be deleted on GitHub"), "bad"], delete_local: ["trash", () => L("se borra aquí (lo borraste en otro ordenador)", "will be deleted here (you deleted it on another computer)"), "bad"] };
+const KIND = { memory: () => L("memoria", "memory"), style: () => L("estilo", "style"), case: () => L("caso", "case") };
+function compareHTML() {
+  if (cmp.error) return `<p class="hint bad">${esc(two(cmp.error))}</p>`;
+  const diff = cmp.plan.filter((p) => p.action !== "ok");
+  return `<div class="mem-cmp"><p><b>${L("Comparación", "Comparison")}</b> · ${esc(cmp.repo)}/${esc(cmp.folder)} · ${Object.entries(cmp.counts).map(([a, n]) => `${n} ${ACTION[a][1]()}`).join(" · ")}</p>
+    ${diff.length ? diff.map((p) => `<div class="mem-cmp-row"><span class="mem-sync ${ACTION[p.action][2]}">${icon(ACTION[p.action][0], 11)} ${ACTION[p.action][1]()}</span><span class="hint">${KIND[p.kind]()}</span> <span>${esc(p.name).slice(0, 120)}</span></div>`).join("")
+      : `<p class="hint">${L("Todo está igual aquí y en GitHub.", "Everything is the same here and on GitHub.")}</p>`}
+    ${(cmp.remote_bad || []).length ? `<p class="hint bad">${L("No he podido leer", "Couldn't read")}: ${esc(cmp.remote_bad.join("; "))}</p>` : ""}</div>`;
 }
 
 // ---------------------------------------------------------------- acciones
@@ -244,7 +271,25 @@ async function onClick(e) {
       data = r; log = r.log; styles = null; ctx.toast(L("Deshecho.", "Undone."));
       styles = (await (await fetch("/api/styles")).json()).styles || [];
     }
-    if (a === "backup") { b.disabled = true; data = await post("/api/memory/backup", {}); ctx.toast(L("Copia hecha en GitHub.", "Backup done on GitHub.")); }
+    if (a === "backup") {
+      b.disabled = true; data = await post("/api/memory/backup", {}); cmp = null;
+      const bk = data.backup || {};
+      ctx.toast(L(`Sincronizado con GitHub${bk.pulled ? ` · ${bk.pulled} traídas` : ""}${bk.pushed ? ` · ${bk.pushed} subidas` : ""}.`, `Synced with GitHub${bk.pulled ? ` · ${bk.pulled} brought` : ""}${bk.pushed ? ` · ${bk.pushed} uploaded` : ""}.`));
+      styles = (await (await fetch("/api/styles")).json()).styles || [];
+    }
+    if (a === "compare") {
+      b.disabled = true;
+      const r = await fetch("/api/memory/sync");
+      cmp = await r.json();
+    }
+    if (a === "mem-import") {
+      const link = body.querySelector('[data-f="mlink"]').value.trim(); if (!link) return;
+      b.disabled = true;
+      data = await post("/api/memory/import", { link });
+      const g = data.imported || {};
+      ctx.toast(L(`Traído: ${g.memories} memorias (en tu bandeja), ${g.cases} casos y ${g.styles} estilos${g.skipped ? ` · ${g.skipped} ya los tenías` : ""}.`, `Brought: ${g.memories} memories (in your inbox), ${g.cases} cases and ${g.styles} styles${g.skipped ? ` · ${g.skipped} you already had` : ""}.`));
+      styles = (await (await fetch("/api/styles")).json()).styles || [];
+    }
     if (a === "storage") { dlg.close(); return ctx.openStorage(); }
     if (a === "case-new") { T.caseDraft = { problem: "", before: "", after: "", why: "" }; return render(); }
     if (a === "case-cancel") { T.caseDraft = null; return render(); }

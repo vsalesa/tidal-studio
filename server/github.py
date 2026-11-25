@@ -232,19 +232,82 @@ def save_song(cfg, project, message="", slug=None):
     return {"slug": slug, "sha": sha, "commit_url": url or f"https://github.com/{g['repo']}/commit/{sha}", **remote_where(g, slug)}
 
 
-def commit_files(cfg, files, message):
-    """Un commit con varios ficheros {ruta: texto} en la rama configurada (estilos compartidos, copia de la memoria)."""
+def commit_files(cfg, files, message, delete=()):
+    """Un commit con varios ficheros {ruta: texto} en la rama configurada (estilos compartidos, copia de la memoria).
+    «delete» son rutas que se borran en el mismo commit."""
     g = _cfg(cfg)
     repo = f"/repos/{g['repo']}"
     head = _branch_head(g, repo)
     base_tree = _req(g, "GET", f"{repo}/git/commits/{head}")["tree"]["sha"]
     tree = _req(g, "POST", f"{repo}/git/trees", {"base_tree": base_tree, "tree": [
-        {"path": p, "mode": "100644", "type": "blob", "content": c} for p, c in files.items()]})
+        {"path": p, "mode": "100644", "type": "blob", "content": c} for p, c in files.items()]
+        + [{"path": p, "mode": "100644", "type": "blob", "sha": None} for p in delete if p not in files]})
     if tree.get("sha") == base_tree:
         return {"unchanged": True}
     commit = _req(g, "POST", f"{repo}/git/commits", {"message": message, "tree": tree["sha"], "parents": [head]})
     _req(g, "PATCH", f"{repo}/git/refs/heads/{urllib.parse.quote(g['branch'])}", {"sha": commit["sha"]})
     return {"sha": commit["sha"], "commit_url": commit.get("html_url") or f"https://github.com/{g['repo']}/commit/{commit['sha']}"}
+
+
+MAX_SYNC_FILES = 400
+
+
+def read_folder(cfg, folder):
+    """Los .json de una carpeta de TU repositorio (rama configurada), con sus subcarpetas: {ruta: texto}.
+    Un repositorio vacío, sin esa rama o sin esa carpeta devuelve {} (no hay nada que traer)."""
+    g = _cfg(cfg)
+    repo = f"/repos/{g['repo']}"
+    try:
+        tree = _req(g, "GET", f"{repo}/git/trees/{urllib.parse.quote(g['branch'])}?recursive=1", ok404=True)
+    except GitHubError as e:
+        if e.status == 409:
+            return {}
+        raise
+    out = {}
+    for it in (tree or {}).get("tree") or []:
+        p = it.get("path") or ""
+        if it.get("type") == "blob" and p.startswith(folder + "/") and p.endswith(".json") and (it.get("size") or 0) <= MAX_SHARED:
+            if len(out) >= MAX_SYNC_FILES:
+                break
+            b = _req(g, "GET", f"{repo}/git/blobs/{it['sha']}")
+            out[p] = base64.b64decode(b.get("content") or "").decode("utf-8", "replace")
+    return out
+
+
+def fetch_memory(cfg, link):
+    """La memoria, los casos y los estilos que otra persona tiene en SU repositorio (carpeta tidal-studio/ o la que
+    diga el enlace). Acepta u/r, u/r/carpeta y https://github.com/u/r[/tree/rama/carpeta]. Devuelve {ruta: texto}
+    con las rutas relativas a esa carpeta, como «tidal-studio/memories.json»."""
+    g = _cfg(cfg)
+    link = (link or "").strip()
+    m = re.match(r"^(?:https?://)?(?:www\.)?github\.com/([\w.-]+)/([\w.-]+)(?:/tree/([^/]+)(?:/(.+?))?)?/?$", link) \
+        or re.match(r"^([\w.-]+)/([\w.-]+)()(?:/(.+?))?/?$", link)
+    if not m:
+        raise GitHubError("No entiendo ese enlace de GitHub")
+    owner, repo, ref, path = m.groups()
+    repo = repo[:-4] if repo.lower().endswith(".git") else repo
+    path = (path or "tidal-studio").strip("/")
+    q = f"?ref={urllib.parse.quote(ref)}" if ref else ""
+    base = f"{g['api_url']}/repos/{owner}/{repo}/contents/"
+    tok = g["token"]
+    out = {}
+    for name in ("memories.json", "cases.json"):
+        try:
+            out[f"tidal-studio/{name}"] = _raw_get(base + urllib.parse.quote(f"{path}/{name}") + q, tok)
+        except GitHubError as e:
+            if e.status not in (404,):
+                raise
+    try:
+        listing = json.loads(_list_get(base + urllib.parse.quote(f"{path}/styles") + q, tok))
+    except GitHubError as e:
+        if e.status != 404:
+            raise
+        listing = []
+    for x in [x for x in listing if isinstance(x, dict) and x.get("type") == "file" and x.get("name", "").lower().endswith(".json")][:40]:
+        out[f"tidal-studio/styles/{x['name']}"] = _raw_get(base + urllib.parse.quote(x["path"]) + q, tok)
+    if not out:
+        raise GitHubError(f"No encuentro memoria de Tidal Studio en {owner}/{repo}/{path} (¿enlace correcto? ¿repositorio público?)", 404)
+    return out
 
 
 def share_url(cfg, path):

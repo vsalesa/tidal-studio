@@ -1819,3 +1819,11 @@ a.btn { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; 
 .st-it { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 10px; align-items: center; font-size: 13px; padding: 2px 4px; }
 .st-it span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px) { .mem-lrow { grid-template-columns: 1fr auto; } .mem-ab { grid-template-columns: 1fr; } }
+
+/* 0.19: sincronización con GitHub */
+.mem-sync { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 1px 6px; border-radius: 999px; background: var(--chip, #eef2f0); color: #3d5a4c; white-space: nowrap; }
+.mem-sync.warn { background: #fdf3dc; color: #8a5d05; }
+.mem-sync.bad { background: #fbe4e1; color: #9b2c1f; }
+.mem-cmp { margin-top: 10px; border: 1px solid var(--line, #e2ddd3); border-radius: 8px; padding: 8px 10px; max-height: 260px; overflow: auto; }
+.mem-cmp p { margin: 0 0 6px; }
+.mem-cmp-row { display: flex; gap: 8px; align-items: center; padding: 3px 0; font-size: 13px; }

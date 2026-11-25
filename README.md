@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.18.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.19.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -200,8 +200,26 @@ closest cases and solves it your way.
 
 ![Musical cases](docs/screenshots/musical-cases.png)
 
-**Automatic GitHub backup.** With GitHub connected, approved memories, your styles and your cases are committed to
-`tidal-studio/` a few seconds after each change. The inbox, votes and audio never are. You can turn this off.
+**Sync with GitHub: move to another computer or share with someone** (0.19). With GitHub connected, approved
+memories, your styles and your cases are kept in `tidal-studio/` in your repository, and the sync goes **both ways**:
+
+- **New computer.** Install Tidal Studio, connect the same GitHub repository and everything comes back by itself a few
+  seconds after starting. Nothing is lost if you had already added something on the new computer: both are merged.
+- **Deletions travel.** What you delete (or discard to the inbox) here is deleted on GitHub, and what you deleted on
+  another computer is deleted here. Every change brought from GitHub goes in the Log, so it can be undone.
+- **You see where each thing is.** Each memory, style and case shows **on GitHub**, **change not uploaded** or **only
+  here**. **Compare with GitHub** lists what would be uploaded, brought or deleted before touching anything. If both
+  computers changed the same thing, this computer wins.
+- **If it fails, it retries** after 1, 5, 15 and 30 minutes, and says when.
+- **Someone else's memory.** In Memory → Settings paste the link to their repository (`user/repo`). Their memories land
+  in **your inbox** so you choose which ones you want, their cases in Cases and their styles in My styles (the notes of
+  their songs don't travel). To share yours, give them your repository's link: it must be public, or give them access.
+
+The inbox, votes and audio never go to GitHub. You can turn the sync off.
+
+| On a new computer everything comes back | Compare with GitHub | Someone else's memory, to your inbox |
+|---|---|---|
+| ![Memory restored on a new computer](docs/screenshots/memory-restored.png) | ![Compare with GitHub](docs/screenshots/sync-compare.png) | ![Someone else's memory in the inbox](docs/screenshots/memory-shared.png) |
 
 **Storage panel** (Settings → Storage, or Memory → Settings). It shows what takes space on your computer and what
 happens if you delete it:
@@ -637,13 +655,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.18.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.19.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.18.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.18.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.18.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/tidal-studio_0.18.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.19.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.19.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.19.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/tidal-studio_0.19.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -1038,6 +1056,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.19.0** | [Memory synced with GitHub](#maestro-remembers-you-memory-your-styles-and-musical-cases): both ways, so on a new computer your memories, styles and cases come back by themselves; deletions travel both ways; each item shows whether it's on GitHub; **Compare with GitHub**; automatic retries; and bring **someone else's memory** from their repository link (to your inbox). |
 | **0.18.0** | Maestro v2, fifth step: [memory and styles](#maestro-remembers-you-memory-your-styles-and-musical-cases). Memory by scope (song, course, genre, always) from the chat and from your picks by ear, with a validation layer (clear ones approved by themselves, doubtful ones to an inbox), a log where every change can be undone, **My styles** (groove, roles, instruments and tempo, not notes) used as inspiration, transformation or literal copy and shared through GitHub, musical cases Maestro learns from, automatic GitHub backup of what's approved and a storage panel. |
 | **0.17.0** | Maestro v2, fourth step: [genres](#four-new-genres-cumbia-variants-and-the-songs-form). Four new courses (reggae & dub, boom bap, afrobeat, bachata in beta), cumbia variants chosen before the rhythm (Colombian, sonidera, villera, chicha), the course's form as sections in the score and the `.musicxml`, choose a sound by ear inside any course (learned per genre), a warning for sounds that don't play yet, and real drummers for reggae, boom bap and afrobeat. |
 | **0.16.0** | Maestro v2, third step: [sounds that learn](#sound-lab-sounds-that-learn). A Sound Lab that measures your sounds on demand (library, downloads, built-in, imported stems and bought packs kept local); four states per sound so Maestro only suggests what plays; 14 sound recipes you and Maestro can combine (layer, blend, in between); **Compare the best 3 by ear** on the same phrase, and the ranking learns from your picks; optional automatic critic (groove, harmony, form); configurable questions; experimental CLaMP 3 add-on, on per genre at 10+ songs. |
