@@ -784,7 +784,8 @@ memory, max time of an answer), the files you can open or upload (.tidal, MIDI, 
 (note length of imported instruments, seconds Sound Lab measures, real drummer bars, timeline cycles) and songs
 (songs recovered from your data folder, GitHub sync, undo steps). The defaults are the values the studio always had;
 each number has a safe minimum and maximum, a **Default** button next to it and **Reset all limits** at the end. Raising
-a limit gives more room at the cost of more memory, more tokens or slower answers.
+a limit gives more room at the cost of more memory, more tokens or slower answers. Every setting (these and the
+rest of Settings) applies the moment you press **Save**, without restarting the app.
 
 | Settings → Limits |
 |---|
@@ -1161,6 +1162,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.25.3** | Every setting applies the moment you press **Save**, without restarting the app: limits, number of tracks (the sound restarts on its own), the GitHub token used for updates and plugins, and the memory backup on GitHub as soon as you turn it on. |
 | **0.25.2** | Fixes: with more than 12 tracks set in Settings → Limits → Tracks, Maestro, the wizard, style recipes and shared links can now use them too (they were still stopping at d12), and the live highlighting in the Code view stays aligned with the code when you scroll (also in the Mac app). |
 | **0.25.1** | [How many tracks](#how-many-tracks-12-by-default-up-to-32): the number of tracks is a setting (Settings → Limits → Tracks, 12 by default, up to 64); the TidalCycles boot file and the SuperDirt orbits are generated from it, with what each extra track costs in CPU. [Every limit, configurable](#every-limit-configurable): the other 30 caps (Maestro context, file sizes, sound, songs, undo) in Settings → Limits, with their defaults and reset. |
 | **0.25.0** | [Your data, safe across updates](#your-data-safe-across-updates): your songs, memory and settings live in their own folder outside the program, a verified backup before every update with **Restore** in Settings → Storage, and every song also saved as files that bring «My projects» back if the window loses them. |

@@ -812,7 +812,8 @@ MIDI, audio, packs de loops, plugins), el sonido (largo de las notas de instrume
 Lab, compases de la batería real, ciclos de la línea de tiempo) y las canciones (las que se recuperan de tu carpeta de
 datos, sincronización con GitHub, pasos de deshacer). Los valores de serie son los de siempre; cada número tiene un
 mínimo y un máximo seguros, un botón **De serie** al lado y **Restablecer todos los límites** al final. Subir un límite
-da más margen a cambio de más memoria, más tokens o respuestas más lentas.
+da más margen a cambio de más memoria, más tokens o respuestas más lentas. Cada ajuste (estos y el resto de
+Ajustes) se aplica al pulsar **Guardar**, sin reiniciar la app.
 
 | Ajustes → Límites |
 |---|
@@ -1200,6 +1201,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.25.3** | Cada ajuste se aplica al pulsar **Guardar**, sin reiniciar la app: límites, número de pistas (el sonido se reinicia solo), el token de GitHub de las actualizaciones y los plugins, y la copia de la memoria en GitHub en cuanto la activas. |
 | **0.25.2** | Arreglos: con más de 12 pistas en Ajustes → Límites → Pistas, Maestro, el asistente, las recetas de estilo y los enlaces compartidos ya también las usan (se quedaban en d12), y el resaltado en directo de la vista Código sigue alineado con el código al hacer scroll (también en la app de Mac). |
 | **0.25.1** | [Cuántas pistas](#cuántas-pistas-12-de-serie-hasta-32): el número de pistas es un ajuste (Ajustes → Límites → Pistas, 12 de serie, hasta 64); el arranque de TidalCycles y las orbits de SuperDirt se generan a partir de él, con lo que cuesta en CPU cada pista de más. [Todos los límites, configurables](#todos-los-límites-configurables): los otros 30 topes (contexto de Maestro, tamaños de archivo, sonido, canciones, deshacer) en Ajustes → Límites, con su valor de serie y restablecer. |
 | **0.25.0** | [Tus datos, a salvo en cada actualización](#tus-datos-a-salvo-en-cada-actualización): tus canciones, memoria y ajustes viven en su propia carpeta fuera del programa, una copia comprobada antes de cada actualización con **Restaurar** en Ajustes → Almacenamiento, y cada canción también en archivo para recuperar «Mis proyectos» si la ventana los pierde. |

@@ -135,9 +135,21 @@ def apply(cfg):
     return vals
 
 
+def live(key):
+    """El valor que el código está usando AHORA (la constante del módulo), en las unidades del ajuste."""
+    d = BY_KEY[key]
+    if not d[1]:
+        return None
+    try:
+        v = getattr(importlib.import_module(d[1]), d[2]) / d[7]
+    except Exception:  # noqa: BLE001
+        return None
+    return int(v) if float(v).is_integer() else v
+
+
 def public(cfg, lang="es"):
     vals = values(cfg)
     i = 0 if lang == "es" else 1
     return {"groups": [{"id": g, "name": n[i]} for g, n in GROUPS.items()],
             "limits": [{"key": d[0], "group": d[8], "value": vals[d[0]], "default": d[3], "min": d[4], "max": d[5],
-                        "unit": d[6].split("|")[i] if "|" in d[6] else d[6], "label": (d[9], d[10])[i]} for d in DEFS]}
+                        "unit": d[6].split("|")[i] if "|" in d[6] else d[6], "label": (d[9], d[10])[i], "live": live(d[0])} for d in DEFS]}

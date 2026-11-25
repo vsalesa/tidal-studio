@@ -35,8 +35,10 @@ class Limits(unittest.TestCase):
         self.assertEqual(inventory.MAX_SAMPLES, 300)
         self.assertEqual(files.MAX_BYTES, 5 * 1024 * 1024)
         self.assertEqual(os.environ["TIDAL_STUDIO_SOUND_SEC"], "3")
+        self.assertEqual(limits.live("file_tidal_mb"), 5)
         limits.apply({})
         self.assertEqual(inventory.MAX_SAMPLES, 150)
+        self.assertEqual(limits.live("inv_samples"), 150)
 
     def test_public_has_labels_in_both_languages(self):
         for lang in ("es", "en"):

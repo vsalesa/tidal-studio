@@ -7,8 +7,8 @@ let last = null;
 
 export async function renderLimits(el, api) {
   try { last = await api(`/api/limits?lang=${LANG}`); } catch { el.textContent = L("No puedo leer los límites.", "Can't read the limits."); return; }
-  el.innerHTML = `<p class="hint">${L("Los valores de serie funcionan bien en casi todos los ordenadores. Subirlos da más margen (archivos más grandes, más contexto para Maestro) a cambio de más memoria, más tokens o respuestas más lentas. Cada número tiene un mínimo y un máximo seguros.",
-    "The default values work well on almost any computer. Raising them gives more room (bigger files, more context for Maestro) at the cost of more memory, more tokens or slower answers. Each number has a safe minimum and maximum.")}</p>
+  el.innerHTML = `<p class="hint">${L("Los valores de serie funcionan bien en casi todos los ordenadores. Subirlos da más margen (archivos más grandes, más contexto para Maestro) a cambio de más memoria, más tokens o respuestas más lentas. Cada número tiene un mínimo y un máximo seguros. Todo se aplica al pulsar Guardar, sin reiniciar la app.",
+    "The default values work well on almost any computer. Raising them gives more room (bigger files, more context for Maestro) at the cost of more memory, more tokens or slower answers. Each number has a safe minimum and maximum. Everything applies when you press Save, without restarting the app.")}</p>
     ${last.groups.map((g) => `<h4 class="lm-group">${esc(g.name)}</h4>
       <div class="lm-rows">${last.limits.filter((x) => x.group === g.id).map((x) => `
         <label class="lm-row ${x.value !== x.default ? "changed" : ""}"><span>${esc(x.label)}</span>
