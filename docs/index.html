@@ -401,12 +401,22 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
   </div>
 </section>
 
+<section id="sincronizar" style="padding-top: 20px">
+  <div class="wrap">
+    <div class="kicker" data-i="ksync">0.19 · memory synced with GitHub</div>
+    <h2 class="sec-title" data-i="tsync">Take your memory to another computer, or share it.</h2>
+    <p class="sec-lead" data-i="lsync">Your approved memories, styles and cases sync with your GitHub repository in both ways. On a new computer, connect the same repository and everything comes back by itself; what you delete on one computer is deleted on the other, and every change can be undone. Each item says whether it's on GitHub, and you can compare before syncing. Paste someone else's repository link and their memories land in your inbox, so you choose which ones you want.</p>
+    <div class="frame reveal"><div class="bar"><i></i><i></i><i></i><span>localhost:8765</span></div><img id="sync-img" alt="" width="2880" height="1800"></div>
+  </div>
+</section>
+
 <section id="novedades" style="padding-top: 20px">
   <div class="wrap">
     <div class="kicker" data-i="kn">What's new</div>
-    <h2 class="sec-title" data-i="tn">Version 0.18.0 is out.</h2>
+    <h2 class="sec-title" data-i="tn">Version 0.19.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
+      <li><b>0.19.0</b><span data-i="v190">Memory synced with GitHub in both ways: on a new computer your memories, styles and cases come back by themselves; deletions travel; each item shows whether it's on GitHub; compare before syncing; automatic retries; bring someone else's memory from their repository link.</span></li>
       <li><b>0.18.0</b><span data-i="v180">Maestro v2, fifth step: memory by scope (song, course, genre, always) with an inbox for what isn't clear and a log where everything can be undone; My styles as inspiration, transformation or literal copy, shared through GitHub; musical cases; automatic GitHub backup; a storage panel.</span></li>
       <li><b>0.17.0</b><span data-i="v170">Maestro v2, fourth step: four new courses (reggae and dub, boom bap, afrobeat, bachata in beta); cumbia variants chosen before the rhythm; each course's form in the score; choose sounds by ear inside any course; a warning for sounds that don't play yet.</span></li>
       <li><b>0.16.0</b><span data-i="v160">Maestro v2, third step: a Sound Lab that measures your sounds on demand; four states per sound so Maestro only suggests what plays; sound recipes you can combine; compare the best 3 by ear and the ranking learns from your picks; optional critic; experimental CLaMP 3.</span></li>
@@ -438,8 +448,8 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="step solo reveal" style="margin-bottom:40px">
       <h4 data-i="mach">Mac, Windows and Linux: one installer, everything inside</h4>
       <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. It opens as a real Mac app, in its own window and with no Terminal. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
-      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
-      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/TidalStudio-0.18.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.18.0/tidal-studio_0.18.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/tidal-studio_0.19.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
       <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows and Linux have their own installers too, each opening the studio in its own window. Intel Mac, or prefer the source? Follow the three steps below.</p>
       <p style="margin-top:4px;font-size:.9em"><a href="https://github.com/vsalesa/tidal-studio/releases/latest" data-i="allv">All versions</a></p>
     </div>
@@ -519,6 +529,8 @@ const ES = {
   f20h: "Un plan, paso a paso", f20p: "Pide una canción entera y Maestro primero te enseña un plan, como una lluvia de ideas con un productor. Apruébalo o cámbialo y construye la canción paso a paso, guardando cada uno: si la IA tarda demasiado, no se pierde nada.",
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Archivos de Tidal en pestañas", f18p: "Abre cualquier .tidal o .hs de tu disco o una canción de GitHub, cada uno en su pestaña, y ciérralos al terminar; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
+  v190: "Memoria sincronizada con GitHub en los dos sentidos: en un ordenador nuevo tus memorias, estilos y casos vuelven solos; los borrados viajan; cada cosa dice si está en GitHub; comparar antes de sincronizar; reintentos automáticos; trae la memoria de otra persona desde el enlace de su repositorio.",
+  ksync: "0.19 · memoria sincronizada con GitHub", tsync: "Llévate tu memoria a otro ordenador, o compártela.", lsync: "Tus memorias aprobadas, tus estilos y tus casos se sincronizan con tu repositorio de GitHub en los dos sentidos. En un ordenador nuevo conectas el mismo repositorio y todo vuelve solo; lo que borras en un ordenador se borra en el otro, y cada cambio se puede deshacer. Cada cosa dice si está en GitHub, y puedes comparar antes de sincronizar. Pega el enlace del repositorio de otra persona y sus memorias llegan a tu bandeja, para que elijas cuáles quieres.",
   v180: "Maestro v2, quinto paso: memoria por ámbitos (canción, curso, género, siempre) con una bandeja para lo que no está claro y un registro donde todo se deshace; Mis estilos como inspiración, transformación o copia literal, compartidos por GitHub; casos musicales; copia automática en GitHub; panel de almacenamiento.",
   v170: "Maestro v2, cuarto paso: cuatro cursos nuevos (reggae y dub, boom bap, afrobeat, bachata en beta); variantes de cumbia elegidas antes del ritmo; la forma de cada curso en la partitura; elige sonidos de oído dentro de cualquier curso; aviso de sonidos que aún no suenan.",
   v160: "Maestro v2, tercer paso: un Laboratorio de sonido que mide tus sonidos cuando lo pides; cuatro estados por sonido para que Maestro solo proponga lo que suena; recetas de sonido que puedes combinar; compara los 3 mejores de oído y el orden aprende de tus elecciones; crítico opcional; CLaMP 3 experimental.",
@@ -528,7 +540,7 @@ const ES = {
   v130: "MIDI de ida y vuelta: tus canciones suenan en tu teclado; el audio se recupera al enchufar cosas; una sola librería para todos los sonidos; cambia un sonido seleccionando su nombre.",
   v121: "Arreglo: guardar canciones en un repositorio de GitHub recién creado vacío ya no falla con el error 409.",
   v12: "Toca tu teclado MIDI: tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal, una por mano, a compás con tu canción; Maestro te lo explica.",
-  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.18.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
+  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.19.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
   v11: "Tidal Studio se actualiza solo: te avisa de las versiones nuevas, te enseña las novedades, descarga y comprueba el instalador de tu ordenador y lo instala con un clic.",
   v10: "En las peticiones grandes Maestro te enseña un plan y lo construye paso a paso, así un timeout ya no pierde trabajo, con un botón Cancelar; genera una canción nueva desde tu MIDI en 11 estilos; varias canciones abiertas en pestañas, desde tu disco o GitHub; un baterista real en nueve cursos; mejor importación de audio con MSST; y Maestro ve los sonidos que acabas de descargar.",
   v91: "Maestro carga en cada mensaje mc-tidal-studio, la ruta de skills de tu plugin de composición hecha para esta app.",
@@ -747,6 +759,7 @@ function applyLang() {
 langBtn.onclick = () => { lang = lang === "es" ? "en" : "es"; try { localStorage.setItem("ts-site-lang", lang); } catch {} applyLang(); };
 applyLang();
 { const mi = document.getElementById("midi-img"); mi.src = shotPath(lang === "es" ? "midi-traducido" : "midi-result"); mi.alt = lang === "es" ? "Lo que tocas en tu piano, traducido a pistas de Tidal" : "What you play on your piano, translated into Tidal tracks"; }
+{ const sy = document.getElementById("sync-img"); sy.src = shotPath(lang === "es" ? "memoria-recuperada" : "memory-restored"); sy.alt = lang === "es" ? "Memoria recuperada en un ordenador nuevo: cada memoria dice «en GitHub»" : "Memory restored on a new computer: each memory says «on GitHub»"; }
 { const mm = document.getElementById("mem-img"); mm.src = shotPath(lang === "es" ? "memoria-bandeja" : "memory-inbox"); mm.alt = lang === "es" ? "La bandeja de Memoria: lo que no está claro espera a que lo apruebes" : "The Memory inbox: what isn't clear waits for your approval"; }
 { const gi2 = document.getElementById("gn-img"); gi2.src = shotPath(lang === "es" ? "cumbia-variantes" : "cumbia-variants"); gi2.alt = lang === "es" ? "Elige la variante de cumbia antes del ritmo" : "Choose the cumbia variant before the rhythm"; }
 { const li = document.getElementById("sl-img"); li.src = shotPath(lang === "es" ? "comparar-sonidos" : "compare-sounds"); li.alt = lang === "es" ? "Comparar los 3 mejores de oído: tu sonido y tres que ya suenan" : "Compare the best 3 by ear: your sound and three that already play"; }
