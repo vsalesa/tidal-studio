@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.21.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.22.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -703,13 +703,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.21.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.22.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.21.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.21.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.21.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/tidal-studio_0.21.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.22.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.22.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.22.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/tidal-studio_0.22.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -1104,6 +1104,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.22.0** | [Effects, the same in every view](#blocks-view-and-live-highlighting): one chip per effect with an on/off switch and the same editor (slider, value, remove) in Tracks, Blocks and Code, **+ effect** everywhere, and the editor in the light Partitura look. |
 | **0.21.0** | [Six more included skills and a persistent skills index](#skills-and-plugins): sections with their parent and exceptions, ES/EN music vocabulary, provenance and quarantine in the panel, rebuild button, Maestro independent of your global Claude Code; and your own sound changes and repeated option picks become memory candidates. |
 | **0.20.0** | [Skills à la carte](#skills-and-plugins): only the sections of each skill that fit your message (local search, no AI), a short catalog, the always-loaded route by parts, extra sections on demand, and the RAG monitor shows the skill characters sent vs whole (about 55% fewer). |
 | **0.19.0** | [Memory synced with GitHub](#maestro-remembers-you-memory-your-styles-and-musical-cases): both ways, so on a new computer your memories, styles and cases come back by themselves; deletions travel both ways; each item shows whether it's on GitHub; **Compare with GitHub**; automatic retries; and bring **someone else's memory** from their repository link (to your inbox). |
