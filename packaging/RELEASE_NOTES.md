@@ -1,4 +1,16 @@
-## What's new in 0.19.0 / Novedades
+## What's new in 0.20.0 / Novedades
+
+Skills à la carte: only what's needed goes into Maestro's context.
+
+- **Only the sections that fit**: each skill and its reference files are split into sections; for each message Maestro gets the skill's introduction and only the sections that fit what you asked and the course step, chosen by a local search (BM25) on your computer, without AI. With the included skills, about **55% fewer skill characters** per message.
+- **A short catalog**: only the skills that may fit are listed; the rest are just counted.
+- **The always-loaded route by parts**: `mc-tidal-studio` (or any pinned skill) sends its introduction and the part for this step, plus the index of its other sections.
+- **More only if needed**: below each skill goes the index of what wasn't sent. If Maestro really needs a section it asks for it (`mas_skills`) and gets it in a second call, only then; the chat shows which one it asked for.
+- **Measured**: the RAG monitor shows the skill characters sent next to what sending them whole would have cost, per request and in total. **Router limits → How to load skills** switches back to whole skills (the 0.19 behaviour); the limits (24,000 / 9,000 characters, 2 skills besides the pinned ones) are unchanged.
+
+**Español:** **Solo las secciones que encajan**: cada skill y sus referencias se trocean por secciones y en cada mensaje Maestro recibe la introducción de la skill y solo las secciones que encajan con lo que pides y con el paso del curso, elegidas con una búsqueda local (BM25) en tu ordenador, sin IA; con las skills incluidas, **un 55 % menos de caracteres de skills** por mensaje. **Catálogo corto**: solo las skills que pueden encajar. **La ruta que se carga siempre, por partes**: `mc-tidal-studio` manda su introducción y la parte de este paso, más el índice del resto. **Más solo si hace falta**: si Maestro necesita una sección que no se mandó, la pide (`mas_skills`) y le llega en una segunda llamada; el chat enseña cuál pidió. **Medido**: el monitor RAG enseña los caracteres enviados frente a mandarlas enteras, y **Límites del enrutador → Cómo cargar las skills** vuelve al modo de antes. Los topes (24.000 / 9.000 caracteres, 2 skills además de las fijadas) no cambian.
+
+## 0.19.0
 
 Memory synced with GitHub: move to another computer, or share it with someone.
 
