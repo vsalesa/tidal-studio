@@ -5,7 +5,7 @@
 **Historical baseline:** [0.23.0@f256b6b](https://github.com/vsalesa/tidal-studio/commit/f256b6ba9e2eca39205ba603e7147f16fcc99c69). Earlier audits in this document refer to this commit.
 **Companions:** [MultiProfile execution](MULTIPROFILE_EXECUTION_V23.en.md), [Specialized Agent Architecture](SPECIALIZED_AGENT_ARCHITECTURE_V23.en.md), [approved Maestro v2 plan](https://github.com/vsalesa/tidal-studio/blob/feature/maestro-v2-blueprint/docs/maestro-v2/APPROVED_PLAN.en.md).
 
-**Reading guide:** Part 0 defines the unified adaptive architecture, approved native orchestration runtime (0.13), portable core (0.14), and serialization standard (0.15). These are normative across the document. Parts I–IV specify observability, learning, 18 optional inference profiles, 36 full-task schema roots and model-facing instructions. A worker is an optional inference implementation of a functional subprocess. Full-task and fragment contracts coexist; only the active compact contract reaches the model.
+**Reading guide:** Part 0 defines the unified adaptive architecture, approved native orchestration runtime (0.13), portable core (0.14), serialization standard (0.15), retrieval-first Semantic Gateway (0.16), and Inference Discipline Policy (0.17). These are normative across the document. Parts I–IV specify observability, learning, 18 optional inference profiles, 36 full-task schema roots and model-facing instructions. A worker is an optional inference implementation of a functional subprocess. Full-task and fragment contracts coexist; only the active compact contract reaches the model.
 
 # Part 0 — Governing architecture and implementation decisions
 
@@ -112,9 +112,9 @@ These are responsibility layers, not an obligatory pipeline. The Conductor can e
 
 ```mermaid
 flowchart TD
- Q[User request and snapshot] --> R[Local intent and scope resolution]
+ Q[User request and snapshot] --> R[Semantic Gateway: parser and retrieval first]
  R --> A{Intent sufficiently resolved?}
- A -->|No| B[Clarify or bounded optional local decision]
+ A -->|No| B[Clarify or adaptive local SLM / lightweight remote understanding]
  B -->|Still unclear| U[Ask user or fuse into one generative task]
  B -->|Resolved| P[Select functional subprocess]
  A -->|Yes| P
@@ -148,7 +148,7 @@ Decision result records chosen route, rejected alternatives with short codes, ev
 
 | Functional subprocess | Deterministic or retrieval path | Generative path only when needed |
 |---|---|---|
-| Intent Resolver | UI action metadata, rules, local ranking | Ambiguous semantics; preferably fuse into the actual task |
+| Intent Resolver | UI events, exact parser, FTS5 verified answers/templates, context binding | Optional local SLM or authorized lightweight remote fallback; fuse into actual task when appropriate |
 | Planner | Known graph templates, topological scheduling | Novel bounded musical graph |
 | Composer | Approved arrangement assembly, compatible template | Original coordinated composition |
 | Rhythm | Quantize, rotate, repeat, validated grooves | Novel rhythmic design |
@@ -250,7 +250,7 @@ Provider result is not allowed to set strategy, execution ID or claim validation
 
 ## 0.8 Minimal inference overhead — strict prompt policy
 
-System prompt is a transport cost, not the full knowledge repository. The detailed role prompts in Parts II and IV are maintained as versioned reference modules; load only the subset necessary for the actual operation. Long-form composition modules are not mandatory for a narrow fragment. The effective prompt contains:
+System prompt is a transport cost, not the full knowledge repository. Apply the normative Inference Discipline Policy in 0.17, including compact positive/negative constraints and deterministic response rendering. The detailed role prompts in Parts II and IV are maintained as versioned reference modules; load only the subset necessary for the actual operation. Long-form composition modules are not mandatory for a narrow fragment. The effective prompt contains:
 
 ```mermaid
 flowchart LR
@@ -510,13 +510,13 @@ This is a suggested layout, not a rewrite requirement. Preserve current browser-
 | Slice | Deliverable | Evidence gate |
 |---|---|---|
 | A | Audit actual 0.24.0, instrument baseline, reuse brief/effort | Real baseline, no duplicate implementation |
-| B | Tool registry and direct routes | Exact operations use zero inference |
+| B | Tool registry, direct routes and retrieval-first Semantic Gateway | Exact commands and verified FAQ/template paths use zero inference |
 | C | Stable subprocess contracts, retrieval and local sufficiency | Existing patterns reused only when compatible |
 | D | Minimal partial/full inference profiles | One call for routine unresolved work; strict validation |
 | E | Persistent Execution Studio with expandable spans | All actual stages and versions inspectable |
 | F | Learning candidates, reviewed tool/template promotion | Evidence, counterexamples, regression and rollback |
 | G | Authorized private GitHub export/restore; advanced DAG if justified | Privacy, integrity, quality and efficiency gates |
-| Experimental | Local classifier/model | Demonstrated routing benefit versus rules and overhead |
+| Optional | Local multilingual SLM, optional semantic retrieval | Demonstrated exact semantic match, resource/packaging and audio safety versus retrieval-first baseline; lightweight remote fallback remains available when authorized |
 
 Instrument execution from slice A, not after implementing all profiles. Optional advanced local models and automatic prompt optimization are deferred until evidence warrants them. Preserve the existing public app repository for generic code/schema/prompts only; runtime captures and private knowledge require separate authorized private GitHub export.
 
@@ -1056,6 +1056,221 @@ Event chunks contain version, run ID, sequence range and events array. Bound chu
 - Native scheduler tests in 0.13.10 and actual 0/1/1 provider attempts in the three normal scenarios.
 
 No benchmarks, formal schema test suite, CLI execution or implementation has been performed by the document author. All new code/schema sketches are specifications. Claude must implement and verify them incrementally, preserve current behavior, and report blockers and measured results before release.
+
+## 0.16 Maestro Semantic Gateway — retrieval-first, open application-domain understanding (normative)
+
+### 0.16.1 Responsibility and boundaries
+
+Accept any message concerning the application, including unexpected goals, questions, diagnostics, feedback, corrections, confirmations, preferences, unsupported features and mixed requests. This is an open input domain with a controlled execution domain, not a general-purpose chatbot and not a closed command classifier. Unknown requests must have a treatment path; do not invent support or force them into a known operation. Preserve original user text and unresolved constraints. A structured UI event bypasses natural-language interpretation, not authorization or validation.
+
+The gateway is a portable library boundary before the Conductor. It may return a verified direct answer, normalized intent, clarification, unsupported/unknown capability result, or a bounded escalation request. It cannot execute effects. Capability availability is established by the actual registry and host inventory, not inferred by a language model. No extra mandatory SLM call, encoder, embedding service or LLM query rewrite.
+
+### 0.16.2 Progressive resolution
+
+```mermaid
+flowchart TD
+ A[Message or structured UI event] --> B[Normalize and bind explicit context]
+ B --> C{Exact supported command?}
+ C -->|Yes| V[Validate and bind intent]
+ C -->|No| D[Direct SQLite FTS5 lookup]
+ D --> E{Verified complete answer or intent template?}
+ E -->|Answer| R[Render local response]
+ E -->|Intent template| V
+ E -->|Insufficient| F{Optional semantic retrieval justified?}
+ F -->|Yes| G[Local semantic retrieval]
+ G --> H{Sufficient evidence?}
+ H -->|Yes| V
+ H -->|No| J[Adaptive understanding route]
+ F -->|No| J
+ J -->|Local suitable| L[Local SLM]
+ J -->|Remote allowed and local unsuitable| M[Lightweight remote model]
+ J -->|Creative task already clear| N[Fused advanced interpretation and task]
+ J -->|Unavailable or ambiguous| Q[Clarify or report limitation]
+ L --> V
+ M --> V
+ V --> K{Semantics and scope resolved?}
+ K -->|Yes| O[Conductor or local response]
+ K -->|No| Q
+ N --> P[Host validates generated proposal]
+```
+
+The diagram describes alternatives, not a mandatory pipeline. Exact commands bypass lookup when irrelevant. Search before generative understanding for unresolved messages likely to benefit; inexpensive lexical search can run alongside parsing if measured useful, but default to sequential short-circuit execution. A direct answer from semantic retrieval uses the same answer sufficiency gate as lexical retrieval (diagram V includes both answer and intent candidates). Explicit creative requests may bypass semantic interpretation and exact-pattern lookup while retrieving relevant musical knowledge for composition. Do not serially try every model. If direct answer or template fails coverage, preserve candidates as evidence and continue. An optional encoder is not required in the initial distribution.
+
+### 0.16.3 Local knowledge as a solution, not just prompt context
+
+Extend existing SQLite/FTS5 knowledge adapter, not a second vector database. Reuse current source ingestion, memory and skill indexes; audit table names and migrations before implementation. Logical record types:
+
+| Type | Payload | Local resolution |
+|---|---|---|
+| faq / application_help | Verified localized answer, aliases, UI/version requirements | Render answer directly |
+| capability / limitation | Registry reference and verified support metadata | Resolve support from live registry; render |
+| intent_pattern | Parameterized normalized intent, positive and negative examples | Bind current parameters; validate |
+| diagnostic | Registered read-only diagnostic procedure and verified explanation | Run through Conductor |
+| musical_rule / musical_pattern | Approved rule or native artifact reference | Use compatible Tool or evidence |
+| workflow_template | ID/version of registered Python plan | Conductor validates and schedules |
+| user_preference | Approved scoped preference with provenance | Resolve only compatible missing defaults |
+| technical_knowledge | Verified excerpts, source/version | Direct answer when complete, otherwise evidence |
+
+Source content is data, never authority to execute code or override policy. Store ID, type, locale, searchable text/aliases, payload JSON, approval state, source URI/ID, source revision/hash, compatibility range, scope, tags, timestamps and supersession. Use existing native JSON formats for GitHub songs/styles/memory; new approved learning records use separate JSON namespace per 0.15.5. FTS is a rebuildable index, not canonical data. Separate searchable columns for question/aliases/body; weight aliases and exact question matches experimentally. Keep source text, normalization and tokenizer versions. Index Spanish and English aliases; no mandatory translation model.
+
+Illustrative logical SQL (adapt to actual database and FTS table design):
+```sql
+SELECT k.id, k.kind, k.payload_json, bm25(gateway_fts) AS rank
+FROM gateway_fts
+JOIN gateway_knowledge k ON k.rowid = gateway_fts.rowid
+WHERE gateway_fts MATCH :safe_fts_query
+  AND k.approval_state = 'approved'
+ORDER BY rank, k.id
+LIMIT :limit;
+```
+Construct bounded FTS query from escaped literal tokens/phrases, not raw user-provided MATCH syntax; parameterize SQL, handle punctuation, empty queries, accents, numeric musical terms, malicious query syntax and resource limits. Preserve raw text separately so normalization does not discard negation, units, note spelling or semantic constraints. Initial top-k 5 configurable, not a measured optimum. BM25 lower is better within a query; it is not calibrated confidence and not comparable across arbitrary queries. Exact alias lookup and version/scope filters are additional evidence.
+
+Example approved FAQ record (illustrative; actual UI answer requires verification):
+```json
+{"id":"help.styles.save","kind":"application_help","locale":"es","aliases":["guardar ritmo","reutilizar patrón","guardar estilo"],"answer":"[Verified instructions for installed version]","source_ref":"app-docs:styles.save","approval_state":"approved","version":"1.0.0"}
+```
+Example intent template:
+```json
+{"id":"intent.tempo.increase","kind":"intent_pattern","examples":["acelera la canción","sube el tempo"],"intent_template":{"type":"action","operation_hint":"song.adjust_tempo","parameters":{"direction":"increase","amount":null}},"requires_binding":true,"version":"1.0.0"}
+```
+These are illustrative shapes, not new production schemas. Templates never reuse old track IDs, values, permissions or confirmation from a previous execution. Resolve reference and magnitude against current state; if no approved default exists, clarify. Search results never directly execute a workflow.
+
+### 0.16.4 Retrieval sufficiency gate
+
+Direct answer is permitted only when an approved, version-compatible, relevant answer covers the whole question and qualifiers, no material contradiction or missing context remains, and the answer does not imply an unperformed effect. For intent templates require grounded operation, target, units, direction, negation, ordering/dependencies, all clauses and constraints, current context and permissions. A positive match cannot cancel a negative instruction. Detect multiple actions, conjunctions, exception clauses, comparisons, references and unanswered residual clauses; abstain when coverage cannot be established. A query about a capability is not permission to execute it. Missing registry match means unknown unless explicit authoritative support metadata establishes unsupported; distinguish partial support, unavailable now and unsupported.
+
+Return typed sufficiency result with status, accepted/rejected source IDs, reasons, unresolved clauses and optional candidate. Scores are diagnostic only; calibrate per task class and language against labeled examples. Do not accept an approximate lexical match as sufficient for mutation. No automatic learned template activation from a single successful run. For uncertain read-only FAQ matches, show relevant sourced excerpts with a limitation or clarify rather than confidently answering a different question. For destructive actions require existing host confirmation and revision checks irrespective of confidence.
+
+Examples:
+- How do I save a rhythm for later? Verified exact help answer -> local template, zero generative calls.
+- How do I save without overwriting the old one? Generic FAQ alone insufficient; recover exact non-overwrite guidance or clarify.
+- Do not save the style. A save match cannot authorize mutation.
+- Save this style and transpose bass. Resolve both clauses, preserve order and effects; never silently execute only matched clause.
+- Can I export directly to a DAW? Check actual format adapter and capability registry; no invented availability.
+- Why is track 3 silent? Bind track and run registered read-only diagnostics via Conductor; no model needed if evidence suffices.
+- Make this sound like an intimate 1950s Havana club, but preserve rhythm. Preserve creative goal and lock; fused advanced path if local knowledge is insufficient.
+
+### 0.16.5 Gateway contracts and semantic binding
+
+Use JSON Schema Draft 2020-12; in-process typed Python objects; no routine JSON round-trip. A broad speech-act taxonomy is stable while capabilities can evolve: action, creative_request, application_question, musical_question, capability_question, diagnostic_request, feedback, preference, confirmation, correction, conversation, mixed, out_of_scope, unknown. Unknown operation_hint may be null. Preserve multiple intents, ordering, goals, references, constraints, evidence and unresolved values. Do not force a model to select a tool. Host attaches original message, source channel, request ID, snapshot and evidence spans; do not ask model to echo them.
+
+Illustrative extraction result:
+```json
+{"intents":[{"id":"i1","type":"action","goal":"Reduce piano volume slightly","operation_hint":"adjust_volume","parameters":{"target":"piano","direction":"decrease","amount":null},"constraints":[],"references":[],"unresolved":["amount"]},{"id":"i2","type":"action","goal":"Transpose bass two semitones","operation_hint":"transpose","parameters":{"target":"bass","semitones":2},"constraints":[],"references":[],"unresolved":[]}],"constraints":[{"kind":"preserve_track","target":"drums"}],"requires_context":true}
+```
+Evidence contract should attach original character offsets (define offset convention, use Python Unicode code-point offsets internally) or literal spans for material parameters and constraints. Validate evidence against original text; evidence existence alone does not prove correct interpretation. Host resolves numeric locale, note names, octave, tempo, relative/absolute percentage or dB, direction, targets, references, prior proposal ID, locks and permissions. Model proposals are not authorization. Confirm ambiguous destructive operations; no default invention. Preserve unspecified as null or explicit unresolved per schema. Prefer one compact clarification for missing essential information. Reject unknown enum/extra keys for new schemas. Host decides actual capability mapping.
+
+Proposed gateway result statuses: direct_answer, resolved_intent, needs_clarification, unsupported, unknown, escalate, error. Unsupported requires authoritative evidence; unknown means no reliable determination. A failed model or offline backend is not proof capability is unsupported. Return honest limitation or clarification. The existing IntentTask/RoutingResult profile remains a bounded advanced fallback, not a mandatory second interpretation step.
+
+### 0.16.6 Adaptive model routing and resource policy
+
+The primary path is parser and local retrieval, zero Claude calls. When genuinely unresolved, choose one understanding backend according to policy:
+1. Local general-purpose multilingual instruction SLM, when installed, compatible, measured sufficiently accurate and efficient.
+2. Remote lightweight model, preferably Claude Haiku via existing claude -p and authentication, when local model unavailable, disabled, too slow or resource-constrained, and remote use authorized.
+3. Advanced Claude only when justified by difficult semantics or fused interpretation and musical resolution. No mandatory sequence SLM -> Haiku -> Sonnet. Clarify rather than exhaust model retries when information is absent.
+
+No concrete SLM selected. Evaluate 0.5–2B instruction-tuned multilingual GGUF candidates, low/no extended reasoning mode, constrained JSON output with compatible llama.cpp build. FunctionGemma or GLiNER can be comparison candidates but not required dependencies. No need to ship multiple models. Select on exact semantic match, abstention, Spanish/English, unexpected and mixed requests, memory/latency, licensing and redistribution. An SLM uses local tokens and compute but no Claude quota. Embeddings/encoders also consume local compute; account separately. Haiku may be cheaper/faster but identical text does not inherently consume fewer tokens; measure actual CLI usage and subscription effects where observable. No claim of fixed quota saving.
+
+Resource governor checks OS/architecture, backend compatibility, actual available RAM/VRAM, model readiness, measured cold/warm latency, CPU load, audio playback pressure and user settings. GPU absence alone is not a failure: CPU may be sufficient. If CPU is unsuitable, choose authorized remote lightweight directly rather than attempting slow inference first. Prioritize audio stability; bound thread count/context/output, lazy load and reuse model, idle unload, cancel on deadline. No model execution on real-time audio thread. Do not silently send local-only data to remote. Modes auto, local_only, remote_lightweight; explicit provider/auth configuration, no silent paid API switch. No remote if consent/policy/network unavailable; deterministic and retrieval paths remain usable.
+
+```mermaid
+flowchart LR
+ A[Unresolved request] --> B{Policy and resource governor}
+ B -->|Suitable| C[Local GGUF SLM CPU or GPU]
+ B -->|Authorized| D[Haiku via existing Claude CLI]
+ B -->|Creative goal clear| E[Fused Sonnet task]
+ B -->|Neither available| F[Clarification or limitation]
+ C --> G[Strict semantic contract validation]
+ D --> G
+ E --> H[Musical output validation]
+ G --> I[Conductor]
+```
+
+### 0.16.7 Portable packaging
+
+Evaluate pinned llama.cpp native runtime, GGUF model and a single adapter; CPU baseline on supported Windows, Linux and macOS, optional acceleration only where tested (Metal, CUDA, Vulkan or other compatible backend). Platform-specific binaries, model file potentially shared across compatible builds; actual supported architecture/OS matrix must follow app packaging tests. Do not require Ollama, Docker, PyTorch or external daemon. An app-owned persistent worker or native binding is acceptable; avoid process startup per request. If a local server is used internally, bind loopback only, authenticate/control access as appropriate, own lifecycle and prevent unintended exposure. No arbitrary remote-code loading from models. Pin runtime/model revision, license, hashes and artifact sizes; verify download integrity, explicit optional model download, cancellation and rollback. Do not bundle all platforms or automatically download large assets. Test clean offline startup without model or Claude; graceful remote fallback when permitted.
+
+Proposed configuration (additive separate namespace; verify current config compatibility):
+```json
+{"semantic_gateway":{"strategy":"auto","retrieval_first":true,"semantic_retrieval_enabled":false,"local":{"enabled":true,"runtime":"llama_cpp","device":"auto","quantization":"Q4_K_M","lazy_loading":true,"model_id":null},"remote_fallback":{"enabled":false,"provider":"claude_cli","model":"haiku","effort":"low"},"output":{"format":"json","verbosity":"minimal"}}}
+```
+Remote disabled in illustrative default until user authorization; reuse explicitly authorized existing provider configuration when appropriate. Verify CLI alias, model access, effort and structured-output flags. Do not introduce a new authentication path. Use same shared inference budget; count local and remote attempts distinctly, and count remote against global provider attempts. If Haiku already consumed the routine one-remote-attempt budget, do not silently add Sonnet; either reserve an explicitly permitted escalation budget or return clarification/validated partial. Prefer fused advanced path when clear creative task avoids two remote calls.
+
+### 0.16.8 Implementation structure and learning
+
+```text
+maestro/nlu/
+  gateway.py             # progressive short-circuit resolution
+  normalizer.py          # preserve raw text and evidence offsets
+  parser.py              # exact grammar and value extraction
+  retrieval.py           # existing SQLite adapter + sufficiency gate
+  binder.py              # context, units, references, clauses
+  validator.py           # schema, semantics, abstention
+  inference_router.py    # one backend based on policy
+  resources.py           # audio-aware resource policy
+  backends/
+    local.py             # optional llama.cpp adapter
+    remote.py            # existing provider adapter, lightweight profile
+  contracts/
+  vocabulary/
+```
+Keep this layout illustrative and avoid unnecessary classes or duplicated registries. Structured UI, exact parser, retrieval and model routes converge on one normalized contract. Store verified interpretation/correction evidence, negative examples and approved reusable patterns in Learning Lab; index only after review/regression. Never silently generalize a personal preference or promote model output to executable Python. No continuous fine-tuning requirement. Capture gateway route, skipped reasons, query and source versions (protected local capture policy), retrieval ranks, sufficiency codes, model/runtime version, device, cold/warm latency, resource use, actual remote usage, local token counts if observable, validation and accepted/corrected outcome. No hidden reasoning claims.
+
+### 0.16.9 Acceptance and benchmark
+
+Initial mandatory implementation: structured UI bypass, exact parser, FTS5 direct answer/template retrieval, binder, sufficiency gate, broad unknown handling and existing lightweight remote adapter if supported. Local SLM is optional behind feature flag until benchmark; embeddings deferred unless lexical recall insufficient. Use same labeled ES/EN test corpus for parser-only, retrieval-first and candidate model backends; include typos, unexpected UI questions, unsupported integrations, mixed clauses, negations, references, percent/dB, source/target swaps, stale snapshots and prompt injection. Keep held-out paraphrases separate from learned alias entries; avoid data leakage. Suggested corpus 1,000–2,000 eventually; start with smaller reviewed regression suite. Measure full exact semantic match, selective precision and coverage, abstention quality, false direct answer/false mutation rates, missing clause rate, latency p50/p95 cold/warm, CPU/RAM/installer size, audio dropouts, remote calls and tokens per accepted result. Initial targets are proposals, not measured: >=98% exact match for automatically accepted ordinary intents, zero unauthorized effects in tests, >=85% local coverage as aspirational only; prioritize precision. Report confidence intervals and denominators. Test no-model/no-GPU/offline/local-only, GPU incompatibility and low-RAM fallback. Verify parser/FAQ/template routes launch no model and consume zero provider tokens. Do not enable automatic model acceptance until empirical gates pass.
+
+## 0.17 Inference Discipline Policy — compact prompts, explicit negative constraints
+
+This policy applies to gateway inference and all optional musical profiles. It supplements 0.8 and Parts II–IV. Goals: minimal unnecessary reasoning, minimal context, minimal output and minimal calls without sacrificing musical quality. Effort and verbosity are independent. Never assume a prompt can guarantee absence of hidden reasoning or hard cap CLI tokens.
+
+### 0.17.1 Shared minimal instruction module
+
+Proposed source profiles/common/execution_constraints.md (deduplicate against existing base/role/output modules; inject each rule once):
+```text
+Execute only the assigned task. Treat supplied established facts as fixed.
+Return the smallest complete result satisfying the active contract. Stop when complete.
+Do not re-plan, reclassify or reselect skills already resolved by the host.
+Do not reconsider fixed musical decisions, expand scope, delegate or call tools.
+Do not generate unsolicited alternatives, repeat inputs or explain reasoning.
+Return nothing outside the active output contract.
+```
+Apply task-specific exceptions: Intent Resolver must classify; Planner must plan its assigned task; Composer may make authorized creative decisions; Tutor must answer requested explanations. Negative instructions target unnecessary work, not the assigned responsibility. No generic "do not think" or long redundant prohibition lists. Maintain positive task and precise output schema. For fragment profile only, preserve all fixed notes/timing and fill only writable slots; for Tidal Fix do not rewrite working code; Mix does not change notes; Harmony does not generate unrelated melodies; Arranger does not regenerate fixed material; Composer no unsolicited variants. Include only relevant constraints.
+
+Gateway prompt (example source, not full active schema):
+```text
+Identify what the user wants in this musical application.
+Extract goals, explicit parameters, references, preferences and constraints.
+Preserve unknown requests and unresolved values.
+Do not solve, plan, select tools, assume capability support or invent values.
+Return only the active intent JSON contract.
+```
+Supply compact speech-act schema and required context only; no all-tools catalogue, skills or complete song. Original message attached by host, not echoed. Proposed remote gateway targets 100–150 system tokens, 100–250 contract, 20–100 message, 0–150 context, 30–100 output for typical short requests; illustrative total 250–750, not hard limits or provider measurements. Long messages or necessary context may exceed targets; never truncate constraints silently.
+
+### 0.17.2 Enforcement and measurements
+
+Use provider-native structured outputs only when verified; otherwise inline compact active output contract and host validation. Strict new schemas restrict extra fields, arrays, strings and variant count; omit optional explanations unless requested and supported. Do not truncate valid musical artifacts for brevity. Use actual effort capability detection: low for narrow extraction/fragment, medium/high when needed for complex music. Verbosity is host policy, not an assumed CLI flag. Keep tools disabled and session isolation in CLI. Reuse current brief/result-first behavior; no extra LLM summarization for structured successes, blockers or diagnostics. Generate localized templates from verified actual outcome (preview vs applied distinct), with optional details from Execution Studio. For requested explanation, use appropriate profile/contract, not unsolicited rationale.
+
+```yaml
+inference:
+  effort: low
+  verbosity: minimal
+  constraints:
+    allow_unsolicited_variants: false
+    allow_delegation: false
+    allow_tool_calls: false
+    allow_explanations: false
+  budget:
+    max_calls: 1
+output:
+  format: json
+  strict_contract: true
+```
+Illustrative metadata only; host enforces permissions, attempts, scope, schema, deadlines and policy. Operation-specific flags inherit global constraints and cannot enlarge budget. Do not send YAML to model. Capture effective prompt component hashes and sizes, actual usage where observable, visible output, repair attempts, latency and total accepted-result cost. Distinguish local inference and remote quota; missing hidden reasoning metrics N/A. Evaluate concise vs baseline prompts on same fixtures, check contract validity, user acceptance and musical quality. Promote only measured improvements and retain rollback. No mandatory critique, classifier, planner or explanation call. Maintain provider independence and existing local CLI subscription.
+
+### 0.17.3 Delivery order integration
+
+After baseline instrumentation, implement exact parser and direct retrieval with verified application FAQ/capability registry and regression cases; then common gateway contract/binder and lightweight remote fallback; then optional local SLM benchmark and packaging; finally approved learned templates and optional embeddings if required. Integrate prompt discipline in every profile from first implementation. Advanced musical profiles may fuse understanding and resolution when route and authority are clear. Keep existing song/style/memory JSON untouched. These are proposed implementation details, not tested model performance or implemented features.
 
 ---
 
