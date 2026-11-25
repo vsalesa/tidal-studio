@@ -1,4 +1,15 @@
-## What's new in 0.23.0 / Novedades
+## What's new in 0.24.0 / Novedades
+
+Maestro answers short, result first.
+
+- **Less thinking, less text**: by default Maestro gets to the point. One or two sentences on what it did, at most three code fragments explained, one idea, short option cards and plan steps. The music changes, options to compare, plans and step-by-step flow are the same.
+- **Claude with your subscription** now runs `claude` with **thinking effort: low** (new *Thinking effort* setting; skipped if your Claude Code has no `--effort`).
+- **Measured** with Sonnet 4.6 on five typical requests: about **83% fewer output tokens** (18,500 → 3,100; hidden reasoning 14,600 → 180) and about **3.5× faster** (308 s → 85 s).
+- Want longer explanations while you learn? **Sound Lab → Learning → How long are its answers? → Detailed**.
+
+**Español:** **Menos pensar, menos texto**: por defecto Maestro va al grano: una o dos frases con lo que ha hecho, como mucho tres trozos de código explicados, una idea y tarjetas y pasos de plan cortos; los cambios, opciones, planes y el paso a paso son los mismos. **Claude con tu suscripción** lanza `claude` con **esfuerzo al pensar: bajo** (nuevo ajuste; se omite si tu Claude Code no tiene `--effort`). **Medido** con Sonnet 4.6 en cinco peticiones típicas: unos **83% menos tokens de salida** y unas **3,5 veces más rápido**. ¿Quieres explicaciones más largas? **Laboratorio de sonido → Aprender → ¿Cómo de largas son sus respuestas? → Detalladas**.
+
+## 0.23.0
 
 Maestro saves its options as styles for real.
 

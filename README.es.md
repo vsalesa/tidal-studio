@@ -1148,6 +1148,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.24.0** | [Respuestas cortas, primero el resultado](#respuestas-cortas-primero-el-resultado): Maestro piensa y escribe menos por defecto (unos 83% menos tokens de salida y 3,5 veces más rápido con Sonnet 4.6), la suscripción de Claude se lanza con esfuerzo al pensar bajo, y las respuestas **Detalladas** están a un ajuste. |
 | **0.23.0** | [Guarda opciones de Maestro como estilos, de verdad](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales): pide «guárdame las otras tres como estilos», «la A y la C» o «todas» y se guardan (al momento y sin IA si se entiende cuáles), o pulsa **Guardar como estilo** en cualquier tarjeta de opción; la confirmación la escribe la app con lo que se guardó de verdad, así que Maestro ya no puede decir «guardado» si no se guardó nada. |
 | **0.22.0** | [Efectos, iguales en todas las vistas](#vista-de-bloques-y-resaltado-en-directo): una ficha por efecto con interruptor y el mismo editor (deslizador, valor, quitar) en Pistas, Bloques y Código, **+ efecto** en todas, y el editor con el aspecto claro Partitura. |
 | **0.21.0** | [Seis skills más incluidas y un índice de skills persistente](#skills-y-plugins): secciones con su padre y sus excepciones, vocabulario musical ES/EN, procedencia y cuarentena en el panel, botón para reconstruir, Maestro independiente de tu Claude Code global; y tus propios cambios de sonido y elecciones repetidas de opciones se convierten en candidatos a memoria. |
@@ -1258,6 +1259,21 @@ lento que la API (unos 10–20 s).
 
 Las claves se guardan solo en `config.json`, en tu ordenador (no se sube a git). También puedes usar las variables
 de entorno `OPENAI_API_KEY` o `ANTHROPIC_API_KEY`.
+
+#### Respuestas cortas: primero el resultado
+
+Maestro ahora responde **corto por defecto**: piensa menos, va al grano y te dice lo que ha hecho en una o dos frases,
+con como mucho tres trozos de código explicados, una idea y tarjetas de opción cortas. Los cambios en la música, las
+opciones para comparar, los planes y el paso a paso son los mismos. Con «Claude con tu suscripción», el comando `claude`
+además se lanza con **esfuerzo al pensar: bajo** (Ajustes → *Esfuerzo al pensar*; se omite si tu Claude Code es tan
+antiguo que no tiene `--effort`).
+
+Medido con Sonnet 4.6 en cinco peticiones típicas (un bajo funky, «hazlo más oscuro», un tema de house entero, «¿qué hace
+jux rev?», un paso de un plan): **unos 83% menos tokens de salida** (18.500 → 3.100), casi todo razonamiento oculto
+(14.600 → 180), y **unas 3,5 veces más rápido** (308 s → 85 s en total). Si mientras aprendes quieres explicaciones más
+largas, elige **Detalladas** en Laboratorio de sonido → Aprender → *¿Cómo de largas son sus respuestas?*.
+
+![El ajuste de longitud de las respuestas en Laboratorio de sonido → Aprender](docs/screenshots/es/respuestas-cortas.png)
 
 Si no conecta, abre **Ajustes → Diagnóstico** ([qué revisa](#conecta-tu-ia-con-detección-automática-y-diagnóstico)).
 
