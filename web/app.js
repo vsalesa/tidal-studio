@@ -280,7 +280,7 @@ function selectedTrack() {
 }
 function addTrack(name, kind, code) {
   const id = freeId();
-  if (!id) { toast(L(`Máximo ${maxTracks()} pistas. Borra alguna o sube el número en Ajustes → Pistas.`, `Maximum ${maxTracks()} tracks. Delete one or raise the number in Settings → Tracks.`)); return null; }
+  if (!id) { toast(L(`Máximo ${maxTracks()} pistas. Borra alguna o sube el número en Ajustes → Límites.`, `Maximum ${maxTracks()} tracks. Delete one or raise the number in Settings → Limits.`)); return null; }
   const t = { id, name, kind, code, muted: false };
   state.tracks.push(t);
   state.selected = id;
@@ -3739,7 +3739,7 @@ function toggleProvider() {
   const p = document.querySelector("input[name=provider]:checked").value;
   $("#fs-openai").hidden = p !== "openai"; $("#fs-anthropic").hidden = p !== "anthropic"; $("#fs-claudecode").hidden = p !== "claudecode";
 }
-// Ajustes → Pistas: lo que cuesta cada número, en una frase
+// Ajustes → Límites: lo que cuesta cada número, en una frase
 function tracksCpuHint() {
   const n = Math.max(TRACKS_MIN, Math.min(TRACKS_MAX, Math.round(+$("#tracks-count").value || 12)));
   const extra = Math.round((n + 1) / 13 * 100) - 100;

@@ -62,6 +62,6 @@ Fuente: [diagrams/release-plan.es.puml](diagrams/release-plan.es.puml). Cada ver
 
 ## 7. El número de pistas es un ajuste (0.25.1)
 
-Desde la 0.25.1 el número de pistas es `config.json → tracks.count` (12 de serie, de 12 a 32, `server/tracklimit.py`). Cada versión siguiente debe leerlo en vez de suponer 12: pistas generadas, plantillas, importaciones y todo lo que elija ids `dN` libres usan `max_tracks` (en `/api/status` y en la sesión que recibe Maestro); las orbits de SuperDirt son `N + 1` (la última es la del teclado MIDI); la batería de referencia sigue en `d9..d12`. Es un ajuste del usuario: vive en la carpeta de datos y entra en las copias.
+Desde la 0.25.1 el número de pistas es `config.json → tracks.count` (12 de serie, de 12 a 64, `server/tracklimit.py`). Cada versión siguiente debe leerlo en vez de suponer 12: pistas generadas, plantillas, importaciones y todo lo que elija ids `dN` libres usan `max_tracks` (en `/api/status` y en la sesión que recibe Maestro); las orbits de SuperDirt son `N + 1` (la última es la del teclado MIDI); la batería de referencia sigue en `d9..d12`. Es un ajuste del usuario: vive en la carpeta de datos y entra en las copias.
 
 Lo mismo para todos los demás topes: son `config.json → limits` (`server/limits.py`, Ajustes → Límites). Un tope nuevo en la 0.26 o después se añade a `limits.DEFS` con su valor de serie y su rango seguro, nunca fijo en el código.

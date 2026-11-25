@@ -444,7 +444,7 @@ _REF_CACHE = {}
 def _ref_text(path):
     """Texto (en minúsculas) de un archivo de referencia, con caché por fecha de modificación."""
     try:
-        key = (path, os.path.getmtime(path))
+        key = (path, os.path.getmtime(path), MAX_FILE)  # MAX_FILE cambia al guardar Ajustes → Límites
     except OSError:
         return ""
     if key not in _REF_CACHE:

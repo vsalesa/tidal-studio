@@ -763,16 +763,16 @@ older versions kept inside the program copy, without overwriting anything.
 |---|---|
 | ![Backups and restore in the storage panel](docs/screenshots/data-safe.png) | ![Songs recovered from the data folder](docs/screenshots/songs-recovered.png) |
 
-### How many tracks: 12 by default, up to 32
+### How many tracks: 12 by default, up to 64
 
 A song starts with **12 tracks**, `d1` to `d12`: the standard start, enough for every course (the reference drummer
-uses the last four). Since 0.25.1 the number is a setting: **Settings → Tracks**, from 12 to 32. The studio then writes
+uses the last four). Since 0.25.1 the number is a setting: **Settings → Limits → Tracks**, from 12 to 64. The studio then writes
 its TidalCycles boot file with `d1`…`dN` and starts SuperDirt with one effects channel («orbit») per track, plus one for
 the MIDI keyboard. Each orbit keeps its own reverb and delay running, so more tracks use more CPU even when they are
-silent: 16 is fine on any recent computer, above 24 only if you really need them. Saving restarts the sound for a few
+silent: 16 is fine on any recent computer, above 32 only if you really need them. Saving restarts the sound for a few
 seconds; Maestro, MIDI import and `.tidal` files follow the new number.
 
-| Settings → Tracks |
+| Settings → Limits → Tracks |
 |---|
 | ![The number of tracks in Settings, with what it costs in CPU](docs/screenshots/tracks-setting.png) |
 
@@ -1161,8 +1161,8 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
-| **0.25.2** | Fixes: with more than 12 tracks set in Settings → Tracks, Maestro, the wizard, style recipes and shared links can now use them too (they were still stopping at d12), and the live highlighting in the Code view stays aligned with the code when you scroll (also in the Mac app). |
-| **0.25.1** | [How many tracks](#how-many-tracks-12-by-default-up-to-32): the number of tracks is a setting (Settings → Tracks, 12 by default, up to 32); the TidalCycles boot file and the SuperDirt orbits are generated from it, with what each extra track costs in CPU. [Every limit, configurable](#every-limit-configurable): the other 30 caps (Maestro context, file sizes, sound, songs, undo) in Settings → Limits, with their defaults and reset. |
+| **0.25.2** | Fixes: with more than 12 tracks set in Settings → Limits → Tracks, Maestro, the wizard, style recipes and shared links can now use them too (they were still stopping at d12), and the live highlighting in the Code view stays aligned with the code when you scroll (also in the Mac app). |
+| **0.25.1** | [How many tracks](#how-many-tracks-12-by-default-up-to-32): the number of tracks is a setting (Settings → Limits → Tracks, 12 by default, up to 64); the TidalCycles boot file and the SuperDirt orbits are generated from it, with what each extra track costs in CPU. [Every limit, configurable](#every-limit-configurable): the other 30 caps (Maestro context, file sizes, sound, songs, undo) in Settings → Limits, with their defaults and reset. |
 | **0.25.0** | [Your data, safe across updates](#your-data-safe-across-updates): your songs, memory and settings live in their own folder outside the program, a verified backup before every update with **Restore** in Settings → Storage, and every song also saved as files that bring «My projects» back if the window loses them. |
 | **0.24.0** | [Short answers, result first](#short-answers-the-result-first): Maestro thinks and writes less by default (about 83% fewer output tokens and 3.5× faster with Sonnet 4.6), the Claude subscription runs with thinking effort low, and **Detailed** answers are one setting away. |
 | **0.23.0** | [Save Maestro's options as styles, for real](#maestro-remembers-you-memory-your-styles-and-musical-cases): ask «save the other three as styles», «A and C» or «all» and they are saved (right away and without AI when it's clear which), or press **Save as a style** on any option card; the confirmation is written by the app with what was really saved, so Maestro can no longer say «saved» when nothing was. |
