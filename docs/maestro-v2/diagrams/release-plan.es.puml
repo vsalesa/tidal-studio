@@ -1,0 +1,35 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Helvetica
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam ActivityBorderColor #8A8F98
+skinparam ArrowColor #8A8F98
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+title Plan de versiones de Maestro Core: primero datos a salvo y medir
+start
+#E7F0FB:**0.25 Tus datos a salvo**
+carpeta data/ fuera del programa, copia antes de cada actualización y migración,
+botón Restaurar, canciones guardadas en archivo, prueba de actualización simulada;
+-> Puerta: ¿La actualización simulada no pierde nada?;
+:**0.26 Medir**
+registro de ejecuciones persistente, tokens reales por respuesta;
+-> Puerta: ¿Medida la última versión publicada?;
+:**0.27 Entender + órdenes exactas**
+parser, RAG/FTS5, ficha de intención única, Haiku solo de respaldo;
+-> Puerta: ¿Las órdenes exactas usan 0 llamadas a Claude?;
+:**0.28 Modelo local como capa de comprensión**
+incluido en la app, un botón para encenderlo, primero Mac con Metal;
+-> Puerta: ¿Iguala a Haiku en el corpus sin cortes de audio?;
+:**0.29 Capacidades híbridas**
+bajo, ritmo, armonía: el modelo solo rellena los huecos;
+-> Puerta: ¿Menos tokens por resultado aceptado, A/B a ciegas?;
+:**0.30 Laboratorio de aprendizaje**
+candidatos con evidencia, etiquetado con un clic;
+-> Puerta: ¿Nada se activa sin aprobación?;
+:**0.31 Repo privado de datos en GitHub**
+memoria, ejecuciones, aprendizaje, prompts; comprobación de privado;
+-> Puerta: Restaurar todo en otro ordenador;
+stop
+@enduml
