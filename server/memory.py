@@ -50,8 +50,8 @@ def _hash(obj):
     return hashlib.sha1(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
 
 
-def _clean(s, n=MAX_TEXT):
-    return re.sub(r"\s+", " ", str(s or "")).strip()[:n]
+def _clean(s, n=None):
+    return re.sub(r"\s+", " ", str(s or "")).strip()[:MAX_TEXT if n is None else n]
 
 
 def _norm(s):

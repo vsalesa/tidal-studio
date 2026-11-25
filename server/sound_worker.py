@@ -2,13 +2,14 @@
 escribe una línea JSON por archivo: {"file", "features"} o {"file", "error"}. Lo lanza server/soundlab.py."""
 import json
 import math
+import os
 import sys
 
 import numpy as np
 import librosa
 
 SR = 22050
-MAX_SEC = 3.0
+MAX_SEC = float(os.environ.get("TIDAL_STUDIO_SOUND_SEC") or 3.0)  # Ajustes → Límites (server/limits.py)
 
 
 def measure(path):

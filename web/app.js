@@ -16,7 +16,7 @@ import { songBlocksHTML, blockInfo, fxChipHTML, fxSwitch, canBypass } from "./bl
 import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf, elementsOf } from "./edit.js";
 import { mixerHTML, mixCodeHTML, mixBadgeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
-import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory } from "./history.js";
+import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory, setUndoSteps } from "./history.js";
 import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fixNegatives, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
@@ -35,6 +35,7 @@ import { initScore, linkPart, unlinkTrack, scoreBadgeHTML, scoreBarHTML, scoreBa
 import { fetchHTML, fetchContext, fetchEnabled, setFetchEnabled } from "./fetchcard.js";
 import { planHTML, planContext, planEnabled, setPlanEnabled, newPlan, nextStep as nextPlanStep, planDone, PLAN_START, PLAN_STEPWISE, PLAN_ALL, PLAN_SPLIT, PLAN_CONTINUE, PLAN_RETRY, planBarHTML } from "./plan.js";
 import { maxTracks, setMaxTracks, TRACKS_MIN, TRACKS_MAX } from "./tracklimit.js";
+import { renderLimits, collectLimits } from "./limits.js";
 import { parseTidalFile, metaLine, readMeta, EXTRA_HEADER, baseName } from "./tidalfile.js";
 import { initAppUpdate } from "./appupdate.js";
 import { openImport, importedSummary, INSPIRE_PROMPT, generatedSummary, GEN_AGAIN_CHIP, GEN_SONG_CHIP, GEN_SONG_PROMPT, rememberMidi, hasLastMidi } from "./importsong.js";
@@ -3685,6 +3686,7 @@ async function refreshStatus() {
     server.llm = s.llm_configured; server.engine = s.engine; server.github = s.github_configured;
     server.ghWhere = s.github_where || null; server.ghNew = !!s.github_create_new;
     if (s.max_tracks) setMaxTracks(s.max_tracks);
+    if (s.undo_steps) setUndoSteps(s.undo_steps);
     if (!dataNoticed && s.data) noticeData(s.data);
     syncSounds(s.engine && s.engine.sounds_rev, api);
     refreshHighlights();
@@ -3729,6 +3731,7 @@ async function openSettings() {
   $("#gh-create-new").checked = !!g.create_new;
   $("#gh-msg").textContent = ""; $("#btn-gh-create").hidden = true;
   $("#tracks-count").value = c.tracks?.count || maxTracks(); tracksCpuHint();
+  renderLimits($("#limits-settings"), api);
   toggleProvider(); $("#test-msg").textContent = "";
   $("#settings").showModal();
 }
@@ -3754,6 +3757,7 @@ async function saveSettings() {
   }
   await api("/api/config", {
     tracks: { count: nTracks },
+    ...(collectLimits($("#limits-settings")) ? { limits: collectLimits($("#limits-settings")) } : {}),
     provider: document.querySelector("input[name=provider]:checked").value,
     openai: { base_url: $("#oa-url").value, api_key: $("#oa-key").value, model: $("#oa-model").value },
     anthropic: { api_key: $("#an-key").value, model: $("#an-model").value },

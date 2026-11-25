@@ -1,4 +1,4 @@
-// Captura de 0.25.1 (número de pistas configurable): Ajustes → Pistas con 16 y lo que cuesta en CPU.
+// Capturas de 0.25.1: Ajustes → Pistas (16 y lo que cuesta en CPU) y Ajustes → Límites (todos los topes).
 //   OUT=../screenshots LANGS=en,es node v0251.js
 const { chromium, open, shot, sunday, T } = require('./lib');
 
@@ -16,6 +16,19 @@ const scenes = {
     });
     await page.waitForTimeout(300);
     await shot(page, T(lang, 'numero-de-pistas', 'tracks-setting'), lang);
+  },
+  async 'limits-setting'(b, lang) {
+    const { page } = await open(b, { lang, state: sunday(lang) });
+    await page.evaluate(() => document.querySelector('#btn-settings').click());
+    await page.waitForSelector('#limits-settings input[data-lim]', { state: 'attached' }); await page.waitForTimeout(300);
+    await page.evaluate(() => {
+      document.querySelectorAll('#settings details').forEach((d) => { d.open = false; });
+      const d = document.querySelector('#limits-section'); d.open = true;
+      const i = document.querySelector('input[data-lim="inv_samples"]'); i.value = 300; i.dispatchEvent(new Event('input'));
+      d.querySelector('summary').scrollIntoView({ block: 'start' });
+    });
+    await page.waitForTimeout(300);
+    await shot(page, T(lang, 'limites', 'limits-setting'), lang);
   },
 };
 

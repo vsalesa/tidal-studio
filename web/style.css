@@ -1868,3 +1868,13 @@ a.btn { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; 
 .mn-trace { margin: 6px 0 8px; padding-left: 18px; font-size: 12px; color: var(--ink-2); }
 .mn-trace li { margin: 2px 0; }
 .mn-trace small { color: var(--ink-3); }
+
+/* Ajustes → Límites (0.25.1) */
+#limits-settings .lm-group { margin: 14px 0 6px; font-size: 0.95em; }
+#limits-settings .lm-rows { display: grid; gap: 6px; }
+#limits-settings .lm-row { display: grid; grid-template-columns: 1fr 110px 80px 130px; align-items: center; gap: 8px; margin: 0; }
+#limits-settings .lm-row input { width: 100%; margin: 0; }
+#limits-settings .lm-row small { color: var(--muted, #777); }
+#limits-settings .lm-row.changed > span { font-weight: 600; }
+#limits-settings .lm-reset { font-size: 0.8em; padding: 2px 8px; justify-self: end; }
+@media (max-width: 640px) { #limits-settings .lm-row { grid-template-columns: 1fr 90px; } }
