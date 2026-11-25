@@ -1,4 +1,16 @@
-## What's new in 0.24.0 / Novedades
+## What's new in 0.25.0 / Novedades
+
+Your data, safe: updates never touch your songs, memory or settings.
+
+- **Your data has its own folder, outside the program**: `~/Library/Application Support/Tidal Studio/data` on Mac, `%LOCALAPPDATA%\Tidal Studio\data` on Windows, `~/.local/share/tidal-studio/data` on Linux. Folders are named by what they hold, the same as on GitHub: `songs/`, `memory/`, `sounds/`, `knowledge/`, `backups/`, plus `config.json`, `samples/`, `recordings/`, `my-skills/` and `my-plugins/`. The first time 0.25 starts it moves what lived inside the program copy, without overwriting anything (what it doesn't recognise goes to `maestro-data-old/`).
+- **A backup before every update** (the updater makes it before running the installer) and **the first time a new version starts**, before any database is opened. Databases are copied with SQLite's backup API, so the copy is consistent even while the app is open, and every file is checked with SHA-256. The last 5 are kept. Large files that rebuild themselves (sample library, knowledge index, local model) are not copied.
+- **Restore** in **Settings → Storage → Your data, safe**: it applies the next time you open the app, and first saves your current state in another backup, so a restore can be undone too. A damaged backup is never restored. **Back up now** makes one whenever you want.
+- **Your songs also as files**, in `data/songs/<name>/` with the same files as on GitHub (`song.tidal`, `song.json`, `song.musicxml`, `README.md`). You keep editing in the studio as always; if the window loses «My projects» (another port, a new profile, a reinstall), the studio brings them back from these files on its own, and **Bring back any missing** does it by hand.
+- **Tested like a real update**: a new automatic test installs version N with its data inside the program, installs N+1 with the real launcher, starts it and checks byte by byte that every file is still there, and then does it again with N+2.
+
+**Español:** **Tus datos tienen su propia carpeta, fuera del programa**: `~/Library/Application Support/Tidal Studio/data` en Mac, `%LOCALAPPDATA%\Tidal Studio\data` en Windows y `~/.local/share/tidal-studio/data` en Linux, con carpetas que se llaman por lo que guardan, igual que en GitHub (`songs/`, `memory/`, `sounds/`, `knowledge/`, `backups/`, además de `config.json`, `samples/`, `recordings/`, `my-skills/` y `my-plugins/`). La primera vez que arranca la 0.25 mueve lo que vivía dentro de la copia del programa sin pisar nada (lo que no reconoce va a `maestro-data-old/`). **Una copia antes de cada actualización** y **la primera vez que arranca una versión nueva**, antes de abrir ninguna base de datos; las bases se copian con la API de copia de SQLite (coherentes aunque la app esté abierta) y cada archivo se comprueba con SHA-256; se guardan las 5 últimas. **Restaurar** en **Ajustes → Almacenamiento → Tus datos a salvo**: se aplica al volver a abrir la app y antes guarda tu estado actual en otra copia, así que también se puede deshacer; una copia dañada nunca se restaura. **Tus canciones también en archivo**, en `data/songs/<nombre>/` con los mismos archivos que en GitHub; si la ventana pierde «Mis proyectos», el estudio las recupera solo. **Probado como una actualización de verdad**: una prueba automática instala la versión N, luego la N+1 con el lanzador real y comprueba byte a byte que no falta nada.
+
+## 0.24.0
 
 Maestro answers short, result first.
 

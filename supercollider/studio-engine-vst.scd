@@ -2,7 +2,7 @@
 // está instalado. La lista de instrumentos activados está en samples/vst-instruments.json.
 (
 var dirt = ~dirt;
-var vstFile = ~studioDir +/+ ".." +/+ "samples" +/+ "vst-instruments.json";
+var vstFile = ("TIDAL_STUDIO_SAMPLES".getenv ?? { ~studioDir +/+ ".." +/+ "samples" }) +/+ "vst-instruments.json";
 // ------------------------------------------------------------ 2) VSTPlugin: Surge XT, Vital…
 var server = Server.default;
 var ctrls = IdentityDictionary.new;

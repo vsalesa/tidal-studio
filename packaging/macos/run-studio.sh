@@ -3,8 +3,8 @@
 # Used by /Applications/Tidal Studio.app (in the background, no Terminal) and by
 # "Tidal Studio.command" (in Terminal, for troubleshooting). Extra arguments go to server/app.py.
 #
-# The installed files are read-only, so the studio runs from a copy in your user folder,
-# where it keeps config.json, your samples and recordings.
+# The installed files are read-only, so the studio runs from a copy in your user folder (…/app). Your
+# config.json, songs, memory, samples and recordings live next to it in …/data (0.25), never inside the copy.
 RT="/Users/Shared/TidalStudio"
 DATA="$HOME/Library/Application Support/Tidal Studio"
 mkdir -p "$DATA/app/samples"
@@ -19,6 +19,8 @@ export TIDAL_SCLANG_CONF="$RT/sclang_conf.yaml"
 export PYTHONUNBUFFERED=1
 # lets the studio find its version and install updates (server/appupdate.py)
 export TIDAL_STUDIO_RUNTIME="$RT"
+# Tus datos, junto a (nunca dentro de) la copia del programa (0.25)
+export TIDAL_STUDIO_USERDATA="$DATA/data"
 # shims/: lets GHCi run on Macs without the Xcode Command Line Tools.
 # Apps opened from the Finder get a minimal PATH and no shell profile, so add the usual places
 # where tools such as the `claude` command (Claude subscription provider) live.

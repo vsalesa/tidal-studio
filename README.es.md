@@ -750,7 +750,7 @@ Cuando sale una versión nueva, la app te avisa: al arrancar y cada 12 horas mir
 **Actualizar ahora** descarga el instalador de tu ordenador (el `.pkg` de Apple Silicon en el Mac, `Setup.exe` en
 Windows, el `.deb` en Linux) con barra de progreso y lo comprueba con el SHA-256 que publica GitHub. **Instalar y
 reiniciar** cierra Tidal Studio, ejecuta el instalador (el Mac te pide tu contraseña y Windows, permiso) y abre la
-versión nueva. Tus canciones, samples, plugins y ajustes no se tocan. **Más tarde** esconde la tarjeta hasta mañana y
+versión nueva. Tus canciones, samples, plugins y ajustes no se tocan, y antes se hace una copia ([tus datos, a salvo](#tus-datos-a-salvo-en-cada-actualización)). **Más tarde** esconde la tarjeta hasta mañana y
 **Saltar esta versión**, hasta la siguiente.
 
 | Hay una versión nueva | Descargando, con progreso |
@@ -765,6 +765,29 @@ En **Ajustes › Actualizaciones** ves tu versión, puedes **Buscar actualizacio
 menú **Tidal Studio › Buscar actualizaciones…**) y desmarcar **Buscar versiones nuevas sola** para que no mire nunca
 por su cuenta. Si usas Tidal Studio desde la carpeta del código, solo te avisa de la versión nueva: actualiza con
 `git pull`.
+
+### Tus datos, a salvo en cada actualización
+
+Desde la 0.25 tus datos tienen **su propia carpeta, fuera del programa**, así que una actualización puede cambiar el
+programa entero sin tocar lo tuyo: `~/Library/Application Support/Tidal Studio/data` en Mac,
+`%LOCALAPPDATA%\Tidal Studio\data` en Windows y `~/.local/share/tidal-studio/data` en Linux (`data/` dentro de la
+carpeta si lo ejecutas desde el código fuente). Las carpetas se llaman por lo que guardan, igual que en GitHub:
+`songs/`, `memory/`, `sounds/`, `knowledge/` y `backups/`, además de `config.json`, `samples/`, `recordings/`,
+`my-skills/` y `my-plugins/`. La primera vez que arranca la 0.25 mueve lo que las versiones anteriores guardaban
+dentro de la copia del programa, sin pisar nada.
+
+- **Una copia antes de cada actualización** y la primera vez que arranca una versión nueva, antes de abrir ninguna
+  base de datos. Las bases se copian coherentes aunque la app esté abierta, cada archivo se comprueba con SHA-256 y se
+  guardan las 5 últimas.
+- **Restaurar** en **Ajustes → Almacenamiento → Tus datos a salvo**: se aplica al volver a abrir la app y antes guarda
+  tu estado actual, así que también se puede deshacer. **Hacer copia ahora** hace una cuando quieras.
+- **Tus canciones también en archivo** en `songs/<nombre>/` (`song.tidal`, `song.json`, `song.musicxml`, como en
+  GitHub). Si la ventana pierde «Mis proyectos» (otro puerto, un perfil nuevo, una reinstalación), el estudio las
+  recupera solo.
+
+| Ajustes → Almacenamiento → Tus datos a salvo | «Mis proyectos» recuperados de tu carpeta de datos |
+|---|---|
+| ![Copias y restaurar en el panel de almacenamiento](docs/screenshots/es/datos-a-salvo.png) | ![Canciones recuperadas de la carpeta de datos](docs/screenshots/es/canciones-recuperadas.png) |
 
 ### Tutorial interactivo
 
@@ -1148,6 +1171,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.25.0** | [Tus datos, a salvo en cada actualización](#tus-datos-a-salvo-en-cada-actualización): tus canciones, memoria y ajustes viven en su propia carpeta fuera del programa, una copia comprobada antes de cada actualización con **Restaurar** en Ajustes → Almacenamiento, y cada canción también en archivo para recuperar «Mis proyectos» si la ventana los pierde. |
 | **0.24.0** | [Respuestas cortas, primero el resultado](#respuestas-cortas-primero-el-resultado): Maestro piensa y escribe menos por defecto (unos 83% menos tokens de salida y 3,5 veces más rápido con Sonnet 4.6), la suscripción de Claude se lanza con esfuerzo al pensar bajo, y las respuestas **Detalladas** están a un ajuste. |
 | **0.23.0** | [Guarda opciones de Maestro como estilos, de verdad](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales): pide «guárdame las otras tres como estilos», «la A y la C» o «todas» y se guardan (al momento y sin IA si se entiende cuáles), o pulsa **Guardar como estilo** en cualquier tarjeta de opción; la confirmación la escribe la app con lo que se guardó de verdad, así que Maestro ya no puede decir «guardado» si no se guardó nada. |
 | **0.22.0** | [Efectos, iguales en todas las vistas](#vista-de-bloques-y-resaltado-en-directo): una ficha por efecto con interruptor y el mismo editor (deslizador, valor, quitar) en Pistas, Bloques y Código, **+ efecto** en todas, y el editor con el aspecto claro Partitura. |

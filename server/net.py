@@ -20,7 +20,8 @@ import sys
 import urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CONFIG_PATH = os.path.join(ROOT, "config.json")
+import paths  # noqa: E402
+CONFIG_PATH = paths.CONFIG
 EXTRA_BUNDLES = ["/etc/ssl/cert.pem", "/opt/homebrew/etc/openssl@3/cert.pem", "/usr/local/etc/openssl@3/cert.pem",
                  "/etc/ssl/certs/ca-certificates.crt", "/etc/pki/tls/certs/ca-bundle.crt"]
 FORCE_INSECURE = False  # lo pone app.py con --insecure-ssl

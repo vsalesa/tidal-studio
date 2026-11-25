@@ -22,8 +22,9 @@ The installers built here contain **everything** Tidal Studio needs, so installi
   profile), waits for the server and shows the studio in a WKWebView window. Quitting sends SIGINT to the server,
   which stops GHCi and sclang; the server runs in its own process group, so anything left (scsynth) is killed too,
   and if the app dies the server notices and shuts itself down. Log: `~/Library/Logs/Tidal Studio/studio.log`.
-- `run-studio.sh` copies the program files to `~/Library/Application Support/Tidal Studio/app`, where your
-  `config.json`, samples and recordings live. `Tidal Studio.command` (in `/Users/Shared/TidalStudio`) runs the same
+- `run-studio.sh` copies the program files to `~/Library/Application Support/Tidal Studio/app` and passes
+  `TIDAL_STUDIO_USERDATA=~/Library/Application Support/Tidal Studio/data` to the server: your `config.json`, songs,
+  memory, samples and recordings live there, next to the program copy and never inside it (since 0.25). `Tidal Studio.command` (in `/Users/Shared/TidalStudio`) runs the same
   script in Terminal and opens your browser, for troubleshooting only.
 - The `.pkg` marks its bundles as non-relocatable, so an existing SuperCollider.app on the Mac is never touched.
 
@@ -35,7 +36,7 @@ toolchain) + Tidal via cabal, SuperDirt + sounds. Inno Setup (`TidalStudio.iss`)
 to `C:\TidalStudio` because GHC stores absolute paths. The shortcuts run `pythonw.exe bin\launcher.py`
 (`packaging/common/launcher.py`): no console, server in the background, the studio in Microsoft Edge's app mode with
 its own profile (so the window is its own process), and when that window closes the server is stopped through
-`/api/shutdown`; a Windows job object kills anything left. User data: `%LOCALAPPDATA%\Tidal Studio`.
+`/api/shutdown`; a Windows job object kills anything left. User data: `%LOCALAPPDATA%\Tidal Studio\data` (program copy in `…\app`).
 
 ## Linux (.deb)
 
@@ -43,7 +44,16 @@ its own profile (so the window is its own process), and when that window closes 
 packs a `.deb`. SuperCollider comes from the distribution (`Depends: supercollider-language, supercollider-server`),
 because it links against the system's Qt and audio. The menu entry runs the same launcher, which opens a GTK + WebKit
 window (`tidal-studio-window.py`, run with the system Python and `python3-gi`), or Chromium in app mode, or a small
-control window plus the browser. User data: `~/.local/share/tidal-studio`.
+control window plus the browser. User data: `~/.local/share/tidal-studio/data` (program copy in `…/app`).
+
+## Your data across updates (0.25)
+
+`server/paths.py` decides where everything lives: `TIDAL_STUDIO_USERDATA` (set by the launchers) or `<program>/data`
+when running from source. Folders are named by what they hold (`songs/`, `memory/`, `sounds/`, `knowledge/`,
+`backups/`, …). On first start it moves what 0.24 and older kept inside the program copy, never overwriting.
+`server/backup.py` makes a backup before an update is installed and the first time a new version starts (before any
+database opens), keeps the last 5, and restores on the next start after backing up the current state.
+`tests/test_user_data.py` simulates N → N+1 → N+2 with the real `launcher.sync_app()` and checks every file byte by byte.
 
 ## In-app updates
 

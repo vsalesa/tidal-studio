@@ -728,7 +728,7 @@ When a new version comes out, the app tells you: at startup and every 12 hours i
 downloads the installer for your computer (the Apple Silicon `.pkg` on a Mac, `Setup.exe` on Windows, the `.deb` on
 Linux) with a progress bar and checks it against the SHA-256 that GitHub publishes. **Install and restart** closes
 Tidal Studio, runs the installer (your Mac asks for your password, Windows for permission) and opens the new version.
-Your songs, samples, plugins and settings are left alone. **Later** hides the card until tomorrow and **Skip this
+Your songs, samples, plugins and settings are left alone, and a backup is made first ([your data, safe](#your-data-safe-across-updates)). **Later** hides the card until tomorrow and **Skip this
 version** until the next one.
 
 | A new version is out | Downloading, with progress |
@@ -742,6 +742,26 @@ version** until the next one.
 In **Settings › Updates** you see your version, can **Check for updates** by hand (on the Mac also from the menu
 **Tidal Studio › Check for Updates…**) and untick **Check for new versions automatically** so it never looks by itself.
 If you run Tidal Studio from the source folder, it only tells you about the new version: update with `git pull`.
+
+### Your data, safe across updates
+
+Since 0.25 your data has **its own folder, outside the program**, so an update can replace the whole program without
+touching what's yours: `~/Library/Application Support/Tidal Studio/data` on a Mac, `%LOCALAPPDATA%\Tidal Studio\data`
+on Windows and `~/.local/share/tidal-studio/data` on Linux (`data/` inside the folder if you run from source). Folders
+are named by what they hold, the same as on GitHub: `songs/`, `memory/`, `sounds/`, `knowledge/` and `backups/`, plus
+`config.json`, `samples/`, `recordings/`, `my-skills/` and `my-plugins/`. The first time 0.25 starts it moves what
+older versions kept inside the program copy, without overwriting anything.
+
+- **A backup before every update** and the first time a new version starts, before any database opens. Databases are
+  copied consistently even while the app is open, every file is checked with SHA-256 and the last 5 are kept.
+- **Restore** in **Settings → Storage → Your data, safe**: it applies the next time you open the app and first saves
+  your current state, so a restore can be undone too. **Back up now** makes one whenever you want.
+- **Your songs also as files** in `songs/<name>/` (`song.tidal`, `song.json`, `song.musicxml`, like on GitHub). If the
+  window ever loses «My projects» (another port, a new profile, a reinstall), the studio brings them back on its own.
+
+| Settings → Storage → Your data, safe | «My projects» brought back from your data folder |
+|---|---|
+| ![Backups and restore in the storage panel](docs/screenshots/data-safe.png) | ![Songs recovered from the data folder](docs/screenshots/songs-recovered.png) |
 
 ### Interactive tutorial
 
@@ -1114,6 +1134,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.25.0** | [Your data, safe across updates](#your-data-safe-across-updates): your songs, memory and settings live in their own folder outside the program, a verified backup before every update with **Restore** in Settings → Storage, and every song also saved as files that bring «My projects» back if the window loses them. |
 | **0.24.0** | [Short answers, result first](#short-answers-the-result-first): Maestro thinks and writes less by default (about 83% fewer output tokens and 3.5× faster with Sonnet 4.6), the Claude subscription runs with thinking effort low, and **Detailed** answers are one setting away. |
 | **0.23.0** | [Save Maestro's options as styles, for real](#maestro-remembers-you-memory-your-styles-and-musical-cases): ask «save the other three as styles», «A and C» or «all» and they are saved (right away and without AI when it's clear which), or press **Save as a style** on any option card; the confirmation is written by the app with what was really saved, so Maestro can no longer say «saved» when nothing was. |
 | **0.22.0** | [Effects, the same in every view](#blocks-view-and-live-highlighting): one chip per effect with an on/off switch and the same editor (slider, value, remove) in Tracks, Blocks and Code, **+ effect** everywhere, and the editor in the light Partitura look. |
