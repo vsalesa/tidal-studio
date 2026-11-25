@@ -792,6 +792,15 @@ FTS_JOIN = 3.0          # una skill con una sección muy buena entra aunque su d
 FTS_JOIN_REL = 0.6      # … si está cerca de la mejor del mensaje
 
 
+NAME_BONUS = 4.0
+_NAME_STOP = {"music", "mc", "skill", "skills", "style", "the", "and", "of", "for", "tidal", "studio", "writer", "advisor", "checker"}
+
+
+def _name_words(name):
+    """Palabras con significado del nombre de una skill («hook-writer» → {hook}, «music-evaluate» → {evaluate})."""
+    return {w for w in re.split(r"[-_\s]+", (name or "").lower()) if len(w) > 2 and w not in _NAME_STOP}
+
+
 def _select_fts(cfg, query, extra_words="", force=(), genre="", child_only=False):
     if not kstore.available():
         return None
@@ -804,7 +813,13 @@ def _select_fts(cfg, query, extra_words="", force=(), genre="", child_only=False
         return [], [], ""
     a = kretrieve.analyze(query, extra_words, genre)
     _, ranked = _ranked(cfg, query, extra_words, force, skills)
+    # Las palabras de contexto (paso, estilo, nombres de tus pistas) ayudan, pero no deben pesar como lo que pides:
+    # «Kick», «Bass»… empujaban skills de un estilo por encima de la que trata justo de tu petición
+    own = {s["name"]: sc for sc, s in _ranked(cfg, query, "", force, skills)[1]} if extra_words.strip() else None
+    if own is not None:
+        ranked = [(sc if sc >= 100 else max(own.get(s["name"], 0), 0.6 * sc), s) for sc, s in ranked]   # mismo orden
     best = kretrieve.best_by_source(a, [s["source_id"] for s in skills])
+    qwords = {w for g in a.get("gq", []) for w in g}
     top = max(best.values()) if best else 0
     scored = []
     for sc, s in ranked:
@@ -813,7 +828,11 @@ def _select_fts(cfg, query, extra_words="", force=(), genre="", child_only=False
         if s["pinned"]:
             scored.append((1000 + sc, sc, s))
         elif sc >= 4 or fts_ok:
-            scored.append((min(sc, 20) + (8 * b / top if top else 0), sc, s))
+            # 0.21: pesa más lo que dicen sus secciones (FTS) que su descripción, y el nombre de la skill cuenta
+            # («hook-writer» para un gancho, «music-evaluate» para evaluar): con muchos plugins instalados, una
+            # descripción larga ya no le gana a la skill que trata justo de eso
+            name_hit = NAME_BONUS if _name_words(s["name"]) & qwords else 0
+            scored.append((min(sc, 16) + (10 * b / top if top else 0) + name_hit, sc, s))
     scored.sort(key=lambda x: -x[0])
     chosen = []
     for comb, sc, s in scored:

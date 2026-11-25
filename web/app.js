@@ -4228,9 +4228,10 @@ async function refreshSkillCount() {
 }
 async function openSkills(focus = "") {
   let r = { skills: [], folder: "" };
-  try { r = await api("/api/skills"); } catch (e) { toast(e.message); }
+  let kn = null;
+  try { [r, kn] = await Promise.all([api("/api/skills"), api("/api/knowledge").catch(() => null)]); } catch (e) { toast(e.message); }
   skillList = r.skills || [];
-  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins, updates: r.plugin_updates, autoUpdate: r.plugins_auto_update });
+  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { knowledge: kn, focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins, updates: r.plugin_updates, autoUpdate: r.plugins_auto_update });
   if (!$("#skills").open) $("#skills").showModal();
   const f = focus && ($(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`) || $(`#skills-body .pl-card[data-plugin="${CSS.escape(focus)}"]`));
   if (f) f.scrollIntoView({ block: "nearest" });
@@ -4274,6 +4275,14 @@ function wireSkills() {
       const names = [...box.querySelectorAll("input:checked")].map((i) => i.value);
       if (names.length) doInstall(b.closest("form"), box.dataset.url, names);
       return;
+    }
+    if (b.dataset.a === "kn-rebuild") {
+      b.disabled = true; b.textContent = L("Reconstruyendo…", "Rebuilding…");
+      try {
+        const r = await api("/api/knowledge/rebuild", {});
+        toast(L(`Índice rehecho: ${r.sections ?? "?"} secciones`, `Index rebuilt: ${r.sections ?? "?"} sections`));
+      } catch (err) { toast(err.message); }
+      return openSkills();
     }
     if (b.dataset.a === "cmd") {
       $("#skills").close();

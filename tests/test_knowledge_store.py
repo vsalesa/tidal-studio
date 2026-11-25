@@ -187,6 +187,21 @@ class KnowledgeTest(unittest.TestCase):
         st = ks.status()
         self.assertIn("plugin:music-composition:mc-style-latin-bachata", [s["source_id"] for s in st["sources"]])
 
+    def test_skill_named_for_the_task_beats_long_plugin_descriptions(self):
+        # Con muchos plugins instalados, la skill que trata justo de eso («hook-writer») entra aunque otras
+        # descripciones largas repitan la palabra
+        _skill(skills.BUILTIN_DIR, "hook-writer", "# Hook writer\n## Catchy hook\nA catchy hook lands in bar one of the chorus.\n",
+               "Writes a song's central hook")
+        plug = os.path.join(plugins.PLUGIN_DIR, "big")
+        os.makedirs(os.path.join(plug, ".claude-plugin"))
+        with open(os.path.join(plug, ".claude-plugin", "plugin.json"), "w") as f:
+            f.write('{"name": "big", "version": "1.0.0"}')
+        for g in ("rock-band", "hiphop", "pop-punk", "kpop", "trap"):
+            _skill(os.path.join(plug, "skills"), f"mc-style-{g}", f"# {g}\n## Chorus\nA {g} beat with drums.\n",
+                   f"{g}: write a catchy chorus hook, catchy hook, chorus hook, write hook, hook placement, hook writing for {g} songs")
+        _, loaded, _ = self.select("write a catchy hook for the chorus")
+        self.assertIn("hook-writer", [l["name"] for l in loaded])
+
     def test_skip_headings_are_indexed_but_not_sent(self):
         man = {"schema_version": 1, "files_root": "skills", "skills": [{"folder": "salsa-book", "skip_headings": ["Horns"],
                "files": [{"path": f"salsa-book/{r}", "sha256": skills._sha256(os.path.join(self.salsa, r))}

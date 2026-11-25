@@ -576,10 +576,12 @@ def status():
             info["sources"].append(dict(r))
         info["files"] = sum(s["files"] for s in info["sources"])
         info["sections"] = sum(s["sections"] for s in info["sources"])
-        try:
-            info["db_bytes"] = os.path.getsize(_STATE["path"])
-        except OSError:
-            info["db_bytes"] = 0
+        info["db_bytes"] = 0
+        for extra in ("", "-wal"):          # en modo WAL lo reciente vive en el -wal hasta el próximo checkpoint
+            try:
+                info["db_bytes"] += os.path.getsize(_STATE["path"] + extra)
+            except OSError:
+                pass
         return info
 
 

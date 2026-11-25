@@ -120,10 +120,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--misses", action="store_true")
     ap.add_argument("--json")
+    ap.add_argument("--plugins", help="carpeta my-plugins/ con plugins descargados (p. ej. music-composition) para medir con ellos")
     a = ap.parse_args()
     gold = json.load(open(GOLD, encoding="utf-8"))["queries"]
     tmp = tempfile.mkdtemp()
-    plugins.PLUGIN_DIR = os.path.join(tmp, "no-plugins")      # solo lo que trae la app, sin plugins descargados
+    plugins.PLUGIN_DIR = a.plugins or os.path.join(tmp, "no-plugins")   # por defecto solo lo que trae la app
     skills.USER_DIR = os.path.join(tmp, "no-user-skills")
     ks.configure(os.path.join(tmp, "bench.sqlite"))
     cfg = {"skills": {}}
