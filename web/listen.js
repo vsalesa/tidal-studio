@@ -26,7 +26,7 @@ export function songContext(state) {
 
 /** Guarda un voto o elección. No bloquea la interfaz si el servidor no responde. */
 export async function recordVote(rec) {
-  try { await ctx.api("/api/ab/vote", rec); } catch { /* sin servidor: no pasa nada */ }
+  try { return await ctx.api("/api/ab/vote", rec); } catch { return null; /* sin servidor: no pasa nada */ }
 }
 
 export async function openListen() {

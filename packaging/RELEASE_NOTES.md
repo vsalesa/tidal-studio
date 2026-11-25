@@ -1,4 +1,30 @@
-## What's new in 0.20.0 / Novedades
+## What's new in 0.22.0 / Novedades
+
+Effects, the same in every view.
+
+- **One effect chip everywhere**: every effect (`# room`, `# delay`, `# lpf`, `# crush`…) has the same chip in **Tracks**, **Blocks** and the **Code** tab (new *Effects per track* strip above the code): a switch to turn it on or off (off keeps its value, as `{- # room 0.4 -}`), and its name and value, which open the editor.
+- **The same editor in all three views**: what the effect does, the on/off switch, a slider, the exact value and Remove setting. Before, Tracks could only switch effects and Blocks could only edit them.
+- **+ effect** at the end of each row adds a new one, in every view.
+- **Light editor**: the popup now uses the app's light *Partitura* look instead of a dark box.
+- In the Code tab, if you typed changes you haven't applied, the chips wait until you press Apply.
+
+**Español:** **Una sola ficha por efecto**: cada efecto tiene la misma ficha en **Pistas**, **Bloques** y **Código** (nueva franja *Efectos por pista* encima del código): un interruptor para encenderlo o apagarlo (apagado guarda su valor, como `{- # room 0.4 -}`) y su nombre y valor, que abren el editor. **El mismo editor en las tres vistas**: qué hace, el interruptor, deslizador, valor exacto y Quitar ajuste; antes en Pistas solo se podía encender y apagar y en Bloques solo editar. **+ efecto** añade uno nuevo en cualquier vista. **Editor claro**: el popup usa el aspecto claro *Partitura* en vez de una caja oscura. En Código, si has escrito cambios sin aplicar, las fichas esperan a que pulses Aplicar.
+
+## 0.21.0
+
+Six more included skills, a skills index that stays, and your own changes as memory candidates.
+
+- **Six more skills, text only and MIT**: music-evaluate and music-compose (sb-dev/music-production-skills) and arrangement-advisor, melody-writer, hook-writer and prosody-checker (Vocaler-AI/music-skills; prosody-checker comes off). Pinned commits, licenses, `SOURCE.json` and a manifest with the SHA-256 of every file; a skill whose files don't match is quarantined and never sent. Scripts are never copied or run.
+- **A persistent skills index** (SQLite FTS5 in the data folder): only changed files are re-indexed, it survives restarts, deleted or renamed files leave nothing behind, a broken database is rebuilt by itself and **Skills → Rebuild index** does it by hand. The Markdown files stay the source. Without FTS5, Maestro uses the 0.20 search.
+- **Sections with the context they need**: a small section travels with its parent and the exceptions and common mistakes it depends on («never cross the clave» with the bass tumbao), within about 2,000 tokens (3,500 for multi-track requests). Spanish music words are translated to the skills' English (`server/data/music_aliases.json`). On a 60-request test set: right section in 59/60 (0.20: 49/60), exceptions in 100% of the cases that need them (0.20: 50%), similar size. Whether it sounds better is for your ears: blind A/B is ready.
+- **Provenance in the panel and the monitor**: each skill shows origin, license, commit, indexed sections and quarantine; under each answer, which sections carried context; the RAG monitor lists every section sent, why, and its estimated tokens. **Router limits → How to load skills** now also offers the 0.20 search and whole skills, for comparison.
+- **Independent of your global Claude Code**: Maestro uses the plugins the app downloads into `my-plugins/`, and with the Claude subscription the CLI runs isolated from `~/.claude` skills (`--safe-mode --disable-slash-commands` when available; setting `claudecode.skill_isolation`; Diagnostics shows it). You can uninstall the plugin from your Claude and keep it in Maestro.
+- **Your changes as memory candidates**: changing a track's sound yourself counts like picking it by ear (3 times → genre memory), and choosing the same kind of Maestro option again and again (sparser, slower, fewer layers…) proposes a memory that always waits in the Inbox.
+- On upgrade, included skill files that the new version no longer ships are removed, unless you edited them.
+
+**Español:** **Seis skills más, solo texto y MIT**: music-evaluate y music-compose, y arrangement-advisor, melody-writer, hook-writer y prosody-checker (esta viene apagada), con commit fijo, licencia, `SOURCE.json` y manifiesto con el SHA-256 de cada archivo; si no coinciden, la skill queda en cuarentena y no se manda. **Índice de skills persistente** (SQLite FTS5): solo reindexa lo que cambia, sobrevive a los reinicios, se rehace solo si se rompe y desde **Skills → Reconstruir índice**; los Markdown siguen siendo la fuente. **Secciones con el contexto que necesitan**: cada sección viaja con su padre y sus excepciones («nunca cruces la clave» con el tumbao), en unos 2.000 tokens (3.500 si toca varias pistas), con vocabulario musical español → inglés; en un banco de 60 peticiones, la sección correcta en 59/60 (0.20: 49/60) y las excepciones en el 100 % de los casos que las necesitan (0.20: 50 %); si suena mejor lo decide tu oído en la escucha a ciegas. **Procedencia** en el panel y el monitor RAG (cada sección enviada, por qué y sus tokens). **Independiente de tu Claude Code global**: usa los plugins de `my-plugins/` y la CLI va aislada de `~/.claude`, así que puedes desinstalar el plugin de tu Claude y seguir usándolo en Maestro. **Tus cambios como candidatos a memoria**: cambiar tú el sonido cuenta como elegirlo de oído, y elegir muchas veces el mismo tipo de opción de Maestro propone una memoria que siempre va a la Bandeja.
+
+## 0.20.0
 
 Skills à la carte: only what's needed goes into Maestro's context.
 

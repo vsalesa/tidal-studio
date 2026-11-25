@@ -146,8 +146,17 @@ export function fxSwitch(key, p) {
   return `<button type="button" class="fx-sw ${p.off ? "" : "is-on"}" data-fx="${esc(key)}" role="switch" aria-checked="${!p.off}" title="${esc(t)}" aria-label="${esc(t)}"></button>`;
 }
 
+// Una «ficha» de efecto, IGUAL en Pistas, Bloques y Código: interruptor (encender/apagar) + nombre y valor.
+// Pulsar el nombre abre el mismo editor (deslizador, valor, encender/apagar, quitar) en todas las vistas.
+export function fxChipHTML(key, p, cls = "", attrs = "") {
+  const val = p.value != null && typeof p.value !== "number" ? p.value : (p.text ?? p.value ?? "");
+  const t = L(`Editar ${p.name}`, `Edit ${p.name}`);
+  return `<span class="fx-chip ${cls} ${p.off ? "off" : ""}" data-key="${esc(key)}" ${attrs}>${canBypass(p.name) ? fxSwitch(key, p) : ""}<button type="button" class="fx-open" data-fx-open="${esc(key)}" title="${esc(t)}"><span class="op">${esc(p.op)}</span> ${esc(p.name)} <b>${esc(val)}</b></button></span>`;
+}
+
 const SRC_LABEL = () => ({ s: L("sonido", "sound"), sound: L("sonido", "sound"), n: L("notas", "notes"), note: L("notas", "notes"), up: L("notas", "notes") });
 
+let fxAddHTML = () => ""; // «+ efecto» (lo pone app.js: es el mismo desplegable que en Pistas y Código)
 function nodeHTML(node, path = []) {
   const P = path.join(".");
   if (node.type === "wrap") {
@@ -166,12 +175,13 @@ function nodeHTML(node, path = []) {
       <div class="bk-label"><span class="bk-kind">${esc(lbl)}</span><code>${esc(node.complex ? node.raw : `${node.fn} "${node.pattern}"`)}</code></div>
       ${steps.length ? `<div class="bk-steps" title="${esc(L("Cada casilla ocupa la misma parte del ciclo", "Each box takes the same share of the cycle"))}">${steps.map((t, i) => stepHTML(t, P, String(i))).join("")}</div>` : ""}
     </div>
-    ${node.params.length ? `<div class="bk-params">${node.params.map((p, i) =>
-      `<span class="bk-param ${p.off ? "off" : ""}" data-x="${esc(p.raw)}" data-w="${esc(p.name)}" data-key="${esc(P)}|p${i}">${canBypass(p.name) ? fxSwitch(`${P}|p${i}`, p) : ""}<span class="op">${esc(p.op)}</span> ${esc(p.name)} <b>${esc(p.value)}</b></span>`).join("")}</div>` : ""}
+    <div class="bk-params">${node.params.map((p, i) =>
+      fxChipHTML(`${P}|p${i}`, p, `bk-param`, `data-x="${esc(p.raw)}" data-w="${esc(p.name)}"`)).join("")}${fxAddHTML(`${P}|src`, node.params.map((p) => p.name))}</div>
   </div>`;
 }
 
-export function songBlocksHTML(state, { icon, uiIcon = icon, kindColor, kindName, mixBadge = () => "" }) {
+export function songBlocksHTML(state, { icon, uiIcon = icon, kindColor, kindName, mixBadge = () => "", fxAdd = () => "" }) {
+  fxAddHTML = fxAdd;
   const tracks = state.tracks || [];
   if (!tracks.length) return `<p class="hint">${L("Cuando añadas pistas, aquí verás tu canción montada en bloques.", "Once you add tracks, you'll see your song built out of blocks here.")}</p>`;
   const kinds = {};
@@ -219,6 +229,6 @@ export function blockInfo(el) {
   if (w === "stack") return { code: "stack", text: explainWord("stack") };
   const e = explainWord(w);
   const kind = el.classList.contains("bk-wrap") ? L("Transformación: cambia todo lo que tiene dentro (lo que va después del $).", "Transformation: changes everything inside it (what comes after the $).")
-    : el.classList.contains("bk-param") ? L("Ajuste: se aplica a cada nota del sonido que tiene a la izquierda.", "Setting: applies to every note of the sound on its left.") : "";
+    : el.classList.contains("bk-param") || el.classList.contains("fx-chip") ? L("Ajuste: se aplica a cada nota del sonido que tiene a la izquierda.", "Setting: applies to every note of the sound on its left.") : "";
   return { code: x, text: [e && e[0].toUpperCase() + e.slice(1), kind].filter(Boolean).join(" ") };
 }

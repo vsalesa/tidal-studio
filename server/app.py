@@ -32,6 +32,7 @@ from assistant import (build_messages, parse_reply, build_explain, parse_explain
 import fetcher  # noqa: E402
 import github  # noqa: E402
 import skills as skillset  # noqa: E402
+import knowledge_store as kstore  # noqa: E402
 import plugins as pluginset  # noqa: E402
 from assistant import _extract_json  # noqa: E402
 import net  # noqa: E402
@@ -90,6 +91,9 @@ DEFAULT_CONFIG = {
         "auth_mode": "auto",
         "base_url": "",            # solo modo api: ANTHROPIC_BASE_URL (vacío = el de tu terminal)
         "api_key": "",             # solo modo api: ANTHROPIC_API_KEY (vacío = la de tu terminal)
+        # 0.21: que el Maestro no cargue TUS skills, plugins, hooks ni CLAUDE.md globales de Claude Code
+        # auto = --safe-mode y --disable-slash-commands si tu versión de claude los tiene · safe_mode · disable_cli_skills · off
+        "skill_isolation": "auto",
     },
     "github": {
         "token": "",
@@ -213,19 +217,20 @@ def skills_text(cfg, query, session):
     force = (str(curso["skill"]),) if curso.get("skill") else ()   # los cursos latinos se basan en una skill del plugin
     extra += " " + " ".join(f"{t.get('kind', '')} {t.get('name', '')}" for t in session.get("tracks") or [] if isinstance(t, dict))
     try:
-        active, loaded, text = skillset.select(cfg, query or "", extra, force)
+        active, loaded, text = skillset.select(cfg, query or "", extra, force, genre=str(session.get("style") or ""))
+        meta = dict(skillset.last_meta())
         # Para el monitor: cuánto habría ocupado cargarlas enteras (como hasta la 0.19)
-        whole = len(skillset.select(cfg, query or "", extra, force, mode="whole")[2]) if active and skill_mode(cfg) == "smart" else len(text)
+        whole = len(skillset.select(cfg, query or "", extra, force, mode="whole")[2]) if active and skill_mode(cfg) != "whole" else len(text)
     except Exception as e:  # una skill rota no debe romper el chat
         print(f"[skills] {e}")
         return "", None
     if not active:
         return "", None
-    return text, (active, loaded, whole)
+    return text, (active, loaded, whole, meta)
 
 
 def skill_mode(cfg):
-    return "whole" if ((cfg or {}).get("skills") or {}).get("mode") == "whole" else "smart"
+    return skillset.mode_of(cfg)
 
 
 def skills_report(sk, raw):
@@ -443,6 +448,38 @@ except Exception as _e:  # noqa: BLE001
     SOUNDS = None
 ANALYZER = soundlab.Analyzer(SOUNDS, audioimport.tools_python) if SOUNDS else None
 STEMS_DIR = os.path.join(os.path.dirname(audioimport.TOOLS), "stems")
+# 0.21: índice de las skills (SQLite FTS5, se rehace solo desde los Markdown) y limpieza de skills incluidas que
+# una versión nueva ya no trae (solo archivos de la app que no hayas tocado)
+kstore.configure(os.path.join(DATA_DIR, "maestro-knowledge.sqlite"))
+try:
+    _gone = skillset.cleanup_managed(os.path.join(DATA_DIR, "managed-skills.json"))
+    if _gone:
+        print(f"[skills] archivos de skills que ya no vienen con la app, borrados: {', '.join(_gone)}")
+except Exception as _e:  # noqa: BLE001
+    print(f"[skills] {_e}")
+
+
+def knowledge_status():
+    """Estado del índice de skills para el panel y el monitor (sin rutas de tu disco más allá de la carpeta de datos)."""
+    try:
+        st = kstore.status()
+    except Exception as e:  # noqa: BLE001
+        return {"available": False, "error": str(e)}
+    st.pop("path", None)
+    st["mode"] = skill_mode(load_config())
+    return st
+
+
+def index_skills_on_start():
+    """Indexa las skills en segundo plano al arrancar (sin red; si no hay FTS5, Maestro usa la búsqueda de la 0.20)."""
+    try:
+        r = skillset.ensure_index(load_config())
+        if r and r.get("changed"):
+            print(f"[skills] índice: {r['changed']} archivo(s), {r['sections']} secciones en {r['seconds']} s")
+    except Exception as e:  # noqa: BLE001
+        print(f"[skills] índice: {e}")
+
+
 # 0.18: memoria con ámbitos, registro que se deshace, «Mis estilos» y casos musicales (maestro-data/memory.db)
 try:
     MEMORY = memorymod.Store(os.path.join(DATA_DIR, "memory.db"))
@@ -871,9 +908,15 @@ class Handler(SimpleHTTPRequestHandler):
         if rcfg["layers"]["skills"]:
             stext, sk = skills_text(cfg, skill_query, sess)
             whole = sk[2] if sk else 0
+            km = sk[3] if sk else {}
             req.end("skills", "pass" if sk and sk[1] else "skip", hits=len(sk[1]) if sk else 0,
-                    chars=len(stext), whole_chars=whole if skill_mode(cfg) == "smart" else None,
-                    sections=sum(x.get("sections") or 0 for x in sk[1]) if sk else 0, note=skill_mode(cfg))
+                    chars=len(stext), whole_chars=whole if skill_mode(cfg) != "whole" else None,
+                    sections=sum(x.get("sections") or 0 for x in sk[1]) if sk else 0,
+                    parents=sum(x.get("parents") or 0 for x in sk[1]) if sk else 0,
+                    tokens_est=km.get("tokens_est"), engine=km.get("engine"), fallback=km.get("fallback"),
+                    generation=km.get("generation"),
+                    trace=[{"skill": x["name"], **t} for x in sk[1] for t in x.get("trace") or []][:24] if sk else [],
+                    note=skill_mode(cfg) + (" · " + str(km["fallback"])[:80] if km.get("fallback") else ""))
         else:
             stext, sk = "", None
             req.end("skills", "off")
@@ -911,7 +954,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"error": "Cancelado", "cancelled": True}, 409)
             if tr.cancel.is_set():  # canceló justo cuando llegaba la respuesta: no se descarga nada
                 return self._json({"error": "Cancelado", "cancelled": True}, 409)
-            more = (_extract_json(raw) or {}).get("mas_skills") if sk and skill_mode(cfg) == "smart" else None
+            more = (_extract_json(raw) or {}).get("mas_skills") if sk and skill_mode(cfg) != "whole" else None
             if isinstance(more, list) and more:
                 # Skills a la carta: Maestro pide una sección que no le mandé. Se la mando y pregunto otra vez (una sola vez).
                 got, extra_text = skillset.sections_for(cfg, more)
@@ -1582,6 +1625,8 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._soundlab_get(path)
             if path in ("/api/memory", "/api/memory/log", "/api/memory/sync", "/api/styles", "/api/storage"):
                 return self._memory_get(path)
+            if path == "/api/knowledge":
+                return self._json(knowledge_status())
             if path == "/api/monitor":
                 q = parse_qs(urlparse(self.path).query)
                 try:
@@ -1590,7 +1635,8 @@ class Handler(SimpleHTTPRequestHandler):
                     since = 0
                 return self._json({"layers": router.LAYERS, "requests": MONITOR.public(since), "summary": MONITOR.summary(),
                                    "router": router.config(load_config()), "ai_timeout": load_config().get("ai_timeout", 300),
-                                   "skills_mode": skill_mode(load_config()), "index": SONGS.stats() if SONGS else None})
+                                   "skills_mode": skill_mode(load_config()), "index": SONGS.stats() if SONGS else None,
+                                   "knowledge": knowledge_status()})
             if path == "/api/songs/search":
                 q = parse_qs(urlparse(self.path).query)
                 if not SONGS:
@@ -1686,7 +1732,7 @@ class Handler(SimpleHTTPRequestHandler):
                     cfg["ai_timeout"] = max(30, min(1800, int(float(data["ai_timeout"]))))
                 if isinstance(data.get("router"), dict):
                     router.update(cfg, data["router"])
-                if data.get("skills_mode") in ("smart", "whole"):
+                if data.get("skills_mode") in skillset.MODES:
                     cfg.setdefault("skills", {})["mode"] = data["skills_mode"]
                 save_config(cfg)
                 return self._json(public_config(cfg))
@@ -1752,7 +1798,15 @@ class Handler(SimpleHTTPRequestHandler):
                 if not SONGS:
                     return self._json({"ok": False, "error": "sin índice"})
                 try:
-                    return self._json({"ok": True, "id": SONGS.vote(data)})
+                    vid = SONGS.vote(data)
+                    learned = []
+                    # 0.21: elegir varias veces opciones parecidas propone una memoria (a la bandeja, decides tú)
+                    if data.get("kind") == "pick" and MEMORY and memory_cfg().get("learn_picks"):
+                        try:
+                            learned = MEMORY.learn_from_option_picks(SONGS.pick_votes())
+                        except Exception as e:  # noqa: BLE001
+                            print(f"[memoria] {e}")
+                    return self._json({"ok": True, "id": vid, "memoria_nueva": learned})
                 except ValueError as e:
                     return self._json({"ok": False, "error": str(e)}, 400)
             if path == "/api/chat/cancel":
@@ -2030,6 +2084,12 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"skills": skillset.public(skillset.scan(cfg)),
                                    "plugins": pluginset.public(pluginset.scan(cfg))})
 
+            if path == "/api/knowledge/rebuild":
+                # Botón «Reconstruir índice»: se borra y se rehace desde los Markdown instalados (no se pierde nada)
+                r = skillset.rebuild_index(load_config())
+                return self._json({**{k: v for k, v in r.items() if k != "ids"}, "knowledge": knowledge_status()},
+                                  500 if r.get("error") else 200)
+
             if path.startswith("/api/skills/"):
                 act = path[len("/api/skills/"):]
                 cfg = load_config()
@@ -2045,6 +2105,10 @@ class Handler(SimpleHTTPRequestHandler):
                         else:
                             cur.add(name)
                         sk[key] = sorted(cur)
+                        if act == "enable":   # 0.21: las incluidas que vienen apagadas (p. ej. prosody-checker)
+                            ons = set(sk.get("enabled") or [])
+                            (ons.add if on else ons.discard)(name)
+                            sk["enabled"] = sorted(ons)
                         save_config(cfg)
                     elif act == "install":
                         r = skillset.install(data.get("url"), cfg["github"].get("token", ""))
@@ -2275,6 +2339,7 @@ def main():
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
     threading.Thread(target=update_plugins_on_start, daemon=True).start()
+    threading.Thread(target=index_skills_on_start, daemon=True).start()
     threading.Thread(target=app_update_loop, daemon=True).start()
     if MEMORY and memory_cfg().get("backup") and github.configured(load_config()):
         schedule_backup(8)   # al arrancar: trae lo de GitHub (p. ej. en un ordenador nuevo) y sube lo pendiente

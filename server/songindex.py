@@ -203,6 +203,18 @@ class SongIndex:
                                    json.dumps(clean, ensure_ascii=False)[:200000]))
             return cur.lastrowid
 
+    def pick_votes(self, limit=400):
+        """Las últimas elecciones entre opciones del Maestro (para proponer memorias de lo que sueles elegir)."""
+        with self.lock:
+            rows = self.db.execute("SELECT data FROM votes WHERE kind = 'pick' ORDER BY id DESC LIMIT ?", (int(limit),)).fetchall()
+        out = []
+        for r in rows:
+            try:
+                out.append(json.loads(r["data"]))
+            except ValueError:
+                pass
+        return out
+
     def votes_stats(self):
         with self.lock:
             rows = self.db.execute("SELECT kind, COUNT(*) AS n FROM votes GROUP BY kind").fetchall()

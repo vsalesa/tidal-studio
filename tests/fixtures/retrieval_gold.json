@@ -1,0 +1,774 @@
+{
+ "_about": "Corpus de recuperación de la 0.21 (frozen 2026-11-25, antes de ajustar pesos). 60 consultas ES/EN/mezcla sobre las skills incluidas. need: lista de requisitos; cada requisito se cumple si ALGUNA alternativa «skill|archivo|título» aparece entre las secciones enviadas. forbid: skills o «skill|archivo» que no deben enviarse (apagadas, letra en tareas instrumentales). critical: un fallo aquí es una regla o excepción que falta y bloquea la versión. need_ctx (añadido tras la primera medición, antes de ajustar nada del padre–hijo): excepciones y advertencias de la MISMA sección que deben acompañar al hijo; mide lo que el modo solo-hijos pierde.",
+ "queries": [
+  {
+   "id": "hook-es-1",
+   "q": "el estribillo no tiene fuerza, hazlo más pegadizo",
+   "need": [
+    [
+     "music-composition|hooks-and-memorability",
+     "hook-writer|SKILL.md"
+    ]
+   ],
+   "forbid": [
+    "prosody-checker"
+   ]
+  },
+  {
+   "id": "hook-en-1",
+   "q": "write a catchy hook for the chorus",
+   "need": [
+    [
+     "hook-writer|SKILL.md",
+     "music-composition|hooks-and-memorability"
+    ]
+   ],
+   "forbid": [
+    "prosody-checker"
+   ]
+  },
+  {
+   "id": "hook-mix-1",
+   "q": "necesito un hook instrumental para el drop",
+   "need": [
+    [
+     "hook-writer|SKILL.md",
+     "music-composition|hooks-and-memorability",
+     "music-composition|narrative-and-transitions",
+     "music-composition|popular-song-forms|Drop"
+    ]
+   ],
+   "forbid": [
+    "prosody-checker",
+    "music-composition|lyric-writing"
+   ]
+  },
+  {
+   "id": "postchorus-en",
+   "q": "what makes a post-chorus hook work",
+   "need": [
+    [
+     "music-composition|hooks-and-memorability|Post-chorus",
+     "music-composition|popular-song-forms|Post-chorus"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "prechorus-es",
+   "q": "cómo hago un pre-chorus que suba la energía al estribillo",
+   "need": [
+    [
+     "music-composition|narrative-and-transitions",
+     "music-composition|popular-song-forms|Pre-chorus",
+     "music-composition|hooks-and-memorability|Pre-chorus"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "melody-contour-en",
+   "q": "the lead melody wanders, give it a clear contour and climax",
+   "need": [
+    [
+     "music-composition|melodic-construction",
+     "melody-writer|SKILL.md"
+    ]
+   ],
+   "forbid": [
+    "prosody-checker"
+   ]
+  },
+  {
+   "id": "melody-es-1",
+   "q": "escribe una melodía para el sinte principal con un motivo que se repita",
+   "need": [
+    [
+     "music-composition|motivic-development",
+     "music-composition|melodic-construction",
+     "melody-writer|SKILL.md"
+    ]
+   ],
+   "forbid": [
+    "prosody-checker",
+    "music-composition|lyric-writing"
+   ]
+  },
+  {
+   "id": "motif-en",
+   "q": "develop this motif through the song with variation",
+   "need": [
+    [
+     "music-composition|motivic-development",
+     "music-composition|theme-and-variation"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "phrase-es",
+   "q": "las frases de la melodía son todas de 4 compases, quiero algo menos cuadrado",
+   "need": [
+    [
+     "music-composition|phrase-structure",
+     "music-composition|melodic-construction"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "range-en",
+   "q": "keep the melody in a singable range and avoid big leaps",
+   "need": [
+    [
+     "music-composition|melodic-construction",
+     "melody-writer|SKILL.md",
+     "music-composition|vocals"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "modul-es",
+   "q": "acordes tristes con modulación al final",
+   "need": [
+    [
+     "music-composition|modulation"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "modul-en",
+   "q": "add a truck driver key change for the last chorus",
+   "need": [
+    [
+     "music-composition|modulation",
+     "music-composition|popular-song-forms|Final chorus"
+    ]
+   ],
+   "forbid": [],
+   "need_ctx": [
+    [
+     "music-composition|modulation|Common pitfalls"
+    ]
+   ]
+  },
+  {
+   "id": "reharm-en",
+   "q": "reharmonize the bridge without changing the melody",
+   "need": [
+    [
+     "music-composition|reharmonization"
+    ]
+   ],
+   "forbid": [],
+   "critical": true,
+   "need_ctx": [
+    [
+     "music-composition|reharmonization|melody is sacred",
+     "music-composition|reharmonization|Common pitfalls"
+    ]
+   ]
+  },
+  {
+   "id": "voicelead-es",
+   "q": "los acordes del piano saltan mucho, mejora la conducción de voces",
+   "need": [
+    [
+     "music-composition|voice-leading",
+     "music-composition|voicing-and-texture",
+     "music-composition|piano-keyboards"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "jazzvoic-en",
+   "q": "rootless jazz piano voicings for a ii-V-I",
+   "need": [
+    [
+     "music-composition|jazz-voicings",
+     "music-composition|jazz-harmony"
+    ]
+   ],
+   "forbid": [],
+   "need_ctx": [
+    [
+     "music-composition|jazz-voicings|Common pitfalls"
+    ]
+   ]
+  },
+  {
+   "id": "progr-es",
+   "q": "dame una progresión de acordes para una balada pop",
+   "need": [
+    [
+     "music-composition|progressions-catalog",
+     "music-composition|functional-harmony",
+     "music-composition|pop-rock",
+     "strudel|tonal.md"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "modes-en",
+   "q": "dorian mode chords for a funky vamp",
+   "need": [
+    [
+     "music-composition|modal-harmony",
+     "music-composition|modes-cheatsheet",
+     "strudel|tonal.md"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "bass-kick-es",
+   "q": "el bajo pisa al bombo, haz que el bajo respire",
+   "need": [
+    [
+     "music-composition|instrument-idiom/bass",
+     "music-composition|arrangement-for-mix"
+    ]
+   ],
+   "forbid": [],
+   "critical": true,
+   "need_ctx": [
+    [
+     "music-composition|instrument-idiom/bass|Common pitfalls"
+    ]
+   ]
+  },
+  {
+   "id": "bass-walk-en",
+   "q": "write a walking bass line with chromatic approach notes",
+   "need": [
+    [
+     "music-composition|instrument-idiom/bass"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "acid-en",
+   "q": "make the bass an acid bassline",
+   "need": [
+    [
+     "strudel|recipes.md|Acid"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "acid-es",
+   "q": "haz que el bajo sea ácido, tipo 303",
+   "need": [
+    [
+     "strudel|recipes.md|Acid"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "house-en",
+   "q": "a classic house groove with off-beat hats",
+   "need": [
+    [
+     "strudel|recipes.md",
+     "music-composition|electronic-edm",
+     "music-composition|drums-percussion",
+     "livecoding|"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "dnb-es",
+   "q": "un ritmo de drum and bass rápido",
+   "need": [
+    [
+     "strudel|recipes.md",
+     "music-composition|electronic-edm",
+     "livecoding|"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "fill-es",
+   "q": "pon un redoble de batería antes del estribillo",
+   "need": [
+    [
+     "music-composition|drums-percussion|Fill",
+     "arrangement-advisor|SKILL.md",
+     "music-composition|narrative-and-transitions"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "swing-en",
+   "q": "the drums feel stiff, add swing and groove",
+   "need": [
+    [
+     "music-composition|groove-and-feel",
+     "music-composition|drums-percussion"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "poly-en",
+   "q": "a 3 against 2 polyrhythm in the percussion",
+   "need": [
+    [
+     "music-composition|odd-meters-polyrhythm",
+     "music-composition|rhythmic-devices"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "odd-es",
+   "q": "quiero un compás de 7/8",
+   "need": [
+    [
+     "music-composition|odd-meters-polyrhythm",
+     "music-composition|rhythm-meter"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "static-en",
+   "q": "my track feels static and crowded, how to arrange it",
+   "need": [
+    [
+     "arrangement-advisor|SKILL.md",
+     "music-composition|arrangement-density"
+    ]
+   ],
+   "forbid": [
+    "prosody-checker"
+   ],
+   "critical": true,
+   "need_ctx": [
+    [
+     "music-composition|arrangement-density|mistakes",
+     "arrangement-advisor|SKILL.md|Rules"
+    ]
+   ]
+  },
+  {
+   "id": "static-es",
+   "q": "la canción es muy repetitiva y plana, ¿cómo la arreglo?",
+   "need": [
+    [
+     "arrangement-advisor|SKILL.md",
+     "music-composition|arrangement-density",
+     "music-composition|energy-and-dynamics"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "crowded-es",
+   "q": "suena demasiado lleno, hay demasiados instrumentos a la vez",
+   "need": [
+    [
+     "music-composition|arrangement-density",
+     "arrangement-advisor|SKILL.md",
+     "music-composition|arrangement-for-mix"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "energy-en",
+   "q": "plan the energy arc of the song from intro to outro",
+   "need": [
+    [
+     "music-composition|narrative-and-transitions",
+     "music-composition|energy-and-dynamics"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "builddrop-en",
+   "q": "build-up and drop for an EDM track",
+   "need": [
+    [
+     "music-composition|narrative-and-transitions",
+     "music-composition|popular-song-forms",
+     "music-composition|electronic-edm"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "form-es",
+   "q": "qué estructura le pongo: estrofa, estribillo y puente",
+   "need": [
+    [
+     "music-composition|popular-song-forms",
+     "music-composition|form-templates"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "intro-en",
+   "q": "a DJ friendly intro and outro",
+   "need": [
+    [
+     "arrangement-advisor|SKILL.md",
+     "music-composition|popular-song-forms",
+     "music-composition|electronic-edm"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "counter-es",
+   "q": "añade un contracanto a la melodía con las cuerdas",
+   "need": [
+    [
+     "music-composition|counterpoint",
+     "music-composition|strings",
+     "music-composition|voicing-and-texture",
+     "arrangement-advisor|SKILL.md"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "brass-es",
+   "q": "una sección de metales con trompetas y trombón",
+   "need": [
+    [
+     "music-composition|instrument-idiom/brass"
+    ]
+   ],
+   "forbid": [],
+   "need_ctx": [
+    [
+     "music-composition|instrument-idiom/brass|Common pitfalls",
+     "music-composition|instrument-idiom/brass|Register and endurance"
+    ]
+   ]
+  },
+  {
+   "id": "guitar-en",
+   "q": "fingerpicking guitar pattern for the verse",
+   "need": [
+    [
+     "music-composition|instrument-idiom/guitar"
+    ]
+   ],
+   "forbid": [],
+   "need_ctx": [
+    [
+     "music-composition|instrument-idiom/guitar|Common pitfalls"
+    ]
+   ]
+  },
+  {
+   "id": "strings-en",
+   "q": "write a warm string pad, mind the ranges",
+   "need": [
+    [
+     "music-composition|strings",
+     "music-composition|instruments-ranges-character"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "reggaeton-es",
+   "q": "dembow con un bajo que respire",
+   "genre": "reggaeton",
+   "need": [
+    [
+     "music-composition|latin-pop-and-reggaeton|Dembow"
+    ]
+   ],
+   "forbid": [],
+   "critical": true,
+   "need_ctx": [
+    [
+     "music-composition|latin-pop-and-reggaeton|Core warning",
+     "music-composition|latin-pop-and-reggaeton|Common mistakes"
+    ]
+   ]
+  },
+  {
+   "id": "reggaeton-en",
+   "q": "reggaeton chorus with a dembow groove",
+   "genre": "reggaeton",
+   "need": [
+    [
+     "music-composition|latin-pop-and-reggaeton"
+    ]
+   ],
+   "forbid": [],
+   "critical": true,
+   "need_ctx": [
+    [
+     "music-composition|latin-pop-and-reggaeton|Core warning",
+     "music-composition|latin-pop-and-reggaeton|Common mistakes"
+    ]
+   ]
+  },
+  {
+   "id": "salsa-es",
+   "q": "mejora el tumbao del bajo con el piano y la clave",
+   "genre": "salsa",
+   "need": [
+    [
+     "music-composition|latin-pop-and-reggaeton|Salsa",
+     "music-composition|rhythmic-devices|Latin",
+     "music-composition|instrument-idiom/bass"
+    ]
+   ],
+   "forbid": [],
+   "critical": true,
+   "need_ctx": [
+    [
+     "music-composition|latin-pop-and-reggaeton|Core warning",
+     "music-composition|latin-pop-and-reggaeton|Common mistakes",
+     "music-composition|instrument-idiom/bass|Common pitfalls"
+    ]
+   ]
+  },
+  {
+   "id": "cumbia-es",
+   "q": "un ritmo de cumbia con güira",
+   "genre": "cumbia",
+   "need": [
+    [
+     "music-composition|latin-pop-and-reggaeton",
+     "music-composition|folk-and-world",
+     "music-composition|regional-scene-starters"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "bachata-es",
+   "q": "arreglo de bachata con requinto",
+   "genre": "bachata",
+   "need": [
+    [
+     "music-composition|latin-pop-and-reggaeton|Bachata",
+     "music-composition|instrument-idiom/guitar"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "bossa-en",
+   "q": "bossa nova guitar comping",
+   "genre": "bossa",
+   "need": [
+    [
+     "music-composition|brazilian-pop-and-funk"
+    ]
+   ],
+   "forbid": [],
+   "need_ctx": [
+    [
+     "music-composition|brazilian-pop-and-funk|Core warning",
+     "music-composition|brazilian-pop-and-funk|Common pitfalls"
+    ]
+   ]
+  },
+  {
+   "id": "afro-en",
+   "q": "afrobeats groove with log drums",
+   "genre": "afrobeat",
+   "need": [
+    [
+     "music-composition|afrobeats-and-amapiano"
+    ]
+   ],
+   "forbid": [],
+   "need_ctx": [
+    [
+     "music-composition|afrobeats-and-amapiano|Important distinctions",
+     "music-composition|afrobeats-and-amapiano|Common mistakes"
+    ]
+   ]
+  },
+  {
+   "id": "hiphop-es",
+   "q": "un beat de boom bap con swing",
+   "genre": "hiphop",
+   "need": [
+    [
+     "music-composition|hip-hop-rnb",
+     "music-composition|groove-and-feel"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "jazz-en",
+   "q": "a jazz standard feel with brushes and walking bass",
+   "genre": "jazz",
+   "need": [
+    [
+     "music-composition|jazz-styles",
+     "music-composition|instrument-idiom/bass",
+     "music-composition|drums-percussion"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "eval-es",
+   "q": "evalúa mi canción sin tocar las pistas bloqueadas",
+   "need": [
+    [
+     "music-evaluate|",
+     "music-composition|critique-and-feedback",
+     "music-compose|SKILL.md|Evaluation"
+    ]
+   ],
+   "forbid": [],
+   "critical": true
+  },
+  {
+   "id": "eval-en",
+   "q": "evaluate this draft and tell me which stage owns each problem",
+   "need": [
+    [
+     "music-evaluate|failure-routing",
+     "music-evaluate|SKILL.md"
+    ]
+   ],
+   "forbid": [],
+   "critical": true
+  },
+  {
+   "id": "preserve-en",
+   "q": "refine the chorus but preserve the approved and locked tracks",
+   "need": [
+    [
+     "music-evaluate|preservation",
+     "music-compose|SKILL.md",
+     "music-evaluate|SKILL.md"
+    ]
+   ],
+   "forbid": [],
+   "critical": true
+  },
+  {
+   "id": "drafts-es",
+   "q": "dame tres alternativas de borrador y elegimos una",
+   "need": [
+    [
+     "music-compose|drafting-and-selection",
+     "music-compose|SKILL.md"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "critique-en",
+   "q": "give me honest critique of my composition",
+   "need": [
+    [
+     "music-composition|critique-and-feedback",
+     "music-evaluate|"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "clip-en",
+   "q": "the mix is clipping and the master is too loud",
+   "need": [
+    [
+     "music-evaluate|",
+     "music-composition|arrangement-for-mix"
+    ]
+   ],
+   "forbid": [
+    "music-composition|reharmonization"
+   ]
+  },
+  {
+   "id": "tidal-en",
+   "q": "how do I stack layers and use every in tidal",
+   "need": [
+    [
+     "livecoding|tidal-cheatsheet"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "tidal-es",
+   "q": "qué efectos puedo usar en tidal, reverb y delay",
+   "need": [
+    [
+     "livecoding|tidal-cheatsheet",
+     "strudel|"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "ambient-en",
+   "q": "an ambient drone texture that evolves slowly",
+   "need": [
+    [
+     "livecoding|",
+     "music-composition|electronic-edm",
+     "strudel|"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "chords-strudel",
+   "q": "chord stabs for a techno track",
+   "need": [
+    [
+     "strudel|recipes.md",
+     "music-composition|electronic-edm"
+    ]
+   ],
+   "forbid": []
+  },
+  {
+   "id": "lyrics-off",
+   "q": "check the syllable stress of my lyrics against the beat",
+   "need": [],
+   "forbid": [
+    "prosody-checker"
+   ]
+  },
+  {
+   "id": "nomatch-1",
+   "q": "hola, ¿qué tal?",
+   "need": [],
+   "forbid": [
+    "prosody-checker"
+   ]
+  },
+  {
+   "id": "nomatch-2",
+   "q": "cuánto cuesta la suscripción",
+   "need": [],
+   "forbid": [
+    "prosody-checker",
+    "music-evaluate",
+    "music-compose"
+   ]
+  }
+ ]
+}
