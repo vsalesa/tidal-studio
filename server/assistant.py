@@ -340,7 +340,29 @@ def build_messages(history, session):
         system = (SYSTEM_PROMPT + SCORE_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "") + (FETCH_PROMPT if fetch_on(session) else "")
                   + STYLES_SAVE_PROMPT + (PLAN_PROMPT if plan_on(session) else "")
                   + (FORCE_PLAN if (session or {}).get("plan_forzar") else ""))
+    if brief_on(session):
+        system += BRIEF_PROMPT
     return system, msgs
+
+
+BRIEF_PROMPT = """
+
+RESPUESTAS CORTAS (activado; en cuanto a LONGITUD tiene prioridad sobre todo lo anterior): al alumno le importa el RESULTADO que suena, no tu análisis.
+- Piensa poco y decide rápido: elige una opción musical buena y aplícala. No compares muchas alternativas, no repases listas de comprobación punto por punto, no reescribas el código varias veces ni vuelvas sobre lo ya decidido. Las skills (sus «gates», checklists y rúbricas) son una guía para decidir EN SILENCIO: no las recorras una a una.
+- Lo importante es "cambios" (o "variantes" o "plan"); el texto solo acompaña. Sin saludos, sin repetir lo que ha pedido y sin describir el código que ya se ve.
+- "mensaje": 1-2 frases cortas: qué has hecho (o qué le propones) y, solo si hace falta, UNA pregunta.
+- "explicacion": como mucho 3 fragmentos del código nuevo, una frase corta cada uno; [] si el cambio es pequeño.
+- "reto": solo de vez en cuando, no en cada respuesta. "sugerencias": como mucho 1. "controles": como mucho 2.
+- "variantes": "descripcion" de UNA frase. "plan": "resumen" de una frase y "que" de una frase por paso.
+- "decisiones": como mucho 2, con "regla" y "aplicado" de pocas palabras. "opciones": 2-3 textos de pocas palabras.
+- Omite los campos opcionales que no aportan nada. Nunca escribas texto fuera del JSON."""
+
+DETAIL_LEVELS = ("short", "detailed")
+
+
+def brief_on(session):
+    """Respuestas cortas (por defecto): el alumno puede pedir más detalle en Ajustes."""
+    return str((session or {}).get("detalle") or "short") != "detailed"
 
 
 FORCE_PLAN = """

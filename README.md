@@ -1114,6 +1114,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.24.0** | [Short answers, result first](#short-answers-the-result-first): Maestro thinks and writes less by default (about 83% fewer output tokens and 3.5× faster with Sonnet 4.6), the Claude subscription runs with thinking effort low, and **Detailed** answers are one setting away. |
 | **0.23.0** | [Save Maestro's options as styles, for real](#maestro-remembers-you-memory-your-styles-and-musical-cases): ask «save the other three as styles», «A and C» or «all» and they are saved (right away and without AI when it's clear which), or press **Save as a style** on any option card; the confirmation is written by the app with what was really saved, so Maestro can no longer say «saved» when nothing was. |
 | **0.22.0** | [Effects, the same in every view](#blocks-view-and-live-highlighting): one chip per effect with an on/off switch and the same editor (slider, value, remove) in Tracks, Blocks and Code, **+ effect** everywhere, and the editor in the light Partitura look. |
 | **0.21.0** | [Six more included skills and a persistent skills index](#skills-and-plugins): sections with their parent and exceptions, ES/EN music vocabulary, provenance and quarantine in the panel, rebuild button, Maestro independent of your global Claude Code; and your own sound changes and repeated option picks become memory candidates. |
@@ -1225,6 +1226,21 @@ slower than the API (about 10–20 s).
 
 Keys are stored only in `config.json`, on your computer (it is not committed to git). You can also use the
 `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` environment variables.
+
+#### Short answers: the result first
+
+Maestro now answers **short by default**: it thinks less, gets to the point and tells you what it did in one or two
+sentences, with at most three code fragments explained, one idea and short option cards. The changes to the music, the
+options to compare, the plans and the step-by-step flow are the same. With «Claude with your subscription» the `claude`
+command also runs with **thinking effort: low** (Settings → *Thinking effort*; it is skipped if your Claude Code is too
+old to have `--effort`).
+
+Measured with Sonnet 4.6 on five typical requests (a funky bass, «make it darker», a full house track, «what does jux
+rev do?», one plan step): **about 83% fewer output tokens** (18,500 → 3,100), almost all of it hidden reasoning
+(14,600 → 180), and **about 3.5× faster** (308 s → 85 s in total). If you want longer explanations while you learn,
+choose **Detailed** in Sound Lab → Learning → *How long are its answers?*.
+
+![The answer-length setting in Sound Lab → Learning](docs/screenshots/short-answers.png)
 
 If it doesn't connect, open **Settings → Diagnostics** ([what it checks](#connect-your-ai-with-automatic-detection-and-diagnostics)).
 

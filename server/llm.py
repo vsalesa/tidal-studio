@@ -436,7 +436,7 @@ def cli_flags(exe):
             text = (r.stdout or "") + (r.stderr or "")
         except (OSError, subprocess.TimeoutExpired):
             text = ""
-        _FLAGS[key] = {f for f in ("--safe-mode", "--disable-slash-commands", "--setting-sources") if f in text}
+        _FLAGS[key] = {f for f in ("--safe-mode", "--disable-slash-commands", "--setting-sources", "--effort") if f in text}
     return _FLAGS[key]
 
 
@@ -456,6 +456,18 @@ def isolation_args(cfg, exe):
     missing = [f for f in want if f not in have]
     note = mode + (" · " + " ".join(args) if args else "") + (f" · tu claude no tiene {' '.join(missing)}" if missing else "")
     return args, note
+
+
+EFFORTS = ("low", "medium", "high", "xhigh", "max")
+
+
+def cli_effort(cfg, exe):
+    """Esfuerzo de `claude -p` (por defecto «low»: piensa menos y contesta antes, con menos tokens de salida).
+    "" = el de tu Claude Code. Solo se pasa si tu versión de claude tiene --effort."""
+    eff = str(((cfg.get("claudecode") or {}).get("effort", "low")) or "").strip().lower()
+    if eff not in EFFORTS:
+        return ""
+    return eff if exe and "--effort" in cli_flags(exe) else ""
 
 
 def cli_env(cfg, exe):
@@ -521,6 +533,10 @@ def claude_run(cfg, system, prompt, model=None, timeout=None, on_event=None):
                                    "--strict-mcp-config"] + iso + ["--system-prompt-file", sp]
         if resolved:
             cmd += ["--model", resolved]
+        eff = cli_effort(cfg, exe)
+        if eff:
+            cmd += ["--effort", eff]
+        res["effort"] = eff or ""
         res["cmd"] = ["<system.txt>" if a == sp else a for a in cmd]
         try:
             # cwd temporal: así no lee CLAUDE.md ni ajustes de ninguna carpeta del usuario
@@ -554,7 +570,7 @@ def claude_run(cfg, system, prompt, model=None, timeout=None, on_event=None):
         elif d.get("is_error"):
             res["error"] = "is_error"
     st = "ok" if not res["error"] else res["error"]
-    log(f"claude {('--model ' + resolved) if resolved else '(modelo por defecto / default model)'}"
+    log(f"claude {('--model ' + resolved) if resolved else '(modelo por defecto / default model)'}" + (f" --effort {res['effort']}" if res.get("effort") else "")
         + (f" [{note}]" if note else "") + f" -> {st} {res['seconds']}s"
         + (f" · {', '.join(res['used_models'])}" if res["used_models"] else "")
         + (f" · rc={res['rc']}" if res["rc"] not in (0, None) else "")

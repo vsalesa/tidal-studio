@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from engine import Engine, find_ghci, find_sclang  # noqa: E402
 from timeline import TimelineQuery  # noqa: E402
 from llm import chat_completion, LLMError, LLMTimeout, LLMCancelled, claude_cli  # noqa: E402
-from assistant import (build_messages, parse_reply, build_explain, parse_explain,
+from assistant import (build_messages, DETAIL_LEVELS, parse_reply, build_explain, parse_explain,
                        build_brainstorm, parse_brainstorm, with_lang, build_fix, parse_fix,
                        variants_on, fetch_on, plan_on, plan_step)  # noqa: E402
 import fetcher  # noqa: E402
@@ -94,6 +94,9 @@ DEFAULT_CONFIG = {
         # 0.21: que el Maestro no cargue TUS skills, plugins, hooks ni CLAUDE.md globales de Claude Code
         # auto = --safe-mode y --disable-slash-commands si tu versión de claude los tiene · safe_mode · disable_cli_skills · off
         "skill_isolation": "auto",
+        # Esfuerzo de razonamiento de `claude -p` (--effort): low = piensa menos y contesta antes y más corto.
+        # "" = el de tu Claude Code. Si tu versión de claude no tiene --effort, se ignora.
+        "effort": "low",
     },
     "github": {
         "token": "",
@@ -139,7 +142,7 @@ DEFAULT_CONFIG = {
     # Maestro v2: enrutador por capas (ver server/router.py y la ventana Monitor RAG)
     "router": json.loads(json.dumps(router.DEFAULT)),
     # Maestro v2, 0.16: sonidos que aprenden (crítico opcional, frecuencia de preguntas, CLaMP 3, packs comprados)
-    "soundlab": {"critic": False, "questions": "sometimes", "clamp_auto": True, "clamp_min": 10, "packs": []},
+    "soundlab": {"critic": False, "questions": "sometimes", "detail": "short", "clamp_auto": True, "clamp_min": 10, "packs": []},
     # Maestro v2, 0.18: memoria (aprobar sola lo muy claro, apuntar lo que dices en el chat, aprender de tus
     # elecciones de oído) y copia automática en GitHub de lo aprobado (memorias, estilos y casos)
     "memory": {"auto_approve": True, "observe_chat": True, "learn_picks": True, "backup": True, "backup_folder": "tidal-studio"},
@@ -874,6 +877,7 @@ class Handler(SimpleHTTPRequestHandler):
             req.end("library", "off")
         slc = soundlab_cfg(cfg)
         sess["preguntas"] = slc.get("questions") or "sometimes"
+        sess["detalle"] = slc.get("detail") or "short"   # respuestas cortas (por defecto) o detalladas
         try:
             sess["recetas"] = recipemod.maestro_text(SOUNDS.recipes() if SOUNDS else [], data.get("lang") == "en")
             sess["no_suenan"] = not_playable(tracks)
@@ -1237,6 +1241,8 @@ class Handler(SimpleHTTPRequestHandler):
                     slc[k] = data[k]
             if data.get("questions") in ("never", "sometimes", "often"):
                 slc["questions"] = data["questions"]
+            if data.get("detail") in DETAIL_LEVELS:
+                slc["detail"] = data["detail"]
             if data.get("clamp_min") is not None:
                 slc["clamp_min"] = max(2, min(200, int(data["clamp_min"])))
             cfg["soundlab"] = slc
