@@ -1,6 +1,7 @@
 # Maestro Core — V24 Adaptive Hybrid Musical Intelligence Engine
 
 **Status:** proposed unified architecture, not implemented. 2026-11-25.
+**Decisions of 2026-11-25 (authoritative):** [DECISIONS_2026-11-25.en.md](DECISIONS_2026-11-25.en.md) ([ES](DECISIONS_2026-11-25.es.md)) records 13 decisions that resolve contradictions between iterations of this document, adds the user-data persistence layer (0.25) and fixes one release plan (0.25 → 0.31). Where this document disagrees with it, the decisions file wins. Sections marked *Superseded* below are kept for history.
 **Current application baseline:** [main@d2af885](https://github.com/vsalesa/tidal-studio/commit/d2af88591cc5bf9929b32d544530c41b92fdec1a), already version **0.24.0**. The actual release added brief answers/result first and CLI effort support. This specification is the next architectural increment in the V24 family; do not overwrite or silently renumber that release.
 **Historical baseline:** [0.23.0@f256b6b](https://github.com/vsalesa/tidal-studio/commit/f256b6ba9e2eca39205ba603e7147f16fcc99c69). Earlier audits in this document refer to this commit.
 **Companions:** [MultiProfile execution](MULTIPROFILE_EXECUTION_V23.en.md), [Specialized Agent Architecture](SPECIALIZED_AGENT_ARCHITECTURE_V23.en.md), [approved Maestro v2 plan](https://github.com/vsalesa/tidal-studio/blob/feature/maestro-v2-blueprint/docs/maestro-v2/APPROVED_PLAN.en.md).
@@ -269,9 +270,11 @@ Examples of operation profiles: bass.compose_full, bass.complete_phrase, bass.ge
 
 V24 already added brief responses and CLI effort detection: [llm.py:439–470](https://github.com/vsalesa/tidal-studio/blob/d2af88591cc5bf9929b32d544530c41b92fdec1a/server/llm.py#L439-L470), [llm.py:512–573](https://github.com/vsalesa/tidal-studio/blob/d2af88591cc5bf9929b32d544530c41b92fdec1a/server/llm.py#L512-L573), [assistant.py:318–363](https://github.com/vsalesa/tidal-studio/blob/d2af88591cc5bf9929b32d544530c41b92fdec1a/server/assistant.py#L318-L363). Reuse these; add per-invocation scope and effort policy rather than reimplement. Low is the normal focused setting, not an absolute limit. Escalate to medium/high when musical complexity warrants it. Verify actual CLI/model support and usage; do not claim a hard CLI reasoning cap.
 
-Optional local decision backend is deferred until routing evidence warrants it. Start with rules, exact UI metadata and local retrieval/ranking. A lightweight supervised classifier or small local model can be evaluated with calibrated abstention, latency and quality metrics. No mandatory Ollama, model download, Jev dependency or extra classification call. Local neural inference is counted separately from genuinely deterministic zero-inference operations.
+*Superseded by decision 1:* the local model is the official understanding layer of the Semantic Gateway (0.16), bundled with the app and switched on with one button (decision 12); its default activation still follows the 0.16.9 benchmark. Start with rules, exact UI metadata and local retrieval/ranking ahead of it. No mandatory Ollama, Jev dependency or extra classification call. Local neural inference is counted separately from genuinely deterministic zero-inference operations.
 
 ## 0.9 Three end-to-end execution examples
+
+*Decision 3:* every example starts with the Semantic Gateway step (parser, RAG/FTS5, local model: 0 Claude calls). Haiku is used only as a fallback when neither resolves the request, and is then counted on top of the call counts below.
 
 All traces, artifacts, durations and tokens below are **synthetic design fixtures**, not captured executions or performance claims. “100% generative” means all musical decisions are generated; host orchestration, security, parsing, validation and recording remain deterministic by design.
 
@@ -492,6 +495,8 @@ Maturity is per operation and domain, not a mandatory progression for the whole 
 
 ## 0.12 Implementation structure and staged delivery
 
+*Superseded by decisions 5 and 6:* the code layout is the merged one in [DECISIONS_2026-11-25.en.md](DECISIONS_2026-11-25.en.md) §3 and the delivery order is the single 0.25 → 0.31 plan in §6. The layout and slices below are kept for history.
+
 ```text
 server/maestro/
   conductor/             # routing, policy, graph, budget (reuse router.py)
@@ -697,6 +702,8 @@ return assemble_authorized_result(run)
 Do not encode unbounded loops in plans. Conditional expansion is allowed only through registered Python planners, with a finite node count and call budget, immutable completed nodes, and revalidation of newly appended dependencies. For V24 prefer static graphs and local branches; dynamic expansion is optional and should be introduced only for genuine compositional complexity. A nested subprocess is a logical span with an inner plan, not a new process or another LLM. It inherits the parent budget, deadline, cancellation and scope. No recursively unbounded plans.
 
 ### 0.13.5 Execution policy and budget
+
+*Decision 3:* `max_provider_attempts` counts musical calls. Understanding has its own budget: parser, RAG/FTS5 and the local model first (0 Claude calls), and at most one Haiku fallback only when none of them resolves the request.
 
 Policy precedence: non-negotiable permissions and locks; host constraints and format compatibility; user intent and novelty; validated local sufficiency; lowest-cost sufficient strategy. Exact operations bypass retrieval if unnecessary. A local result is sufficient only after the criteria in 0.4 pass. If unresolved content is bounded, prefer a fragment profile. If decisions are coupled, fuse them into one full-task call instead of unnecessarily splitting into specialists.
 
@@ -968,7 +975,7 @@ This is proposed capability.yaml. All identifiers resolve to approved registry e
 Existing application JSON remains unchanged. New settings are additive only where compatible or placed in a separate Maestro config namespace/file after auditing existing config loader. Example proposed independent settings (not existing keys):
 
 ```json
-{"schema_version":"1.0.0","engine":{"mode":"adaptive","provider_concurrency":1},"serialization":{"default":"json","toon_enabled":false},"learning":{"require_approval":true},"observability":{"persist_local":true,"capture_prompts":false}}
+{"schema_version":"1.0.0","engine":{"mode":"adaptive","provider_concurrency":1},"serialization":{"default":"json","toon_enabled":false},"learning":{"require_approval":true},"observability":{"persist_local":true,"capture_prompts":true,"retention_days":90}}
 ```
 
 Prompt capture defaults follow the approved local privacy configuration; this example illustrates explicit opt-in and does not overwrite existing settings. No credentials in committed files.
@@ -1029,11 +1036,12 @@ The output remains compact JSON under its active fragment/full-task contract. Co
 
 **Hard requirement:** preserve current song/style JSON shapes, paths, serialization semantics, and existing memory sync behavior. No migration or wrapping of existing documents in new envelopes. New learning and execution data use a separate namespace in an explicitly approved private runtime data repository. Existing public source repository contains only generic source/config/schema/docs and synthetic fixtures. Runtime export uses JSON for all new persisted records, including event batches and prompt snapshots (Markdown body as JSON string). Native musical excerpts, if authorized, use JSON artifact envelopes containing native text or an approved reference. No live SQLite binary, YAML, TOON, raw JSONL logs or Markdown runtime snapshots in the data repo.
 
+*Decision 10/13:* folders are named by content and match the local `data/` folders; this tree lives in the **private** GitHub configuration (see [DECISIONS_2026-11-25.en.md](DECISIONS_2026-11-25.en.md) §4). Existing `songs/` stays in the shareable configuration and existing memory JSON keeps its 0.19 format under `memory/`.
+
 ```text
-maestro-data/
-  manifest.json
-  prompts/<profile-id>/<version>.json
-  executions/<year>/<month>/<run-id>/manifest.json
+manifest.json
+prompts/<profile-id>/<version>.json
+executions/<year>/<month>/<run-id>/manifest.json
   executions/<year>/<month>/<run-id>/events-0001.json
   executions/<year>/<month>/<run-id>/usage.json
   executions/<year>/<month>/<run-id>/outcome.json
@@ -1192,7 +1200,7 @@ Evaluate pinned llama.cpp native runtime, GGUF model and a single adapter; CPU b
 
 Proposed configuration (additive separate namespace; verify current config compatibility):
 ```json
-{"semantic_gateway":{"strategy":"auto","retrieval_first":true,"semantic_retrieval_enabled":false,"local":{"enabled":true,"runtime":"llama_cpp","device":"auto","quantization":"Q4_K_M","lazy_loading":true,"model_id":null},"remote_fallback":{"enabled":false,"provider":"claude_cli","model":"haiku","effort":"low"},"output":{"format":"json","verbosity":"minimal"}}}
+{"semantic_gateway":{"strategy":"auto","retrieval_first":true,"semantic_retrieval_enabled":false,"local":{"enabled":false,"bundled":true,"runtime":"llama_cpp","device":"auto","quantization":"Q4_K_M","lazy_loading":true,"model_id":"<pinned at build time>"},"remote_fallback":{"enabled":false,"provider":"claude_cli","model":"haiku","effort":"low"},"output":{"format":"json","verbosity":"minimal"}}}
 ```
 Remote disabled in illustrative default until user authorization; reuse explicitly authorized existing provider configuration when appropriate. Verify CLI alias, model access, effort and structured-output flags. Do not introduce a new authentication path. Use same shared inference budget; count local and remote attempts distinctly, and count remote against global provider attempts. If Haiku already consumed the routine one-remote-attempt budget, do not silently add Sonnet; either reserve an explicitly permitted escalation budget or return clarification/validated partial. Prefer fused advanced path when clear creative task avoids two remote calls.
 
@@ -1270,6 +1278,8 @@ Illustrative metadata only; host enforces permissions, attempts, scope, schema, 
 
 ### 0.17.3 Delivery order integration
 
+*Ordering superseded by decision 6* ([DECISIONS_2026-11-25.en.md](DECISIONS_2026-11-25.en.md) §6); the dependencies below still apply inside 0.27 and 0.28.
+
 After baseline instrumentation, implement exact parser and direct retrieval with verified application FAQ/capability registry and regression cases; then common gateway contract/binder and lightweight remote fallback; then optional local SLM benchmark and packaging; finally approved learned templates and optional embeddings if required. Integrate prompt discipline in every profile from first implementation. Advanced musical profiles may fuse understanding and resolution when route and authority are clear. Keep existing song/style/memory JSON untouched. These are proposed implementation details, not tested model performance or implemented features.
 
 ---
@@ -1285,6 +1295,8 @@ V24-family adaptive subprocess execution should combine host-controlled tools, l
 The system must learn from evidence, not treat every model statement as a new musical fact. Observability and learning are off the interactive inference critical path. No extra LLM call is required to record, inspect, aggregate or export an execution. No raw execution archive is automatically fed into future prompts.
 
 ## 2. Verified V23 baseline
+
+*Decision 7:* benchmarks compare against the latest published release (today 0.24.0); the V23 audit below is history.
 
 | Source | Current behavior | V24 extension |
 |---|---|---|
@@ -1302,8 +1314,8 @@ The current repository is public. Execution archives may contain private songs, 
 ```mermaid
 flowchart TD
  U[User request] --> C[Conductor: plan / route / budget]
- C --> D[Deterministic specialists]
- C --> A[LLM specialists]
+ C --> D[Deterministic capabilities]
+ C --> A[Generative profiles]
  D --> V[Validation and assembly]
  A --> V
  V --> O[Preview / accepted result]
@@ -1355,7 +1367,7 @@ Inspect all transmitted application prompt content, not inferred provider-intern
 
 ### 4.4 Prompt Observatory
 
-Versioned catalogue of shared base, 18 specialist role modules, capability modules, schemas, and policy. View effective prompt for any attempt and compare two versions line-by-line. Store immutable content hash, parent version, author/source, date, release, enabled status, tests and rollback reference. Edit draft prompts without replacing history. Activate after review and test; no LLM may silently rewrite the active registry. Compare effective prompts, not just role text.
+Versioned catalogue of shared base, 18 role profile modules, capability modules, schemas, and policy. View effective prompt for any attempt and compare two versions line-by-line. Store immutable content hash, parent version, author/source, date, release, enabled status, tests and rollback reference. Edit draft prompts without replacing history. Activate after review and test; no LLM may silently rewrite the active registry. Compare effective prompts, not just role text.
 
 Provide a local prompt playground: pick an existing task fixture, choose profile/prompt/model/effort, inspect estimated payload, explicitly run A/B. Never automatically apply replayed musical changes.
 
@@ -1465,6 +1477,8 @@ Use existing memory scopes and approval policies. New expert facts and prompt ch
 
 ### 9.1 Two distinct repositories/namespaces
 
+*Decision 13:* the app has two GitHub configurations. *Shareable* (may be public): `songs/` and styles the user shares. *Private*: `memory/`, `executions/`, `learning/`, `prompts/`; the app checks through the GitHub API that this repo is private before every upload and refuses otherwise. This also applies to the existing 0.19 memory sync.
+
 Application source repo: public code, reviewed architecture docs, generic prompt templates, schemas and synthetic test fixtures. Runtime data repo: explicitly selected private repository, user-controlled branch/folder. Existing GitHub configuration may be reused only after preview and permission verification. Do not assume private status from a repository name; fail closed if visibility is unknown for sensitive exports.
 
 Default policy:
@@ -1502,6 +1516,8 @@ Suggested modules: server/maestro/execution_store.py, recorder.py, prompt_regist
 
 ## 11. V24 delivery slices
 
+*Superseded by decisions 6 and 8:* phases are named after the app release that ships them; see the single plan in [DECISIONS_2026-11-25.en.md](DECISIONS_2026-11-25.en.md) §6.
+
 | Slice | Work | Acceptance |
 |---|---|---|
 | V24.0 | Baseline + schema + recorder + actual usage normalization | every invocation, local action, failure and cancellation recorded |
@@ -1529,7 +1545,7 @@ These are implementation slices, not mandated separate release numbers. Keep fea
 12. Private authorized export can be restored on another installation, with matching manifests and no silent activation.
 13. Divergent edits preserve both versions; retry idempotent; deletion limitations explicit.
 14. Capture/monitor overhead benchmarked; propose <5% median added wall time for ordinary calls as target, not verified result. No additional routine inference.
-15. Compare V23 baseline vs V24 on >=50 representative musical fixtures, including blind A/B, tokens per accepted result, P50/P95 and protected-track correctness.
+15. Compare the latest published release vs the new release on >=50 representative musical fixtures, including blind A/B, tokens per accepted result, P50/P95 and protected-track correctness.
 
 ## 13. Handoff to Claude
 
@@ -1588,7 +1604,7 @@ Prompt assembly is deterministic. Do not include all 18 role prompts, the comple
 ## 16. Shared base prompt — proposed v1
 
 ```text
-You are Maestro, a specialist in a host-orchestrated musical ensemble.
+You are Maestro, completing one assigned musical task for the host.
 The host has already selected your assignment, relevant knowledge, musical
 context, dependencies, permissions and output contract.
 
@@ -2350,6 +2366,8 @@ Illustrative pseudocode. Implementation must handle exceptions, cancellation, co
 - Acceptance adds tests for all 18 registry entries and schemas, no irrelevant role/capability modules, missing prerequisite behavior, dependency projection completeness, faithful prompt replay, no unauthorized peer calls, graph budgets, and actual per-attempt observability. Benchmark specialized versus fused approaches on the same tasks and user blind A/B.
 
 ## 22. Consolidated implementation order
+
+*Superseded by decision 6:* see the single plan in [DECISIONS_2026-11-25.en.md](DECISIONS_2026-11-25.en.md) §6.
 
 1. Record V23 baseline and normalize usage. Verify CLI effort capabilities and exact prompt capture.
 2. Introduce registry, shared base, schemas, direct handlers and narrow workers; test role scope and existing frontend compatibility.
@@ -7690,7 +7708,7 @@ This example demonstrates actual model-facing assembly, including a resolved out
 ### System message
 
 ```text
-You are Maestro, a specialist in a host-orchestrated musical ensemble.
+You are Maestro, completing one assigned musical task for the host.
 The host has already selected your assignment, relevant knowledge, musical
 context, dependencies, permissions and output contract.
 

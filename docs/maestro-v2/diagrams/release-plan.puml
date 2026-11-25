@@ -1,0 +1,35 @@
+@startuml
+!pragma layout smetana
+skinparam defaultFontName Helvetica
+skinparam shadowing false
+skinparam backgroundColor white
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam ActivityBorderColor #8A8F98
+skinparam ArrowColor #8A8F98
+skinparam ActivityDiamondBackgroundColor #FFFFFF
+title Maestro Core release plan: data safe and measured first
+start
+#E7F0FB:**0.25 Your data, safe**
+data/ folder outside the program, backup before every update and migration,
+Restore button, songs saved as files, simulated-update test;
+-> Gate: Simulated update loses nothing?;
+:**0.26 Measure**
+persistent execution ledger, real tokens per answer;
+-> Gate: Baseline of the latest release measured?;
+:**0.27 Understanding + exact commands**
+parser, RAG/FTS5, single intent contract, Haiku only as fallback;
+-> Gate: Exact commands use 0 Claude calls?;
+:**0.28 Local model as the understanding layer**
+bundled with the app, one on/off button, Mac Metal first;
+-> Gate: Matches Haiku on the corpus without audio dropouts?;
+:**0.29 Hybrid capabilities**
+bass, rhythm, harmony: the model only fills the gaps;
+-> Gate: Fewer tokens per accepted result, blind A/B?;
+:**0.30 Learning Lab**
+evidence-backed candidates, one-click labelling;
+-> Gate: Nothing activates without approval?;
+:**0.31 Private GitHub data repo**
+memory, executions, learning, prompts; private check;
+-> Gate: Restore everything on another computer;
+stop
+@enduml
