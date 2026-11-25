@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.22.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.23.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -735,13 +735,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.22.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.23.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.22.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.22.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.22.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/tidal-studio_0.22.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.23.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/TidalStudio-0.23.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.23.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/TidalStudio-0.23.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.23.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/tidal-studio_0.23.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -1148,6 +1148,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.23.0** | [Guarda opciones de Maestro como estilos, de verdad](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales): pide «guárdame las otras tres como estilos», «la A y la C» o «todas» y se guardan (al momento y sin IA si se entiende cuáles), o pulsa **Guardar como estilo** en cualquier tarjeta de opción; la confirmación la escribe la app con lo que se guardó de verdad, así que Maestro ya no puede decir «guardado» si no se guardó nada. |
 | **0.22.0** | [Efectos, iguales en todas las vistas](#vista-de-bloques-y-resaltado-en-directo): una ficha por efecto con interruptor y el mismo editor (deslizador, valor, quitar) en Pistas, Bloques y Código, **+ efecto** en todas, y el editor con el aspecto claro Partitura. |
 | **0.21.0** | [Seis skills más incluidas y un índice de skills persistente](#skills-y-plugins): secciones con su padre y sus excepciones, vocabulario musical ES/EN, procedencia y cuarentena en el panel, botón para reconstruir, Maestro independiente de tu Claude Code global; y tus propios cambios de sonido y elecciones repetidas de opciones se convierten en candidatos a memoria. |
 | **0.20.0** | [Skills a la carta](#skills-y-plugins): solo las secciones de cada skill que encajan con tu mensaje (búsqueda local, sin IA), un catálogo corto, la ruta que se carga siempre por partes, secciones extra bajo demanda, y el monitor RAG enseña los caracteres de skills enviados frente a enteras (un 55 % menos). |
