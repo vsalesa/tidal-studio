@@ -461,6 +461,7 @@ function bkApply(mutate, rerender = true) {
   try { code = mutate(t.code); } catch { return; }
   if (!code || code === t.code) return;
   if (!t.error && !t.lastGood) t.lastGood = t.code;
+  noteSoundChange(t, t.code);
   t.code = code; t.explain = null; t.edited = true;
   if (rerender) { bkSel.keep = false; changed(); }
   else { save(); const chip = $("#bk-pop .bk-pop-head code"); const part = partOf(t.code, bkSel.key); if (chip && part && part.kind === "step") chip.textContent = part.text; }
@@ -766,7 +767,7 @@ function renderTracks() {
     });
     el.querySelector(".tname").addEventListener("change", (e) => { t.name = e.target.value; changed(); });
     const ta = el.querySelector("textarea");
-    const commit = () => { if (ta.value !== t.code) { if (!t.error && (!t.lastGood || !t.edited)) t.lastGood = t.code; t.code = ta.value; t.explain = null; t.edited = true; changed(); } };
+    const commit = () => { if (ta.value !== t.code) { if (!t.error && (!t.lastGood || !t.edited)) t.lastGood = t.code; noteSoundChange(t, t.code); t.code = ta.value; t.explain = null; t.edited = true; changed(); } };
     ta.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commit(); playTrack(t); }
     });
@@ -1087,7 +1088,8 @@ async function pickVariant(mi, k) {
   const before = JSON.parse(JSON.stringify({ bpm: state.bpm, tracks: state.tracks }));
   m.picked = k;
   recordVote({ kind: "pick", ...songContext(state), request: lastRealRequest().slice(0, 500), blind: !!m.blind,
-    candidates: m.variantes.map((x) => ({ title: x.titulo, concept: x.concepto || "", changes: x.cambios })), chosen: k });
+    candidates: m.variantes.map((x) => ({ title: x.titulo, concept: x.concepto || "", changes: x.cambios })), chosen: k })
+    .then((r) => { if (r && r.memoria_nueva && r.memoria_nueva.length) { toast(memoNote(r.memoria_nueva)); refreshMemBadge(); } });
   // 0.16: al elegir un sonido entre varios, el ranking aprende (sin IA)
   if (m.soundPick) api("/api/sounds/choice", { role: m.soundPick.role, style: m.soundPick.style, chosen: m.soundPick.sounds[k], others: m.soundPick.sounds }).catch(() => {});
   state.chat.push({ role: "user", content: L(`Me quedo con la opción ${LETTERS[k]}: «${v.titulo}».`, `I'll keep option ${LETTERS[k]}: «${v.titulo}».`) });
@@ -1105,6 +1107,25 @@ const VA_UNDO = () => L("Deshacer la elección", "Undo the pick");
 const CASE_CHIP = () => L("Guardar como caso", "Save as a case");
 const MEM_OPEN = () => L("Abrir Memoria", "Open Memory");
 const SC_NAME = { song: ["esta canción", "this song"], course: ["este curso", "this course"], genre: ["el género", "the genre"], global: ["siempre", "always"] };
+// 0.21: cambiar TÚ el sonido de una pista (controles, bloques, código, «Poner en…») cuenta como elección para ese papel
+// y género, igual que elegirlo entre opciones: con 3 iguales sale la memoria. Se espera a que dejes de probar (4 s).
+const manualSound = {};
+function mainSound(code) { const m = /\b(?:s|sound)\s+"\s*[[<(]*\s*([A-Za-z][A-Za-z0-9_.-]*)/.exec(code || ""); return m ? m[1] : ""; }
+function noteSoundChange(t, before) {
+  if (!t) return;
+  const was = mainSound(before);
+  const cur = manualSound[t.id] || (manualSound[t.id] = { from: was });
+  clearTimeout(cur.timer);
+  cur.timer = setTimeout(() => {
+    delete manualSound[t.id];
+    const tr = state.tracks.find((x) => x.id === t.id); const now = tr && mainSound(tr.code);
+    if (!now || !cur.from || now === cur.from) return;
+    const style = state.course ? state.course.id : (state.style || "");
+    api("/api/sounds/choice", { role: tr.kind || "", style, chosen: now, others: [cur.from], source: "manual" })
+      .then((r) => { if (r && r.memoria_nueva && r.memoria_nueva.length) { toast(memoNote(r.memoria_nueva)); refreshMemBadge(); } })
+      .catch(() => {});
+  }, 4000);
+}
 function memoNote(list) {
   return list.map((m) => m.status === "approved"
     ? L(`apuntado en tu memoria (${SC_NAME[m.scope][0]}): «${m.text}»`, `noted in your memory (${SC_NAME[m.scope][1]}): «${m.text_en || m.text}»`)
@@ -2592,7 +2613,7 @@ function wireControls() {
     if (c.tipo === "selector" && b.dataset.o) {
       const o = b.dataset.o;
       ctlApply(mi, () => {
-        if (c.que === "sonido") { const [nm, vv] = o.split(":"); const cur = ctl.querySelector(".ctl-opts button.on")?.dataset.o?.split(":")[0]; const code = swapSound(t.code, nm, vv ? +vv : null, cur); if (code) t.code = code; }
+        if (c.que === "sonido") { const [nm, vv] = o.split(":"); const cur = ctl.querySelector(".ctl-opts button.on")?.dataset.o?.split(":")[0]; const code = swapSound(t.code, nm, vv ? +vv : null, cur); if (code) { noteSoundChange(t, t.code); t.code = code; } }
         else t.code = setParam(t.code, c.param, isNaN(+o) ? o : +o);
         return t;
       });
@@ -2742,6 +2763,7 @@ function useSample(name, type, mode) {
     const [nm, v] = name.split(":");
     const code = t && swapSound(t.code, nm, v ? +v : null);
     if (!code) return toast(L("La pista seleccionada no tiene un s \"…\" que cambiar.", "The selected track has no s \"…\" to change."));
+    noteSoundChange(t, t.code);
     t.code = code; t.explain = null; changed(); if (live()) playTrack(t);
     $("#samples").close();
     return say(L(`He cambiado el sonido de ${t.id} a «${name}» sin tocar el ritmo. Fíjate: solo cambian las palabras dentro de s "…"; los ~, * y [ ] siguen igual. Así pruebas sonidos sin reescribir nada.`, `I changed ${t.id}'s sound to «${name}» without touching the rhythm. Notice: only the words inside s "…" change; the ~, * and [ ] stay the same. That way you try sounds without rewriting anything.`), state.options);
@@ -3093,6 +3115,7 @@ function useTrim(asNew) {
     let code = swapSound(t.code, w.name, w.i || null) || trimCode();
     code = w.begin > 0 ? setParam(code, "begin", w.begin) : code.replace(/\s*#\s*begin\s+[\d.]+/, "");
     code = w.end < 1 ? setParam(code, "end", w.end) : code.replace(/\s*#\s*end\s+[\d.]+/, "");
+    noteSoundChange(t, t.code);
     t.code = code; changed(); if (live()) playTrack(t);
   }
   $("#samples").close();
@@ -4205,9 +4228,10 @@ async function refreshSkillCount() {
 }
 async function openSkills(focus = "") {
   let r = { skills: [], folder: "" };
-  try { r = await api("/api/skills"); } catch (e) { toast(e.message); }
+  let kn = null;
+  try { [r, kn] = await Promise.all([api("/api/skills"), api("/api/knowledge").catch(() => null)]); } catch (e) { toast(e.message); }
   skillList = r.skills || [];
-  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins, updates: r.plugin_updates, autoUpdate: r.plugins_auto_update });
+  $("#skills-body").innerHTML = skillsDialogHTML(skillList, { knowledge: kn, focus, folder: r.folder, plugins: r.plugins || [], pluginFolder: r.plugin_folder, defaultState: r.default_plugins, updates: r.plugin_updates, autoUpdate: r.plugins_auto_update });
   if (!$("#skills").open) $("#skills").showModal();
   const f = focus && ($(`#skills-body .sk-card[data-name="${CSS.escape(focus)}"]`) || $(`#skills-body .pl-card[data-plugin="${CSS.escape(focus)}"]`));
   if (f) f.scrollIntoView({ block: "nearest" });
@@ -4251,6 +4275,14 @@ function wireSkills() {
       const names = [...box.querySelectorAll("input:checked")].map((i) => i.value);
       if (names.length) doInstall(b.closest("form"), box.dataset.url, names);
       return;
+    }
+    if (b.dataset.a === "kn-rebuild") {
+      b.disabled = true; b.textContent = L("Reconstruyendo…", "Rebuilding…");
+      try {
+        const r = await api("/api/knowledge/rebuild", {});
+        toast(L(`Índice rehecho: ${r.sections ?? "?"} secciones`, `Index rebuilt: ${r.sections ?? "?"} sections`));
+      } catch (err) { toast(err.message); }
+      return openSkills();
     }
     if (b.dataset.a === "cmd") {
       $("#skills").close();

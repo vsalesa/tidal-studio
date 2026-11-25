@@ -1,0 +1,10 @@
+{
+  "url": "https://github.com/Vocaler-AI/music-skills/tree/4479796b9f05e2fc300fee1a848b0effa1993b8a/skills/melody-writer",
+  "license": "MIT",
+  "author": "Vocaler",
+  "commit": "4479796b9f05e2fc300fee1a848b0effa1993b8a",
+  "copied": [
+    "SKILL.md"
+  ],
+  "note": "Text files only, copied verbatim. Scripts, evals and assets were left out: Tidal Studio never runs them."
+}

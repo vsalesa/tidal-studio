@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.20.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.21.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -650,6 +650,34 @@ skills** vuelve a cargarlas enteras.
 |---|---|
 | ![Skills a la carta en el chat](docs/screenshots/es/skills-a-la-carta.png) | ![Skills en el monitor RAG](docs/screenshots/es/monitor-skills.png) |
 
+**Seis skills más incluidas, y un índice de skills que se queda** (0.21). Tidal Studio trae seis skills MIT más, solo
+texto: **music-evaluate** y **music-compose** (evaluar un borrador, decir primero lo más flojo, conservar lo que
+aprobaste) y **arrangement-advisor**, **melody-writer**, **hook-writer** y **prosody-checker** (letras; viene apagada).
+Cada tarjeta dice de dónde viene, su licencia y el commit exacto; una skill cuyos archivos no coinciden con el
+manifiesto queda en cuarentena y nunca se manda. Las skills se buscan en un **índice persistente** (SQLite FTS5 en la
+carpeta de datos de la app): se pone al día solo cuando cambia una skill, sobrevive a los reinicios (7 ms en comprobarse
+al arrancar) y se puede reconstruir desde el panel; los Markdown siguen siendo la fuente. Maestro recibe secciones
+pequeñas **con la sección padre y las excepciones de las que dependen** («nunca cruces la clave» viaja con el tumbao del
+bajo), las palabras musicales en español se traducen al inglés de las skills, y el presupuesto es de unos 2.000 tokens
+(3.500 si la petición toca varias pistas). En un banco de 60 peticiones llegó la sección correcta en 59 de 60 (0.20: 49),
+con las excepciones en el 100 % de los casos que las necesitan (0.20: 50 %), con un tamaño parecido. Si suena mejor lo
+decide tu oído: la escucha a ciegas A/B está lista para tus votos.
+Maestro ya no depende de tu Claude Code global: usa los plugins que la app descarga en `my-plugins/`, y la CLI de
+Claude se ejecuta aislada de las skills de `~/.claude`, así que puedes desinstalar el plugin de tu Claude y seguir
+usándolo en Maestro.
+
+| Panel de Skills: el índice y de dónde viene cada skill | Las nuevas skills incluidas (prosody-checker viene apagada) |
+|---|---|
+| ![Índice de skills](docs/screenshots/es/skills-indice.png) | ![Skills incluidas](docs/screenshots/es/skills-incluidas.png) |
+| **Debajo de la respuesta: secciones enviadas, y las que llevaron contexto** | **Monitor RAG: cada sección, por qué se mandó y sus tokens** |
+| ![Secciones con contexto en el chat](docs/screenshots/es/skills-contexto.png) | ![Índice en el monitor RAG](docs/screenshots/es/monitor-indice.png) |
+
+**Tus propios cambios cuentan como candidatos a memoria** (0.21). Cambiar tú el sonido de una pista (en Bloques, en el
+código o en el selector de sonido) cuenta igual que elegirlo de oído: 3 veces el mismo sonido para el mismo papel y
+género se convierte en una memoria de ese género. Y si eliges una y otra vez el mismo tipo de opción entre las de
+Maestro (la más sencilla, la más lenta, la de menos capas…), Maestro te propone una memoria, que siempre espera en tu
+**Bandeja** a que decidas.
+
 ### Cómo decide Maestro, y su razonamiento
 
 Cada respuesta que se ha apoyado en una skill empieza con **Cómo lo he decidido**: una fila por decisión musical
@@ -688,13 +716,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.20.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.21.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.20.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/TidalStudio-0.20.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.20.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/TidalStudio-0.20.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.20.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/tidal-studio_0.20.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.21.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.21.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.21.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/tidal-studio_0.21.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -1101,6 +1129,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.21.0** | [Seis skills más incluidas y un índice de skills persistente](#skills-y-plugins): secciones con su padre y sus excepciones, vocabulario musical ES/EN, procedencia y cuarentena en el panel, botón para reconstruir, Maestro independiente de tu Claude Code global; y tus propios cambios de sonido y elecciones repetidas de opciones se convierten en candidatos a memoria. |
 | **0.20.0** | [Skills a la carta](#skills-y-plugins): solo las secciones de cada skill que encajan con tu mensaje (búsqueda local, sin IA), un catálogo corto, la ruta que se carga siempre por partes, secciones extra bajo demanda, y el monitor RAG enseña los caracteres de skills enviados frente a enteras (un 55 % menos). |
 | **0.19.0** | [Memoria sincronizada con GitHub](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales): en los dos sentidos, así que en un ordenador nuevo tus memorias, estilos y casos vuelven solos; los borrados viajan en los dos sentidos; cada cosa dice si está en GitHub; **Comparar con GitHub**; reintentos automáticos; y traer **la memoria de otra persona** desde el enlace de su repositorio (a tu bandeja). |
 | **0.18.0** | Maestro v2, quinto paso: [memoria y estilos](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales). Memoria por ámbitos (canción, curso, género, siempre) desde el chat y desde tus elecciones de oído, con capa de validación (lo claro se aprueba solo, lo dudoso va a una bandeja), un registro donde cada cambio se deshace, **Mis estilos** (groove, papeles, instrumentos y tempo, no las notas) como inspiración, transformación o copia literal y compartidos por GitHub, casos musicales de los que aprende Maestro, copia automática en GitHub de lo aprobado y un panel de almacenamiento. |

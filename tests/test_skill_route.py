@@ -7,6 +7,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "server"))
+import knowledge_store  # noqa: E402
 import plugins  # noqa: E402
 import skills  # noqa: E402
 
@@ -32,8 +33,10 @@ class RouteTest(unittest.TestCase):
         _skill(self.plug, "mc-style-latin-salsa", "mc-style-latin-salsa", "Salsa clave montuno tumbao bass.",
                "Salsa arranging: clave, montuno, tumbao, salsa percussion")
         self.cfg = {"plugins": {"preferred": ["music-composition"]}, "skills": {}}
+        knowledge_store.configure(os.path.join(self.tmp, "knowledge.sqlite"))
 
     def tearDown(self):
+        knowledge_store.close()
         plugins.PLUGIN_DIR, skills.BUILTIN_DIR, skills.USER_DIR = self.old
         shutil.rmtree(self.tmp)
 

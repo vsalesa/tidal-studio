@@ -1,0 +1,926 @@
+{
+ "schema_version": 1,
+ "bundle_id": "tidal-studio-skills",
+ "bundle_version": "0.21.0",
+ "files_root": "skills",
+ "skills": [
+  {
+   "id": "builtin:livecoding",
+   "folder": "livecoding",
+   "upstream": "broomva/skills",
+   "commit": "7fcf46bfc5767ca2aeacb077d52f203bf7f4fc49",
+   "upstream_path": "skills/audio/livecoding",
+   "license": "MIT",
+   "author": "broomva",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [],
+   "why": "",
+   "files": [
+    {
+     "path": "livecoding/LICENSE",
+     "sha256": "df0e34f518b9b770461741ec3581c7ae0839141ec54e1572695f7c88682a1192",
+     "size": 1093
+    },
+    {
+     "path": "livecoding/SKILL.md",
+     "sha256": "dd9ddf9e9fcbf89a5b0098216ea0381d0fae12183e29c4a9cf0f0ab675847728",
+     "size": 6988
+    },
+    {
+     "path": "livecoding/References/tidal-cheatsheet.md",
+     "sha256": "9518d06276a21290a9e168f0438bca1d90d83b22bfd78ac7516579e6d6526374",
+     "size": 4643
+    },
+    {
+     "path": "livecoding/Workflows/StarterPattern.md",
+     "sha256": "c238d6d11ebe0958a6c542e3d39f579cb4b35efa3d51e5fa7f85087372ba4893",
+     "size": 5248
+    }
+   ]
+  },
+  {
+   "id": "builtin:strudel",
+   "folder": "strudel",
+   "upstream": "ahgraber/skills",
+   "commit": "b347e346d8523310d46415885cd0b6eac11ff3c6",
+   "upstream_path": "skills/strudel",
+   "license": "CC0-1.0",
+   "author": "ahgraber",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [],
+   "why": "",
+   "files": [
+    {
+     "path": "strudel/LICENSE",
+     "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+     "size": 7048
+    },
+    {
+     "path": "strudel/SKILL.md",
+     "sha256": "b90d74733084039ffbf2957f34d9cb365743b98f016979a491c71cc78ced4586",
+     "size": 4952
+    },
+    {
+     "path": "strudel/references/recipes.md",
+     "sha256": "e35a3151e532848cd45260de52d50809d95b50003a0b6624733cc11d28fa7e27",
+     "size": 9501
+    },
+    {
+     "path": "strudel/references/tonal.md",
+     "sha256": "5db2c173d7c0084493532502a2992a0cf5862257b4b5d435f72ec871d6bc60d3",
+     "size": 9089
+    }
+   ]
+  },
+  {
+   "id": "builtin:music-composition",
+   "folder": "music-composition",
+   "upstream": "SJY051/music-composition",
+   "commit": "07cecf9c8fd15249ea3da311dc9a7c7893ff801f",
+   "upstream_path": "",
+   "license": "CC-BY-4.0",
+   "author": "SJY051",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [],
+   "why": "",
+   "files": [
+    {
+     "path": "music-composition/LICENSE.md",
+     "sha256": "09d36a57e50490bdc5217e35b1ddd136de359dfa33e58f0d8f4df0a3b8bf496f",
+     "size": 3400
+    },
+    {
+     "path": "music-composition/SKILL.md",
+     "sha256": "f1ec2b43337c5e99de44635b169d65ff8f41f5bc441245e70ce684732598317a",
+     "size": 13875
+    },
+    {
+     "path": "music-composition/assets/cadence-reference.md",
+     "sha256": "d944091b9cdfa4fdd9e4c0ea1dcd34a519372a0caa52104ed8f31fd8f0abaa21",
+     "size": 7583
+    },
+    {
+     "path": "music-composition/assets/chord-symbol-ambiguity-and-parsing.md",
+     "sha256": "0fee6bed57049a70f5686a327cf23edcbb84720a3ea060589872f2b5e6a58389",
+     "size": 5843
+    },
+    {
+     "path": "music-composition/assets/chord-symbol-conventions.md",
+     "sha256": "e541ca24ac297166679d8c6e7eddd60aad7039c0a02760f68b8bfb5d92b7f0c8",
+     "size": 11396
+    },
+    {
+     "path": "music-composition/assets/diagnostic-checklists.md",
+     "sha256": "71866817b1aa7c7f2ade7ba95bbcf2dc8194d5e59883a3f16cf75ddc72ddf029",
+     "size": 9074
+    },
+    {
+     "path": "music-composition/assets/form-templates.md",
+     "sha256": "b14d408f70604689692555a5cb7aad9112e394f39e7990257f55bf73f90ae268",
+     "size": 10020
+    },
+    {
+     "path": "music-composition/assets/intervals-and-scale-formulas.md",
+     "sha256": "3cc6b18fe72b62f9f0a7fb1254e642eee4237498c6704e6cd99f8a8ec4b14f10",
+     "size": 8435
+    },
+    {
+     "path": "music-composition/assets/jazz-voicings.md",
+     "sha256": "e6a9426b1db26d66cd787f68ddaabe9a46d25478fce0f37433657996aae36b5e",
+     "size": 10749
+    },
+    {
+     "path": "music-composition/assets/modes-cheatsheet.md",
+     "sha256": "73f3ab24d0744e253b4b04ef1721a1e24bd551d2398edc97d40a69a464f97dcb",
+     "size": 9600
+    },
+    {
+     "path": "music-composition/assets/music-theory-audit-rubric.md",
+     "sha256": "8a5d01dccc7b092f224b2d03974d7f69cea1d3ac9b187098fcf3db683363a55c",
+     "size": 4557
+    },
+    {
+     "path": "music-composition/assets/musical-brainstorming-cards.md",
+     "sha256": "310ff84393eff0a4285fe3071bf11b158af6b36bde944bbf61e92ec7374cd2bf",
+     "size": 5027
+    },
+    {
+     "path": "music-composition/assets/progressions-catalog.md",
+     "sha256": "e59bde133ea2c0f07cf2dae2e48d5add7e075e06de6c83a4963438ba40b42761",
+     "size": 15370
+    },
+    {
+     "path": "music-composition/assets/response-templates.md",
+     "sha256": "6b348e6fe910ade1c05ff308b0494d1f608865c46aed1f735a65fc2c175882a6",
+     "size": 10145
+    },
+    {
+     "path": "music-composition/assets/scale-degree-spelling-cheatsheet.md",
+     "sha256": "39b759ebc11bf3573998f1535c4c0c2cf0b3beaf4a9f10a9dfea4db01a227bb8",
+     "size": 5206
+    },
+    {
+     "path": "music-composition/assets/session-brief-and-decision-log.md",
+     "sha256": "a4d9af83b1abaf91fce92d8672eff1c121426536779afc908d4b64aafc8b67b4",
+     "size": 1900
+    },
+    {
+     "path": "music-composition/assets/trend-and-reference-matrices.md",
+     "sha256": "f692054d0bcdc55a30877f2170b4b89278226b822f2a9b9c9938116dd6a40911",
+     "size": 3036
+    },
+    {
+     "path": "music-composition/assets/web-search-cheatsheet.md",
+     "sha256": "58e10d1a2cd6def62941137073815b344b3ba4b3393ed80d57c2c38358699118",
+     "size": 7186
+    },
+    {
+     "path": "music-composition/references/00-navigation.md",
+     "sha256": "46e8e49e6b9116ceaac3bbc50fbad86a20f877ad46f1695fc9dc684557c21787",
+     "size": 26801
+    },
+    {
+     "path": "music-composition/references/analysis.md",
+     "sha256": "a6532cbfe6c04d2a81b73c137ef64b4bd26d8ad9e339ccbd1ff01daffad457a7",
+     "size": 13609
+    },
+    {
+     "path": "music-composition/references/counterpoint.md",
+     "sha256": "462f51ab91a6a71087ad060c5faab17353bb7d908a7841b2d7c9675214b8e4e2",
+     "size": 18409
+    },
+    {
+     "path": "music-composition/references/critique-and-feedback.md",
+     "sha256": "f41ac14ab6ae4cd467407747e3ba39e0798fe3c1154169ad7196415a6226b505",
+     "size": 16952
+    },
+    {
+     "path": "music-composition/references/source-bibliography.md",
+     "sha256": "49514e27ca912aedbb8486d4443d31c0b9c04d6fe9a5f936217606aa23913948",
+     "size": 13062
+    },
+    {
+     "path": "music-composition/references/teaching-composition.md",
+     "sha256": "7c114569f80b24039cef0322a124db82f6711e95e023b3dd2c90eae8a8b66c8b",
+     "size": 17793
+    },
+    {
+     "path": "music-composition/references/workflow.md",
+     "sha256": "ae96ede68f971ff4553b0fc3eb9227b016e4d9ef044da50de4e898e1e440a7f3",
+     "size": 17438
+    },
+    {
+     "path": "music-composition/references/creative-workflows/answer-calibration.md",
+     "sha256": "5ae25d0cef56dee32f531e720930b529e12ff6b93daacb69c35e0c8536670ab7",
+     "size": 7171
+    },
+    {
+     "path": "music-composition/references/creative-workflows/musical-brainstorming.md",
+     "sha256": "7cd960c79388bd625edd95ca1d0f240e681bfc8a63df6fba5d6dddc2cba2f527",
+     "size": 13175
+    },
+    {
+     "path": "music-composition/references/creative-workflows/revision-and-feedback-loops.md",
+     "sha256": "3c25ac96291dd7ea79d0bbbdb5b0374c3a1686b85e7dc23c40a7c82ce09830f4",
+     "size": 5459
+    },
+    {
+     "path": "music-composition/references/creative-workflows/user-agent-collaboration.md",
+     "sha256": "1a4cf429f1776fa15976ddb74140faf6bb4bf8e1bec282130042b974d2902e5b",
+     "size": 8972
+    },
+    {
+     "path": "music-composition/references/form/classical-forms.md",
+     "sha256": "5d7057ac55f986256ca59fb6e2a76a9dbac90d36aef2bba7a166d45d5d16403f",
+     "size": 16891
+    },
+    {
+     "path": "music-composition/references/form/narrative-and-transitions.md",
+     "sha256": "ff3808ec82ca1f9f1aa80de912e35de7cbe6e40a01a759a973d2dd8bd4622c66",
+     "size": 15916
+    },
+    {
+     "path": "music-composition/references/form/popular-song-forms.md",
+     "sha256": "6f0a21c9014fd0f627b54694f3db6c233218a73d68b753edcca2285f5d344675",
+     "size": 16912
+    },
+    {
+     "path": "music-composition/references/fundamentals/notation-and-conventions.md",
+     "sha256": "081a227397b55e3e7a1e471a867d09c092aff7dd51141982824a663dafe429a6",
+     "size": 17419
+    },
+    {
+     "path": "music-composition/references/fundamentals/pitch-intervals-scales.md",
+     "sha256": "8fd94ff0de8918b7d1adaf889c36722268746abd660821205d1e42f56f423362",
+     "size": 18011
+    },
+    {
+     "path": "music-composition/references/fundamentals/prosody-and-language.md",
+     "sha256": "b7e03dc05544a3d124ad0758214e7b3cb17fa5e6b1bc3dcd8ed1ce69acf8d9bd",
+     "size": 18900
+    },
+    {
+     "path": "music-composition/references/fundamentals/rhythm-meter.md",
+     "sha256": "bcac0834378e9a7223ab84040e035e59ddbfb55301965051675b8f78dc7ed584",
+     "size": 14019
+    },
+    {
+     "path": "music-composition/references/genres/afrobeats-and-amapiano.md",
+     "sha256": "2fbd44bd2d7cc0a568d339d0a1f0227af575943a732c73a8b54f3816074cede4",
+     "size": 7536
+    },
+    {
+     "path": "music-composition/references/genres/brazilian-pop-and-funk.md",
+     "sha256": "c7dfec15027532fe32d32b3af0b0b2f98d1461e054442ba7e7b99c5ceaf3075d",
+     "size": 10467
+    },
+    {
+     "path": "music-composition/references/genres/classical-periods.md",
+     "sha256": "114a58883cf8567a06550e02f633708533f53669e04166486362dbcb05ce8876",
+     "size": 15433
+    },
+    {
+     "path": "music-composition/references/genres/country-americana.md",
+     "sha256": "45794a9d693153b41540e3956023f2da32cf82e237ed43661edf2e4985b405c9",
+     "size": 10942
+    },
+    {
+     "path": "music-composition/references/genres/cpop-and-southeast-asian-pop.md",
+     "sha256": "b27352bd49aae68442f84b26f60e8dde7541d4a8eb18767902ceb47adb3b6fc5",
+     "size": 20954
+    },
+    {
+     "path": "music-composition/references/genres/electronic-edm.md",
+     "sha256": "63245ef762067e72bef92a5eb338c2add5630af5f26c6dfe6a9f7d0ff7480d52",
+     "size": 14424
+    },
+    {
+     "path": "music-composition/references/genres/film-tv-scoring.md",
+     "sha256": "ad1eb2eeb8a8d5926374b3d12715a309ed9983a26f4df1c0b69b19df7fd234bc",
+     "size": 16393
+    },
+    {
+     "path": "music-composition/references/genres/folk-and-world.md",
+     "sha256": "c1ea717e67fbab4a971b4ece3c6d4281028f31e5129e7bde1f4adf8a296f471b",
+     "size": 1295
+    },
+    {
+     "path": "music-composition/references/genres/folk-roots-and-traditions.md",
+     "sha256": "0b6e2281cb286b1bf59db86db683c1dc3e7ef69b93126322e09a33bb3a8bf2f0",
+     "size": 7810
+    },
+    {
+     "path": "music-composition/references/genres/game-music.md",
+     "sha256": "847ded1fae00ca7c6d9c3fde8465ee0db2691f6907bb0c310cfae8f45e2fae35",
+     "size": 20895
+    },
+    {
+     "path": "music-composition/references/genres/gospel-and-ccm.md",
+     "sha256": "8ed8235606fc008061bf2b476fd3a653c44b4e9bb61186f40a392d493bbc5c94",
+     "size": 9881
+    },
+    {
+     "path": "music-composition/references/genres/hip-hop-rnb.md",
+     "sha256": "899fbff8c722cd5bcce690d4983e4dccd90f470ac929a8fc0785f61f41a38b9e",
+     "size": 13421
+    },
+    {
+     "path": "music-composition/references/genres/jazz-styles.md",
+     "sha256": "c0a27de55685869fd99724effe85bc82500d765000d2705b65a57e6bbf0d7304",
+     "size": 13205
+    },
+    {
+     "path": "music-composition/references/genres/korean-traditional.md",
+     "sha256": "345f1b694f53bae51ce526953fe985826df627aec57ac16593b2579cdbe156a6",
+     "size": 23962
+    },
+    {
+     "path": "music-composition/references/genres/kpop-jpop.md",
+     "sha256": "e346b7a6028708e679ec8d45bace1386dc7d7fcf95481d39acc4164472fbf3a3",
+     "size": 14568
+    },
+    {
+     "path": "music-composition/references/genres/latin-pop-and-reggaeton.md",
+     "sha256": "cab019b76d7b0e58ae95f829b4c37deb135b560eec9ff63158dce5fc1a4d1c6c",
+     "size": 7977
+    },
+    {
+     "path": "music-composition/references/genres/media-and-commercial-music.md",
+     "sha256": "451e8ab9bb80fe74b8393c7de6a33886a171f66840736281c18ed76cff84e732",
+     "size": 19390
+    },
+    {
+     "path": "music-composition/references/genres/mena-pop.md",
+     "sha256": "30e40525cbf378d5566d88f793c28fd28ea5a0e1c2671ba710d2e087e38002bf",
+     "size": 8136
+    },
+    {
+     "path": "music-composition/references/genres/metal-punk-hardcore.md",
+     "sha256": "22b3302faf3b59e4ba5334a00e5dcd23b15d6b4833d64a2220aae17050beb984",
+     "size": 11090
+    },
+    {
+     "path": "music-composition/references/genres/minor-and-hybrid-genres.md",
+     "sha256": "dff3f41d33c4fce264bae4a90e63588fbfdcf8f6ecbf2af9e73eaab1075f4d3c",
+     "size": 12206
+    },
+    {
+     "path": "music-composition/references/genres/musical-theatre.md",
+     "sha256": "6cef5d87d797fb3f6b8e6b3f18d3457094af3aa8cab37e324b874ceada85a119",
+     "size": 15587
+    },
+    {
+     "path": "music-composition/references/genres/pop-rock.md",
+     "sha256": "c1835fe7e120ab8b9ffc0844e0c0147a27fdb4bb9329ed441a61891e19485af5",
+     "size": 13780
+    },
+    {
+     "path": "music-composition/references/genres/regional-scene-starters.md",
+     "sha256": "a63febf4c8fe6a6b885ec5878c88cf991d2f123b0b3d86d6850c58bd889be8f0",
+     "size": 8409
+    },
+    {
+     "path": "music-composition/references/genres/south-asian-film-pop.md",
+     "sha256": "07266270267c895ba6070c4373f7c62afac6ba4a8eeb345478f540b8b08ed581",
+     "size": 8440
+    },
+    {
+     "path": "music-composition/references/harmony/chord-construction.md",
+     "sha256": "e854db3458d31bbb8cc3d798ff0e52d40318521f19028b5247ea90bceed465ef",
+     "size": 13255
+    },
+    {
+     "path": "music-composition/references/harmony/chromatic-harmony.md",
+     "sha256": "dd6e194a461db8dd6f43bcfec766da2184d2c3b9e12a86c9656297264aa0b98e",
+     "size": 14645
+    },
+    {
+     "path": "music-composition/references/harmony/functional-harmony.md",
+     "sha256": "94dbfc031c4bce7ba2636c1e0e527753ef069f0226e32ea319e17b8262c64694",
+     "size": 13681
+    },
+    {
+     "path": "music-composition/references/harmony/jazz-harmony.md",
+     "sha256": "4bf659b658ed60e10aa9fb7d2a7ad49cb85aaacbfd3440600ca40360f24d4042",
+     "size": 15841
+    },
+    {
+     "path": "music-composition/references/harmony/modal-harmony.md",
+     "sha256": "fc146bcf614e4639a4c00f8520cbcc0b0f7f188e0decde96e0f71ed64c5f5327",
+     "size": 15267
+    },
+    {
+     "path": "music-composition/references/harmony/modulation.md",
+     "sha256": "b427f63411b5a01fec1e933d7dceb3feac0fba81f0c9a1d92b20b0ef9a75e3f8",
+     "size": 14097
+    },
+    {
+     "path": "music-composition/references/harmony/reharmonization.md",
+     "sha256": "330bbedc7eaf61039973a90e79229b8053a11e3a257a4496bca2864f8625b8ca",
+     "size": 15890
+    },
+    {
+     "path": "music-composition/references/harmony/voice-leading.md",
+     "sha256": "049041106f759405eaf82fa65d14e6d6eb6af9953c6fe380bb45f66abad3656c",
+     "size": 15643
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/bass.md",
+     "sha256": "0b4d706b1add152316edabf1ffeb20cac3df1dbf6f72ee1c352060162bd976a6",
+     "size": 4262
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/brass.md",
+     "sha256": "64b994343c59740cd032a408bf8d0d192afb71dae6cc622592db3b98205fdfc7",
+     "size": 4015
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/drums-percussion.md",
+     "sha256": "3e826b8a681b4ccbb2213f4444ae1a15323d522d9fc851d9af412de64d1164c9",
+     "size": 5452
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/guitar.md",
+     "sha256": "f859d5036b2be4158b251e0d7cf80c6f35b2bb8b8bd3db3ef47acb809778246f",
+     "size": 4988
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/overview.md",
+     "sha256": "069b3d0ccdcf413100ae82b562486ea4441388737f155dc624fc3a9e76483f15",
+     "size": 4610
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/piano-keyboards.md",
+     "sha256": "b23d83b16bd2af54988df612e5beecfab8458b1ccde5ff850f4fd7ff8587e59f",
+     "size": 4290
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/strings.md",
+     "sha256": "33a46f86f913a9a9bac63add26698ab1f9c3091f376971e7be21a65778f46a92",
+     "size": 4864
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/vocals.md",
+     "sha256": "c4ce365cb25f1fe7d1f5e08ffa600a9e4020d1111618101eb3d29e37897e8a06",
+     "size": 6046
+    },
+    {
+     "path": "music-composition/references/instrument-idiom/winds.md",
+     "sha256": "c4cfcf4c3b08c36ebe7b3f4253d0b45c7bae6681e21100483f07457408d9808b",
+     "size": 4522
+    },
+    {
+     "path": "music-composition/references/melody/melodic-construction.md",
+     "sha256": "f014aa2e41495ea04427f1ca1992285e673e82a0f141eb59c13143593222e532",
+     "size": 15866
+    },
+    {
+     "path": "music-composition/references/melody/motivic-development.md",
+     "sha256": "82c3d0b8091fe8dd530b103bdca6ba43d3985ab153bedd53d8ce6a2cb475a3f8",
+     "size": 15444
+    },
+    {
+     "path": "music-composition/references/melody/phrase-structure.md",
+     "sha256": "47eca52eeccbb80342cd49a282bdb3b0ea4142d2c26970400b128d9186f2edfe",
+     "size": 14507
+    },
+    {
+     "path": "music-composition/references/orchestration/arrangement-density.md",
+     "sha256": "c177a4fe9f6a37e751f3ecd4d3aa03b39f78a447a343d1334892d9e02fd7d2f5",
+     "size": 16015
+    },
+    {
+     "path": "music-composition/references/orchestration/choral-writing.md",
+     "sha256": "1691eaf293e21d8f9f32a6eb7208cabb16b7b5a79b7fe693061b2cbb989c4ace",
+     "size": 18593
+    },
+    {
+     "path": "music-composition/references/orchestration/instruments-ranges-character.md",
+     "sha256": "6a337f86303a9013af89934b7b87201be11db071c0e99a7b5005ef3015c47878",
+     "size": 19083
+    },
+    {
+     "path": "music-composition/references/orchestration/voicing-and-texture.md",
+     "sha256": "6517551a2810cfe82ffd7cf2e8612e350e88d5b7d9626091aefc658922cad581",
+     "size": 18044
+    },
+    {
+     "path": "music-composition/references/production-aware/arrangement-for-mix.md",
+     "sha256": "9d68a13939e2f5615c89f31f481ce6ee4f2eb4c67d52747ebe9e5bd73152a9fa",
+     "size": 14335
+    },
+    {
+     "path": "music-composition/references/production-aware/energy-and-dynamics.md",
+     "sha256": "2cb42c440944476665ec1d93b603b812163d4c33122b8dfba2685907e1792572",
+     "size": 14723
+    },
+    {
+     "path": "music-composition/references/production-aware/pre-production-decisions.md",
+     "sha256": "9d6e937d88d72b94dfec31ab27b0d7bdc0dfd26343c3a788644adbffda5fe2f6",
+     "size": 17483
+    },
+    {
+     "path": "music-composition/references/research/reference-track-digging.md",
+     "sha256": "79029efa55fd87f2702493cde04b71100ccdf37fe374374c51a235eac41dfd97",
+     "size": 7956
+    },
+    {
+     "path": "music-composition/references/research/regional-trend-evolution-analysis.md",
+     "sha256": "2a2391ca2f3997513bc160f6d5ede3ed1abf1eac30393f8f2123cb92e41439b8",
+     "size": 12797
+    },
+    {
+     "path": "music-composition/references/research/style-reference-and-copyright.md",
+     "sha256": "f014c06ffb1a776f811a4b7a2763d92056fe216daa14c262b79d9f2805cf5aca",
+     "size": 9478
+    },
+    {
+     "path": "music-composition/references/research/user-listening-context-and-streaming-services.md",
+     "sha256": "3fae54b851e06277590e350229325ec6d35d2d39bcf53309511c3e50f5b399e1",
+     "size": 10491
+    },
+    {
+     "path": "music-composition/references/research/web-music-trend-research.md",
+     "sha256": "a3b29df817f9646049d0b9fac9d604b901a517a73d4387719ca6e38eeebf4742",
+     "size": 8260
+    },
+    {
+     "path": "music-composition/references/rhythm-groove/groove-and-feel.md",
+     "sha256": "cd7b87da45550c68f211f1f65dd7c7ff864e44d173086d182cbc01f44185dc08",
+     "size": 15157
+    },
+    {
+     "path": "music-composition/references/rhythm-groove/odd-meters-polyrhythm.md",
+     "sha256": "1440917d9c8abbd98f24cb51f30f706e3796d8b2f7bb84cdf129e43d616c50ce",
+     "size": 14375
+    },
+    {
+     "path": "music-composition/references/rhythm-groove/rhythmic-devices.md",
+     "sha256": "d026489e6d86faec58b8d1d98ad33db7fff77b359d95114cadd92ced812efefd",
+     "size": 13974
+    },
+    {
+     "path": "music-composition/references/songwriting/hooks-and-memorability.md",
+     "sha256": "c3944c68585106dd984f2a987659f258bf11ad8221dc786d80a435eda660ebed",
+     "size": 13141
+    },
+    {
+     "path": "music-composition/references/songwriting/lyric-writing.md",
+     "sha256": "e4cedffb71c311d420854ebf951dd032f7b5376d06b80b7efb1560fa290481cb",
+     "size": 15880
+    },
+    {
+     "path": "music-composition/references/songwriting/topline-craft.md",
+     "sha256": "7ee93fa6048d247e8c66d664f718aa029825d6742b56d664224531faa8b42bed",
+     "size": 15150
+    },
+    {
+     "path": "music-composition/references/techniques/20th-century-techniques.md",
+     "sha256": "c6645dcf37893141d36607f02b76e4f99ced26af3e3b72a46e72eeb9502d8ba6",
+     "size": 15383
+    },
+    {
+     "path": "music-composition/references/techniques/algorithmic-and-AI-assisted.md",
+     "sha256": "57c2ab576f35cf1ad68d6c091ac53e95d603343f3fb0a60e9ce3f049f8b905da",
+     "size": 21375
+    },
+    {
+     "path": "music-composition/references/techniques/constraint-based-composition.md",
+     "sha256": "1992ce456a429284ef11e987dd9d5370e11d17291da1403c6ee5eee0d7cfd58a",
+     "size": 15794
+    },
+    {
+     "path": "music-composition/references/techniques/microtonal.md",
+     "sha256": "79cda6120ec57b44af93d44cad8392a27554d8d1af570f858e4d8f12cbb5177c",
+     "size": 17409
+    },
+    {
+     "path": "music-composition/references/techniques/theme-and-variation.md",
+     "sha256": "aa22bdc3e6b060fc0e9de42e2156480c7a0848de02fa0efc34a4180e515b80f1",
+     "size": 13249
+    }
+   ]
+  },
+  {
+   "id": "builtin:music-evaluate",
+   "folder": "music-evaluate",
+   "upstream": "sb-dev/music-production-skills",
+   "commit": "aa3933bc87f54a48ec018bb868bf6385b340db22",
+   "upstream_path": "skills/music-evaluate",
+   "license": "MIT",
+   "author": "Music Production Skills contributors",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [
+    "Execution prerequisites",
+    "Optional customisation pack",
+    "Deterministic tools",
+    "Audio sketches",
+    "Technical QC",
+    "References",
+    "Bundled files",
+    "Works well with",
+    "Going further",
+    "What to look for in the request",
+    "Output format",
+    "Reporting"
+   ],
+   "why": "Evaluate by lifecycle stage, protect approved/locked decisions, route each defect to the stage that owns it",
+   "files": [
+    {
+     "path": "music-evaluate/LICENSE",
+     "sha256": "a23f004a5ca79b1cd4b0aac873983b92369d7a45329edb9f79ee0893d06c70ef",
+     "size": 1093
+    },
+    {
+     "path": "music-evaluate/SKILL.md",
+     "sha256": "8e1f439a00e157d321356d643b8da8cacd58cabd4a82f11ce69a7e7414142984",
+     "size": 4203
+    },
+    {
+     "path": "music-evaluate/SOURCE.json",
+     "sha256": "8090eafb8ffd4fe6a7454fe5b286737e4f627f0ce7f9938d1116955b8a7a376b",
+     "size": 679
+    },
+    {
+     "path": "music-evaluate/references/arrangement-rubric.md",
+     "sha256": "4c7f2c7a3152b94985133f6c0f82a4bc86afe62f1ff7fa6d31795b2fb56c5eb0",
+     "size": 377
+    },
+    {
+     "path": "music-evaluate/references/composition-rubric.md",
+     "sha256": "ad75f96dac2fb8850a2ae7f1b63ed73ab0a2a25590dda50f4e5dff01c8c6205a",
+     "size": 513
+    },
+    {
+     "path": "music-evaluate/references/evaluation-lifecycle.md",
+     "sha256": "4c82343bf79afec1a07c42a07a71b7346e9520ad2bf418b3932c35eb01bafb8f",
+     "size": 519
+    },
+    {
+     "path": "music-evaluate/references/failure-routing.md",
+     "sha256": "427b5a25e554ace3d9348164ae16d3ea9366786fff690b05a3bb278edcb3e58b",
+     "size": 1239
+    },
+    {
+     "path": "music-evaluate/references/preservation.md",
+     "sha256": "1ae97ef08ffb9fce87075452a191db3901797a0a976767e0f231cacfa6d958a9",
+     "size": 959
+    },
+    {
+     "path": "music-evaluate/references/production-rubric.md",
+     "sha256": "1cca79f4ab99eff148e55e0552a82a348361094a0f3334ac3ac2203c8c69dd0f",
+     "size": 468
+    },
+    {
+     "path": "music-evaluate/references/technical-qc.md",
+     "sha256": "9cf318c2fc06c3b4d4e9c7f6b651a6a13ff6d590a144cd9e4b134bd5427b89b0",
+     "size": 460
+    }
+   ]
+  },
+  {
+   "id": "builtin:music-compose",
+   "folder": "music-compose",
+   "upstream": "sb-dev/music-production-skills",
+   "commit": "aa3933bc87f54a48ec018bb868bf6385b340db22",
+   "upstream_path": "skills/music-compose",
+   "license": "MIT",
+   "author": "Music Production Skills contributors",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [
+    "Execution prerequisites",
+    "Optional customisation pack",
+    "Deterministic tools",
+    "Audio sketches",
+    "Technical QC",
+    "References",
+    "Bundled files",
+    "Works well with",
+    "Going further",
+    "What to look for in the request",
+    "Output format",
+    "Reporting"
+   ],
+   "why": "Alternatives, selected/approved/locked decision states, scoped revision",
+   "files": [
+    {
+     "path": "music-compose/LICENSE",
+     "sha256": "a23f004a5ca79b1cd4b0aac873983b92369d7a45329edb9f79ee0893d06c70ef",
+     "size": 1093
+    },
+    {
+     "path": "music-compose/SKILL.md",
+     "sha256": "69e0a05f791bea6715b010876b9645f6fc2c7fc12b8c26a88dce7808cbdd3d37",
+     "size": 5123
+    },
+    {
+     "path": "music-compose/SOURCE.json",
+     "sha256": "c78626cca8e770ead54bef208894b71e97865ad8043fcc9b806316f6ae6c6152",
+     "size": 588
+    },
+    {
+     "path": "music-compose/references/arrangement.md",
+     "sha256": "0200ce8da2ff79d03b4df8cafff40b78a58e35d12f6cd8b0325ca141914f148d",
+     "size": 665
+    },
+    {
+     "path": "music-compose/references/composition.md",
+     "sha256": "816adca342a76126982463c8858ca695ad983a54886a29c065560441cd1d654c",
+     "size": 925
+    },
+    {
+     "path": "music-compose/references/drafting-and-selection.md",
+     "sha256": "bde4be52cb568467d22c2da68da7234aab24cd5d7651345b19804d120b505903",
+     "size": 958
+    },
+    {
+     "path": "music-compose/references/midi.md",
+     "sha256": "76bf65f3505478dbd4b2ee20471c8e349c7fd0babab9c3dd3bee5ccbbcf212a8",
+     "size": 667
+    },
+    {
+     "path": "music-compose/references/reference-analysis.md",
+     "sha256": "15d362d481cf778fdb6d6265ec14ed21d286c45bfe7152f669291ad6d206b4de",
+     "size": 587
+    }
+   ]
+  },
+  {
+   "id": "builtin:arrangement-advisor",
+   "folder": "arrangement-advisor",
+   "upstream": "Vocaler-AI/music-skills",
+   "commit": "4479796b9f05e2fc300fee1a848b0effa1993b8a",
+   "upstream_path": "skills/arrangement-advisor",
+   "license": "MIT",
+   "author": "Vocaler",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [
+    "Execution prerequisites",
+    "Optional customisation pack",
+    "Deterministic tools",
+    "Audio sketches",
+    "Technical QC",
+    "References",
+    "Bundled files",
+    "Works well with",
+    "Going further",
+    "What to look for in the request",
+    "Output format",
+    "Reporting"
+   ],
+   "why": "What plays in each section, builds and drops, fixing a static or crowded track",
+   "files": [
+    {
+     "path": "arrangement-advisor/LICENSE",
+     "sha256": "bf6fe594ec6b5404a2416859760247e233257bf275c189fd790d79ca197ecf8d",
+     "size": 1064
+    },
+    {
+     "path": "arrangement-advisor/SKILL.md",
+     "sha256": "3ab4dbbf7a4ffa9c883276e6d7744748346136c2d77a520bcd772de84b000a50",
+     "size": 3455
+    },
+    {
+     "path": "arrangement-advisor/SOURCE.json",
+     "sha256": "b0924d7c8df0307b16c135e70081c9228a403f15c81a1cdee74d806a2a03769d",
+     "size": 382
+    }
+   ]
+  },
+  {
+   "id": "builtin:melody-writer",
+   "folder": "melody-writer",
+   "upstream": "Vocaler-AI/music-skills",
+   "commit": "4479796b9f05e2fc300fee1a848b0effa1993b8a",
+   "upstream_path": "skills/melody-writer",
+   "license": "MIT",
+   "author": "Vocaler",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [
+    "Execution prerequisites",
+    "Optional customisation pack",
+    "Deterministic tools",
+    "Audio sketches",
+    "Technical QC",
+    "References",
+    "Bundled files",
+    "Works well with",
+    "Going further",
+    "What to look for in the request",
+    "Output format",
+    "Reporting"
+   ],
+   "why": "Motif, phrase, contour and range for toplines and lead lines",
+   "files": [
+    {
+     "path": "melody-writer/LICENSE",
+     "sha256": "bf6fe594ec6b5404a2416859760247e233257bf275c189fd790d79ca197ecf8d",
+     "size": 1064
+    },
+    {
+     "path": "melody-writer/SKILL.md",
+     "sha256": "d6e024ce8d2f8fdd29c1fe586df6d4d9c202110dea5e3a7664da46a67016380c",
+     "size": 5374
+    },
+    {
+     "path": "melody-writer/SOURCE.json",
+     "sha256": "da09e404da8b321677e720bddd255d7c7553e4b227c4d6fafffbe7a3e315446f",
+     "size": 376
+    }
+   ]
+  },
+  {
+   "id": "builtin:hook-writer",
+   "folder": "hook-writer",
+   "upstream": "Vocaler-AI/music-skills",
+   "commit": "4479796b9f05e2fc300fee1a848b0effa1993b8a",
+   "upstream_path": "skills/hook-writer",
+   "license": "MIT",
+   "author": "Vocaler",
+   "default_enabled": true,
+   "execution_supported": false,
+   "skip_headings": [
+    "Execution prerequisites",
+    "Optional customisation pack",
+    "Deterministic tools",
+    "Audio sketches",
+    "Technical QC",
+    "References",
+    "Bundled files",
+    "Works well with",
+    "Going further",
+    "What to look for in the request",
+    "Output format",
+    "Reporting"
+   ],
+   "why": "Memorable hooks: repeated rhythmic and melodic motifs, chorus lift",
+   "files": [
+    {
+     "path": "hook-writer/LICENSE",
+     "sha256": "bf6fe594ec6b5404a2416859760247e233257bf275c189fd790d79ca197ecf8d",
+     "size": 1064
+    },
+    {
+     "path": "hook-writer/SKILL.md",
+     "sha256": "0c71fe942c8c03d4d95325143d9da29c0bba7ed97a1208a8c63de9c173fc363a",
+     "size": 5063
+    },
+    {
+     "path": "hook-writer/SOURCE.json",
+     "sha256": "63fe0b94e70588992310b59804d5bf0b0399d1440f0db3a20677fa188852d5bb",
+     "size": 374
+    }
+   ]
+  },
+  {
+   "id": "builtin:prosody-checker",
+   "folder": "prosody-checker",
+   "upstream": "Vocaler-AI/music-skills",
+   "commit": "4479796b9f05e2fc300fee1a848b0effa1993b8a",
+   "upstream_path": "skills/prosody-checker",
+   "license": "MIT",
+   "author": "Vocaler",
+   "default_enabled": false,
+   "execution_supported": false,
+   "skip_headings": [
+    "Execution prerequisites",
+    "Optional customisation pack",
+    "Deterministic tools",
+    "Audio sketches",
+    "Technical QC",
+    "References",
+    "Bundled files",
+    "Works well with",
+    "Going further",
+    "What to look for in the request",
+    "Output format",
+    "Reporting"
+   ],
+   "why": "Lyric stress and syllables against the beat; off unless you write lyrics",
+   "files": [
+    {
+     "path": "prosody-checker/LICENSE",
+     "sha256": "bf6fe594ec6b5404a2416859760247e233257bf275c189fd790d79ca197ecf8d",
+     "size": 1064
+    },
+    {
+     "path": "prosody-checker/SKILL.md",
+     "sha256": "ee497e5c1ca468e46d913ac0085b08b605815538a131d64ccc92808410365203",
+     "size": 4558
+    },
+    {
+     "path": "prosody-checker/SOURCE.json",
+     "sha256": "3fe5b874b1e89342ee83b261d7b46555c879c707706ee51a6f2d560ea160aed2",
+     "size": 378
+    }
+   ]
+  }
+ ]
+}

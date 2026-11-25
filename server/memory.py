@@ -425,8 +425,8 @@ class Store:
             rival = next((x for x in rs[1:] if x["picks"] >= 2), None)
             gname = midigen.STYLES[style]["name"] if style in midigen.STYLES else style
             rn = role_name.get(role, (role, role))
-            es = f"En {gname}, para {rn[0]}, prefiero «{top['sound']}» (lo elegí de oído {top['picks']} veces)"
-            en = f"In {gname}, for {rn[1]}, I prefer «{top['sound']}» (picked by ear {top['picks']} times)"
+            es = f"En {gname}, para {rn[0]}, prefiero «{top['sound']}» (lo elegí {top['picks']} veces, de oído o cambiándolo yo)"
+            en = f"In {gname}, for {rn[1]}, I prefer «{top['sound']}» (picked {top['picks']} times, by ear or swapping it myself)"
             subject = f"sound|{role}|{style}"
             with self.lock:
                 have = self.db.execute("SELECT * FROM memories WHERE subject = ? AND scope = 'genre' AND scope_key = ? "
@@ -447,6 +447,103 @@ class Store:
                     self.db.execute("UPDATE memories SET note = ? WHERE id = ?",
                                     (f"también elegiste «{rival['sound']}» {rival['picks']} veces|you also picked «{rival['sound']}» {rival['picks']} times", m["id"]))
             made.append(m)
+        return made
+
+    # ------------------------------------------------------------ 0.21: elegir entre opciones del Maestro
+    OPTION_TRAITS = {
+        # rasgo: (texto es, texto en, opuesto)
+        "sparser": ("la más sencilla (menos notas)", "the simplest one (fewer notes)", "denser"),
+        "denser": ("la más llena (más notas)", "the busiest one (more notes)", "sparser"),
+        "slower": ("la más lenta", "the slowest one", "faster"),
+        "faster": ("la más rápida", "the fastest one", "slower"),
+        "fewer_layers": ("la que tiene menos pistas", "the one with fewer tracks", "more_layers"),
+        "more_layers": ("la que tiene más pistas", "the one with more tracks", "fewer_layers"),
+    }
+
+    @staticmethod
+    def option_traits(candidates, chosen):
+        """Rasgos de la opción elegida frente a las otras (sin IA): más sencilla o más llena, más lenta o más rápida,
+        con menos o más pistas. Solo cuenta una diferencia clara (25 % en notas, 4 BPM)."""
+        def notes(c):
+            n = 0
+            for t in ((c.get("changes") or {}).get("pistas") or []):
+                for q in re.findall(r'"([^"]*)"', str(t.get("codigo") or "")):
+                    n += sum(1 for w in re.split(r"[\s\[\]<>{}(),|]+", q) if w and w not in ("~", "."))
+            return n
+
+        def bpm(c):
+            try:
+                return float((c.get("changes") or {}).get("bpm") or 0)
+            except (TypeError, ValueError):
+                return 0.0
+
+        def layers(c):
+            return len(((c.get("changes") or {}).get("pistas")) or [])
+        if not isinstance(candidates, list) or not (0 <= int(chosen) < len(candidates)) or len(candidates) < 2:
+            return set()
+        me, others = candidates[int(chosen)], [c for k, c in enumerate(candidates) if k != int(chosen)]
+        out = set()
+        n0, no = notes(me), [notes(c) for c in others]
+        avg = sum(no) / len(no)
+        if avg and n0 <= 0.75 * avg and n0 < min(no):
+            out.add("sparser")
+        elif avg and n0 >= 1.25 * avg and n0 > max(no):
+            out.add("denser")
+        b0, bo = bpm(me), [bpm(c) for c in others if bpm(c)]
+        if b0 and bo:
+            if b0 <= min(bo) - 4:
+                out.add("slower")
+            elif b0 >= max(bo) + 4:
+                out.add("faster")
+        l0, lo = layers(me), [layers(c) for c in others]
+        if l0 < min(lo):
+            out.add("fewer_layers")
+        elif l0 > max(lo):
+            out.add("more_layers")
+        return out
+
+    def learn_from_option_picks(self, votes, min_picks=3):
+        """Si al elegir entre opciones del Maestro repites un rasgo en un género (p. ej. «la más sencilla» 3 de 4
+        veces y casi nunca lo contrario), propone una memoria de género. SIEMPRE a la bandeja: decides tú.
+        votes: [{kind: "pick", style, candidates[{title, changes}], chosen}]"""
+        import midigen
+        counts = {}
+        for v in votes or []:
+            style = str(v.get("style") or ((v.get("course") or {}).get("id") if isinstance(v.get("course"), dict) else "") or "")
+            if not style:
+                continue
+            try:
+                tr = self.option_traits(v.get("candidates"), int(v.get("chosen")))
+            except (TypeError, ValueError):
+                continue
+            c = counts.setdefault(style, {"n": 0})
+            c["n"] += 1
+            for t in tr:
+                c[t] = c.get(t, 0) + 1
+        made = []
+        for style, c in counts.items():
+            gname = midigen.STYLES[style]["name"] if style in midigen.STYLES else style
+            for trait, (tes, ten, opp) in self.OPTION_TRAITS.items():
+                k = c.get(trait, 0)
+                if k < min_picks or c.get(opp, 0) > 1 or k < 0.5 * c["n"]:
+                    continue
+                subject = f"optpick|{trait}|{style}"
+                es = f"En {gname}, cuando me das varias opciones suelo elegir {tes} ({k} de {c['n']} veces)"
+                en = f"In {gname}, when you give me options I usually pick {ten} ({k} of {c['n']} times)"
+                with self.lock:
+                    have = self.db.execute("SELECT * FROM memories WHERE subject = ? AND status != 'rejected' ORDER BY id DESC LIMIT 1",
+                                           (subject,)).fetchone()
+                if have:
+                    if have["evidence"] != k:
+                        with self.lock, self.db:
+                            self.db.execute("UPDATE memories SET evidence = ?, text = ?, text_en = ? WHERE id = ?", (k, es, en, have["id"]))
+                    continue
+                with self.lock:
+                    gone = self.db.execute("SELECT 1 FROM memories WHERE subject = ? AND status = 'rejected'", (subject,)).fetchone()
+                if gone:
+                    continue    # ya la rechazaste: no se vuelve a proponer
+                made.append(self.add(es, "genre", style, source="picks", subject=subject, evidence=k, clear=False,
+                                     auto_approve=False, by="auto", text_en=en))
         return made
 
     # ------------------------------------------------------------ estilos
