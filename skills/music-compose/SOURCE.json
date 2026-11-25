@@ -1,0 +1,15 @@
+{
+  "url": "https://github.com/sb-dev/music-production-skills/tree/aa3933bc87f54a48ec018bb868bf6385b340db22/skills/music-compose",
+  "license": "MIT",
+  "author": "Music Production Skills contributors",
+  "commit": "aa3933bc87f54a48ec018bb868bf6385b340db22",
+  "copied": [
+    "SKILL.md",
+    "references/arrangement.md",
+    "references/composition.md",
+    "references/drafting-and-selection.md",
+    "references/midi.md",
+    "references/reference-analysis.md"
+  ],
+  "note": "Text files only, copied verbatim. Scripts, evals and assets were left out: Tidal Studio never runs them."
+}

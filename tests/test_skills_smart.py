@@ -8,6 +8,7 @@ import tempfile
 import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "server"))
+import knowledge_store  # noqa: E402
 import plugins  # noqa: E402
 import skills  # noqa: E402
 
@@ -41,8 +42,10 @@ class SmartTest(unittest.TestCase):
         for i in range(12):
             _skill(skills.BUILTIN_DIR, f"other-{i}", "Nothing musical here.\n## Knitting\nYarn.", f"Knitting patterns {i}")
         self.cfg = {"skills": {}}
+        knowledge_store.configure(os.path.join(self.tmp, "knowledge.sqlite"))
 
     def tearDown(self):
+        knowledge_store.close()
         plugins.PLUGIN_DIR, skills.BUILTIN_DIR, skills.USER_DIR = self.old
         skills._SEC_CACHE.clear()
         shutil.rmtree(self.tmp)

@@ -172,8 +172,13 @@ class Monitor:
         sk = [r.layers.get("skills") or {} for r in done]
         sent = sum(x.get("chars") or 0 for x in sk if x.get("whole_chars") is not None)
         whole = sum(x.get("whole_chars") or 0 for x in sk if x.get("whole_chars") is not None)
+        # 0.21: tokens ESTIMADOS de skills, segundas llamadas por «mas_skills» (cuentan en el coste total) y respaldos
+        est = sum(x.get("tokens_est") or 0 for x in sk)
+        follow = sum(1 for x in sk if x.get("extra"))
+        fallback = sum(1 for x in sk if x.get("fallback"))
         return {"requests": n, "without_llm": local, "share_without_llm": round(local / n, 3) if n else 0, "tokens": toks,
-                "skills_chars": sent, "skills_whole": whole, "skills_saved": round(1 - sent / whole, 3) if whole else 0}
+                "skills_chars": sent, "skills_whole": whole, "skills_saved": round(1 - sent / whole, 3) if whole else 0,
+                "skills_tokens_est": est, "skills_followups": follow, "skills_fallbacks": fallback}
 
 
 class Request:

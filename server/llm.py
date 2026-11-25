@@ -420,6 +420,44 @@ def auth_mode(cfg):
     return m
 
 
+_FLAGS = {}
+ISOLATION_MODES = ("auto", "safe_mode", "disable_cli_skills", "off")
+
+
+def cli_flags(exe):
+    """Opciones que entiende ESTA versión de `claude` (se mira `claude --help` una vez por ejecutable y fecha)."""
+    try:
+        key = (exe, os.path.getmtime(exe))
+    except (OSError, TypeError):
+        key = (exe, 0)
+    if key not in _FLAGS:
+        try:
+            r = subprocess.run([exe, "--help"], capture_output=True, text=True, timeout=20, encoding="utf-8", errors="replace")
+            text = (r.stdout or "") + (r.stderr or "")
+        except (OSError, subprocess.TimeoutExpired):
+            text = ""
+        _FLAGS[key] = {f for f in ("--safe-mode", "--disable-slash-commands", "--setting-sources") if f in text}
+    return _FLAGS[key]
+
+
+def isolation_args(cfg, exe):
+    """(opciones, nota) para que el `claude -p` de Maestro no use las skills, plugins, hooks ni CLAUDE.md globales del
+    usuario: Maestro ya manda sus propias skills (las de la app, sus plugins y my-skills). No toca nada de tu Claude
+    Code: solo cómo se lanza esta llamada. Si tu versión no tiene esas opciones se dice en el diagnóstico."""
+    mode = str(((cfg.get("claudecode") or {}).get("skill_isolation")) or "auto")
+    if mode not in ISOLATION_MODES:
+        mode = "auto"
+    if mode == "off":
+        return [], "off"
+    have = cli_flags(exe) if exe else set()
+    want = {"auto": ["--safe-mode", "--disable-slash-commands"], "safe_mode": ["--safe-mode"],
+            "disable_cli_skills": ["--disable-slash-commands"]}[mode]
+    args = [f for f in want if f in have]
+    missing = [f for f in want if f not in have]
+    note = mode + (" · " + " ".join(args) if args else "") + (f" · tu claude no tiene {' '.join(missing)}" if missing else "")
+    return args, note
+
+
 def cli_env(cfg, exe):
     """Entorno para `claude`: su carpeta en el PATH (node de nvm vive ahí) y las credenciales según el modo."""
     c = cfg.get("claudecode") or {}
@@ -478,8 +516,9 @@ def claude_run(cfg, system, prompt, model=None, timeout=None, on_event=None):
         with open(sp, "w", encoding="utf-8") as f:
             f.write(join_system(system))
         fmt = ["--output-format", "stream-json", "--verbose", "--include-partial-messages"] if on_event else ["--output-format", "json"]
+        iso, res["isolation"] = isolation_args(cfg, exe)
         cmd = [exe, "-p"] + fmt + ["--tools", "", "--no-session-persistence",
-                                   "--strict-mcp-config", "--system-prompt-file", sp]
+                                   "--strict-mcp-config"] + iso + ["--system-prompt-file", sp]
         if resolved:
             cmd += ["--model", resolved]
         res["cmd"] = ["<system.txt>" if a == sp else a for a in cmd]

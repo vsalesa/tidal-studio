@@ -168,6 +168,17 @@ def diagnose_claudecode(cfg, lang):
                              "env_removed": r["env_removed"], "used_models": r["used_models"],
                              "api_error_status": d.get("api_error_status"), "api_error_type": d.get("api_error_type"),
                              "result": d.get("result"), "stdout": r["stdout"][-3000:], "stderr": r["stderr"][-2000:]}})
+    # 0.21: Maestro lanza claude sin tus skills, plugins, hooks ni CLAUDE.md globales (solo usa los suyos)
+    iso = r.get("isolation") or ""
+    steps.append({"name": t("Aislamiento de tus skills globales", "Isolation from your global skills"),
+                  "ok": bool(iso) and "no tiene" not in iso and not iso.startswith("off"),
+                  "summary": iso or t("sin datos", "no data"),
+                  "detail": {"isolation": iso, "flags_supported": sorted(llm.cli_flags(r["exe"])) if r.get("exe") else []}})
+    if not ok and iso and not iso.startswith("off"):
+        hints.append(t("Si falla solo desde el estudio, prueba a poner claudecode.skill_isolation en «off» en config.json "
+                       "(Maestro dejará de aislarse de tus skills globales).",
+                       "If it only fails from the studio, try setting claudecode.skill_isolation to «off» in config.json "
+                       "(Maestro will stop isolating itself from your global skills)."))
     if not ok and (d.get("api_error_status") == 404 or "model" in str(d.get("result", "")).lower()):
         hints.append(t("Ese modelo no lo acepta tu Claude Code. Pulsa «Probar modelos» y elige uno que funcione. "
                        "Si es un modelo muy nuevo, actualiza Claude Code (claude update).",

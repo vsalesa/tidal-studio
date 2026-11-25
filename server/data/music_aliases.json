@@ -1,0 +1,441 @@
+{
+ "version": 1,
+ "_about": "Vocabulario musical español ↔ inglés para buscar en las skills (0.21). 'expand': una palabra añade esas otras a la búsqueda (las skills suelen estar en inglés). 'phrases': expresiones de varias palabras, que van primero. 'context': palabras que solo se traducen así dentro de un género o un papel (marcha no es «march» fuera del merengue; clave es el ritmo, no la tonalidad). 'tags': etiquetas de género y papel que se ponen a una sección si aparecen en su título o su ruta, o 3+ veces en su texto. 'roles_multi': papeles que juntos piden contexto del padre (interdependientes). Edítalo con cuidado: cambia el índice la próxima vez que arranque Maestro. 'idioms': expresiones españolas que se quitan del texto antes de buscar (y se cambian por esas palabras): «al final» no es «final chorus».",
+ "phrases": {
+  "bajo anticipado": "bass anticipation anticipated anticipatory bassline",
+  "estribillo pegadizo": "catchy chorus hook memorable",
+  "piano montuno": "montuno piano tumbao guajeo",
+  "llamada y respuesta": "call response",
+  "pregunta y respuesta": "call response antecedent consequent",
+  "voz principal": "lead vocal topline melody",
+  "linea melodica": "melodic line melody contour",
+  "línea melódica": "melodic line melody contour",
+  "cambio de tonalidad": "modulation key change",
+  "progresion de acordes": "chord progression harmony",
+  "progresión de acordes": "chord progression harmony",
+  "subida de energia": "energy build riser lift",
+  "subida de energía": "energy build riser lift",
+  "que suene vacio": "empty sparse arrangement",
+  "que suene vacío": "empty sparse arrangement",
+  "demasiado lleno": "crowded busy dense arrangement",
+  "muy repetitivo": "repetitive static variation",
+  "sección de metales": "horn section brass",
+  "seccion de metales": "horn section brass"
+ },
+ "expand": {
+  "acordes": "chords chord voicing harmony",
+  "acorde": "chord chords harmony",
+  "armonia": "harmony chords",
+  "ritmo": "rhythm groove beat",
+  "percusion": "percussion drums rhythm",
+  "bateria": "drums kit",
+  "bombo": "kick",
+  "caja": "snare",
+  "palmas": "clap claps",
+  "platillos": "cymbals hats",
+  "charles": "hihat hats",
+  "bajo": "bass bassline",
+  "melodia": "melody topline line",
+  "escala": "scale",
+  "escalas": "scales",
+  "mezcla": "mix mixing",
+  "efectos": "effects reverb delay",
+  "estructura": "structure form arrangement",
+  "forma": "form structure",
+  "arreglo": "arrangement arranging",
+  "arreglos": "arrangement arranging",
+  "orquestacion": "orchestration",
+  "orquesta": "orchestra orchestration",
+  "tempo": "tempo bpm",
+  "textura": "texture density",
+  "ambiente": "ambient atmosphere",
+  "acido": "acid",
+  "graves": "bass low",
+  "sintetizador": "synth synthesizer",
+  "variacion": "variation",
+  "transicion": "transition fill",
+  "relleno": "fill",
+  "redoble": "fill roll",
+  "subida": "build riser lift",
+  "estribillo": "chorus hook refrain",
+  "coro": "chorus backing",
+  "gancho": "hook",
+  "pegadiza": "catchy hook memorable",
+  "pegadizo": "catchy hook memorable",
+  "motivo": "motif",
+  "frase": "phrase",
+  "fraseo": "phrasing phrase",
+  "contorno": "contour",
+  "registro": "register range",
+  "tesitura": "range register",
+  "arpegio": "arpeggio",
+  "modulacion": "modulation key",
+  "tonalidad": "key tonality",
+  "letra": "lyrics lyric",
+  "silabas": "syllables",
+  "acentos": "stress accents",
+  "prosodia": "prosody stress syllables",
+  "puente": "bridge",
+  "estrofa": "verse",
+  "verso": "verse",
+  "triste": "sad minor melancholy",
+  "alegre": "happy major bright",
+  "contrapunto": "counterpoint countermelody",
+  "contramelodia": "countermelody counterline",
+  "voces": "voicing voices vocals",
+  "voz": "vocal voice",
+  "cantante": "singer vocal",
+  "swing": "swing groove feel",
+  "patron": "pattern",
+  "cancion": "song",
+  "maqueta": "demo sketch",
+  "evaluar": "evaluate evaluation critique",
+  "evalua": "evaluate evaluation",
+  "critica": "critique evaluation feedback",
+  "revisar": "review evaluate",
+  "corregir": "fix correction refine",
+  "mejorar": "improve refine",
+  "mejora": "improve refine",
+  "refinar": "refine refinement",
+  "bloqueada": "locked approved preserve",
+  "bloqueado": "locked approved preserve",
+  "candado": "locked lock preserve",
+  "aprobada": "approved",
+  "alternativas": "alternatives drafts options",
+  "borrador": "draft",
+  "borradores": "drafts",
+  "intro": "intro",
+  "final": "outro ending",
+  "salida": "outro",
+  "dinamica": "dynamics",
+  "energia": "energy",
+  "densidad": "density",
+  "vacio": "empty sparse",
+  "lleno": "crowded busy",
+  "repetitivo": "repetitive static",
+  "plano": "flat static",
+  "aburrido": "static repetitive flat",
+  "metales": "brass horns",
+  "trompeta": "trumpet brass",
+  "trombon": "trombone brass",
+  "saxo": "saxophone sax",
+  "guitarra": "guitar",
+  "requinto": "requinto lead guitar fill",
+  "acordeon": "accordion",
+  "teclado": "keys keyboard",
+  "cuerdas": "strings",
+  "violin": "violin strings",
+  "tambora": "tambora drum",
+  "guira": "guira scraper",
+  "guiro": "guiro scraper",
+  "conga": "conga congas",
+  "congas": "congas conga",
+  "timbal": "timbales timbal",
+  "timbales": "timbales",
+  "bongo": "bongo bongos",
+  "campana": "bell cowbell",
+  "cencerro": "cowbell bell",
+  "clave": "clave",
+  "tumbao": "tumbao bass",
+  "montuno": "montuno piano",
+  "guajeo": "guajeo montuno",
+  "mambo": "mambo",
+  "mona": "mona riff horns",
+  "contracanto": "countermelody",
+  "cierre": "ending cadence",
+  "cadencia": "cadence",
+  "groove": "groove feel",
+  "sincopa": "syncopation",
+  "sincopado": "syncopated syncopation",
+  "contratiempo": "offbeat syncopation",
+  "anticipacion": "anticipation anticipated",
+  "anticipado": "anticipation anticipated",
+  "chorus": "estribillo",
+  "hook": "gancho estribillo",
+  "bassline": "bajo",
+  "drums": "bateria percusion",
+  "arrangement": "arreglo",
+  "melody": "melodia",
+  "harmony": "armonia",
+  "rhythm": "ritmo",
+  "latin": "latino salsa",
+  "latino": "latin",
+  "latina": "latin",
+  "compas": "meter time signature bar",
+  "compases": "bars measures meter"
+ },
+ "context": {
+  "marcha": {
+   "if_genre": [
+    "merengue"
+   ],
+   "add": "merengue marcha"
+  },
+  "jaleo": {
+   "if_genre": [
+    "merengue"
+   ],
+   "add": "merengue jaleo"
+  },
+  "derecho": {
+   "if_genre": [
+    "bachata"
+   ],
+   "add": "bachata derecho"
+  },
+  "majao": {
+   "if_genre": [
+    "bachata"
+   ],
+   "add": "bachata majao"
+  },
+  "mambo": {
+   "if_genre": [
+    "bachata",
+    "merengue",
+    "salsa"
+   ],
+   "add": "mambo section"
+  },
+  "dembow": {
+   "if_genre": [],
+   "add": "dembow reggaeton"
+  },
+  "cascara": {
+   "if_genre": [],
+   "add": "cascara timbales"
+  },
+  "son": {
+   "if_genre": [
+    "salsa",
+    "son"
+   ],
+   "add": "son clave"
+  }
+ },
+ "tags": {
+  "genre": {
+   "salsa": [
+    "salsa"
+   ],
+   "timba": [
+    "timba"
+   ],
+   "son": [
+    "son cubano",
+    "son montuno"
+   ],
+   "bachata": [
+    "bachata"
+   ],
+   "merengue": [
+    "merengue"
+   ],
+   "cumbia": [
+    "cumbia"
+   ],
+   "reggaeton": [
+    "reggaeton",
+    "reggaetón",
+    "dembow"
+   ],
+   "bossa": [
+    "bossa nova",
+    "bossa"
+   ],
+   "samba": [
+    "samba"
+   ],
+   "latin": [
+    "latin",
+    "latino"
+   ],
+   "jazz": [
+    "jazz",
+    "swing"
+   ],
+   "house": [
+    "house"
+   ],
+   "techno": [
+    "techno"
+   ],
+   "dnb": [
+    "drum and bass",
+    "dnb",
+    "jungle"
+   ],
+   "hiphop": [
+    "hip hop",
+    "hip-hop",
+    "boom bap",
+    "trap"
+   ],
+   "reggae": [
+    "reggae",
+    "dub"
+   ],
+   "afrobeat": [
+    "afrobeat",
+    "afrobeats"
+   ],
+   "pop": [
+    "pop"
+   ],
+   "rock": [
+    "rock"
+   ],
+   "funk": [
+    "funk"
+   ],
+   "ambient": [
+    "ambient"
+   ],
+   "classical": [
+    "classical",
+    "baroque",
+    "romantic"
+   ],
+   "film": [
+    "film",
+    "cinematic",
+    "score"
+   ],
+   "folk": [
+    "folk"
+   ],
+   "edm": [
+    "edm",
+    "dubstep",
+    "trance"
+   ]
+  },
+  "role": {
+   "bass": [
+    "bass",
+    "bassline",
+    "bajo",
+    "tumbao"
+   ],
+   "drums": [
+    "drums",
+    "kick",
+    "snare",
+    "hat",
+    "hats",
+    "percussion",
+    "bateria",
+    "percusion"
+   ],
+   "keys": [
+    "piano",
+    "keys",
+    "montuno",
+    "organ",
+    "teclado"
+   ],
+   "guitar": [
+    "guitar",
+    "requinto",
+    "guitarra"
+   ],
+   "vocal": [
+    "vocal",
+    "vocals",
+    "lyrics",
+    "lyric",
+    "singer",
+    "topline",
+    "voz",
+    "letra"
+   ],
+   "brass": [
+    "brass",
+    "horn",
+    "horns",
+    "trumpet",
+    "trombone",
+    "sax",
+    "metales"
+   ],
+   "strings": [
+    "strings",
+    "violin",
+    "cello",
+    "cuerdas"
+   ],
+   "clave": [
+    "clave"
+   ],
+   "melody": [
+    "melody",
+    "motif",
+    "hook",
+    "melodia"
+   ],
+   "harmony": [
+    "harmony",
+    "chord",
+    "chords",
+    "voicing",
+    "armonia"
+   ]
+  },
+  "task": {
+   "evaluate": [
+    "evaluate",
+    "evaluation",
+    "critique",
+    "review",
+    "rubric",
+    "feedback"
+   ],
+   "arrange": [
+    "arrangement",
+    "arranging",
+    "arrange",
+    "orchestration"
+   ],
+   "compose": [
+    "compose",
+    "composition",
+    "draft",
+    "drafting"
+   ],
+   "mix": [
+    "mix",
+    "mixing",
+    "mastering",
+    "eq",
+    "compression",
+    "reverb"
+   ],
+   "lyrics": [
+    "lyrics",
+    "lyric",
+    "prosody",
+    "syllable",
+    "syllables",
+    "rhyme"
+   ]
+  }
+ },
+ "roles_multi": [
+  "bass",
+  "drums",
+  "keys",
+  "guitar",
+  "brass",
+  "strings",
+  "clave",
+  "vocal"
+ ],
+ "idioms": {
+  "al final": "ending outro last",
+  "a la vez": "together simultaneous",
+  "de nuevo": "again repeat",
+  "por favor": "",
+  "otra vez": "again repeat",
+  "poco a poco": "gradual build"
+ }
+}
