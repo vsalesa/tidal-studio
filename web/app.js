@@ -27,7 +27,7 @@ const curCourse = () => (state.course ? courseFor(state.course.id, state.course.
 // El primer sonido de una pista: s "x" / # s "x" (sin el «:n»)
 const soundOf = (code) => { const m = /(?:^|[\s(#$])(?:s|sound)\s+"\[?\s*([A-Za-z][\w.]*)/.exec(code || ""); return m ? m[1] : ""; };
 import { skillsLineHTML, skillsDialogHTML, chooseHTML, countUse, decisionsHTML, traceHTML } from "./skills.js";
-import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS, blindStart, BLIND } from "./variants.js";
+import { variantsHTML, variantsContext, variantsEnabled, setVariantsEnabled, LETTERS, blindStart, BLIND, recentOptions } from "./variants.js";
 import { guardChanges, blockedText, lockRowHTML, toggleLock, isLocked, mixLocked } from "./locks.js";
 import { initListen, recordVote, songContext } from "./listen.js";
 import { initMonitor } from "./monitor.js";
@@ -1144,6 +1144,39 @@ function refreshVariants() {
     if (nb) nb.querySelectorAll(".va-code").forEach((d, i) => { if (openCodes[i]) d.open = true; });
   });
 }
+// 0.20.1: guardar una opción en «Mis estilos» (tu canción con esa opción puesta: groove, instrumentos y tempo)
+function songWithVariant(v) {
+  const c = v.cambios || {}, gone = new Set(c.eliminar || []);
+  const tracks = state.tracks.filter((t) => !gone.has(t.id)).map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code }));
+  for (const p of c.pistas || []) {
+    const t = tracks.find((x) => x.id === p.id);
+    if (t) Object.assign(t, { code: p.codigo, name: p.nombre || t.name, kind: p.tipo || t.kind });
+    else tracks.push({ id: p.id, name: p.nombre || p.id, kind: p.tipo || "", code: p.codigo });
+  }
+  tracks.sort((a, b) => parseInt(a.id.slice(1)) - parseInt(b.id.slice(1)));
+  return { name: v.titulo, bpm: c.bpm ? Math.round(c.bpm) : state.bpm, style: state.style, tracks, score: state.score };
+}
+async function saveVariantStyle(mi, k, btn) {
+  const v = state.chat[mi].variantes[k];
+  if (btn) btn.disabled = true;
+  try {
+    const r = await api("/api/styles/save", { song: songWithVariant(v), name: v.titulo, description: v.descripcion || "" });
+    v.estilo = { id: r.style.id, name: r.style.name };
+    save(); refreshVariants();
+    toastSoft(L(`Estilo «${r.style.name}» guardado en Memoria → Mis estilos.`, `Style «${r.style.name}» saved in Memory → My styles.`));
+  } catch (e) {
+    if (btn) btn.disabled = false;
+    toast(L("No se ha podido guardar el estilo: ", "Couldn't save the style: ") + e.message);
+  }
+}
+// Lo que guardó el servidor (pedido por chat) se marca en las tarjetas de opciones
+function markSavedStyles(list) {
+  const m = [...state.chat].reverse().find((x) => x.variantes && x.variantes.length);
+  for (const s of list) {
+    const k = LETTERS.indexOf(String(s.opcion || ""));
+    if (m && k >= 0 && m.variantes[k]) m.variantes[k].estilo = { id: s.id, name: s.name };
+  }
+}
 async function pickVariant(mi, k) {
   const m = state.chat[mi]; const v = m.variantes[k];
   if (audition && live()) {
@@ -1259,6 +1292,7 @@ function wireVariants() {
     if (a === "stop") return stopAudition();
     if (a === "ab" && audition && audition.prev != null) return startAudition(mi, audition.prev);
     if (a === "pick") return pickVariant(mi, k);
+    if (a === "style") return saveVariantStyle(mi, k, b);
     if (a === "blind") { stopAudition(); blindStart(m); save(); return refreshVariants(); }
     if (a === "unblind") { m.blind.revealed = true; save(); return refreshVariants(); }
     if (a === "vote" || a === "same") {
@@ -1752,6 +1786,7 @@ async function send(text) {
   if (text === GEN_SONG_CHIP() && state.generated) text = GEN_SONG_PROMPT(state.generated);
   if (text === VA_UNDO() && undoPick()) { state.options = []; return renderChat(); }
   if (text === MEM_OPEN()) { state.options = []; renderChat(); return openMemory("memories"); }
+  if (text === L("Abrir Mis estilos", "Open My styles")) { state.options = []; renderChat(); return openMemory("styles"); }
   if (text === CASE_CHIP()) {
     const m = [...state.chat].reverse().find((x) => x.caseDraft);
     state.options = state.options.filter((o) => o !== CASE_CHIP()); renderChat();
@@ -1923,6 +1958,7 @@ async function askLLM(opts = {}) {
       referencia: state.reference || undefined,
       master: state.master || undefined,
       estilo: state.styleUse || undefined,
+      name: state.name || "", opciones_recientes: recentOptions(state.chat),
       ideas_descartadas: dismissed.length ? dismissed.slice(-25).map((d) => d.t) : undefined,
       tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: t.muted, ...(t.mix ? { mezcla_db: t.mix } : {}), ...(t.solo ? { solo: true } : {}), ...(t.lock ? { lock: t.lock } : {}),
         ...(t.edited ? { name: t.name + L(" (editada a mano por el alumno)", " (edited by hand by the student)") } : {}) })),
@@ -1959,6 +1995,7 @@ async function askLLM(opts = {}) {
       if (!r.local) summary = (summary ? summary + " · " : "") + memoNote(r.memoria_nueva);
       refreshMemBadge();
     }
+    if (r.estilos_guardados && r.estilos_guardados.length) markSavedStyles(r.estilos_guardados);
     if (r.recetas_nuevas && r.recetas_nuevas.length) summary = (summary ? summary + " · " : "") + L("receta nueva en tu recetario: ", "new recipe in your recipe book: ") + r.recetas_nuevas.map((x) => L(x.name_es, x.name_en)).join(", ");
     const diff = diffFor(before, r.cambios || {});
     if (r.sugerencias && r.sugerencias.length) state.ideas = r.sugerencias.filter((x) => !isDismissed(x));

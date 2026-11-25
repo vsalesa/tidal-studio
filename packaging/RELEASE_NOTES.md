@@ -1,4 +1,16 @@
-## What's new in 0.22.0 / Novedades
+## What's new in 0.23.0 / Novedades
+
+Maestro saves its options as styles for real.
+
+- **The bug**: asked to save some of its options as styles, Maestro answered «saved» but had no way to save anything, so nothing appeared in Memory → My styles.
+- **Ask in the chat**: «save the other three as styles», «save A and C as styles», «save all of them», «save this song as a style». When it's clear which ones, the studio saves them right away without AI; if not, Maestro asks or tells the app which ones and the app saves them.
+- **Honest confirmation**: the line under the reply is written by the app with what was really saved (names and where to find them). If Maestro says «saved» and nothing was, the app says so.
+- **Save as a style** on every option card, also the ones you didn't pick; saved cards show **In My styles**. **Open My styles** opens the right tab.
+- If your old options are still in the chat, just ask again: they are saved now.
+
+**Español:** **El fallo**: al pedirle guardar opciones como estilos, Maestro decía «guardado» pero no tenía forma de guardar nada, así que no aparecían en Memoria → Mis estilos. **Pídelo en el chat**: «guárdame las otras tres como estilos», «la A y la C», «todas», «esta canción como estilo»; si se entiende cuáles, se guardan al momento y sin IA; si no, Maestro pregunta o le dice a la app cuáles. **Confirmación honesta**: la escribe la app con lo que se guardó de verdad; si Maestro dice «guardado» y no se guardó nada, la app lo avisa. **Guardar como estilo** en cada tarjeta de opción, también las no elegidas; las guardadas dicen **En Mis estilos**. Si tus opciones antiguas siguen en el chat, pídelo otra vez y se guardan.
+
+## 0.22.0
 
 Effects, the same in every view.
 

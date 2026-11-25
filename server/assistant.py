@@ -100,6 +100,10 @@ def session_summary(session):
         lk = lock_text(t.get("lock"))
         any_lock = any_lock or bool(lk)
         lines.append(f'- {t.get("id")} · {t.get("name", "")} ({t.get("kind", "")}){estado}{lk}: {t.get("code", "")}')
+    ops = [o for o in (session.get("opciones_recientes") or []) if isinstance(o, dict)][:4]
+    if ops:
+        lines.append("OPCIONES RECIENTES (las últimas que ofreciste): " + "; ".join(
+            f"{'ABCD'[i]}) {str(o.get('titulo') or '')[:60]}" + (" [ELEGIDA]" if o.get("elegida") else "") for i, o in enumerate(ops)))
     if session.get("bpm_lock"):
         any_lock = True
         lines.append(f"BPM BLOQUEADO por el alumno: no cambies el tempo ({bpm}).")
@@ -197,6 +201,13 @@ MODO OPCIONES PARA ESCUCHAR (activado; tiene prioridad sobre lo anterior cuando 
 - Preguntas sobre cómo funciona algo, explicaciones de código y arreglos de errores: responde normal, sin "variantes". Si el alumno pide algo exacto y sin margen creativo («pon el tempo a 100», «silencia d2», «quita el bombo»), aplícalo directamente en "cambios".
 - Cuando el alumno elige una opción, la app ya la ha aplicado y te lo dice («Me quedo con la opción B…»). Si te pide explicarla o variarla, trabaja sobre lo que suena ahora.
 - En este modo no hace falta "sugerencias"."""
+
+
+STYLES_SAVE_PROMPT = """
+
+GUARDAR EN «MIS ESTILOS»: tú NO guardas nada por tu cuenta; lo guarda la app. Si el alumno pide guardar opciones (o su canción) como estilos, añade
+  "guardar_estilos": [{"opcion": "A", "nombre": "nombre corto", "descripcion": "1 frase"}]
+con una entrada por cada opción a guardar ("A"-"D" según las OPCIONES RECIENTES del estado de la sesión, o "cancion" para lo que suena ahora). En "mensaje" di que se las guardas, pero NUNCA digas que ya están guardadas: la app añade debajo la confirmación con lo que se guardó de verdad. Si no sabes cuáles quiere, pregunta con "opciones" y no pongas "guardar_estilos"."""
 
 
 FETCH_PROMPT = """
@@ -327,7 +338,7 @@ def build_messages(history, session):
         system = SYSTEM_PROMPT + SCORE_PROMPT + (FETCH_PROMPT if fetch_on(session) else "") + PLAN_STEP_PROMPT
     else:
         system = (SYSTEM_PROMPT + SCORE_PROMPT + (VARIANTS_PROMPT if variants_on(session) else "") + (FETCH_PROMPT if fetch_on(session) else "")
-                  + (PLAN_PROMPT if plan_on(session) else "")
+                  + STYLES_SAVE_PROMPT + (PLAN_PROMPT if plan_on(session) else "")
                   + (FORCE_PLAN if (session or {}).get("plan_forzar") else ""))
     if brief_on(session):
         system += BRIEF_PROMPT
@@ -467,6 +478,7 @@ def parse_reply(raw):
         "cambios": _parse_changes(data.get("cambios") or {}),
         "controles": [c for c in (data.get("controles") or []) if isinstance(c, dict)][:6],
         "descargar": _parse_fetch(data),
+        **({"guardar_estilos": data["guardar_estilos"]} if isinstance(data.get("guardar_estilos"), list) and data["guardar_estilos"] else {}),
     }
 
 

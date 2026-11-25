@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.22.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.23.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -193,6 +193,16 @@ carry your notes.
 | My styles | Transform a style: another key and tempo, listen first |
 |---|---|
 | ![My styles](docs/screenshots/my-styles.png) | ![Transform a style](docs/screenshots/style-transform.png) |
+
+**Save Maestro's options as styles.** Every option card has **Save as a style**, also the ones you didn't pick. You
+can ask in the chat too: «save the other three as styles», «save A and C as styles», «save all of them», «save this
+song as a style». When it's clear which ones, the studio saves them right away without AI; if not, Maestro asks. The
+confirmation under the reply is written by the app with what was really saved, so Maestro can never say «saved» when
+nothing was. Saved cards show **In My styles**.
+
+| Ask in the chat: saved for real, with the names | Each card says it's in My styles |
+|---|---|
+| ![Save the other three as styles](docs/screenshots/styles-from-options.png) | ![Options marked In My styles](docs/screenshots/styles-on-cards.png) |
 
 **Musical cases.** A case is a problem you solved: the code before and after and why you accepted it. When you pick
 one of Maestro's options, **Save as a case** appears. When you later ask for something similar, Maestro reads your
@@ -703,13 +713,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.22.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.23.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.22.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.22.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.22.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/tidal-studio_0.22.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.23.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/TidalStudio-0.23.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.23.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/TidalStudio-0.23.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.23.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/tidal-studio_0.23.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -1104,6 +1114,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.23.0** | [Save Maestro's options as styles, for real](#maestro-remembers-you-memory-your-styles-and-musical-cases): ask «save the other three as styles», «A and C» or «all» and they are saved (right away and without AI when it's clear which), or press **Save as a style** on any option card; the confirmation is written by the app with what was really saved, so Maestro can no longer say «saved» when nothing was. |
 | **0.22.0** | [Effects, the same in every view](#blocks-view-and-live-highlighting): one chip per effect with an on/off switch and the same editor (slider, value, remove) in Tracks, Blocks and Code, **+ effect** everywhere, and the editor in the light Partitura look. |
 | **0.21.0** | [Six more included skills and a persistent skills index](#skills-and-plugins): sections with their parent and exceptions, ES/EN music vocabulary, provenance and quarantine in the panel, rebuild button, Maestro independent of your global Claude Code; and your own sound changes and repeated option picks become memory candidates. |
 | **0.20.0** | [Skills à la carte](#skills-and-plugins): only the sections of each skill that fit your message (local search, no AI), a short catalog, the always-loaded route by parts, extra sections on demand, and the RAG monitor shows the skill characters sent vs whole (about 55% fewer). |
