@@ -201,6 +201,32 @@ def save_config(cfg):
     with _config_lock:
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
             json.dump(cfg, f, indent=2, ensure_ascii=False)
+    try:
+        apply_live(cfg)
+    except Exception as e:  # noqa: BLE001  aplicar no debe impedir guardar
+        print(f"[config] {e}")
+
+
+_live = {"backup": None}
+
+
+def apply_live(cfg):
+    """0.25.2: cada ajuste guardado se aplica al momento, sin reiniciar la app.
+    Lo que se lee en cada petición (IA, GitHub, memoria, Sound Lab…) ya va solo; aquí va lo que se guardaba
+    en memoria al arrancar: límites, número de pistas, token de GitHub para actualizaciones y plugins, y la
+    copia de la memoria en GitHub cuando la activas."""
+    limits.apply(cfg)
+    eng = globals().get("ENGINE")
+    if eng is not None:
+        eng.set_tracks(tracklimit.count(cfg))   # no hace nada si no cambia; si cambia, reinicia el sonido
+    tok = ((cfg.get("github") or {}).get("token") or "").strip()
+    appupdate.GITHUB_TOKEN = tok
+    pluginset.GITHUB_TOKEN = tok
+    mem = globals().get("MEMORY")
+    on = bool(mem and memory_cfg(cfg).get("backup") and github.configured(cfg))
+    if on and _live["backup"] is False:
+        schedule_backup(8)   # acabas de activar la copia (o de configurar GitHub): primera sincronización ya
+    _live["backup"] = on
 
 
 def mask(key):
@@ -2434,7 +2460,9 @@ def main():
     threading.Thread(target=update_plugins_on_start, daemon=True).start()
     threading.Thread(target=index_skills_on_start, daemon=True).start()
     threading.Thread(target=app_update_loop, daemon=True).start()
-    if MEMORY and memory_cfg().get("backup") and github.configured(load_config()):
+    _live["backup"] = bool(MEMORY and memory_cfg().get("backup") and github.configured(load_config()))
+    appupdate.GITHUB_TOKEN = pluginset.GITHUB_TOKEN = ((load_config().get("github") or {}).get("token") or "").strip()
+    if _live["backup"]:
         schedule_backup(8)   # al arrancar: trae lo de GitHub (p. ej. en un ordenador nuevo) y sube lo pendiente
     if not ARGS.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
