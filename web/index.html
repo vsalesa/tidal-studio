@@ -363,6 +363,14 @@
             <option value="terminal" data-t="Exactly as in my terminal">Exactamente como en mi terminal</option>
           </select>
         </label>
+        <label><span data-t="Thinking effort">Esfuerzo al pensar</span>
+          <select id="cc-effort">
+            <option value="low" data-t="Low: answers sooner, fewer tokens (recommended)">Bajo: responde antes, menos tokens (recomendado)</option>
+            <option value="medium" data-t="Medium">Medio</option>
+            <option value="high" data-t="High: thinks longer">Alto: piensa más rato</option>
+            <option value="" data-t="As in my Claude Code">Como en mi Claude Code</option>
+          </select>
+        </label>
         <div id="cc-api" hidden>
           <label><span data-t="Endpoint (ANTHROPIC_BASE_URL, optional)">Endpoint (ANTHROPIC_BASE_URL, opcional)</span> <input id="cc-url" placeholder="https://api.anthropic.com"></label>
           <label><span data-t="API key (optional)">Clave de API (opcional)</span> <input id="cc-key" type="password" autocomplete="off" placeholder="sk-ant-…"></label>

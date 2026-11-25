@@ -3643,6 +3643,7 @@ async function openSettings() {
   const cc = c.claudecode || {};
   $("#cc-mode").value = cc.auth_mode || (cc.use_subscription === false ? "terminal" : "auto");
   $("#cc-url").value = cc.base_url || ""; $("#cc-key").value = cc.api_key || ""; $("#diag").hidden = true;
+  $("#cc-effort").value = cc.effort ?? "low";
   toggleCcMode(); loadDetect(false);
   const preset = [...$("#oa-preset").options].find((o) => o.value.split("|")[0] === c.openai.base_url);
   $("#oa-preset").value = preset ? preset.value : "custom";
@@ -3663,7 +3664,7 @@ async function saveSettings() {
     provider: document.querySelector("input[name=provider]:checked").value,
     openai: { base_url: $("#oa-url").value, api_key: $("#oa-key").value, model: $("#oa-model").value },
     anthropic: { api_key: $("#an-key").value, model: $("#an-model").value },
-    claudecode: { path: $("#cc-path").value, model: $("#cc-model").value, auth_mode: $("#cc-mode").value,
+    claudecode: { path: $("#cc-path").value, model: $("#cc-model").value, auth_mode: $("#cc-mode").value, effort: $("#cc-effort").value,
       base_url: $("#cc-url").value, api_key: $("#cc-key").value },
     github: { token: $("#gh-token").value, repo: $("#gh-repo").value.trim().replace(/^https?:\/\/github\.com\//, "").replace(/\.git$/, ""),
       branch: $("#gh-branch").value, folder: $("#gh-folder").value, create_new: $("#gh-create-new").checked },
