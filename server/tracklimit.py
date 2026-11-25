@@ -3,16 +3,22 @@
 Cada pista suena en su propia «orbit» de SuperDirt, y cada orbit tiene sus propios efectos globales
 (reverb, delay…) encendidos todo el rato. Más pistas = más CPU aunque estén calladas. Por eso:
   - 12 por defecto (lo que esperan los cursos: d1..d8 + la batería de referencia en las 4 últimas);
-  - 12 como mínimo y 32 como máximo;
+  - 12 como mínimo y 64 como máximo (Ajustes → Límites → Pistas);
   - el BootTidal.hs (d1..dN) y las orbits de SuperDirt (N + 1: la última es la del teclado MIDI) se generan
     a partir de este número cada vez que arranca el motor.
 """
 import os
 import re
 
-MIN, MAX, DEFAULT = 12, 32, 12
+MIN, MAX, DEFAULT = 12, 64, 12
 
 _D_LINE = re.compile(r"^    d\d+ = p \d+ \. \(\|< orbit \d+\)\n", re.M)
+
+
+def valid_id(tid):
+    """¿Es un id de pista posible (d1..d64)? Cuántas caben de verdad lo decide el estudio con su ajuste."""
+    m = re.fullmatch(r"d([1-9]\d?)", str(tid or "").strip())
+    return bool(m) and int(m.group(1)) <= MAX
 
 
 def clamp(n):

@@ -280,7 +280,7 @@ function selectedTrack() {
 }
 function addTrack(name, kind, code) {
   const id = freeId();
-  if (!id) { toast(L(`Máximo ${maxTracks()} pistas. Borra alguna o sube el número en Ajustes → Pistas.`, `Maximum ${maxTracks()} tracks. Delete one or raise the number in Settings → Tracks.`)); return null; }
+  if (!id) { toast(L(`Máximo ${maxTracks()} pistas. Borra alguna o sube el número en Ajustes → Límites.`, `Maximum ${maxTracks()} tracks. Delete one or raise the number in Settings → Limits.`)); return null; }
   const t = { id, name, kind, code, muted: false };
   state.tracks.push(t);
   state.selected = id;
@@ -3739,7 +3739,7 @@ function toggleProvider() {
   const p = document.querySelector("input[name=provider]:checked").value;
   $("#fs-openai").hidden = p !== "openai"; $("#fs-anthropic").hidden = p !== "anthropic"; $("#fs-claudecode").hidden = p !== "claudecode";
 }
-// Ajustes → Pistas: lo que cuesta cada número, en una frase
+// Ajustes → Límites: lo que cuesta cada número, en una frase
 function tracksCpuHint() {
   const n = Math.max(TRACKS_MIN, Math.min(TRACKS_MAX, Math.round(+$("#tracks-count").value || 12)));
   const extra = Math.round((n + 1) / 13 * 100) - 100;
@@ -3883,7 +3883,7 @@ function importSharedSong() {
   history.replaceState(null, "", location.pathname);
   try {
     const d = JSON.parse(unb64url(m[1]));
-    const tracks = (d.tracks || []).filter((t) => Array.isArray(t) && /^d([1-9]|1[0-2])$/.test(t[0])).map(([id, name, kind, code, muted]) => ({ id, name: String(name || id).slice(0, 60), kind: String(kind || "textura"), code: String(code || "").slice(0, 2000), muted: !!muted }));
+    const tracks = (d.tracks || []).filter((t) => Array.isArray(t) && /^d[1-9]\d?$/.test(t[0]) && +t[0].slice(1) <= maxTracks()).map(([id, name, kind, code, muted]) => ({ id, name: String(name || id).slice(0, 60), kind: String(kind || "textura"), code: String(code || "").slice(0, 2000), muted: !!muted }));
     if (!tracks.length) return;
     openTabSlot();
     state = { ...FRESH(), name: String(d.name || L("Canción compartida", "Shared song")).slice(0, 80), bpm: Math.max(40, Math.min(220, +d.bpm || 120)), style: STYLES[d.style] ? d.style : "", tracks, step: "libre" };

@@ -17,6 +17,7 @@ import json
 import re
 
 import score as scoremod
+import tracklimit
 
 SYSTEM_PROMPT = """Eres "Maestro", profesor de TidalCycles y productor musical. Tidal Studio es una plataforma para APRENDER MÚSICA y TidalCycles a la vez, creando canciones de verdad, y tú acompañas al alumno en cada paso como lo haría un buen profesor de producción musical. El alumno es principiante absoluto: hablas en español, con frases cortas y sin jerga; si usas un término técnico (BPM, reverb, ciclo, patrón…) lo explicas en media frase.
 
@@ -308,7 +309,7 @@ def parse_plan(data):
         if isinstance(p, dict) and p.get("titulo"):
             pasos.append({"titulo": str(p["titulo"])[:120], "que": str(p.get("que") or "")[:400],
                           "aspecto": str(p.get("aspecto") or "otro")[:20],
-                          "pistas": [str(x) for x in (p.get("pistas") or []) if re.fullmatch(r"d([1-9]|1[0-2])", str(x))][:4]})
+                          "pistas": [str(x) for x in (p.get("pistas") or []) if tracklimit.valid_id(x)][:4]})
     if len(pasos) < 2:
         return None
     return {"titulo": str(pl.get("titulo") or "Plan")[:120], "resumen": str(pl.get("resumen") or "")[:500], "pasos": pasos}
@@ -406,7 +407,7 @@ def _parse_changes(cambios):
         if not isinstance(p, dict):
             continue
         tid = str(p.get("id", "")).strip()
-        if not re.fullmatch(r"d([1-9]|1[0-2])", tid):
+        if not tracklimit.valid_id(tid):
             continue
         pistas.append({
             "id": tid,

@@ -789,17 +789,17 @@ dentro de la copia del programa, sin pisar nada.
 |---|---|
 | ![Copias y restaurar en el panel de almacenamiento](docs/screenshots/es/datos-a-salvo.png) | ![Canciones recuperadas de la carpeta de datos](docs/screenshots/es/canciones-recuperadas.png) |
 
-### Cuántas pistas: 12 de serie, hasta 32
+### Cuántas pistas: 12 de serie, hasta 64
 
 Una canción arranca con **12 pistas**, de `d1` a `d12`: el arranque estándar, suficiente para todos los cursos (la
-batería de referencia usa las cuatro últimas). Desde la 0.25.1 el número es un ajuste: **Ajustes → Pistas**, de 12 a 32.
+batería de referencia usa las cuatro últimas). Desde la 0.25.1 el número es un ajuste: **Ajustes → Límites → Pistas**, de 12 a 64.
 El estudio escribe entonces su arranque de TidalCycles con `d1`…`dN` y arranca SuperDirt con un canal de efectos
 («orbit») por pista, más uno para el teclado MIDI. Cada orbit tiene su reverb y su delay siempre encendidos, así que
-más pistas gastan más CPU aunque estén calladas: 16 va bien en cualquier ordenador reciente, más de 24 solo si de verdad
+más pistas gastan más CPU aunque estén calladas: 16 va bien en cualquier ordenador reciente, más de 32 solo si de verdad
 las necesitas. Al guardar, el sonido se reinicia unos segundos; Maestro, la importación de MIDI y los archivos `.tidal`
 siguen el número nuevo.
 
-| Ajustes → Pistas |
+| Ajustes → Límites → Pistas |
 |---|
 | ![El número de pistas en Ajustes, con lo que cuesta en CPU](docs/screenshots/es/numero-de-pistas.png) |
 
@@ -1200,7 +1200,8 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
-| **0.25.1** | [Cuántas pistas](#cuántas-pistas-12-de-serie-hasta-32): el número de pistas es un ajuste (Ajustes → Pistas, 12 de serie, hasta 32); el arranque de TidalCycles y las orbits de SuperDirt se generan a partir de él, con lo que cuesta en CPU cada pista de más. [Todos los límites, configurables](#todos-los-límites-configurables): los otros 30 topes (contexto de Maestro, tamaños de archivo, sonido, canciones, deshacer) en Ajustes → Límites, con su valor de serie y restablecer. |
+| **0.25.2** | Arreglos: con más de 12 pistas en Ajustes → Límites → Pistas, Maestro, el asistente, las recetas de estilo y los enlaces compartidos ya también las usan (se quedaban en d12), y el resaltado en directo de la vista Código sigue alineado con el código al hacer scroll (también en la app de Mac). |
+| **0.25.1** | [Cuántas pistas](#cuántas-pistas-12-de-serie-hasta-32): el número de pistas es un ajuste (Ajustes → Límites → Pistas, 12 de serie, hasta 64); el arranque de TidalCycles y las orbits de SuperDirt se generan a partir de él, con lo que cuesta en CPU cada pista de más. [Todos los límites, configurables](#todos-los-límites-configurables): los otros 30 topes (contexto de Maestro, tamaños de archivo, sonido, canciones, deshacer) en Ajustes → Límites, con su valor de serie y restablecer. |
 | **0.25.0** | [Tus datos, a salvo en cada actualización](#tus-datos-a-salvo-en-cada-actualización): tus canciones, memoria y ajustes viven en su propia carpeta fuera del programa, una copia comprobada antes de cada actualización con **Restaurar** en Ajustes → Almacenamiento, y cada canción también en archivo para recuperar «Mis proyectos» si la ventana los pierde. |
 | **0.24.0** | [Respuestas cortas, primero el resultado](#respuestas-cortas-primero-el-resultado): Maestro piensa y escribe menos por defecto (unos 83% menos tokens de salida y 3,5 veces más rápido con Sonnet 4.6), la suscripción de Claude se lanza con esfuerzo al pensar bajo, y las respuestas **Detalladas** están a un ajuste. |
 | **0.23.0** | [Guarda opciones de Maestro como estilos, de verdad](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales): pide «guárdame las otras tres como estilos», «la A y la C» o «todas» y se guardan (al momento y sin IA si se entiende cuáles), o pulsa **Guardar como estilo** en cualquier tarjeta de opción; la confirmación la escribe la app con lo que se guardó de verdad, así que Maestro ya no puede decir «guardado» si no se guardó nada. |

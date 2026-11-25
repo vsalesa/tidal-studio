@@ -60,14 +60,28 @@ function markup(code, play = []) {
 const COPY = ["fontFamily", "fontSize", "fontWeight", "lineHeight", "letterSpacing", "tabSize", "whiteSpace", "overflowWrap", "wordBreak",
   "paddingTop", "paddingRight", "paddingBottom", "paddingLeft", "borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth", "boxSizing"];
 
+// La capa no tiene barra de scroll propia: se mueve con transform lo mismo que el textarea se ha desplazado
+// (0.25.2: con scrollTop la capa no podía bajar tanto como el textarea y el resaltado se quedaba desalineado),
+// y deja a la derecha el mismo hueco que ocupe la barra de scroll del textarea, para que las líneas partan igual.
+function follow(ta) {
+  const w = ta._hl;
+  if (!w) return;
+  w.inner.style.transform = `translate(${-ta.scrollLeft}px, ${-ta.scrollTop}px)`;
+}
+function fit(ta, cs) {
+  const w = ta._hl;
+  const bars = ta.offsetWidth - ta.clientWidth - parseFloat(cs.borderLeftWidth) - parseFloat(cs.borderRightWidth);
+  w.pre.style.paddingRight = `${parseFloat(cs.paddingRight) + Math.max(0, bars)}px`;
+}
 function update(ta) {
   const w = ta._hl;
   if (!w || !ta.isConnected) { attached.delete(ta); return; }
   const cs = getComputedStyle(ta);
   for (const k of COPY) w.pre.style[k] = cs[k];
-  w.pre.innerHTML = markup(ta.value, ta._play || []);
+  fit(ta, cs);
+  w.inner.innerHTML = markup(ta.value, ta._play || []);
   w.sig = JSON.stringify(ta._play || []);
-  w.pre.scrollTop = ta.scrollTop; w.pre.scrollLeft = ta.scrollLeft;
+  follow(ta);
   const miss = missingIn(ta.value);
   w.note.hidden = !miss.length;
   w.note.textContent = miss.length ? L(`No existe en SuperDirt: ${miss.join(", ")}. Revisa el nombre o instala el sonido.`,
@@ -77,6 +91,9 @@ function update(ta) {
 export function attachHighlight(ta) {
   if (ta._hl) { update(ta); return; }
   const wrap = document.createElement("div"), pre = document.createElement("pre"), note = document.createElement("div");
+  const inner = document.createElement("div");
+  inner.className = "hl-inner";
+  pre.append(inner);
   wrap.className = "hlwrap" + (ta.id ? ` hlwrap-${ta.id}` : "");
   pre.className = "hl"; pre.setAttribute("aria-hidden", "true");
   note.className = "miss-note"; note.hidden = true;
@@ -85,9 +102,11 @@ export function attachHighlight(ta) {
   ta.parentNode.insertBefore(wrap, ta);
   wrap.append(pre, ta);
   wrap.after(note);
-  ta._hl = { pre, note };
+  ta._hl = { pre, inner, note };
   ta.addEventListener("input", () => update(ta));
-  ta.addEventListener("scroll", () => { pre.scrollTop = ta.scrollTop; pre.scrollLeft = ta.scrollLeft; });
+  ta.addEventListener("scroll", () => follow(ta));
+  // El textarea cambia de tamaño (ventana, paneles, aparece la barra de scroll): mismo ancho de línea en la capa
+  if (typeof ResizeObserver !== "undefined") new ResizeObserver(() => { if (ta.isConnected) { fit(ta, getComputedStyle(ta)); follow(ta); } }).observe(ta);
   attached.add(ta);
   update(ta);
 }
@@ -99,6 +118,6 @@ export function setPlayRanges(ta, ranges) {
   const sig = JSON.stringify(ranges);
   if (sig === ta._hl.sig) return;
   ta._play = ranges; ta._hl.sig = sig;
-  ta._hl.pre.innerHTML = markup(ta.value, ranges);
-  ta._hl.pre.scrollTop = ta.scrollTop;
+  ta._hl.inner.innerHTML = markup(ta.value, ranges);
+  follow(ta);
 }

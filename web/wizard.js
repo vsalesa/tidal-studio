@@ -2,6 +2,7 @@
 // con cambios concretos para probar. Esta parte funciona sin IA; con IA, los ejemplos y el plan se adaptan a ti.
 import { STYLES, byId } from "./catalog.js";
 import { L, EN } from "./i18n.js";
+import { maxTracks } from "./tracklimit.js";
 
 export const QUESTIONS = [
   { id: "sensacion", pregunta: L("¿Qué quieres que sienta quien escuche tu canción?", "What do you want listeners to feel?"),
@@ -136,7 +137,7 @@ export function buildLocalPlan(a, tracks) {
   const style = pickStyle(a);
   const bpm = pickBpm(a, style);
   const used = new Set(tracks.map((t) => t.id));
-  const nextId = () => { for (let i = 1; i <= 12; i++) if (!used.has("d" + i)) { used.add("d" + i); return "d" + i; } return null; };
+  const nextId = () => { for (let i = 1; i <= maxTracks(); i++) if (!used.has("d" + i)) { used.add("d" + i); return "d" + i; } return null; };
   const sugerencias = [];
   const addComp = (compId, titulo, extraWrap = "") => {
     const c = byId[compId]; const id = nextId();
