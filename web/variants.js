@@ -57,6 +57,7 @@ export function variantsHTML(m, mi, a, diffHTML) {
         <button class="va-play${playing ? " on" : ""}" data-va="play" data-mi="${mi}" data-k="${k}" title="${esc(L("Suena en directo sobre tu canción hasta que pares o cambies de opción", "Plays live over your song until you stop or switch options"))}">${playing ? `${icon("stop", 12)} ${L("Sonando", "Playing")}` : `${icon("speaker", 13)} ${L("Escuchar", "Listen")}`}</button>
         <button class="primary" data-va="pick" data-mi="${mi}" data-k="${k}">${icon("check", 12)} ${L("Elegir esta", "Pick this one")}</button>
       </div>`}
+      ${styleBtn(v, mi, k)}
       <details class="va-code"><summary>${L("Ver el código", "See the code")}</summary>${diffHTML(k)}</details>
     </div>`;
   }).join("");
@@ -75,6 +76,19 @@ export function variantsHTML(m, mi, a, diffHTML) {
     ${done ? `<div class="va-head">${picked != null ? L(`Elegiste la ${LETTERS[picked]}; las demás se descartaron.`, `You picked ${LETTERS[picked]}; the others were discarded.`) : L("Opciones descartadas.", "Options discarded.")}</div>`
       : `<div class="va-head">${L("Suenan en directo sobre tu canción · teclas 1-4 para cambiar, Esc para parar", "They play live over your song · keys 1-4 to switch, Esc to stop")}</div>`}
     ${cards}${foot}</div>`;
+}
+
+// 0.20.1: cualquier opción (elegida o no) se puede guardar en «Mis estilos» con un clic
+function styleBtn(v, mi, k) {
+  if (v.estilo) return `<div class="va-style saved">${icon("palette", 12)} ${L(`En Mis estilos: «${esc(v.estilo.name)}»`, `In My styles: «${esc(v.estilo.name)}»`)}</div>`;
+  return `<div class="va-style"><button class="link" data-va="style" data-mi="${mi}" data-k="${k}" title="${esc(L("Guarda el groove, los instrumentos y el tempo de esta opción en Memoria → Mis estilos", "Saves this option's groove, instruments and tempo in Memory → My styles"))}">${icon("palette", 12)} ${L("Guardar como estilo", "Save as a style")}</button></div>`;
+}
+
+// Las opciones de la última respuesta con opciones, para que Maestro (y el servidor) sepan qué es la A, la B…
+export function recentOptions(chat) {
+  const m = [...chat].reverse().find((x) => x.variantes && x.variantes.length);
+  if (!m) return undefined;
+  return m.variantes.map((v, k) => ({ titulo: v.titulo, descripcion: v.descripcion || "", elegida: m.picked === k, cambios: v.cambios }));
 }
 
 // 0.16: nota del crítico automático (opcional, apagado por defecto). Es una pista: tu oído decide.

@@ -60,6 +60,7 @@ import recipes as recipemod  # noqa: E402
 import critic  # noqa: E402
 import clamp  # noqa: E402
 import memory as memorymod  # noqa: E402
+import stylesave  # noqa: E402
 import storage  # noqa: E402
 import engines as synthengines  # noqa: E402
 import photos as instphotos  # noqa: E402
@@ -679,6 +680,24 @@ def critic_on(reply, sess, lang):
             v["critica"] = critic.judge(v["cambios"], tracks, sc, lang)
 
 
+def apply_style_saves(reply, sess, en=False):
+    """Lo que Maestro pide guardar en «Mis estilos» se guarda de verdad, y la confirmación la escribe la app.
+    Si Maestro dice que ha guardado estilos sin pedirlo, se avisa de que no se ha guardado nada."""
+    items = stylesave.parse_items(reply.pop("guardar_estilos", None))
+    if items and MEMORY:
+        opts = stylesave.recent_options(sess)
+        genre = (sess.get("_memory_ctx") or memory_ctx(sess))["genre"]
+        try:
+            saved, errs = stylesave.save(MEMORY, sess, items, opts, genre)
+        except Exception as e:  # noqa: BLE001
+            saved, errs = [], [str(e)]
+        reply["estilos_guardados"] = saved
+        reply["mensaje"] = (str(reply.get("mensaje") or "").rstrip() + "\n\n" + stylesave.result_text(saved, errs, en)).strip()
+    elif items or stylesave.claims_saved(reply.get("mensaje")):
+        reply["mensaje"] = (str(reply.get("mensaje") or "").rstrip() + "\n\n" + stylesave.not_saved_text(en)).strip()
+    return reply
+
+
 def save_recipes(reply, lang):
     """Las recetas que combina Maestro van al recetario del alumno."""
     if not SOUNDS:
@@ -995,6 +1014,7 @@ class Handler(SimpleHTTPRequestHandler):
             tr.finish()
         if sess.get("_noted"):
             reply["memoria_nueva"] = sess["_noted"]
+        apply_style_saves(reply, sess, data.get("lang") == "en")
         return self._json({**reply, "skills": skills_report(sk, raw), "monitor": req.id,
                            **({"command": command} if command else {}),
                            **({"trace": tr.public()} if tr.id else {})})
@@ -1834,6 +1854,16 @@ class Handler(SimpleHTTPRequestHandler):
                         req.end("validate", "skip")
                         return self._json({**memorymod.noted_reply(noted, data.get("lang") == "en"), "local": True,
                                            "memoria_nueva": noted, "monitor": req.id})
+                    # 0.20.1: «guarda la A y la C como estilos» se guarda aquí de verdad, sin IA, si se entiende cuáles
+                    if MEMORY and last_msg.get("role") == "user" and not sess.get("plan_paso") and stylesave.wants_save(last_txt):
+                        opts = stylesave.recent_options(sess)
+                        targets = stylesave.parse_targets(last_txt, opts)
+                        if targets:
+                            saved, errs = stylesave.save(MEMORY, sess, [{"opcion": x} for x in targets], opts, mctx["genre"])
+                            req.end("rules", "hit", hits=len(saved), note="styles")
+                            req.end("validate", "skip")
+                            return self._json({**stylesave.local_reply(saved, errs, data.get("lang") == "en"), "local": True,
+                                               **({"memoria_nueva": noted} if noted else {}), "monitor": req.id})
                     req.end("rules", "pass" if rcfg["local_answers"] else "off")
                     if not llm_configured(cfg):
                         return self._json({"error": "La IA no está configurada. Abre ⚙️ Ajustes."}, 400)

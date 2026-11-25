@@ -1045,6 +1045,10 @@ dialog label.check input { display: inline-block; width: auto; margin: 0; }
 .va-row button, .va-foot button { padding: 4px 10px; font-size: 12.5px; }
 .va-play.on { background: var(--teal); border-color: var(--teal); color: #fff; }
 .va-badge { margin-top: 6px; font-size: 12px; font-weight: 600; color: var(--teal); display: flex; align-items: center; gap: 4px; }
+.va-style { margin-top: 4px; font-size: 12px; }
+.va-style button.link { display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; font-size: 12px; }
+.va-style.saved { color: var(--teal); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+.va-card.lost .va-style { opacity: 1; }
 .va-code { margin-top: 6px; font-size: 12.5px; }
 .va-code summary { cursor: pointer; color: var(--ink-2); }
 .va-code .diff { margin-top: 6px; }
