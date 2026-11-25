@@ -15,6 +15,12 @@ MIN, MAX, DEFAULT = 12, 32, 12
 _D_LINE = re.compile(r"^    d\d+ = p \d+ \. \(\|< orbit \d+\)\n", re.M)
 
 
+def valid_id(tid):
+    """¿Es un id de pista posible (d1..d32)? Cuántas caben de verdad lo decide el estudio con su ajuste."""
+    m = re.fullmatch(r"d([1-9]\d?)", str(tid or "").strip())
+    return bool(m) and int(m.group(1)) <= MAX
+
+
 def clamp(n):
     try:
         n = int(n)

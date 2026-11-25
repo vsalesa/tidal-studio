@@ -1161,6 +1161,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.25.2** | Fixes: with more than 12 tracks set in Settings → Tracks, Maestro, the wizard, style recipes and shared links can now use them too (they were still stopping at d12), and the live highlighting in the Code view stays aligned with the code when you scroll (also in the Mac app). |
 | **0.25.1** | [How many tracks](#how-many-tracks-12-by-default-up-to-32): the number of tracks is a setting (Settings → Tracks, 12 by default, up to 32); the TidalCycles boot file and the SuperDirt orbits are generated from it, with what each extra track costs in CPU. [Every limit, configurable](#every-limit-configurable): the other 30 caps (Maestro context, file sizes, sound, songs, undo) in Settings → Limits, with their defaults and reset. |
 | **0.25.0** | [Your data, safe across updates](#your-data-safe-across-updates): your songs, memory and settings live in their own folder outside the program, a verified backup before every update with **Restore** in Settings → Storage, and every song also saved as files that bring «My projects» back if the window loses them. |
 | **0.24.0** | [Short answers, result first](#short-answers-the-result-first): Maestro thinks and writes less by default (about 83% fewer output tokens and 3.5× faster with Sonnet 4.6), the Claude subscription runs with thinking effort low, and **Detailed** answers are one setting away. |

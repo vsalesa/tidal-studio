@@ -35,6 +35,22 @@ class TrackLimit(unittest.TestCase):
         self.assertIn("TIDAL_STUDIO_READY", text)
         self.assertLess(text.index("setcps"), text.index("d1 ="))
 
+    def test_valid_ids_go_past_12(self):
+        self.assertTrue(tracklimit.valid_id("d20"))
+        self.assertTrue(tracklimit.valid_id("d32"))
+        self.assertFalse(tracklimit.valid_id("d33"))
+        self.assertFalse(tracklimit.valid_id("d0"))
+        self.assertFalse(tracklimit.valid_id("x1"))
+
+    def test_no_hardcoded_12_track_ids_left(self):
+        import re as _re
+        bad = _re.compile(r"1\[0-2\]|i <= 12;")
+        for folder, ext in (("server", ".py"), ("web", ".js")):
+            for name in os.listdir(os.path.join(ROOT, folder)):
+                if name.endswith(ext):
+                    text = open(os.path.join(ROOT, folder, name), encoding="utf-8").read()
+                    self.assertIsNone(bad.search(text), name)
+
     def test_write_boot(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = tracklimit.write_boot(ROOT, tmp, 16)

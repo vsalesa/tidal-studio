@@ -738,6 +738,7 @@ label.card-field { grid-template-columns: 70px 1fr; }
 .hlwrap-code { flex: 1; min-height: 300px; }
 .hlwrap-code > #code { flex: 1; }
 .hlwrap > pre.hl { position: absolute; inset: 0; margin: 0; overflow: hidden; color: transparent; pointer-events: none; z-index: 0; border-style: solid; border-color: transparent; }
+.hlwrap > pre.hl > .hl-inner { white-space: inherit; overflow-wrap: inherit; word-break: inherit; }
 .hlwrap mark.miss { color: transparent; background: rgba(198, 40, 40, 0.18); border-bottom: 2px solid #c62828; border-radius: 2px; }
 .miss-note { color: #b71c1c; font-size: 12px; margin-top: 4px; }
 .hlwrap > textarea { margin: 0; }

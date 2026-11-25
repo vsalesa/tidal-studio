@@ -1,10 +1,11 @@
 import { L } from "./i18n.js";
+import { maxTracks } from "./tracklimit.js";
 // "Recetas de estilo": transforman TU canción para que suene a otro género, paso a paso.
 // Cada paso dice qué pista cambia y por qué, para que aprendas a hacerlo tú.
 
 const free = (tracks, extra = []) => {
   const used = new Set([...tracks.map((t) => t.id), ...extra]);
-  for (let i = 1; i <= 12; i++) if (!used.has("d" + i)) return "d" + i;
+  for (let i = 1; i <= maxTracks(); i++) if (!used.has("d" + i)) return "d" + i;
   return null;
 };
 const byKind = (tracks, k) => tracks.filter((t) => t.kind === k && !t.muted);
