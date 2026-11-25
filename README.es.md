@@ -200,6 +200,16 @@ estilo compartido nunca lleva tus notas.
 |---|---|
 | ![Mis estilos](docs/screenshots/es/mis-estilos.png) | ![Transformar un estilo](docs/screenshots/es/estilo-transformar.png) |
 
+**Guarda opciones de Maestro como estilos.** Cada tarjeta de opción tiene **Guardar como estilo**, también las que no
+elegiste. También puedes pedirlo en el chat: «guárdame las otras tres como estilos», «guarda la A y la C como estilos»,
+«guarda todas», «guarda esta canción como estilo». Si se entiende cuáles, el estudio las guarda al momento y sin IA; si
+no, Maestro te pregunta. La confirmación bajo la respuesta la escribe la app con lo que se guardó de verdad, así que
+Maestro nunca puede decir «guardado» si no se guardó nada. Las tarjetas guardadas dicen **En Mis estilos**.
+
+| Pídelo en el chat: se guardan de verdad, con sus nombres | Cada tarjeta dice que está en Mis estilos |
+|---|---|
+| ![Guárdame las otras tres como estilos](docs/screenshots/es/estilos-desde-opciones.png) | ![Opciones marcadas En Mis estilos](docs/screenshots/es/estilos-en-tarjetas.png) |
+
 **Casos musicales.** Un caso es un problema que resolviste: el código de antes y el de después, y por qué lo
 aceptaste. Al elegir una opción de Maestro aparece **Guardar como caso**. Cuando más tarde pides algo parecido, Maestro
 lee tus casos más cercanos y lo resuelve a tu manera.

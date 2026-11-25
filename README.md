@@ -194,6 +194,16 @@ carry your notes.
 |---|---|
 | ![My styles](docs/screenshots/my-styles.png) | ![Transform a style](docs/screenshots/style-transform.png) |
 
+**Save Maestro's options as styles.** Every option card has **Save as a style**, also the ones you didn't pick. You
+can ask in the chat too: «save the other three as styles», «save A and C as styles», «save all of them», «save this
+song as a style». When it's clear which ones, the studio saves them right away without AI; if not, Maestro asks. The
+confirmation under the reply is written by the app with what was really saved, so Maestro can never say «saved» when
+nothing was. Saved cards show **In My styles**.
+
+| Ask in the chat: saved for real, with the names | Each card says it's in My styles |
+|---|---|
+| ![Save the other three as styles](docs/screenshots/styles-from-options.png) | ![Options marked In My styles](docs/screenshots/styles-on-cards.png) |
+
 **Musical cases.** A case is a problem you solved: the code before and after and why you accepted it. When you pick
 one of Maestro's options, **Save as a case** appears. When you later ask for something similar, Maestro reads your
 closest cases and solves it your way.
