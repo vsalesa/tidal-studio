@@ -347,14 +347,24 @@ from an earlier version; the × on the error box clears it at any time.
 |---|---|
 | ![Blocks view](docs/screenshots/blocks.png) | ![Editing a block](docs/screenshots/blocks-edit.png) |
 
-**Turn each effect on and off**: every effect (`# room`, `# delay`, `# lpf`, `# crush`…) has its own switch, per track,
-in the Blocks view, under each track's code in the Tracks view, and on Maestro's configurator card. Switching one off
-bypasses just that effect and keeps its value, so switching it back on restores it exactly. In the code it becomes a
-Haskell comment, `{- # room 0.4 -}`, which Tidal ignores; it plays right away (with Live on) and Undo brings it back.
+**Effects, the same in every view** (0.22). Every effect (`# room`, `# delay`, `# lpf`, `# crush`…) is the same chip in
+the **Tracks** view (under each track's code), in **Blocks** and in the **Code** tab (the new *Effects per track* strip above
+the code), and Maestro's configurator card has the same controls. Each chip has:
 
-| Blocks: one switch per effect | Tracks: the effects row under the code |
+- a **switch** to turn the effect on or off. Off bypasses just that effect and keeps its value, so switching it back on
+  restores it exactly. In the code it becomes a Haskell comment, `{- # room 0.4 -}`, which Tidal ignores.
+- its **name and value**: click it to open the editor, with what the effect does, the same on/off switch, a slider, the
+  exact value and **Remove setting**.
+- **+ effect** at the end of the row adds a new one (gain, lpf, hpf, room, delay, pan, crush…).
+
+It plays right away (with Live on) and Undo brings anything back. The editor uses the app's light *Partitura* look, in
+every view. In the Code tab, if you have typed changes you haven't applied, the chips wait until you press **Apply**.
+
+| Tracks: click an effect to edit it | Blocks: the same switch and editor (here, room switched off) |
 |---|---|
-| ![Effect switches in Blocks](docs/screenshots/effects-toggle-blocks.png) | ![Effect switches in Tracks](docs/screenshots/effects-toggle-tracks.png) |
+| ![Editing an effect in Tracks](docs/screenshots/effects-tracks.png) | ![Editing an effect in Blocks](docs/screenshots/effects-blocks.png) |
+| **Code: effects per track above the code** | |
+| ![Editing an effect in the Code tab](docs/screenshots/effects-code.png) | |
 
 **See what is sounding**: while the music plays, the part of each track's code that is sounding right now lights up, step
 by step, in the Tracks, Blocks and Code views (like Strudel). SuperDirt tells the app every note it plays.

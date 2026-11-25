@@ -357,15 +357,24 @@ números de una transformación (`every 4 (fast 2)`), añadir ajustes o transfor
 |---|---|
 | ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Editar un bloque](docs/screenshots/es/bloques-editar.png) |
 
-**Enciende y apaga cada efecto**: cada efecto (`# room`, `# delay`, `# lpf`, `# crush`…) tiene su propio interruptor, por
-pista, en la vista de Bloques, debajo del código de cada pista en Pistas y en la tarjeta configuradora de Maestro. Al
-apagarlo deja de sonar solo ese efecto y se guarda su valor, así que al encenderlo vuelve tal cual. En el código queda
-como comentario de Haskell, `{- # room 0.4 -}`, que Tidal ignora; suena al momento (con En vivo activado) y Deshacer lo
-recupera.
+**Efectos, iguales en todas las vistas** (0.22). Cada efecto (`# room`, `# delay`, `# lpf`, `# crush`…) es la misma ficha
+en la vista **Pistas** (debajo del código de cada pista), en **Bloques** y en la pestaña **Código** (la nueva franja
+*Efectos por pista* encima del código), y la tarjeta configuradora de Maestro tiene los mismos controles. Cada ficha tiene:
 
-| Bloques: un interruptor por efecto | Pistas: la fila de efectos bajo el código |
+- un **interruptor** para encender o apagar el efecto. Al apagarlo deja de sonar solo ese efecto y se guarda su valor, así
+  que al encenderlo vuelve tal cual. En el código queda como comentario de Haskell, `{- # room 0.4 -}`, que Tidal ignora.
+- su **nombre y valor**: púlsalo y se abre el editor, con lo que hace el efecto, el mismo interruptor, un deslizador, el
+  valor exacto y **Quitar ajuste**.
+- **+ efecto** al final de la fila añade uno nuevo (gain, lpf, hpf, room, delay, pan, crush…).
+
+Suena al momento (con En vivo activado) y Deshacer lo recupera todo. El editor usa el aspecto claro *Partitura* de la app
+en todas las vistas. En la pestaña Código, si has escrito cambios sin aplicar, las fichas esperan a que pulses **Aplicar**.
+
+| Pistas: pulsa un efecto para editarlo | Bloques: el mismo interruptor y editor (aquí, room apagado) |
 |---|---|
-| ![Interruptores en Bloques](docs/screenshots/es/efectos-bloques.png) | ![Interruptores en Pistas](docs/screenshots/es/efectos-pistas.png) |
+| ![Editar un efecto en Pistas](docs/screenshots/es/efectos-pistas.png) | ![Editar un efecto en Bloques](docs/screenshots/es/efectos-bloques.png) |
+| **Código: efectos por pista encima del código** | |
+| ![Editar un efecto en la pestaña Código](docs/screenshots/es/efectos-codigo.png) | |
 
 **Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
 sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.

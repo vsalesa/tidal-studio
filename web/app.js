@@ -12,8 +12,8 @@ import { localSuggestions, CODE_CONCEPTS, MUSIC_CONCEPTS, retoFor } from "./sugg
 import { QUESTIONS, reactLocal, buildLocalPlan } from "./wizard.js";
 import { FLAVORS, flavorIdea } from "./flavors.js";
 import { diagnose, fixLocal, WISHES, wishLabel } from "./doctor.js";
-import { songBlocksHTML, blockInfo } from "./blocks.js";
-import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf } from "./edit.js";
+import { songBlocksHTML, blockInfo, fxChipHTML, fxSwitch, canBypass } from "./blocks.js";
+import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf, elementsOf } from "./edit.js";
 import { mixerHTML, mixCodeHTML, mixBadgeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
 import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory } from "./history.js";
@@ -73,6 +73,12 @@ let state = {
   offline: false,
 };
 let server = { llm: false, engine: {} };
+let codeSynced = true; // pestaña Código: false si has escrito en el código sin pulsar Aplicar
+// Pestaña Código al día: el texto se rehace si no tienes cambios sin aplicar, y sus fichas de efectos también
+function syncCodeTab() {
+  if (!$("#tab-code").classList.contains("active") || codeSynced) $("#code").value = buildCode();
+  renderCodeFx();
+}
 let busy = false;
 
 function load() {
@@ -290,7 +296,7 @@ function changed() {
   renderTimeline();
   renderMixer();
   refreshCards();
-  if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
+  syncCodeTab();
 }
 
 function explainHTML(ex, onClose) {
@@ -340,9 +346,9 @@ function wireArrange() {
 }
 function renderBlocks() {
   if (!$("#tab-blocks").classList.contains("active")) return;
-  $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n), uiIcon: icon, mixBadge: (t) => mixBadgeHTML(t, state, icon("mixer", 13)),
+  $("#blocks").innerHTML = songBlocksHTML(state, { icon: (k, n) => icon(CATEGORIES.find((c) => c.id === k) ? k : "fx", n), uiIcon: icon, mixBadge: (t) => mixBadgeHTML(t, state, icon("mixer", 13)), fxAdd: fxAddSelect,
     kindColor: (k) => KIND_COLOR[k] || "var(--ink-3)", kindName: (k) => CATEGORIES.find((c) => c.id === k)?.nombre || k });
-  if (bkSel) { const el = bkFind(bkSel); if (el) { el.classList.add("on"); if (!bkSel.keep) bkOpen(el); else bkPlace(el); } else bkClose(); }
+  bkSync("blocks");
 }
 
 // ------------------------------------------------------------------ lo que suena, iluminado
@@ -401,16 +407,38 @@ function startPlaying() {
 // ------------------------------------------------------------------ bloques: tooltip para ver y editar cada bloque
 let bkSel = null;     // { id, key } del bloque seleccionado
 let bkTimer = null;
-const bkFind = (sel) => sel.key === "bpm" ? $("#blocks .bk-tag") : document.querySelector(`#blocks .bk-track[data-id="${sel.id}"] [data-key="${CSS.escape(sel.key)}"]`);
-function bkClose() { bkSel = null; $("#bk-pop").hidden = true; document.querySelectorAll("#blocks .on").forEach((x) => x.classList.remove("on")); }
+// El mismo editor sirve en las tres vistas: Bloques (cualquier bloque), Pistas y Código (las fichas de efectos).
+// bkSel.view dice dónde está la ficha que lo abrió: "blocks" | "tracks" | "code".
+const BK_ROOT = { blocks: "#blocks .bk-track", tracks: "#tracks .track", code: "#code-fx .cfx-track" };
+const bkFind = (sel) => sel.key === "bpm" ? $("#blocks .bk-tag") : document.querySelector(`${BK_ROOT[sel.view || "blocks"]}[data-id="${sel.id}"] [data-key="${CSS.escape(sel.key)}"]`);
+function bkClose() { bkSel = null; $("#bk-pop").hidden = true; document.querySelectorAll("#blocks .on, .fx-chip.sel").forEach((x) => x.classList.remove("on", "sel")); }
+// Tras repintar una vista, vuelve a colocar (o abrir) el editor sobre su ficha
+function bkSync(view) {
+  if (!bkSel || (bkSel.view || "blocks") !== view) return;
+  const el = bkFind(bkSel);
+  if (!el || !el.offsetParent) return bkClose();
+  el.classList.add(view === "blocks" ? "on" : "sel");
+  if (!bkSel.keep) bkOpen(el); else bkPlace(el);
+}
 function bkPlace(el) {
-  const pop = $("#bk-pop"), pane = $("#tab-blocks");
-  const r = el.getBoundingClientRect(), pr = pane.getBoundingClientRect();
-  const w = Math.min(360, pr.width - 16);
+  const pop = $("#bk-pop");
+  const r = el.getBoundingClientRect(), vw = document.documentElement.clientWidth, vh = window.innerHeight;
+  const w = Math.min(360, vw - 16);
   pop.style.width = w + "px";
-  pop.style.left = Math.max(8, Math.min(r.left - pr.left, pr.width - w - 8)) + "px";
-  pop.style.top = (r.bottom - pr.top + 8) + "px";
-  pop.style.setProperty("--arrow", Math.max(14, Math.min(w - 20, r.left - pr.left + Math.min(r.width, 60) / 2 - parseFloat(pop.style.left))) + "px");
+  const left = Math.max(8, Math.min(r.left, vw - w - 8));
+  pop.style.left = left + "px";
+  const h = pop.offsetHeight || 260, below = r.bottom + 8 + h <= vh - 8 || r.top - 8 - h < 8;
+  pop.classList.toggle("above", !below);
+  pop.style.top = (below ? r.bottom + 8 : r.top - 8 - h) + "px";
+  pop.style.setProperty("--arrow", Math.max(14, Math.min(w - 20, r.left - left + Math.min(r.width, 60) / 2)) + "px");
+}
+// Abre el editor de un efecto desde Pistas o Código (en Bloques lo abre el clic en el bloque)
+function fxOpen(view, id, key, el) {
+  if (bkSel && bkSel.view === view && bkSel.id === id && bkSel.key === key && !$("#bk-pop").hidden) return bkClose();
+  bkClose();
+  bkSel = { id, key, view };
+  el.classList.add("sel");
+  bkOpen(el);
 }
 const stepBtn = (a, label, title) => `<button data-bk="${a}" title="${esc(title)}">${label}</button>`;
 function bkEditorHTML(t, part) {
@@ -423,7 +451,8 @@ function bkEditorHTML(t, part) {
   if (part.kind === "param") {
     const r = part.range;
     const sl = r ? `<div class="ctl-row"><input type="range" data-bk-range="set" min="${r.log ? 0 : r.min}" max="${r.log ? 1000 : r.max}" step="${r.log ? 1 : r.step}" value="${r.log ? Math.round(1000 * Math.log(Math.max(part.value, r.min || 1) / (r.min || 1)) / Math.log(r.max / (r.min || 1))) : part.value}" ${r.log ? `data-log="${r.min}|${r.max}"` : ""}><output>${esc(part.text)}</output></div>` : "";
-    return `<div class="bk-ed">${sl}<label>${L("Valor", "Value")}<input type="text" data-bk-in="set" value="${esc(part.text)}" spellcheck="false"></label>
+    const onoff = canBypass(part.name) ? `<div class="fx-onoff ${part.off ? "off" : ""}">${fxSwitch(bkSel.key, part)}<span>${part.off ? L("Apagado: no suena, pero guarda su valor", "Off: bypassed, its value is kept") : L("Encendido", "On")}</span></div>` : "";
+    return `<div class="bk-ed">${onoff}${sl}<label>${L("Valor", "Value")}<input type="text" data-bk-in="set" value="${esc(part.text)}" spellcheck="false"></label>
       <div class="bk-btns">${stepBtn("del", icon("trash", 14) + " " + L("Quitar ajuste", "Remove setting"), L("Quitar este ajuste", "Remove this setting"))}</div></div>`;
   }
   if (part.kind === "wrap") return `<div class="bk-ed"><label>${L("Transformación", "Transformation")}<input type="text" data-bk-in="set" value="${esc(part.text)}" spellcheck="false"></label>
@@ -434,7 +463,6 @@ function bkEditorHTML(t, part) {
   return "";
 }
 function bkOpen(el) {
-  const tr = el.closest(".bk-track");
   const pop = $("#bk-pop");
   if (bkSel && bkSel.key === "bpm") {
     pop.innerHTML = `<div class="bk-pop-head"><code>setcps (${state.bpm}/60/4)</code><button class="close" data-bk="close">${icon("close", 14)}</button></div>
@@ -442,7 +470,7 @@ function bkOpen(el) {
       <div class="bk-pop-foot"><button data-bk="songcard">${icon("sliders", 14)} ${L("Tarjeta de la canción en Maestro", "Song card in Maestro")}</button></div>`;
     pop.hidden = false; return bkPlace(el);
   }
-  const t = tr && state.tracks.find((x) => x.id === tr.dataset.id);
+  const t = state.tracks.find((x) => x.id === bkSel.id);
   if (!t) return;
   let part = null; try { part = partOf(t.code, bkSel.key); } catch { /* código raro */ }
   const info = el.dataset.key === "|root" ? { code: `${t.id} $ …`, text: L("La pista entera.", "The whole track.") } : blockInfo(el);
@@ -486,9 +514,14 @@ function openMixFor(id) {
   const strip = document.querySelector(`#mixer .mx-strip[data-id="${CSS.escape(id)}"]`);
   if (strip) { strip.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" }); strip.classList.add("flash"); setTimeout(() => strip.classList.remove("flash"), 1600); }
 }
-function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); renderTimeline(); refreshCards(); if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode(); }
+function changedQuiet() { if (bkSel) bkSel.keep = true; renderTracks(); renderBlocks(); renderMixer(); renderArrange(); renderTimeline(); refreshCards(); syncCodeTab(); }
 function wireBlocks() {
+  $("#blocks").addEventListener("change", (e) => {
+    const s = e.target.closest(".fx-add"), tr = e.target.closest(".bk-track");
+    if (s && tr && s.value) addFx(tr.dataset.id, s.dataset.fxAdd, s.value);
+  });
   $("#blocks").addEventListener("click", (e) => {
+    if (e.target.closest(".fx-add")) return;
     const tr = e.target.closest(".bk-track");
     const sw = e.target.closest(".fx-sw");
     if (sw && tr) { e.stopPropagation(); return toggleFx(tr.dataset.id, sw.dataset.fx); }
@@ -515,6 +548,7 @@ function wireBlocks() {
   pop.addEventListener("click", (e) => {
     e.stopPropagation();
     const b = e.target.closest("button"); if (!b || !bkSel) return;
+    if (b.classList.contains("fx-sw")) { const id = bkSel.id; toggleFx(id, bkSel.key); if (bkSel) { bkSel.keep = false; bkSync(bkSel.view || "blocks"); } return; }
     const k = b.dataset.bk, key = bkSel.key;
     if (k === "close") return bkClose();
     if (k === "card") return openCard(bkSel.id, key);
@@ -547,7 +581,10 @@ function wireBlocks() {
     else { bkApply((c) => applyEdit(c, x.dataset.bkRange, "num", v), false); const t = state.tracks.find((y) => y.id === bkSel.id); const p = t && partOf(t.code, bkSel.key); if (txt && p) txt.value = p.text; }
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape" && bkSel) bkClose(); });
-  $("#tab-blocks").addEventListener("click", (e) => { if (!e.target.closest("#bk-pop, #blocks [data-key], #blocks .bk-tag")) bkClose(); });
+  document.body.appendChild(pop); // flota sobre cualquier vista (Bloques, Pistas, Código)
+  document.addEventListener("click", (e) => { if (bkSel && !e.target.closest("#bk-pop, #blocks [data-key], #blocks .bk-tag, .fx-chip, .fx-add")) bkClose(); });
+  window.addEventListener("scroll", () => { if (bkSel && !$("#bk-pop").hidden) { const el = bkFind(bkSel); if (el) bkPlace(el); } }, true);
+  window.addEventListener("resize", () => { if (bkSel && !$("#bk-pop").hidden) { const el = bkFind(bkSel); if (el) bkPlace(el); } });
 }
 
 // ------------------------------------------------------------------ mesa de mezcla (pestaña Mezcla)
@@ -668,12 +705,40 @@ function clearChat() {
   say(L("Chat limpio. Tu canción sigue igual; solo he borrado la conversación.", "Chat cleared. Your song is unchanged; I only removed the conversation."),
     [L("Recuperar el chat", "Bring the chat back"), CARD_CHIP(), L("Dame una idea", "Give me an idea")]);
 }
-// Fila de efectos bajo el código de una pista: un interruptor por cada # (room, delay, lpf…)
-function fxRowHTML(t) {
-  let fx = []; try { fx = effectsOf(t.code); } catch { /* código raro */ }
-  if (!fx.length) return "";
-  return `<div class="fx-row"><span class="fx-row-lbl">${L("Efectos", "Effects")}</span>${fx.map((e) =>
-    `<button type="button" class="fx-chip ${e.off ? "off" : "on"}" data-fx="${esc(e.key)}" role="switch" aria-checked="${!e.off}" title="${esc(e.off ? L(`Encender ${e.name} (ahora no suena)`, `Turn ${e.name} on (bypassed now)`) : L(`Apagar ${e.name} sin perder su valor`, `Turn ${e.name} off, keeping its value`))}"><span class="fx-led"></span><code>${esc(e.op === "#" ? e.name : e.op + " " + e.name)}</code> ${esc(e.text)}</button>`).join("")}</div>`;
+// Fila de efectos de una pista (Pistas y Código): las MISMAS fichas que en Bloques.
+// Interruptor = encender/apagar; pulsar el nombre = editar (deslizador, valor, quitar); «+ efecto» añade uno.
+function fxRowHTML(t, disabled = false) {
+  let fx = [], els = []; try { els = elementsOf(t.code); fx = effectsOf(t.code); } catch { /* código raro */ }
+  const src = els.find((e) => e.kind === "src" || e.kind === "raw");
+  const have = new Set(fx.map((e) => e.name));
+  const add = src && !disabled ? fxAddSelect(src.key, [...have]) : "";
+  if (!fx.length && !add) return "";
+  return `<div class="fxbar${disabled ? " disabled" : ""}"><span class="fx-row-lbl">${L("Efectos", "Effects")}</span>${fx.map((e) =>
+    fxChipHTML(e.key, e, "", `data-x="${esc(`${e.op} ${e.name} ${e.text}`)}" data-w="${esc(e.name)}"`)).join("")}${add}</div>`;
+}
+// Desplegable «+ efecto»: el mismo en Pistas, Bloques y Código
+function fxAddSelect(srcKey, have = []) {
+  return `<select class="fx-add" data-fx-add="${esc(srcKey)}" title="${esc(L("Añadir un efecto", "Add an effect"))}"><option value="">${L("+ efecto", "+ effect")}</option>${ADD_PARAMS.filter((p) => !have.includes(p)).map((p) => `<option value="${p}">${p} · ${esc(L(CTL_PARAMS[p].es, CTL_PARAMS[p].en))}</option>`).join("")}</select>`;
+}
+// Valor inicial razonable para un efecto nuevo
+const fxDefault = (name) => fmt(name === "lpf" ? 2000 : name === "hpf" ? 200 : name === "room" || name === "delay" ? 0.3 : CTL_PARAMS[name]?.def ?? 0.5);
+function addFx(id, srcKey, name) {
+  const t = state.tracks.find((x) => x.id === id); if (!t || !name) return;
+  let code; try { code = applyEdit(t.code, srcKey, "addParam", name, fxDefault(name)); } catch { return; }
+  if (!code || code === t.code) return;
+  if (!t.error && !t.lastGood) t.lastGood = t.code;
+  t.code = code; t.explain = null; t.edited = true;
+  changed();
+  if (live()) playTrack(t);
+}
+// Pestaña Código: las fichas de efectos de cada pista encima del texto (mismo editor que Bloques y Pistas)
+function renderCodeFx() {
+  const box = $("#code-fx"); if (!box) return;
+  if (!$("#tab-code").classList.contains("active")) return;
+  const off = !codeSynced;
+  box.innerHTML = state.tracks.length ? `<div class="cfx-head"><b>${L("Efectos por pista", "Effects per track")}</b><span class="hint">${off ? L("Has cambiado el código: pulsa Aplicar para editar los efectos aquí.", "You changed the code: press Apply to edit the effects here.") : L("Enciende, apaga o pulsa un efecto para editarlo. Igual que en Pistas y Bloques.", "Switch an effect on or off, or click it to edit. Same as in Tracks and Blocks.")}</span></div>` +
+    state.tracks.map((t) => `<div class="cfx-track${off ? " disabled" : ""}" data-id="${esc(t.id)}"><span class="cfx-id" style="--k:${KIND_COLOR[t.kind] || "var(--ink-3)"}">${esc(t.id)}</span>${fxRowHTML(t, off) || `<span class="hint">${L("sin efectos", "no effects")}</span>`}</div>`).join("") : "";
+  bkSync("code");
 }
 // Tarjeta «Código extra»: lo del archivo abierto que no es una pista (let, definiciones, once…), intacto
 function extraCard() {
@@ -745,6 +810,7 @@ function renderTracks() {
         save(); renderTracks(); return;
       }
       if (btn && btn.dataset.fx) return toggleFx(t.id, btn.dataset.fx);
+      if (btn && btn.dataset.fxOpen) return fxOpen("tracks", t.id, btn.dataset.fxOpen, btn.closest(".fx-chip"));
       if (a === "lock") { t.lockOpen = !t.lockOpen; save(); renderTracks(); return; }
       if (btn && btn.dataset.lock) { toggleLock(t, btn.dataset.lock); save(); renderTracks(); renderBlocks(); return; }
       if (btn && btn.dataset.sc) { scoreBarAction(state, t, btn.dataset.sc); return; }
@@ -765,6 +831,7 @@ function renderTracks() {
       if (a === "del") removeTrack(t.id);
     });
     el.querySelector(".tname").addEventListener("change", (e) => { t.name = e.target.value; changed(); });
+    el.querySelector(".fx-add")?.addEventListener("change", (e) => addFx(t.id, e.target.dataset.fxAdd, e.target.value));
     const ta = el.querySelector("textarea");
     const commit = () => { if (ta.value !== t.code) { if (!t.error && (!t.lastGood || !t.edited)) t.lastGood = t.code; t.code = ta.value; t.explain = null; t.edited = true; changed(); } };
     ta.addEventListener("keydown", (e) => {
@@ -774,6 +841,7 @@ function renderTracks() {
     box.appendChild(el);
     attachHighlight(el.querySelector("textarea"));
   }
+  bkSync("tracks");
 }
 
 // ------------------------------------------------------------------ explicaciones
@@ -2447,7 +2515,7 @@ function ctlApply(mi, mutate) {
   refreshCards(mi);
   if (touched) touched.explain = null;
   save(); renderTracks(); renderBlocks(); renderMixer();
-  if (!$("#tab-code").classList.contains("active")) $("#code").value = buildCode();
+  syncCodeTab();
   clearTimeout(ctlTimer);
   ctlTimer = setTimeout(() => { if (!live()) return; if (touched === "all") playAll(); else if (touched) playTrack(touched); else evalCode(cps(state.bpm)); }, 180);
 }
@@ -4771,14 +4839,21 @@ function init() {
   document.querySelectorAll(".tab").forEach((b) => b.onclick = () => {
     document.querySelectorAll(".tab").forEach((x) => x.classList.toggle("active", x === b));
     document.querySelectorAll(".tabpane").forEach((p) => p.classList.toggle("active", p.id === "tab-" + b.dataset.tab));
-    if (b.dataset.tab === "code") { $("#code").value = buildCode(); refreshHighlights(); }
+    if (b.dataset.tab === "code") { $("#code").value = buildCode(); codeSynced = true; renderCodeFx(); refreshHighlights(); }
     if (b.dataset.tab === "log") refreshLog();
     if (b.dataset.tab === "blocks") renderBlocks();
     if (b.dataset.tab === "arrange") renderArrange();
     if (b.dataset.tab === "timeline") renderTimeline();
     if (b.dataset.tab === "mixer") renderMixer(true);
-    if (b.dataset.tab !== "blocks") bkClose();
+    bkClose();
   });
+  $("#code").addEventListener("input", () => { if (codeSynced) { codeSynced = false; renderCodeFx(); } });
+  $("#code-fx").addEventListener("click", (e) => {
+    const row = e.target.closest(".cfx-track"); if (!row || row.classList.contains("disabled")) return;
+    const sw = e.target.closest(".fx-sw"); if (sw) { e.stopPropagation(); return toggleFx(row.dataset.id, sw.dataset.fx); }
+    const o = e.target.closest("[data-fx-open]"); if (o) return fxOpen("code", row.dataset.id, o.dataset.fxOpen, o.closest(".fx-chip"));
+  });
+  $("#code-fx").addEventListener("change", (e) => { const s = e.target.closest(".fx-add"), row = e.target.closest(".cfx-track"); if (s && row && s.value) addFx(row.dataset.id, s.dataset.fxAdd, s.value); });
   $("#btn-apply-code").onclick = async () => {
     const parsed = parseCode($("#code").value);
     const keep = new Set(parsed.tracks.map((t) => t.id));
@@ -4786,6 +4861,7 @@ function init() {
     const before = Object.fromEntries(state.tracks.map((t) => [t.id, t.code]));
     parsed.tracks.forEach((t) => { if (before[t.id] !== t.code) t.edited = true; });
     state.bpm = parsed.bpm; $("#bpm").value = state.bpm; state.tracks = parsed.tracks; state.extra = parsed.extra;
+    codeSynced = true;
     changed();
     for (const id of removed) await silenceId(id);
     const r = await playAll();
