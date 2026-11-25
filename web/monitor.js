@@ -61,7 +61,8 @@ function diagramSVG(req) {
     const st = info.status || "idle";
     const answered = req && req.answered_by === ly.id;
     const meta = [fmtMs(info.ms), info.hits != null ? `${info.hits} ${L("aciertos", "hits")}` : "",
-      info.tokens_in || info.tokens_out ? `${info.tokens_in || 0}→${info.tokens_out || 0} tok` : "", info.cached ? `${info.cached} ${L("en caché", "cached")}` : ""].filter(Boolean).join(" · ");
+      info.tokens_in || info.tokens_out ? `${info.tokens_in || 0}→${info.tokens_out || 0} tok` : "", info.cached ? `${info.cached} ${L("en caché", "cached")}` : "",
+      ly.id === "skills" && info.chars ? `${fmtK(info.chars)} ${L("car.", "chars")}${info.whole_chars ? ` (${L("enteras", "whole")}: ${fmtK(info.whole_chars)})` : ""}` : ""].filter(Boolean).join(" · ");
     const yPrev = i === 0 ? 42 : y - gap;
     parts.push(`<line class="mn-edge mn-${st}" x1="${W / 2}" y1="${yPrev}" x2="${W / 2}" y2="${y}"/>`);
     parts.push(`<g class="mn-node mn-${st}${answered ? " mn-answer" : ""}${selLayer === ly.id ? " mn-sel" : ""}" data-layer="${ly.id}" tabindex="0">
@@ -76,6 +77,8 @@ function diagramSVG(req) {
   parts.push(`<g class="mn-node mn-io"><rect x="${x}" y="${yEnd + 4}" width="${boxW}" height="34" rx="10"/><text x="${W / 2}" y="${yEnd + 26}" text-anchor="middle">${esc(L("Tu canción (aplicas o eliges tú)", "Your song (you apply or pick)"))}</text></g>`);
   return `<svg class="mn-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(L("Diagrama de capas de Maestro", "Maestro's layer diagram"))}">${parts.join("")}</svg>`;
 }
+
+const fmtK = (n) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n || 0));
 
 function paint() {
   const reqs = (data.requests || []).slice().reverse();
@@ -92,6 +95,7 @@ function paint() {
       <span><b>${sm.requests || 0}</b> ${L("peticiones", "requests")}</span>
       <span><b>${Math.round((sm.share_without_llm || 0) * 100)}%</b> ${L("sin LLM", "without the LLM")}</span>
       <span><b>${sm.tokens || 0}</b> ${L("tokens", "tokens")}</span>
+      ${sm.skills_whole ? `<span title="${L("Caracteres de skills enviados frente a los que habría costado mandarlas enteras", "Skill characters sent versus what sending them whole would have cost")}"><b>${fmtK(sm.skills_chars)}</b> ${L("de skills", "of skills")} · <b>−${Math.round(sm.skills_saved * 100)}%</b> ${L("frente a enteras", "vs whole")}</span>` : ""}
       ${data.index ? `<span><b>${data.index.songs}</b> ${L("canciones en el índice", "songs in the index")}${data.index.fts ? " (FTS5)" : ""}</span>` : ""}
     </div>
     <div class="mn-main">
@@ -115,6 +119,7 @@ function paint() {
         <label class="check"><input type="checkbox" name="ly_library" ${ly.library ? "checked" : ""}> ${L("Leer tu biblioteca (capa 3)", "Read your library (layer 3)")}</label>
         <label class="check"><input type="checkbox" name="ly_loops" ${ly.loops ? "checked" : ""}> ${L("Pasar tus loops largos", "Pass your long loops")}</label>
         <label class="check"><input type="checkbox" name="ly_skills" ${ly.skills ? "checked" : ""}> ${L("Cargar skills (capa 4)", "Load skills (layer 4)")}</label>
+        <label>${L("Cómo cargar las skills", "How to load skills")} <select name="skills_mode"><option value="smart" ${data.skills_mode !== "whole" ? "selected" : ""}>${L("A la carta: solo las secciones que encajan", "À la carte: only the sections that fit")}</option><option value="whole" ${data.skills_mode === "whole" ? "selected" : ""}>${L("Enteras (como antes de la 0.20)", "Whole (as before 0.20)")}</option></select></label>
         <label>${L("Tokens máximos por respuesta (0 = automático)", "Max tokens per answer (0 = automatic)")} <input type="number" name="max_tokens" min="0" max="16000" step="100" value="${rc.max_tokens || 0}"></label>
         <label>${L("Opciones como mucho", "Options at most")} <input type="number" name="max_candidates" min="1" max="4" value="${rc.max_candidates || 4}"></label>
         <label>${L("Pistas de tus canciones como contexto", "Tracks from your songs as context")} <input type="number" name="index_hits" min="0" max="10" value="${rc.index_hits ?? 3}"></label>
@@ -144,7 +149,7 @@ async function onSave(e) {
     index_hits: +f.get("index_hits") || 0, confidence: +f.get("confidence"),
   };
   try {
-    await api("/api/config", { router, ai_timeout: +f.get("ai_timeout") || 300 });
+    await api("/api/config", { router, ai_timeout: +f.get("ai_timeout") || 300, skills_mode: f.get("skills_mode") });
     await refresh();
     const s = $("#monitor .mn-saved"); if (s) s.textContent = L("Guardado.", "Saved.");
   } catch (err) {

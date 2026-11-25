@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.19.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.20.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -619,6 +619,19 @@ in the Skills panel: their skills join Maestro's and their commands work in the 
 | **Plugins: a whole Claude Code plugin from a GitHub link** | |
 | ![Plugins panel](docs/screenshots/plugins-panel.png) | |
 
+**Skills à la carte** (0.20). Maestro no longer sends whole skills with every message. It splits each skill and its
+reference files into sections and, for each message, sends only the introduction and the sections that fit what you
+asked (and the course step), picked by a local search on your computer, without AI. The catalog lists only the skills
+that may fit; the always-loaded route sends only its part for this step. Below each loaded skill goes the index of the
+sections it didn't send: if Maestro really needs one, it asks for it and gets it in a second call, only then. With the
+included skills this sends about **55% fewer skill characters** per message. Under each answer you see how many
+sections of each skill were loaded and which one Maestro asked for; the RAG monitor shows the characters sent next to
+what sending them whole would have cost, and **Router limits → How to load skills** switches back to whole skills.
+
+| Under the answer: sections loaded, and the one Maestro asked for | RAG monitor: skill characters sent vs whole |
+|---|---|
+| ![Skills à la carte in the chat](docs/screenshots/skills-a-la-carte.png) | ![Skills in the RAG monitor](docs/screenshots/monitor-skills.png) |
+
 ### How Maestro decides, and its reasoning
 
 Every answer that relied on a skill opens with **How I decided**: one row per musical decision (style, rhythm,
@@ -655,13 +668,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.19.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.20.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.19.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.19.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.19.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/tidal-studio_0.19.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.20.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/TidalStudio-0.20.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.20.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/TidalStudio-0.20.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.20.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/tidal-studio_0.20.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -1056,6 +1069,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.20.0** | [Skills à la carte](#skills-and-plugins): only the sections of each skill that fit your message (local search, no AI), a short catalog, the always-loaded route by parts, extra sections on demand, and the RAG monitor shows the skill characters sent vs whole (about 55% fewer). |
 | **0.19.0** | [Memory synced with GitHub](#maestro-remembers-you-memory-your-styles-and-musical-cases): both ways, so on a new computer your memories, styles and cases come back by themselves; deletions travel both ways; each item shows whether it's on GitHub; **Compare with GitHub**; automatic retries; and bring **someone else's memory** from their repository link (to your inbox). |
 | **0.18.0** | Maestro v2, fifth step: [memory and styles](#maestro-remembers-you-memory-your-styles-and-musical-cases). Memory by scope (song, course, genre, always) from the chat and from your picks by ear, with a validation layer (clear ones approved by themselves, doubtful ones to an inbox), a log where every change can be undone, **My styles** (groove, roles, instruments and tempo, not notes) used as inspiration, transformation or literal copy and shared through GitHub, musical cases Maestro learns from, automatic GitHub backup of what's approved and a storage panel. |
 | **0.17.0** | Maestro v2, fourth step: [genres](#four-new-genres-cumbia-variants-and-the-songs-form). Four new courses (reggae & dub, boom bap, afrobeat, bachata in beta), cumbia variants chosen before the rhythm (Colombian, sonidera, villera, chicha), the course's form as sections in the score and the `.musicxml`, choose a sound by ear inside any course (learned per genre), a warning for sounds that don't play yet, and real drummers for reggae, boom bap and afrobeat. |

@@ -213,18 +213,24 @@ def skills_text(cfg, query, session):
     extra += " " + " ".join(f"{t.get('kind', '')} {t.get('name', '')}" for t in session.get("tracks") or [] if isinstance(t, dict))
     try:
         active, loaded, text = skillset.select(cfg, query or "", extra, force)
+        # Para el monitor: cuánto habría ocupado cargarlas enteras (como hasta la 0.19)
+        whole = len(skillset.select(cfg, query or "", extra, force, mode="whole")[2]) if active and skill_mode(cfg) == "smart" else len(text)
     except Exception as e:  # una skill rota no debe romper el chat
         print(f"[skills] {e}")
         return "", None
     if not active:
         return "", None
-    return text, (active, loaded)
+    return text, (active, loaded, whole)
+
+
+def skill_mode(cfg):
+    return "whole" if ((cfg or {}).get("skills") or {}).get("mode") == "whole" else "smart"
 
 
 def skills_report(sk, raw):
     if not sk:
         return {"loaded": [], "used": [], "active": 0}
-    active, loaded = sk
+    active, loaded = sk[0], sk[1]
     data = _extract_json(raw) or {}
     # Solo cuentan las decisiones con skills cuyo contenido se cargó en este mensaje: si no, la regla sería inventada
     loaded_names = {x["name"] for x in loaded}
@@ -845,13 +851,16 @@ class Handler(SimpleHTTPRequestHandler):
         req.begin("skills")
         if rcfg["layers"]["skills"]:
             stext, sk = skills_text(cfg, skill_query, sess)
-            req.end("skills", "pass" if sk and sk[1] else "skip", hits=len(sk[1]) if sk else 0)
+            whole = sk[2] if sk else 0
+            req.end("skills", "pass" if sk and sk[1] else "skip", hits=len(sk[1]) if sk else 0,
+                    chars=len(stext), whole_chars=whole if skill_mode(cfg) == "smart" else None,
+                    sections=sum(x.get("sections") or 0 for x in sk[1]) if sk else 0, note=skill_mode(cfg))
         else:
             stext, sk = "", None
             req.end("skills", "off")
         system = [with_lang(system, data.get("lang")), stext]
         if sk:
-            active, loaded = sk
+            active, loaded = sk[0], sk[1]
             names = [x["name"] + (f" (+{', '.join(r.split('/')[-1] for r in x['refs'])})" if x["refs"] else "")
                      + (tr.L(" · siempre", " · always") if x.get("pinned") else "") for x in loaded]
             tr.add("step", tr.L(f"Elijo skills entre {len(active)}: ", f"Picking skills out of {len(active)}: ")
@@ -883,6 +892,28 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"error": "Cancelado", "cancelled": True}, 409)
             if tr.cancel.is_set():  # canceló justo cuando llegaba la respuesta: no se descarga nada
                 return self._json({"error": "Cancelado", "cancelled": True}, 409)
+            more = (_extract_json(raw) or {}).get("mas_skills") if sk and skill_mode(cfg) == "smart" else None
+            if isinstance(more, list) and more:
+                # Skills a la carta: Maestro pide una sección que no le mandé. Se la mando y pregunto otra vez (una sola vez).
+                got, extra_text = skillset.sections_for(cfg, more)
+                if extra_text:
+                    tr.add("step", tr.L(f"Maestro pide {len(got)} sección(es) más de las skills: {', '.join(got)}",
+                                        f"Maestro asks for {len(got)} more skill section(s): {', '.join(got)}"))
+                    stext += extra_text
+                    system = [system[0], stext]
+                    req.end("skills", "pass", chars=len(stext), extra=len(got))
+                    raw = chat_completion(cfg, system, messages, max_tokens=rcfg["max_tokens"] or auto_tokens,
+                                          on_event=_ev if tr.id else None)
+                    u = llmmod.take_usage()
+                    req.add_tokens("llm", u["in"], u["out"], u["cached"])
+                    for g in got:   # lo pedido cuenta como cargado (y se ve en el chat)
+                        name, _, sec = g.partition(":")
+                        cur = next((x for x in sk[1] if x["name"] == name), None)
+                        if not cur:
+                            cur = {"name": name, "refs": [], "sections": 0, "pinned": False, "score": 0}
+                            sk[1].append(cur)
+                        cur["sections"] = (cur.get("sections") or 0) + 1
+                        cur["asked"] = cur.get("asked", []) + [sec]
             tr.add("step", tr.L("Respuesta recibida: aplico los cambios", "Answer received: applying the changes"))
             reply = parse_reply(raw)
             _score_reply(reply, sess)
@@ -1539,7 +1570,7 @@ class Handler(SimpleHTTPRequestHandler):
                     since = 0
                 return self._json({"layers": router.LAYERS, "requests": MONITOR.public(since), "summary": MONITOR.summary(),
                                    "router": router.config(load_config()), "ai_timeout": load_config().get("ai_timeout", 300),
-                                   "index": SONGS.stats() if SONGS else None})
+                                   "skills_mode": skill_mode(load_config()), "index": SONGS.stats() if SONGS else None})
             if path == "/api/songs/search":
                 q = parse_qs(urlparse(self.path).query)
                 if not SONGS:
@@ -1635,6 +1666,8 @@ class Handler(SimpleHTTPRequestHandler):
                     cfg["ai_timeout"] = max(30, min(1800, int(float(data["ai_timeout"]))))
                 if isinstance(data.get("router"), dict):
                     router.update(cfg, data["router"])
+                if data.get("skills_mode") in ("smart", "whole"):
+                    cfg.setdefault("skills", {})["mode"] = data["skills_mode"]
                 save_config(cfg)
                 return self._json(public_config(cfg))
 

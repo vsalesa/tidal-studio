@@ -30,7 +30,9 @@ export function skillsLineHTML(report) {
   }
   const chips = loaded.map((l) => {
     const u = used.has(l.name);
-    const refs = (l.refs || []).length ? ` + ${l.refs.map((r) => r.split("/").pop()).join(", ")}` : "";
+    const refs = ((l.refs || []).length ? ` + ${l.refs.map((r) => r.split("/").pop()).join(", ")}` : "")
+      + (l.sections ? ` · ${l.sections} ${l.sections === 1 ? L("sección", "section") : L("secciones", "sections")}` : "")
+      + ((l.asked || []).length ? ` · ${L("pidió", "asked for")} ${l.asked.map((x) => x.split("#").pop()).join(", ")}` : "");
     return `<button class="sk-chip ${u ? "used" : "loaded"}" data-skill="${esc(l.name)}" title="${esc(u ? L("Cargada y usada en esta respuesta", "Loaded and used in this answer") : L("Cargada, pero Maestro no la ha usado", "Loaded, but Maestro didn't use it"))}">${u ? icon("check", 12) : ""}${esc(l.name)}<small>${esc(refs)}</small><em>${u ? L("usada", "used") : L("cargada", "loaded")}</em></button>`;
   });
   for (const n of used) if (!loaded.some((l) => l.name === n)) chips.push(`<button class="sk-chip used" data-skill="${esc(n)}">${icon("check", 12)}${esc(n)}<em>${L("usada", "used")}</em></button>`);

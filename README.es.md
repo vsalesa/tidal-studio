@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.19.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.20.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -636,6 +636,20 @@ como `/nombre`. Detalles en [Skills](#skills) y [Plugins](#plugins) más abajo.
 | **Plugins: un plugin de Claude Code entero desde un enlace de GitHub** | |
 | ![Panel de plugins](docs/screenshots/es/panel-plugins.png) | |
 
+**Skills a la carta** (0.20). Maestro ya no manda las skills enteras en cada mensaje. Trocea cada skill y sus archivos
+de referencia por secciones y, en cada mensaje, manda solo la introducción y las secciones que encajan con lo que pides
+(y con el paso del curso), elegidas con una búsqueda local en tu ordenador, sin IA. El catálogo lista solo las skills
+que pueden encajar, y la ruta que se carga siempre manda solo su parte para este paso. Debajo de cada skill cargada va
+el índice de las secciones que no se han mandado: si Maestro de verdad necesita una, la pide y le llega en una segunda
+llamada, solo entonces. Con las skills incluidas se mandan **un 55 % menos de caracteres de skills** por mensaje.
+Debajo de cada respuesta ves cuántas secciones de cada skill se cargaron y cuál pidió Maestro; el monitor RAG enseña los
+caracteres enviados al lado de lo que habría costado mandarlas enteras, y **Límites del enrutador → Cómo cargar las
+skills** vuelve a cargarlas enteras.
+
+| Debajo de la respuesta: secciones cargadas y la que pidió Maestro | Monitor RAG: caracteres de skills enviados frente a enteras |
+|---|---|
+| ![Skills a la carta en el chat](docs/screenshots/es/skills-a-la-carta.png) | ![Skills en el monitor RAG](docs/screenshots/es/monitor-skills.png) |
+
 ### Cómo decide Maestro, y su razonamiento
 
 Cada respuesta que se ha apoyado en una skill empieza con **Cómo lo he decidido**: una fila por decisión musical
@@ -674,13 +688,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.19.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.20.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.19.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.19.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/TidalStudio-0.19.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.19.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.19.0/tidal-studio_0.19.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.20.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/TidalStudio-0.20.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.20.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/TidalStudio-0.20.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.20.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.20.0/tidal-studio_0.20.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -1087,6 +1101,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.20.0** | [Skills a la carta](#skills-y-plugins): solo las secciones de cada skill que encajan con tu mensaje (búsqueda local, sin IA), un catálogo corto, la ruta que se carga siempre por partes, secciones extra bajo demanda, y el monitor RAG enseña los caracteres de skills enviados frente a enteras (un 55 % menos). |
 | **0.19.0** | [Memoria sincronizada con GitHub](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales): en los dos sentidos, así que en un ordenador nuevo tus memorias, estilos y casos vuelven solos; los borrados viajan en los dos sentidos; cada cosa dice si está en GitHub; **Comparar con GitHub**; reintentos automáticos; y traer **la memoria de otra persona** desde el enlace de su repositorio (a tu bandeja). |
 | **0.18.0** | Maestro v2, quinto paso: [memoria y estilos](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales). Memoria por ámbitos (canción, curso, género, siempre) desde el chat y desde tus elecciones de oído, con capa de validación (lo claro se aprueba solo, lo dudoso va a una bandeja), un registro donde cada cambio se deshace, **Mis estilos** (groove, papeles, instrumentos y tempo, no las notas) como inspiración, transformación o copia literal y compartidos por GitHub, casos musicales de los que aprende Maestro, copia automática en GitHub de lo aprobado y un panel de almacenamiento. |
 | **0.17.0** | Maestro v2, cuarto paso: [géneros](#cuatro-géneros-nuevos-variantes-de-cumbia-y-la-forma-de-la-canción). Cuatro cursos nuevos (reggae y dub, boom bap, afrobeat, bachata en beta), variantes de cumbia elegidas antes del ritmo (colombiana, sonidera, villera, chicha), la forma del curso como secciones en la partitura y en el `.musicxml`, elegir un sonido de oído dentro de cualquier curso (se aprende por género), aviso de sonidos que aún no suenan y bateristas reales para reggae, boom bap y afrobeat. |

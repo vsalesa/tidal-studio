@@ -168,7 +168,12 @@ class Monitor:
         n = len(done)
         local = sum(1 for r in done if r.answered_by in ("rules", "index"))
         toks = sum((x.get("tokens_in") or 0) + (x.get("tokens_out") or 0) for r in done for x in r.layers.values())
-        return {"requests": n, "without_llm": local, "share_without_llm": round(local / n, 3) if n else 0, "tokens": toks}
+        # Skills a la carta (0.20): caracteres de skills enviados y los que habría costado mandarlas enteras
+        sk = [r.layers.get("skills") or {} for r in done]
+        sent = sum(x.get("chars") or 0 for x in sk if x.get("whole_chars") is not None)
+        whole = sum(x.get("whole_chars") or 0 for x in sk if x.get("whole_chars") is not None)
+        return {"requests": n, "without_llm": local, "share_without_llm": round(local / n, 3) if n else 0, "tokens": toks,
+                "skills_chars": sent, "skills_whole": whole, "skills_saved": round(1 - sent / whole, 3) if whole else 0}
 
 
 class Request:
