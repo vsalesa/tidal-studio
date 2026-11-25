@@ -3,7 +3,8 @@ import { L } from "./i18n.js";
 // Guarda fotos de la canción (BPM, pistas, mezcla), no del chat. Se guarda por proyecto en el navegador.
 
 const KEY = "tidal-studio-history-v1";
-const MAX = 80;
+let MAX = 80; // Ajustes → Límites → Pasos de deshacer
+export function setUndoSteps(n) { const v = Math.round(+n); if (v >= 10 && v <= 1000) MAX = v; }
 let H = { projectId: null, list: [], idx: -1 };
 let timer = null, paused = false;
 

@@ -4,13 +4,13 @@
 // - Al guardar escribimos un .tidal normal que suena en cualquier editor, con una línea de
 //   comentario «-- tidal-studio: {…}» que recuerda nombre, estilo y mezcla (para no perder nada).
 import { L } from "./i18n.js";
+import { maxTracks } from "./tracklimit.js";
 
 export const META_RE = /^--\s*tidal-studio:\s*(\{.*\})\s*$/;
 const HEADER_RE = /^--\s*(\[(?:silenciada|muted)\]\s*)?(.+?)\s*·\s*([\wáéíóú]+)\s*$/;
 const STUDIO_RE = /^--\s*(Tidal Studio\b|Master:|Código extra|Extra code)/;
 // Líneas que siguen la instrucción anterior aunque empiecen sin sangría (igual que server/engine.py)
 const CONTINUATION = ["#", "$", "|", "+", "*", ".", ")", "]", ",", "}", "<~", "~>"];
-const MAX_TRACKS = 12;
 export const KINDS = ["percusion", "bajo", "armonia", "melodia", "textura", "efecto", "estructura"];
 
 // Quita un comentario «-- …» del final de una línea (si no está dentro de comillas)
@@ -99,11 +99,11 @@ export function parseTidalFile(text, opts = {}) {
   if (metaLine) { try { res.meta = JSON.parse(metaLine.trim().match(META_RE)[1]); } catch { /* metadatos rotos: se ignoran */ } }
   const parseMix = opts.parseMixLine || (() => null);
   const used = new Set();
-  // Los d1…d12 escritos en el archivo se reservan para su pista; los «p "nombre"» cogen los que sobren
+  // Los d1…dN escritos en el archivo se reservan para su pista; los «p "nombre"» cogen los que sobren
   const reserved = new Set([...src.matchAll(/^\s*(?:--\s*)?(?:do\s+)?d(\d+)\s*\$/gm)].map((m) => "d" + m[1]));
   const free = (want) => {
-    if (want && /^d([1-9]|1[0-2])$/.test(want) && !used.has(want)) return want;
-    for (const avoid of [true, false]) for (let i = 1; i <= MAX_TRACKS; i++) if (!used.has("d" + i) && !(avoid && reserved.has("d" + i))) return "d" + i;
+    if (want && /^d[1-9]\d?$/.test(want) && +want.slice(1) <= maxTracks() && !used.has(want)) return want;
+    for (const avoid of [true, false]) for (let i = 1; i <= maxTracks(); i++) if (!used.has("d" + i) && !(avoid && reserved.has("d" + i))) return "d" + i;
     return null;
   };
   // Comentarios que no se han usado como nombre de pista: se guardan en «extra» para no perderlos
@@ -146,7 +146,7 @@ export function parseTidalFile(text, opts = {}) {
     }
     if (code === null) return false;
     const finalId = free(id);
-    if (!finalId) return false; // más de 12 pistas: va a «extra»
+    if (!finalId) return false; // más pistas de las que caben: va a «extra»
     used.add(finalId);
     // Quitar comentarios de final de línea: al tocar se añade la mezcla detrás y quedaría comentada
     const codeOut = code.split("\n").map(stripLineComment).join("\n").replace(/^\s+|\s+$/g, "");

@@ -53,7 +53,7 @@ SALIDA OBLIGATORIA: responde SOLO con un objeto JSON válido (sin texto fuera, s
 
 REGLAS DEL CÓDIGO TIDAL (muy importante, si fallan no suena nada):
 - "codigo" es SOLO el patrón, lo que va después de "d1 $". No escribas "d1 $" ni "setcps".
-- Ids de pista: d1 a d12. Reutiliza el id para modificar una pista.
+- Ids de pista: d1 a d12 (o hasta el máximo que diga ESTADO DE LA SESIÓN). Reutiliza el id para modificar una pista.
 - Usa sonidos que existen en Dirt-Samples: bd, sn, hh, hh27, cp, ho (hi-hat abierto; "oh" NO existe), lt, mt, ht, cr, rm, 808bd, 808sd, 808hc, 808oh, 808cy, house, techno, drum, clubkick, jazz, breaks125, amencutup, perc, tabla, bass, bass1, bass3, jvbass, bassdm, pad, padlong, arpy, pluck, gtr, casio, sitar, east, birds, wind, space, glitch, noise, industrial, feel, future, hand, stab, superpiano.
 - Sintetizadores de SuperDirt (usar con "n" y notas): superpiano, supersaw, superpwm, supersquare, superhammond, superchip, supergong, superfm, superhoover, supermandolin, supertrumpet (trompeta propia de Tidal Studio), y ondas básicas de Tidal Studio: sawtooth, square, triangle, pulse, sine. No inventes otros nombres de sintes.
 - Teclado MIDI del usuario como instrumento: # s "midi" # midichan 0 hace que la pista suene en su teclado o piano (solo si lo ha elegido en «Enviar a mi teclado»; si no, no suena). Propónlo solo si el usuario habla de su teclado.
@@ -91,6 +91,9 @@ def lock_text(lock):
 def session_summary(session):
     bpm = session.get("bpm", 120)
     lines = [f"BPM actual: {bpm}"]
+    mx = session.get("max_tracks")
+    if isinstance(mx, int) and mx != 12:
+        lines.append(f"Pistas máximas: d1 a d{mx}")
     tracks = session.get("tracks") or []
     if not tracks:
         lines.append("Pistas: (ninguna todavía)")

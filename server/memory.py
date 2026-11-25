@@ -28,6 +28,7 @@ import hashlib
 import threading
 import time
 import uuid
+import tracklimit
 
 SCOPES = ("song", "course", "genre", "global")
 SCOPE_NAME = {"song": ("esta canción", "this song"), "course": ("este curso", "this course"),
@@ -49,8 +50,8 @@ def _hash(obj):
     return hashlib.sha1(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
 
 
-def _clean(s, n=MAX_TEXT):
-    return re.sub(r"\s+", " ", str(s or "")).strip()[:n]
+def _clean(s, n=None):
+    return re.sub(r"\s+", " ", str(s or "")).strip()[:MAX_TEXT if n is None else n]
 
 
 def _norm(s):
@@ -967,7 +968,7 @@ def style_from_song(song, name="", genre="", description="", keep_literal=True):
     if not tracks:
         raise ValueError("La canción no tiene pistas|The song has no tracks")
     roles = []
-    for t in tracks[:12]:
+    for t in tracks[:tracklimit.MAX]:
         code = str(t.get("code") or "")
         role = str(t.get("kind") or "").lower() or ("percusion" if not _has_notes(code) else "melodia")
         drum = role in DRUM_KINDS or not _has_notes(code)
@@ -983,7 +984,7 @@ def style_from_song(song, name="", genre="", description="", keep_literal=True):
           "forma": form, "from_song": _clean(song.get("name"), 80)}
     if keep_literal:
         st["literal"] = [{"id": t.get("id"), "name": t.get("name"), "kind": t.get("kind"), "code": str(t.get("code"))[:4000]}
-                         for t in tracks[:12]]
+                         for t in tracks[:tracklimit.MAX]]
     return st
 
 
@@ -1062,4 +1063,4 @@ def transform(st, genre="", bpm=None, key="", ensemble=None, seed=1, lang="es"):
                 code = re.sub(rf'\b{re.escape(r["sounds"][0])}\b', snd, code)
             tracks.append({"id": tid, "name": r["name"], "kind": r["role"], "code": code})
     kname = midigen.KEY_NAMES[root] + ("m" if mode == "minor" else "")
-    return {"bpm": max(40, min(220, int(bpm or st.get("bpm") or 120))), "key": kname, "genre": g, "tracks": tracks[:12]}
+    return {"bpm": max(40, min(220, int(bpm or st.get("bpm") or 120))), "key": kname, "genre": g, "tracks": tracks[:tracklimit.MAX]}

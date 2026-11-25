@@ -110,8 +110,9 @@ def _wav_chunks(data):
     return out
 
 
-def wav_to16(data, max_sec=MAX_SEC):
+def wav_to16(data, max_sec=None):
     """WAV de 16/24/32 bits o float → WAV de 16 bits, recortado a max_sec con un fundido final."""
+    max_sec = MAX_SEC if max_sec is None else max_sec
     ch = _wav_chunks(data)
     fpos, _ = ch[b"fmt "]
     fmt, nch, sr = struct.unpack("<HHI", data[fpos:fpos + 8])

@@ -47,7 +47,7 @@ GROUPS = [
     ("snare", ["snare", "stick"], "Caja y aro", "Snare and rim"),
     ("hats", ["hh", "hhp", "oh"], "Charles", "Hi-hats"),
     ("toms", ["tomh", "tomm", "toml", "ride", "bell", "crash"], "Toms y platos", "Toms and cymbals"),
-]  # cuatro pistas como mucho: caben en d9..d12 sin pisar las del curso (d1..d8)
+]  # cuatro pistas como mucho: caben en d9..d12 sin pisar las del curso (d1..d8); el estudio tiene 12 pistas como mínimo
 _lock = threading.Lock()
 
 

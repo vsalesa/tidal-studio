@@ -42,6 +42,8 @@ import shellenv  # noqa: E402
 import files as tfiles  # noqa: E402
 import ccdetect  # noqa: E402
 import songimport  # noqa: E402
+import tracklimit  # noqa: E402
+import limits  # noqa: E402
 import midigen  # noqa: E402
 import midilive  # noqa: E402
 import library as soundlib  # noqa: E402
@@ -153,6 +155,11 @@ DEFAULT_CONFIG = {
     "audio": {
         "out": "",
     },
+    # 0.25.1: cuántas pistas (d1..dN) tiene el estudio. Cada una es una orbit de SuperDirt con sus efectos
+    # encendidos: más pistas = más CPU. Ver server/tracklimit.py
+    "tracks": {"count": tracklimit.DEFAULT},
+    # 0.25.1: los demás topes (Ajustes → Límites). Solo se guardan los que cambias; ver server/limits.py
+    "limits": {},
     "temperature": 0.7,
     # Segundos que la IA puede pasar SIN mandar nada antes de darla por perdida (si va respondiendo, no se corta)
     "ai_timeout": 300,
@@ -1423,7 +1430,7 @@ class Handler(SimpleHTTPRequestHandler):
                 if path == "/api/import/midi":
                     start = arg("start")
                     return self._json(songimport.analyse(raw, lang, int(start) if start.isdigit() else None,
-                                                         int(arg("bars", "4") or 4), arg("name")))
+                                                         int(arg("bars", "4") or 4), arg("name"), ENGINE.tracks))
                 return self._json(audioimport.start_job(arg("filename", "song.mp3"), raw, arg("engine") or None))
             except (songimport.ImportError_, ValueError) as e:
                 return self._err(e, lang)
@@ -1519,6 +1526,8 @@ class Handler(SimpleHTTPRequestHandler):
                     "github_configured": github.configured(cfg),
                     "github_where": github.where(cfg),
                     "github_create_new": bool(cfg["github"].get("create_new")),
+                    "max_tracks": ENGINE.tracks,
+                    "undo_steps": limits.values(cfg)["undo_steps"],
                     "data": startup_notice(),
                 })
             if path == "/api/songs/local":
@@ -1527,6 +1536,9 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json(backups_status())
             if path == "/api/config":
                 return self._json(public_config(load_config()))
+            if path == "/api/limits":
+                lang = parse_qs(urlparse(self.path).query).get("lang", ["es"])[0]
+                return self._json(limits.public(load_config(), lang))
             if path == "/api/appupdate":
                 return self._json(appupdate.public(load_config()))
             if path == "/api/samples":
@@ -1772,6 +1784,13 @@ class Handler(SimpleHTTPRequestHandler):
                         cfg["github"][k] = v
                 if "temperature" in data:
                     cfg["temperature"] = float(data["temperature"])
+                if isinstance(data.get("tracks"), dict) and "count" in data["tracks"]:
+                    cfg["tracks"] = {"count": tracklimit.clamp(data["tracks"]["count"])}
+                    save_config(cfg)
+                    ENGINE.set_tracks(cfg["tracks"]["count"])
+                if isinstance(data.get("limits"), dict):
+                    cfg["limits"] = limits.clean(data["limits"])
+                    limits.apply(cfg)
                 if "ai_timeout" in data:
                     cfg["ai_timeout"] = max(30, min(1800, int(float(data["ai_timeout"]))))
                 if isinstance(data.get("router"), dict):
@@ -2407,6 +2426,9 @@ def main():
     except Exception as e:  # noqa: BLE001
         print(f"[instrumentos] {e}")
     ENGINE.audio_out = str((load_config().get("audio") or {}).get("out") or "")
+    ENGINE.tracks = tracklimit.count(load_config())
+    limits.apply(load_config())
+    ENGINE.boot_dir = paths.CACHE
     if not ARGS.no_engine:
         threading.Thread(target=ENGINE.start, daemon=True).start()
     threading.Thread(target=update_plugins_on_start, daemon=True).start()

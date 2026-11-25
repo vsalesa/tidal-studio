@@ -18,6 +18,8 @@ import subprocess
 import threading
 import time
 
+import tracklimit
+
 SYSTEM = platform.system()  # "Darwin", "Windows", "Linux"
 HOME = os.path.expanduser("~")
 
@@ -147,7 +149,7 @@ def split_blocks(code):
 
 def utf8_env(env=None):
     """GHCi lee sus scripts con la codificación del sistema. Abierto desde Finder (app de Mac) o un
-    servicio no hay LANG y es ASCII: un acento en BootTidal.hs cortaba el arranque y d1..d12 no existían."""
+    servicio no hay LANG y es ASCII: un acento en BootTidal.hs cortaba el arranque y d1..dN no existían."""
     env = dict(os.environ if env is None else env)
     if SYSTEM != "Windows":
         cur = env.get("LC_ALL") or env.get("LC_CTYPE") or env.get("LANG") or ""
@@ -182,6 +184,8 @@ class Engine:
         # Audio: qué salida usa SuperCollider, a qué frecuencia, qué salidas hay y si algo ha cambiado
         # (enchufar un piano USB o unos auriculares puede cambiar el audio del sistema). Ver audio_state().
         self.audio_out = ""            # salida elegida en Ajustes ("" = la del sistema)
+        self.tracks = tracklimit.DEFAULT  # pistas d1..dN (Ajustes → Pistas); BootTidal y orbits salen de aquí
+        self.boot_dir = ""             # dónde escribir el BootTidal.hs generado ("" = <programa>/cache)
         self.audio = self._audio_blank()
         self._stopping = False
 
@@ -346,13 +350,15 @@ class Engine:
                     self.audio = self._audio_blank()
                     self.audio["rev"] = rev
                 self._stopping = False
-                self.sclang = self._popen(cmd, os.path.dirname(sclang), {"TIDAL_SC_OUTDEVICE": self.audio_out or ""})
+                self.sclang = self._popen(cmd, os.path.dirname(sclang), {"TIDAL_SC_OUTDEVICE": self.audio_out or "",
+                                                                         "TIDAL_STUDIO_TRACKS": str(tracklimit.clamp(self.tracks))})
                 threading.Thread(target=self._pump, args=(self.sclang, "sc"), daemon=True).start()
 
             if not ghci:
                 self._add("studio", "No encuentro GHCi (Haskell/Tidal). Ejecuta el instalador.")
             elif not (self.ghci and self.ghci.poll() is None):
-                boot = os.path.join(self.root, "tidal", "BootTidal.hs")
+                # d1..dN según Ajustes → Pistas (el BootTidal.hs de tidal/ es la plantilla)
+                boot = tracklimit.write_boot(self.root, self.boot_dir or os.path.join(self.root, "cache"), self.tracks)
                 self._add("studio", "Arrancando TidalCycles (GHCi)…")
                 self.ghci = self._popen([ghci, "-ghci-script", boot], self.root)
                 threading.Thread(target=self._pump, args=(self.ghci, "tidal"), daemon=True).start()
@@ -497,6 +503,22 @@ class Engine:
         self.stop(only=("sclang",))
         self._kill_orphan_scsynth()
         return self.start()
+
+    def set_tracks(self, n):
+        """Cambia el número de pistas. Si el motor está en marcha, lo reinicia entero (Tidal y SuperDirt)
+        para que existan d1..dN y sus orbits. Devuelve True si ha reiniciado."""
+        n = tracklimit.clamp(n)
+        if n == self.tracks:
+            return False
+        self.tracks = n
+        running = bool((self.ghci and self.ghci.poll() is None) or (self.sclang and self.sclang.poll() is None))
+        if not running:
+            return False
+        self._add("studio", f"Reiniciando el sonido con {n} pistas…")
+        self.stop()
+        self._kill_orphan_scsynth()
+        threading.Thread(target=self.start, daemon=True).start()
+        return True
 
     def _kill_orphan_scsynth(self):
         """Si sclang se cerró a la fuerza, scsynth puede quedar vivo ocupando el puerto 57110 y el nuevo
