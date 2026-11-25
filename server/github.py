@@ -160,7 +160,7 @@ def song_files(project):
         lines[5:5] = ["-- Código extra / Extra code", extra, ""]
     tidal = "\n".join(lines)
     keep = {k: project.get(k) for k in ("name", "bpm", "style", "tracks", "projectId", "extra") if project.get(k) not in (None, "")}
-    keep["tracks"] = [{k: t.get(k) for k in ("id", "name", "kind", "code", "muted", "fromScore") if t.get(k) not in (None, "")} for t in tracks]
+    keep["tracks"] = [{k: t.get(k) for k in ("id", "name", "kind", "code", "muted", "fromScore", "mix", "lock") if t.get(k) not in (None, "")} for t in tracks]
     sc = scoremod.normalize(project.get("score")) if project.get("score") else None
     readme = [f"# {name}", "", f"**{bpm} BPM**" + (f" · {project.get('style')}" if project.get("style") else "") + f" · {len(tracks)} pistas", "",
               "| Pista | Nombre | Código |", "|---|---|---|"]

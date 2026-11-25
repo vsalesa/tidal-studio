@@ -116,6 +116,7 @@ async function syncSong() {
   const song = { id: state.projectId, name: state.name || "", bpm: state.bpm, style: state.style || "", locks: { bpm: !!state.bpmLock },
     course: state.course ? state.course.id : null,
     tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code, muted: !!t.muted, mix: t.mix || null, lock: t.lock || null })),
+    extra: state.extra || "",
     ...(state.score && state.score.parts && state.score.parts.length ? { score: state.score } : {}) };
   const key = JSON.stringify(song);
   if (key === lastSynced) return;
@@ -124,6 +125,41 @@ async function syncSong() {
 const PROJ_KEY = "tidal-studio-projects-v1";
 function listProjects() {
   try { return JSON.parse(localStorage.getItem(PROJ_KEY) || "[]"); } catch { return []; }
+}
+// 0.25: cada canción también queda en archivo, en tu carpeta de datos (songs/<nombre>/, como en GitHub).
+// Si este navegador perdió «Mis proyectos» (otro puerto, perfil nuevo, reinstalación), se recuperan de ahí.
+// Devuelve {added, onDisk}. Nunca pisa un proyecto que ya tengas: solo añade los que faltan.
+async function recoverLocalSongs() {
+  let r;
+  try { r = await api("/api/songs/local"); } catch { return { added: 0, onDisk: 0 }; }
+  const songs = r.songs || [], list = listProjects(), have = new Set(list.map((p) => p.id));
+  const room = Math.max(0, 30 - list.length);
+  let added = 0;
+  for (const s of songs.filter((x) => !have.has(x.projectId)).slice(0, room)) {
+    try {
+      const d = await api("/api/songs/local/load", { slug: s.slug });
+      const id = d.projectId || s.projectId;
+      list.push({ id, name: d.name || s.name, updated: s.updated || Date.now(),
+        data: { ...FRESH(), name: d.name || s.name, bpm: d.bpm || 120, style: d.style || "", extra: d.extra || "",
+          tracks: (d.tracks || []).map((t) => ({ ...t })), projectId: id, github: null, file: null, chat: [], trying: null,
+          ...(d.score && d.score.parts ? { score: d.score } : {}) } });
+      added++;
+    } catch { /* una canción ilegible no para las demás */ }
+  }
+  if (added) {
+    list.sort((a, b) => (b.updated || 0) - (a.updated || 0));
+    try { localStorage.setItem(PROJ_KEY, JSON.stringify(list)); } catch { /* sin almacenamiento */ }
+  }
+  return { added, onDisk: songs.length };
+}
+// Lo que pasó con tus datos al arrancar (se avisa una vez)
+let dataNoticed = false;
+function noticeData(d) {
+  dataNoticed = true;
+  if (d.restored && d.restored.ok) toast(L("He restaurado la copia de seguridad que pediste. La anterior también se guardó por si quieres volver atrás.", "I restored the backup you asked for. The previous state was saved too, in case you want to go back."));
+  else if (d.restored && !d.restored.ok) toast(L(`No pude restaurar la copia (${d.restored.error}). Tus datos siguen como estaban.`, `I couldn't restore the backup (${d.restored.error}). Your data is unchanged.`));
+  else if (d.moved) toast(L(`Tus datos se han movido a su propia carpeta (${d.folder}). A partir de ahora las actualizaciones no los tocan.`, `Your data moved to its own folder (${d.folder}). From now on updates don't touch it.`));
+  if (d.error) toast(L(`Aviso de tus datos: ${d.error}`, `Data notice: ${d.error}`));
 }
 
 // ------------------------------------------------------------------ API
@@ -3537,6 +3573,7 @@ function confirmDelete(id) {
   if (!p) return false;
   if (!window.confirm(L(`¿Borrar «${p.name}»? No se puede deshacer.`, `Delete «${p.name}»? This can't be undone.`))) return false;
   localStorage.setItem(PROJ_KEY, JSON.stringify(list.filter((x) => x.id !== id)));
+  api("/api/songs/forget", { id }).catch(() => {}); // y su archivo (las copias de seguridad lo conservan)
   if (id === state.projectId) { state.name = ""; state.projectId = "p" + Date.now(); }
   return true;
 }
@@ -3647,6 +3684,7 @@ async function refreshStatus() {
     const s = await api("/api/status");
     server.llm = s.llm_configured; server.engine = s.engine; server.github = s.github_configured;
     server.ghWhere = s.github_where || null; server.ghNew = !!s.github_create_new;
+    if (!dataNoticed && s.data) noticeData(s.data);
     syncSounds(s.engine && s.engine.sounds_rev, api);
     refreshHighlights();
     const e = s.engine, pe = $("#st-engine");
@@ -4874,6 +4912,10 @@ function init() {
   renderCourse();
   // Primera visita: el tutorial arranca solo (se puede cerrar en el primer paso)
   if (!tourSeen() && !state.tracks.length && !location.hash) setTimeout(runTour, 900);
+  // 0.25: «Mis proyectos» vacío pero hay canciones en tu carpeta de datos → se recuperan solas
+  if (!listProjects().length) recoverLocalSongs().then((r) => {
+    if (r.added) toast(L(`He recuperado ${r.added} ${r.added === 1 ? "canción" : "canciones"} de tu carpeta de datos. Están en «Mis proyectos».`, `I recovered ${r.added} ${r.added === 1 ? "song" : "songs"} from your data folder. They're in «My projects».`));
+  });
 
   $("#bpm").addEventListener("change", (e) => {
     state.bpm = Math.max(40, Math.min(220, parseInt(e.target.value) || 120)); e.target.value = state.bpm;
@@ -4971,7 +5013,7 @@ function init() {
     songForStyle: () => ({ name: state.name, bpm: state.bpm, style: state.style, tracks: state.tracks.map((t) => ({ id: t.id, name: t.name, kind: t.kind, code: t.code })), score: state.score }),
     listen: async (tracks, bpm) => { await ensureInstruments(tracks.map((t) => t.code)); evalCode(["hush", cps(bpm), ...tracks.map((t) => `${t.id} $ ${t.code}`)].join("\n\n")); },
     useStyle, adoptStyleTracks });
-  initStorage({ api, toast, librarySync: () => { server.samples = null; sm.mine = null; } });
+  initStorage({ api, toast, librarySync: () => { server.samples = null; sm.mine = null; }, recoverSongs: recoverLocalSongs });
   $("#btn-storage").onclick = () => { $("#settings").close(); openStorage(); };
   refreshMemBadge();
   initScore({ api, getState: () => state, changed, sysMsg, toast, playTrack: (t) => live() && playTrack(t) });

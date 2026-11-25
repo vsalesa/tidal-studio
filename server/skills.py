@@ -38,7 +38,8 @@ import plugins as pluginset
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BUILTIN_DIR = os.path.join(ROOT, "skills")
-USER_DIR = os.path.join(ROOT, "my-skills")
+import paths  # noqa: E402
+USER_DIR = paths.MY_SKILLS
 
 MAX_LOADED = 2          # skills cargadas enteras por respuesta
 BUDGET = 24000          # caracteres de skills que entran en el prompt

@@ -1819,6 +1819,10 @@ a.btn { display: inline-flex; gap: 6px; align-items: center; padding: 6px 12px; 
 .st-list { display: grid; gap: 8px; }
 .st-g { border: 1px solid var(--rule); border-radius: var(--r-sm); background: var(--card); padding: 10px 12px; }
 .st-g p { margin: 4px 0 0; }
+.st-safe { border-color: var(--teal); background: var(--teal-soft); margin: 10px 0 12px; }
+.st-safe .st-it { align-items: center; }
+.st-safe .st-it > span:first-child { flex: 1; line-height: 1.35; }
+.st-safe code { word-break: break-all; }
 .st-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .st-top button { margin-left: auto; }
 .st-size { font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 600; }

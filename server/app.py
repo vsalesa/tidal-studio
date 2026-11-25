@@ -49,6 +49,9 @@ import instcatalog  # noqa: E402
 import audioimport  # noqa: E402
 import loops  # noqa: E402
 import appupdate  # noqa: E402
+import paths  # noqa: E402
+import backup  # noqa: E402
+import songfiles  # noqa: E402
 import instlib  # noqa: E402
 import references  # noqa: E402
 import inventory  # noqa: E402
@@ -68,7 +71,22 @@ from samples import Library, SampleError, safe_name, pack_index, check_remote, T
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WEB_DIR = os.path.join(ROOT, "web")
-CONFIG_PATH = os.path.join(ROOT, "config.json")
+# 0.25: tus datos viven aparte del programa (paths.py). La primera vez se mueven desde dentro de la copia del
+# programa, y si la versión cambió se hace una copia de seguridad ANTES de abrir ninguna base de datos.
+CONFIG_PATH = paths.CONFIG
+APP_VERSION = appupdate.current_version()
+STARTUP_DATA = {"moved": [], "backup": None, "restored": None, "error": ""}
+if "--check" not in sys.argv:
+    try:
+        STARTUP_DATA["moved"] = paths.migrate()
+        if STARTUP_DATA["moved"]:
+            print(f"[datos] {len(STARTUP_DATA['moved'])} elemento(s) movidos a {paths.USER}")
+        STARTUP_DATA["backup"] = backup.on_start(APP_VERSION)
+        STARTUP_DATA["restored"] = backup.apply_pending(APP_VERSION)
+    except Exception as _e:  # noqa: BLE001  nunca impedir que el estudio arranque
+        STARTUP_DATA["error"] = str(_e)
+        print(f"[datos] {_e}")
+appupdate.BEFORE_INSTALL = lambda: backup.create(f"update-from-{APP_VERSION}", APP_VERSION)
 
 DEFAULT_CONFIG = {
     "provider": "openai",          # "openai" (cualquier API compatible) o "anthropic" (Claude)
@@ -432,20 +450,20 @@ ENGINE.midi_handler = MIDI.on_osc
 ENGINE.on_ready.append(MIDI.on_engine_ready)
 TIMELINE = TimelineQuery(ROOT)
 llmmod.LOGGER = lambda line: ENGINE._add("ia", line)
-LIBRARY = Library(ROOT)
+LIBRARY = Library(paths.USER)
 LIBRARY.on_add = lambda name, fname, info: loops.maybe_analyse(LIBRARY, name, fname, info)
 INSTLIB = instlib.InstLib(LIBRARY, ENGINE)
 # Maestro v2: índice de canciones (copia de solo lectura), votos y monitor de capas. Se puede borrar: se rehace solo.
-DATA_DIR = os.environ.get("TIDAL_STUDIO_DATA") or os.path.join(ROOT, "maestro-data")
+DATA_DIR = paths.DB_ROOT
 try:
-    SONGS = songindex.SongIndex(os.path.join(DATA_DIR, "maestro.db"))
+    SONGS = songindex.SongIndex(paths.SONGS_DB)
 except Exception as _e:  # noqa: BLE001  sin disco escribible el estudio sigue funcionando
     print(f"[maestro-data] {_e}")
     SONGS = None
 MONITOR = router.Monitor()
 # 0.16: medidas de sonido, elecciones y recetas (maestro-data/sounds.db). Los packs comprados se marcan «solo local».
 try:
-    SOUNDS = soundlab.Store(os.path.join(DATA_DIR, "sounds.db"))
+    SOUNDS = soundlab.Store(paths.SOUNDS_DB)
 except Exception as _e:  # noqa: BLE001
     print(f"[maestro-data] {_e}")
     SOUNDS = None
@@ -453,9 +471,9 @@ ANALYZER = soundlab.Analyzer(SOUNDS, audioimport.tools_python) if SOUNDS else No
 STEMS_DIR = os.path.join(os.path.dirname(audioimport.TOOLS), "stems")
 # 0.21: índice de las skills (SQLite FTS5, se rehace solo desde los Markdown) y limpieza de skills incluidas que
 # una versión nueva ya no trae (solo archivos de la app que no hayas tocado)
-kstore.configure(os.path.join(DATA_DIR, "maestro-knowledge.sqlite"))
+kstore.configure(paths.KNOWLEDGE_DB)
 try:
-    _gone = skillset.cleanup_managed(os.path.join(DATA_DIR, "managed-skills.json"))
+    _gone = skillset.cleanup_managed(paths.MANAGED_SKILLS)
     if _gone:
         print(f"[skills] archivos de skills que ya no vienen con la app, borrados: {', '.join(_gone)}")
 except Exception as _e:  # noqa: BLE001
@@ -485,7 +503,7 @@ def index_skills_on_start():
 
 # 0.18: memoria con ámbitos, registro que se deshace, «Mis estilos» y casos musicales (maestro-data/memory.db)
 try:
-    MEMORY = memorymod.Store(os.path.join(DATA_DIR, "memory.db"))
+    MEMORY = memorymod.Store(paths.MEMORY_DB)
 except Exception as _e:  # noqa: BLE001
     print(f"[maestro-data] {_e}")
     MEMORY = None
@@ -596,7 +614,22 @@ def memory_ctx(sess):
 
 
 def storage_paths():
-    return {"root": ROOT, "lib_dir": LIBRARY.dir, "data_dir": DATA_DIR, "tools": audioimport.TOOLS, "stems": STEMS_DIR}
+    return {"root": paths.USER, "lib_dir": LIBRARY.dir, "data_dir": DATA_DIR, "tools": audioimport.TOOLS, "stems": STEMS_DIR}
+
+
+def backups_status():
+    """Ajustes → Almacenamiento → Copias (0.25)."""
+    return {"backups": backup.list_all(), "pending": backup.read_pending(), "keep": backup.KEEP,
+            "folder": paths.BACKUPS, "data_folder": paths.USER, "version": APP_VERSION, "startup": startup_notice()}
+
+
+def startup_notice():
+    """Lo que pasó con tus datos al arrancar, para avisarte una vez en la pantalla."""
+    r = STARTUP_DATA.get("restored") or {}
+    b = STARTUP_DATA.get("backup") or {}
+    return {"moved": len(STARTUP_DATA.get("moved") or []), "backup": b.get("id") or "",
+            "restored": {"id": r.get("id"), "ok": r.get("ok"), "error": r.get("error", "")} if r else None,
+            "error": STARTUP_DATA.get("error") or "", "folder": paths.USER}
 
 
 def storage_counts():
@@ -1486,7 +1519,12 @@ class Handler(SimpleHTTPRequestHandler):
                     "github_configured": github.configured(cfg),
                     "github_where": github.where(cfg),
                     "github_create_new": bool(cfg["github"].get("create_new")),
+                    "data": startup_notice(),
                 })
+            if path == "/api/songs/local":
+                return self._json({"songs": songfiles.list_local(), "folder": paths.SONGS})
+            if path == "/api/backups":
+                return self._json(backups_status())
             if path == "/api/config":
                 return self._json(public_config(load_config()))
             if path == "/api/appupdate":
@@ -1536,12 +1574,12 @@ class Handler(SimpleHTTPRequestHandler):
                 self.wfile.write(body)
                 return
             if path == "/api/recordings":
-                d = os.path.join(ROOT, "recordings")
+                d = paths.RECORDINGS
                 files = sorted((f for f in os.listdir(d) if f.endswith(".wav")), reverse=True) if os.path.isdir(d) else []
                 return self._json({"folder": d, "files": [{"name": f, "size": os.path.getsize(os.path.join(d, f))} for f in files[:30]]})
             if path == "/api/recordings/file":
                 name = os.path.basename(parse_qs(urlparse(self.path).query).get("name", [""])[0])
-                fp = os.path.join(ROOT, "recordings", name)
+                fp = os.path.join(paths.RECORDINGS, name)
                 if not name.endswith(".wav") or not os.path.isfile(fp):
                     return self._json({"error": "No existe esa grabación"}, 404)
                 with open(fp, "rb") as f:
@@ -1788,17 +1826,44 @@ class Handler(SimpleHTTPRequestHandler):
                     es, _, en = str(e).partition("|")
                     return self._json({"error": en if data.get("lang") == "en" and en else es}, 400)
             if path == "/api/songs/sync":
-                # Copia de SOLO LECTURA de la canción del navegador: el servidor nunca la escribe de vuelta
-                if not SONGS:
-                    return self._json({"ok": False, "error": "sin índice"})
+                # Copia de SOLO LECTURA de la canción del navegador: el servidor nunca la escribe de vuelta.
+                # 0.25: además queda en archivo en <datos>/songs/<nombre>/ (como en GitHub)
                 song = data.get("song") if isinstance(data.get("song"), dict) else {}
+                folder, ferr = None, ""
                 try:
-                    return self._json(SONGS.sync(song))
+                    folder = songfiles.write(song)
+                except Exception as e:  # noqa: BLE001 — el archivo nunca debe romper el guardado
+                    ferr = str(e)
+                if not SONGS:
+                    return self._json({"ok": bool(folder), "file": folder, "error": ferr or "sin índice"})
+                try:
+                    return self._json({**SONGS.sync(song), "file": folder, **({"file_error": ferr} if ferr else {})})
                 except ValueError as e:
-                    return self._json({"ok": False, "error": str(e)}, 400)
+                    return self._json({"ok": False, "error": str(e), "file": folder}, 400)
             if path == "/api/songs/forget":
+                pid = str(data.get("id") or "")
                 if SONGS:
-                    SONGS.forget(str(data.get("id") or ""))
+                    SONGS.forget(pid)
+                songfiles.forget(pid)
+                return self._json({"ok": True})
+            if path == "/api/songs/local/load":
+                try:
+                    return self._json(songfiles.load(str(data.get("slug") or "")))
+                except ValueError as e:
+                    return self._err(str(e), data.get("lang") or "es", 404)
+            if path == "/api/backups/create":
+                try:
+                    return self._json({"ok": True, "backup": backup.create("manual", APP_VERSION), "backups": backup.list_all()})
+                except OSError as e:
+                    return self._json({"ok": False, "error": str(e)}, 500)
+            if path == "/api/backups/restore":
+                try:
+                    b = backup.schedule_restore(str(data.get("id") or ""))
+                except (OSError, ValueError):
+                    return self._err("Copia desconocida|Unknown backup", data.get("lang") or "es", 404)
+                return self._json({"ok": True, "pending": b})
+            if path == "/api/backups/cancel":
+                backup.cancel_restore()
                 return self._json({"ok": True})
             if path == "/api/ab/vote":
                 if not SONGS:
@@ -1913,7 +1978,7 @@ class Handler(SimpleHTTPRequestHandler):
                 # Un baterista real tocando el estilo del curso (Groove MIDI Dataset), convertido en pistas
                 try:
                     bpm = data.get("bpm")
-                    return self._json(references.example(ROOT, data.get("ref") or {}, data.get("lang") or "es",
+                    return self._json(references.example(paths.USER, data.get("ref") or {}, data.get("lang") or "es",
                                                          float(bpm) if bpm else None))
                 except references.RefError as e:
                     return self._err(e, data.get("lang") or "es")
@@ -2128,7 +2193,7 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._json({"skills": skillset.public(skillset.scan(cfg))})
 
             if path == "/api/record/start":
-                d = os.path.join(ROOT, "recordings")
+                d = paths.RECORDINGS
                 os.makedirs(d, exist_ok=True)
                 import time as _t
                 name = github.slugify(data.get("name") or "cancion") + _t.strftime("-%Y%m%d-%H%M%S") + ".wav"

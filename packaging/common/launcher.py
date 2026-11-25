@@ -2,8 +2,9 @@
 Tidal Studio launcher for the Windows and Linux offline installs (the Mac has its own Swift app).
 
 What it does, with no console window:
-  1. copies the program files to a writable folder in your user profile (your config.json, samples,
-     recordings, my-skills/ and my-plugins/ are never touched),
+  1. copies the program files to a writable folder in your user profile (<data>/app). Your own data lives
+     next to it in <data>/data (since 0.25) and is never touched; older files left inside app/ are moved
+     there by the server on first start,
   2. starts the studio server (Python + SuperCollider/SuperDirt + Tidal) in the background,
      logging to <data>/logs/studio.log,
   3. opens the studio in its own window:
@@ -36,6 +37,7 @@ if WIN:
 else:
     DATA = os.path.join(os.environ.get("XDG_DATA_HOME") or os.path.expanduser("~/.local/share"), "tidal-studio")
 APP = os.path.join(DATA, "app")
+USERDATA = os.path.join(DATA, "data")  # your data, next to (never inside) the program copy (0.25)
 LOGDIR = os.path.join(DATA, "logs")
 LOG = os.path.join(LOGDIR, "studio.log")
 PORT_FILE = os.path.join(DATA, ".port")
@@ -120,6 +122,7 @@ def server_env():
         "TIDAL_STUDIO_LANG": env.get("TIDAL_STUDIO_LANG") or ("es" if ES else "en"),
         # updates (server/appupdate.py): where the install is, how to ask us to quit, and whom to wait for
         "TIDAL_STUDIO_RUNTIME": RT,
+        "TIDAL_STUDIO_USERDATA": USERDATA,
         "TIDAL_STUDIO_QUIT_FILE": QUIT_FILE,
         "TIDAL_STUDIO_SHELL_PID": str(os.getpid()),
     })

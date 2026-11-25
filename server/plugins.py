@@ -32,7 +32,8 @@ import urllib.request
 import net
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PLUGIN_DIR = os.path.join(ROOT, "my-plugins")
+import paths  # noqa: E402
+PLUGIN_DIR = paths.MY_PLUGINS
 
 TEXT_EXT = (".md", ".json", ".yaml", ".yml", ".txt")
 MAX_FILE = 400_000

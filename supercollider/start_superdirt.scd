@@ -29,7 +29,7 @@ if(\SuperDirt.asClass.isNil) {
             ~dirt.fileExtensions = (~dirt.fileExtensions ++ #["ogg", "oga", "flac", "mp3"]).asSet.asArray;
             ~dirt.loadSoundFiles;
             // Tu biblioteca de Tidal Studio: cada carpeta de samples/ es un sonido
-            ~studioSamples = ~studioDir +/+ ".." +/+ "samples";
+            ~studioSamples = "TIDAL_STUDIO_SAMPLES".getenv ?? { ~studioDir +/+ ".." +/+ "samples" };
             if(File.exists(~studioSamples)) { ~dirt.loadSoundFiles(~studioSamples +/+ "*") };
             // Pack opcional de cajas de ritmos (git clone en samples/packs/tidal-drum-machines)
             if(File.exists(~studioSamples +/+ "packs/tidal-drum-machines/machines")) {

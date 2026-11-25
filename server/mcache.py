@@ -15,7 +15,8 @@ import threading
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DIR = os.path.join(ROOT, "cache")
+import paths  # noqa: E402
+DIR = paths.CACHE
 DAY = 24 * 3600
 
 _mem = {}

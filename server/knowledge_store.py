@@ -109,8 +109,8 @@ def close():
 
 
 def _default_path():
-    root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    d = os.environ.get("TIDAL_STUDIO_DATA") or os.path.join(root, "maestro-data")
+    import paths
+    d = paths.KNOWLEDGE
     return os.path.join(d, "maestro-knowledge.sqlite")
 
 

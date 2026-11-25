@@ -44,6 +44,7 @@ open_stream = None  # fn(url) -> objeto con .read(n) (descarga del instalador)
 spawn = None        # fn(argv, **popen_kwargs)
 
 STATE = {"state": "idle", "checked_at": 0, "error": ""}
+BEFORE_INSTALL = None  # app.py pone aquí la copia de seguridad (backup.create)
 _lock = threading.Lock()
 
 
@@ -364,6 +365,12 @@ def install(lang="es"):
         if STATE["state"] != "ready" or not path or not os.path.exists(path):
             raise ValueError("Primero descarga la actualización / download the update first")
         STATE.update(state="installing")
+    # 0.25: copia de seguridad de tus datos antes de que el instalador toque nada
+    if BEFORE_INSTALL:
+        try:
+            BEFORE_INSTALL()
+        except Exception as e:  # noqa: BLE001  una copia fallida no debe dejarte sin actualizar, pero se avisa
+            print(f"[backup] antes de actualizar: {e}")
     try:
         name, body = helper_script(kind, path, shell_pid(), lang, runtime_root())
         script = os.path.join(UPDATES_DIR, name)
