@@ -451,12 +451,36 @@ def memory_cfg(cfg=None):
     return m
 
 
-_backup = {"timer": None, "state": "idle", "last": None, "error": "", "commit_url": ""}
+_backup = {"timer": None, "state": "idle", "last": None, "error": "", "commit_url": "", "retries": 0, "next_retry": None,
+           "pulled": 0, "pushed": 0, "deleted": 0, "remote_bad": []}
 _backup_lock = threading.Lock()
+_sync_lock = threading.Lock()
+RETRY_DELAYS = (60, 300, 900, 1800)   # si falla la sincronización: 1 min, 5 min, 15 min y 30 min
+
+
+def _sync_folder(mc):
+    return re.sub(r"[^\w./-]", "", str(mc.get("backup_folder") or "tidal-studio")).strip("/") or "tidal-studio"
+
+
+def sync_compare():
+    """Sin cambiar nada: qué hay en GitHub, qué hay aquí y qué haría la sincronización con cada cosa."""
+    cfg = load_config()
+    mc = memory_cfg(cfg)
+    if not (MEMORY and github.configured(cfg)):
+        return {"skipped": True}
+    folder = _sync_folder(mc)
+    remote, bad = MEMORY.parse_remote(github.read_folder(cfg, folder), folder)
+    plan = MEMORY.sync_plan(remote)
+    counts = {}
+    for p_ in plan:
+        counts[p_["action"]] = counts.get(p_["action"], 0) + 1
+    return {"plan": [{k: v for k, v in p_.items() if k != "path"} for p_ in plan], "counts": counts, "remote_bad": bad,
+            "folder": folder, "repo": github.where(cfg).get("repo")}
 
 
 def backup_now():
-    """Copia en GitHub lo APROBADO (memorias, estilos y casos). Nunca la bandeja, ni votos ni audiciones."""
+    """Sincroniza con GitHub en los dos sentidos: trae lo nuevo de allí (otro ordenador, una instalación nueva), sube lo
+    aprobado de aquí y borra allí lo que borraste aquí. Nunca la bandeja, ni votos ni audiciones. Si falla, lo reintenta."""
     cfg = load_config()
     mc = memory_cfg(cfg)
     if not (MEMORY and mc.get("backup") and github.configured(cfg)):
@@ -464,20 +488,40 @@ def backup_now():
     with _backup_lock:
         _backup["state"] = "running"
     try:
-        folder = re.sub(r"[^\w./-]", "", str(mc.get("backup_folder") or "tidal-studio")).strip("/") or "tidal-studio"
-        r = github.commit_files(cfg, MEMORY.backup_files(folder), "Copia de la memoria y los estilos de Maestro (Tidal Studio)")
+        with _sync_lock:
+            folder = _sync_folder(mc)
+            remote, bad = MEMORY.parse_remote(github.read_folder(cfg, folder), folder)
+            plan = MEMORY.sync_plan(remote)
+            pulled = MEMORY.apply_pull(plan, remote)
+            files, delete, hashes = MEMORY.sync_files(folder, remote)
+            r = github.commit_files(cfg, files, delete=delete,
+                                    message="Sincronizo la memoria y los estilos de Maestro (Tidal Studio)")
+            MEMORY.mark_synced(hashes)
+        pushed = sum(1 for p_ in plan if p_["action"] in ("push", "both"))
         with _backup_lock:
-            _backup.update(state="done", last=time.time(), error="", commit_url=r.get("commit_url") or _backup["commit_url"])
-        return r
+            _backup.update(state="done", last=time.time(), error="", retries=0, next_retry=None, pulled=pulled, pushed=pushed,
+                           deleted=len([p_ for p_ in plan if p_["action"] == "delete_remote"]), remote_bad=bad,
+                           commit_url=r.get("commit_url") or _backup["commit_url"])
+        return {**r, "pulled": pulled, "pushed": pushed}
     except Exception as e:  # noqa: BLE001
         with _backup_lock:
-            _backup.update(state="error", error=str(e))
+            n = _backup["retries"]
+            _backup.update(state="error", error=str(e), retries=n + 1)
+            if n < len(RETRY_DELAYS):
+                _backup["next_retry"] = time.time() + RETRY_DELAYS[n]
+            else:
+                _backup["next_retry"] = None
+        if n < len(RETRY_DELAYS):
+            schedule_backup(RETRY_DELAYS[n], retry=True)
         return {"error": str(e)}
 
 
-def schedule_backup(delay=20):
-    """Tras un cambio aprobado, espera un poco (por si hay más) y hace UN commit."""
+def schedule_backup(delay=20, retry=False):
+    """Tras un cambio aprobado, espera un poco (por si hay más) y hace UNA sincronización."""
     with _backup_lock:
+        if not retry:
+            _backup["retries"] = 0
+            _backup["next_retry"] = None
         if _backup["timer"]:
             _backup["timer"].cancel()
         t = threading.Timer(delay, backup_now)
@@ -930,6 +974,7 @@ class Handler(SimpleHTTPRequestHandler):
         with _backup_lock:
             bk = {k: v for k, v in _backup.items() if k != "timer"}
         return {"settings": memory_cfg(cfg), "memories": MEMORY.memories() if MEMORY else [], "stats": MEMORY.stats() if MEMORY else {},
+                "sync": MEMORY.sync_states() if MEMORY else {},
                 "cases": MEMORY.cases() if MEMORY else [], "github": github.configured(cfg), "github_where": github.where(cfg),
                 "backup": bk, "styles_list": midigen.styles_list()}
 
@@ -946,6 +991,14 @@ class Handler(SimpleHTTPRequestHandler):
             return self._json(self._memory_status())
         if path == "/api/memory/log":
             return self._json({"log": MEMORY.log()})
+        if path == "/api/memory/sync":
+            try:
+                r = sync_compare()
+            except github.GitHubError as e:
+                return self._json({"error": str(e)}, 502)
+            if r.get("skipped"):
+                return self._json({"error": "GitHub no está conectado|GitHub isn't connected"}, 400)
+            return self._json(r)
         if path == "/api/styles":
             return self._json({"styles": MEMORY.styles(), "github": github.configured(load_config()), "genres": midigen.styles_list()})
 
@@ -994,6 +1047,15 @@ class Handler(SimpleHTTPRequestHandler):
                     return self._err(r["error"], lang, 502)
                 if r.get("skipped"):
                     return self._err("Conecta GitHub y activa la copia|Connect GitHub and turn the backup on", lang)
+            elif path == "/api/memory/import":
+                link = str(data.get("link") or "").strip()
+                if not link:
+                    return self._err("Pega el enlace de su repositorio|Paste the link to their repository", lang)
+                files = github.fetch_memory(cfg, link)
+                remote, bad = MEMORY.parse_remote(files, "tidal-studio")
+                who = re.sub(r"^(?:https?://)?(?:www\.)?github\.com/", "", link).split("/")[0]
+                got = MEMORY.import_shared(remote, who)
+                return self._json({**self._memory_status(), "imported": got, "errors": bad[:5]})
             elif path == "/api/cases/add":
                 MEMORY.add_case(data)
             elif path == "/api/cases/delete":
@@ -1467,7 +1529,7 @@ class Handler(SimpleHTTPRequestHandler):
                                    "plugins_auto_update": bool(cfg.get("plugins", {}).get("auto_update", True))})
             if path in ("/api/soundlab", "/api/sounds/rank", "/api/recipes"):
                 return self._soundlab_get(path)
-            if path in ("/api/memory", "/api/memory/log", "/api/styles", "/api/storage"):
+            if path in ("/api/memory", "/api/memory/log", "/api/memory/sync", "/api/styles", "/api/storage"):
                 return self._memory_get(path)
             if path == "/api/monitor":
                 q = parse_qs(urlparse(self.path).query)
@@ -2151,6 +2213,8 @@ def main():
         threading.Thread(target=ENGINE.start, daemon=True).start()
     threading.Thread(target=update_plugins_on_start, daemon=True).start()
     threading.Thread(target=app_update_loop, daemon=True).start()
+    if MEMORY and memory_cfg().get("backup") and github.configured(load_config()):
+        schedule_backup(8)   # al arrancar: trae lo de GitHub (p. ej. en un ordenador nuevo) y sube lo pendiente
     if not ARGS.no_browser:
         threading.Timer(1.0, lambda: webbrowser.open(url)).start()
     try:

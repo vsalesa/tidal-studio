@@ -12,14 +12,22 @@ Todo vive en maestro-data/memory.db (SQLite), en tu ordenador:
   pueden usar de tres maneras: inspiración, transformación o copia literal (solo si la eliges, y queda registrada).
 - cases: casos musicales: un problema, el antes y el después, y por qué lo aceptaste.
 
-Nada de esto se manda a ningún sitio salvo que tú lo compartas, o actives la copia en GitHub (solo lo aprobado).
+Nada de esto se manda a ningún sitio salvo que tú lo compartas, o actives la sincronización con GitHub (solo lo aprobado).
+
+Sincronización con GitHub (0.19): cada memoria y cada caso tiene un identificador estable (uid) y la tabla «sync» guarda
+cómo estaba cada cosa la última vez que coincidió con GitHub. Con eso se sabe en los dos sentidos qué es nuevo, qué
+cambió y qué se borró: lo nuevo en GitHub (otro ordenador, o una instalación nueva) se trae; lo que borras aquí se
+borra allí; si cambió en los dos sitios, gana lo de este ordenador. Lo que tienes en la bandeja o descartado aquí no
+se vuelve a traer.
 """
 import json
 import os
 import re
 import sqlite3
+import hashlib
 import threading
 import time
+import uuid
 
 SCOPES = ("song", "course", "genre", "global")
 SCOPE_NAME = {"song": ("esta canción", "this song"), "course": ("este curso", "this course"),
@@ -31,6 +39,14 @@ MAX_TEXT = 300
 
 def _now():
     return time.time()
+
+
+def _uid():
+    return uuid.uuid4().hex[:16]
+
+
+def _hash(obj):
+    return hashlib.sha1(json.dumps(obj, sort_keys=True, ensure_ascii=False).encode("utf-8")).hexdigest()[:16]
 
 
 def _clean(s, n=MAX_TEXT):
@@ -170,6 +186,17 @@ class Store:
             self.db.execute("CREATE TABLE IF NOT EXISTS styles (id TEXT PRIMARY KEY, name TEXT, data TEXT, created REAL, updated REAL)")
             self.db.execute("""CREATE TABLE IF NOT EXISTS cases (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, data TEXT, genre TEXT, song_id TEXT, created REAL)""")
+            self.db.execute("CREATE TABLE IF NOT EXISTS sync (kind TEXT, key TEXT, hash TEXT, PRIMARY KEY (kind, key))")
+            cols = [r[1] for r in self.db.execute("PRAGMA table_info(memories)")]
+            if "uid" not in cols:  # bases de datos de la 0.18
+                self.db.execute("ALTER TABLE memories ADD COLUMN uid TEXT")
+            for r in self.db.execute("SELECT id FROM memories WHERE uid IS NULL OR uid = ''").fetchall():
+                self.db.execute("UPDATE memories SET uid = ? WHERE id = ?", (_uid(), r["id"]))
+            for r in self.db.execute("SELECT id, data FROM cases").fetchall():
+                d = json.loads(r["data"])
+                if not d.get("uid"):
+                    d["uid"] = _uid()
+                    self.db.execute("UPDATE cases SET data = ? WHERE id = ?", (json.dumps(d, ensure_ascii=False), r["id"]))
         self.on_change = None  # lo usa la copia automática en GitHub
 
     # ------------------------------------------------------------ registro (y deshacer)
@@ -279,7 +306,7 @@ class Store:
         return ""
 
     def add(self, text, scope="global", scope_key="", source="user", subject="", evidence=1, clear=False,
-            auto_approve=True, by="user", text_en=""):
+            auto_approve=True, by="user", text_en="", uid=""):
         """Añade (o refuerza) una memoria. La capa de validación decide si se aprueba sola o va a la bandeja."""
         text = _clean(text)
         if not text:
@@ -318,9 +345,9 @@ class Store:
                 status = "approved" if ok and not notes else "pending"
                 now = _now()
                 cur = self.db.execute(
-                    "INSERT INTO memories (scope, scope_key, text, text_en, subject, source, evidence, status, auto, note, created, updated) "
-                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
-                    (scope, scope_key, text, _clean(text_en), subject, source, int(evidence), status,
+                    "INSERT INTO memories (uid, scope, scope_key, text, text_en, subject, source, evidence, status, auto, note, created, updated) "
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                    (uid or _uid(), scope, scope_key, text, _clean(text_en), subject, source, int(evidence), status,
                      1 if status == "approved" and not (by == "user" and source == "manual") else 0, " · ".join(notes), now, now))
                 res = self._row(cur.lastrowid)
                 self._log("memory", res["id"], "add", by, None, res)
@@ -473,11 +500,12 @@ class Store:
             rows = self.db.execute("SELECT id, data FROM cases ORDER BY id DESC LIMIT ?", (limit,)).fetchall()
         return [dict(json.loads(r["data"]), id=r["id"]) for r in rows]
 
-    def add_case(self, c, by="user"):
+    def add_case(self, c, by="user", notify=True):
         c = {"problem": _clean(c.get("problem"), 400), "before": str(c.get("before") or "")[:4000],
              "after": str(c.get("after") or "")[:4000], "why": _clean(c.get("why"), 400),
              "genre": _clean(c.get("genre"), 40), "song": _clean(c.get("song"), 80), "song_id": _clean(c.get("song_id"), 80),
-             "title": _clean(c.get("title"), 120), "created": _now()}
+             "title": _clean(c.get("title"), 120), "created": c.get("created") if isinstance(c.get("created"), (int, float)) else _now(),
+             "uid": _clean(c.get("uid"), 40) or _uid()}
         if not c["problem"] or not (c["before"] or c["after"]):
             raise ValueError("Falta el problema o el código|The problem or the code is missing")
         with self.lock, self.db:
@@ -485,7 +513,8 @@ class Store:
                                   (json.dumps(c, ensure_ascii=False), c["genre"], c["song_id"], c["created"]))
             row = dict(self.db.execute("SELECT * FROM cases WHERE id = ?", (cur.lastrowid,)).fetchone())
             self._log("case", cur.lastrowid, "add", by, None, row)
-        self._changed()
+        if notify:
+            self._changed()
         return dict(c, id=cur.lastrowid)
 
     def delete_case(self, cid, by="user"):
@@ -519,15 +548,260 @@ class Store:
         return {"approved": by.get("approved", 0), "pending": by.get("pending", 0), "rejected": by.get("rejected", 0),
                 "styles": ns, "cases": nc, "log": nl}
 
-    def backup_files(self, folder="tidal-studio"):
-        """Lo que se copia en GitHub: solo memorias APROBADAS, tus estilos y tus casos (nunca la bandeja ni votos)."""
-        mem = [{k: m[k] for k in ("id", "scope", "scope_key", "text", "text_en", "subject", "source", "evidence", "updated")}
-               for m in self.memories("approved")]
-        files = {f"{folder}/memories.json": json.dumps({"version": 1, "memories": mem}, ensure_ascii=False, indent=2),
-                 f"{folder}/cases.json": json.dumps({"version": 1, "cases": self.cases(1000)}, ensure_ascii=False, indent=2)}
+    # ------------------------------------------------------------ sincronización con GitHub (0.19)
+    @staticmethod
+    def _mem_item(m):
+        """Una memoria tal como se guarda en GitHub (los mismos campos y la misma limpieza en los dos lados)."""
+        try:
+            ev = int(m.get("evidence") or 1)
+        except (TypeError, ValueError):
+            ev = 1
+        return {"uid": _clean(m.get("uid"), 40), "scope": m.get("scope") if m.get("scope") in SCOPES else "global",
+                "scope_key": _clean(m.get("scope_key"), 120), "text": _clean(m.get("text")), "text_en": _clean(m.get("text_en")),
+                "subject": _clean(m.get("subject"), 120), "source": _clean(m.get("source"), 20) or "manual", "evidence": ev}
+
+    def _local(self):
+        """Lo que se sincroniza (solo lo aprobado), con su clave estable: {(tipo, clave): objeto}."""
+        out = {}
+        for m in self.memories("approved"):
+            out[("memory", m["uid"])] = self._mem_item(m)
         for st in self.styles():
-            files[f"{folder}/styles/{st['id']}.json"] = json.dumps(st, ensure_ascii=False, indent=2)
-        return files
+            out[("style", st["id"])] = {k: v for k, v in st.items() if k not in ("created",)}
+        for c in self.cases(1000):
+            out[("case", c["uid"])] = {k: v for k, v in c.items() if k != "id"}
+        return out
+
+    def _known(self):
+        """Todas las claves que este ordenador conoce, aunque estén en la bandeja o descartadas (no se vuelven a traer)."""
+        with self.lock:
+            return {("memory", r[0]) for r in self.db.execute("SELECT uid FROM memories")}
+
+    def _synced(self):
+        with self.lock:
+            return {(r["kind"], r["key"]): r["hash"] for r in self.db.execute("SELECT * FROM sync")}
+
+    def parse_remote(self, files, folder="tidal-studio"):
+        """Lee lo que hay en GitHub (memories.json, cases.json, styles/*.json). Entiende también la copia de la 0.18,
+        que no tenía uid: la empareja con la memoria o el caso igual de aquí."""
+        out, bad = {}, []
+        mine = self.memories()
+        local_cases = self.cases(1000)
+        for path, txt in (files or {}).items():
+            rel = path[len(folder) + 1:] if path.startswith(folder + "/") else path
+            try:
+                data = json.loads(txt)
+                if rel == "memories.json":
+                    for m in data.get("memories") or []:
+                        if not isinstance(m, dict) or not _clean(m.get("text")):
+                            continue
+                        it = self._mem_item(m)
+                        if not it.get("uid"):
+                            twin = next((x for x in mine if x["scope"] == it["scope"] and x["scope_key"] == it["scope_key"]
+                                         and _norm(x["text"]) == _norm(it["text"])), None)
+                            it["uid"] = twin["uid"] if twin else "v1-" + _hash([it["scope"], it["scope_key"], _norm(it["text"])])
+                        out[("memory", it["uid"])] = it
+                elif rel == "cases.json":
+                    for c in data.get("cases") or []:
+                        if not isinstance(c, dict):
+                            continue
+                        c = {k: v for k, v in c.items() if k != "id"}
+                        if not c.get("uid"):
+                            twin = next((x for x in local_cases if (x["problem"], x["before"], x["after"]) == (c.get("problem"), c.get("before"), c.get("after"))), None)
+                            c["uid"] = twin["uid"] if twin else "v1-" + _hash([c.get("problem"), c.get("before"), c.get("after")])
+                        out[("case", c["uid"])] = c
+                elif rel.startswith("styles/") and rel.endswith(".json"):
+                    st = validate_style(data)
+                    st["id"] = slugify(st.get("id") or rel[7:-5])
+                    st.pop("created", None)
+                    out[("style", st["id"])] = dict(st, _path=path)
+            except (ValueError, TypeError, AttributeError) as e:
+                bad.append(f"{path}: {str(e).split('|')[0]}")
+        return out, bad
+
+    def sync_plan(self, remote):
+        """Compara lo de aquí con lo de GitHub y con la última vez que coincidieron. Devuelve una acción por cosa:
+        ok (igual), push (subir), pull (traer), delete_remote (lo borraste aquí), delete_local (lo borraron en otro
+        ordenador y aquí no lo habías tocado), both (cambió en los dos: gana lo de aquí)."""
+        local, synced, known = self._local(), self._synced(), self._known()
+        plan = []
+        for k in sorted(set(local) | set(remote), key=lambda x: (x[0], str(x[1]))):
+            lo, re_ = local.get(k), remote.get(k)
+            h_lo = _hash(lo) if lo is not None else None
+            h_re = _hash({a: b for a, b in re_.items() if a != "_path"}) if re_ is not None else None
+            last = synced.get(k)
+            if lo is not None and re_ is not None:
+                act = "ok" if h_lo == h_re else "pull" if h_lo == last else "push" if h_re == last else "both"
+            elif lo is not None:
+                # estaba sincronizado y aquí no ha cambiado: lo borraron en GitHub (otro ordenador) → se borra aquí
+                act = "delete_local" if last is not None and last == h_lo else "push"
+            elif k in synced or k in known:
+                act = "delete_remote"   # lo borraste (o lo dejaste en la bandeja / lo descartaste) en este ordenador
+            else:
+                act = "pull"            # nuevo en GitHub: otro ordenador o una instalación nueva
+            src = lo if act not in ("pull",) else re_
+            plan.append({"kind": k[0], "key": k[1], "action": act, "name": _label(k[0], src or re_ or {}), "path": (re_ or {}).get("_path")})
+        return plan
+
+    def apply_pull(self, plan, remote):
+        """Trae de GitHub lo nuevo o lo cambiado allí. Queda en el Registro (por «GitHub») y se puede deshacer.
+        Una memoria traída que choca con otra de aquí va a la bandeja en vez de aprobarse."""
+        n = 0
+        for p in plan:
+            if p["action"] == "delete_local":
+                with self.lock, self.db:
+                    if p["kind"] == "memory":
+                        r = self.db.execute("SELECT * FROM memories WHERE uid = ?", (p["key"],)).fetchone()
+                        if r:
+                            self.db.execute("DELETE FROM memories WHERE id = ?", (r["id"],))
+                            self._log("memory", r["id"], "delete", "github", dict(r), None)
+                    elif p["kind"] == "style":
+                        r = self._style_row(p["key"])
+                        if r:
+                            self.db.execute("DELETE FROM styles WHERE id = ?", (p["key"],))
+                            self._log("style", p["key"], "delete", "github", r, None)
+                    else:
+                        cur = next((x for x in self.cases(1000) if x["uid"] == p["key"]), None)
+                        if cur:
+                            r = dict(self.db.execute("SELECT * FROM cases WHERE id = ?", (cur["id"],)).fetchone())
+                            self.db.execute("DELETE FROM cases WHERE id = ?", (cur["id"],))
+                            self._log("case", cur["id"], "delete", "github", r, None)
+                n += 1
+                continue
+            if p["action"] != "pull":
+                continue
+            it = {a: b for a, b in remote[(p["kind"], p["key"])].items() if a != "_path"}
+            with self.lock, self.db:
+                if p["kind"] == "memory":
+                    cur = self.db.execute("SELECT * FROM memories WHERE uid = ?", (p["key"],)).fetchone()
+                    if cur:
+                        before = dict(cur)
+                        self.db.execute("UPDATE memories SET scope=?, scope_key=?, text=?, text_en=?, subject=?, source=?, evidence=?, updated=? WHERE id=?",
+                                        (it["scope"], it["scope_key"], it["text"], it.get("text_en") or "", it.get("subject") or "", it["source"],
+                                         int(it.get("evidence") or 1), _now(), cur["id"]))
+                        self._log("memory", cur["id"], "edit", "github", before, self._row(cur["id"]))
+                    else:
+                        conf = self._conflicts(it["scope"], it["scope_key"], it["text"], it.get("subject") or "")
+                        note = ("contradice: " + "; ".join(f"#{r['id']} {r['text'][:60]}" for r in conf[:3]) + "|contradicts: "
+                                + "; ".join(f"#{r['id']} {r['text'][:60]}" for r in conf[:3])) if conf else ""
+                        now = _now()
+                        c = self.db.execute(
+                            "INSERT INTO memories (uid, scope, scope_key, text, text_en, subject, source, evidence, status, auto, note, created, updated) "
+                            "VALUES (?,?,?,?,?,?,?,?,?,0,?,?,?)",
+                            (p["key"], it["scope"], it["scope_key"], it["text"], it.get("text_en") or "", it.get("subject") or "", it["source"],
+                             int(it.get("evidence") or 1), "pending" if conf else "approved", note, now, now))
+                        self._log("memory", c.lastrowid, "add", "github", None, self._row(c.lastrowid))
+                elif p["kind"] == "style":
+                    st = validate_style(it)
+                    st["id"] = p["key"]
+                    before = self._style_row(p["key"])
+                    now = _now()
+                    self.db.execute("INSERT OR REPLACE INTO styles (id, name, data, created, updated) VALUES (?,?,?,?,?)",
+                                    (st["id"], st["name"], json.dumps(dict(st, created=before["created"] if before else now), ensure_ascii=False),
+                                     before["created"] if before else now, now))
+                    self._log("style", st["id"], "edit" if before else "add", "github", before, self._style_row(st["id"]))
+                else:
+                    cur = next((x for x in self.cases(1000) if x["uid"] == p["key"]), None)
+                    if cur:
+                        r = dict(self.db.execute("SELECT * FROM cases WHERE id = ?", (cur["id"],)).fetchone())
+                        d = dict(it, uid=p["key"])
+                        self.db.execute("UPDATE cases SET data = ?, genre = ?, song_id = ? WHERE id = ?",
+                                        (json.dumps(d, ensure_ascii=False), d.get("genre") or "", d.get("song_id") or "", cur["id"]))
+                        self._log("case", cur["id"], "edit", "github", r, dict(self.db.execute("SELECT * FROM cases WHERE id = ?", (cur["id"],)).fetchone()))
+            if p["kind"] == "case" and not cur:
+                try:
+                    self.add_case(dict(it, uid=p["key"]), by="github", notify=False)
+                except ValueError:
+                    continue
+            n += 1
+        return n
+
+    def sync_files(self, folder, remote):
+        """Lo que hay que escribir en GitHub (todo lo aprobado de aquí) y lo que hay que borrar allí (estilos que ya
+        no están aquí). Devuelve también la huella de cada cosa, que se guarda cuando el commit sale bien."""
+        local = self._local()
+        mems = [dict(v) for k, v in local.items() if k[0] == "memory"]
+        cases = [dict(v) for k, v in local.items() if k[0] == "case"]
+        files = {f"{folder}/memories.json": json.dumps({"version": 2, "memories": mems}, ensure_ascii=False, indent=2),
+                 f"{folder}/cases.json": json.dumps({"version": 2, "cases": cases}, ensure_ascii=False, indent=2)}
+        for k, st in local.items():
+            if k[0] == "style":
+                files[f"{folder}/styles/{st['id']}.json"] = json.dumps(st, ensure_ascii=False, indent=2)
+        delete = sorted({v["_path"] for k, v in remote.items() if k[0] == "style" and k not in local and v.get("_path")}
+                        - set(files))
+        return files, delete, {k: _hash(v) for k, v in local.items()}
+
+    def import_shared(self, remote, who=""):
+        """La memoria de OTRA persona (su enlace de GitHub): sus memorias y sus casos llegan a tu bandeja para que
+        decidas, y sus estilos a «Mis estilos» como importados. Importar dos veces lo mismo no lo duplica."""
+        got = {"memories": 0, "cases": 0, "styles": 0, "skipped": 0}
+        who = _clean(who, 80)
+        with self.lock:
+            have_m = {r[0] for r in self.db.execute("SELECT uid FROM memories")}
+        have_c = {c["uid"] for c in self.cases(1000)}
+        for (kind, key), it in remote.items():
+            uid = "sh-" + _hash([who, key])
+            if kind == "memory":
+                if uid in have_m:
+                    got["skipped"] += 1
+                    continue
+                with self.lock, self.db:
+                    now = _now()
+                    note = f"compartida por {who}|shared by {who}" if who else "compartida|shared"
+                    c = self.db.execute(
+                        "INSERT INTO memories (uid, scope, scope_key, text, text_en, subject, source, evidence, status, auto, note, created, updated) "
+                        "VALUES (?,?,?,?,?,?,?,?,'pending',0,?,?,?)",
+                        (uid, it["scope"], it["scope_key"], it["text"], it.get("text_en") or "", it.get("subject") or "", "shared",
+                         int(it.get("evidence") or 1), note, now, now))
+                    self._log("memory", c.lastrowid, "add", "shared", None, self._row(c.lastrowid))
+                got["memories"] += 1
+            elif kind == "case":
+                if uid in have_c:
+                    got["skipped"] += 1
+                    continue
+                try:
+                    self.add_case(dict({k: v for k, v in it.items() if k != "_path"}, uid=uid, created=None), by="shared", notify=False)
+                    got["cases"] += 1
+                except ValueError:
+                    got["skipped"] += 1
+            else:
+                st = {k: v for k, v in it.items() if k not in ("_path", "id", "literal")}
+                st.update(source="imported", author=who)
+                sid = slugify(f"{who}-{key}" if who else key)
+                if self._style_row(sid):
+                    got["skipped"] += 1
+                    continue
+                st["id"] = sid
+                self.save_style(st, by="shared")
+                got["styles"] += 1
+        self._changed()
+        return got
+
+    def mark_synced(self, hashes):
+        with self.lock, self.db:
+            self.db.execute("DELETE FROM sync")
+            self.db.executemany("INSERT INTO sync (kind, key, hash) VALUES (?,?,?)", [(k[0], k[1], h) for k, h in hashes.items()])
+
+    def sync_states(self):
+        """Sin red: cómo está cada cosa respecto a la última sincronización (synced, changed o local)."""
+        synced = self._synced()
+        out = {}
+        for k, v in self._local().items():
+            last = synced.get(k)
+            out[f"{k[0]}:{k[1]}"] = "synced" if last == _hash(v) else "changed" if last else "local"
+        return out
+
+    def backup_files(self, folder="tidal-studio"):
+        """Compatibilidad: lo que se escribiría en GitHub (solo memorias APROBADAS, tus estilos y tus casos)."""
+        return self.sync_files(folder, {})[0]
+
+
+
+def _label(kind, o):
+    if kind == "memory":
+        return o.get("text") or ""
+    if kind == "style":
+        return o.get("name") or ""
+    return o.get("title") or o.get("problem") or ""
 
 
 # ---------------------------------------------------------------- texto para Maestro
