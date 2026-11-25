@@ -1,4 +1,16 @@
-## What's new in 0.21.0 / Novedades
+## What's new in 0.22.0 / Novedades
+
+Effects, the same in every view.
+
+- **One effect chip everywhere**: every effect (`# room`, `# delay`, `# lpf`, `# crush`…) has the same chip in **Tracks**, **Blocks** and the **Code** tab (new *Effects per track* strip above the code): a switch to turn it on or off (off keeps its value, as `{- # room 0.4 -}`), and its name and value, which open the editor.
+- **The same editor in all three views**: what the effect does, the on/off switch, a slider, the exact value and Remove setting. Before, Tracks could only switch effects and Blocks could only edit them.
+- **+ effect** at the end of each row adds a new one, in every view.
+- **Light editor**: the popup now uses the app's light *Partitura* look instead of a dark box.
+- In the Code tab, if you typed changes you haven't applied, the chips wait until you press Apply.
+
+**Español:** **Una sola ficha por efecto**: cada efecto tiene la misma ficha en **Pistas**, **Bloques** y **Código** (nueva franja *Efectos por pista* encima del código): un interruptor para encenderlo o apagarlo (apagado guarda su valor, como `{- # room 0.4 -}`) y su nombre y valor, que abren el editor. **El mismo editor en las tres vistas**: qué hace, el interruptor, deslizador, valor exacto y Quitar ajuste; antes en Pistas solo se podía encender y apagar y en Bloques solo editar. **+ efecto** añade uno nuevo en cualquier vista. **Editor claro**: el popup usa el aspecto claro *Partitura* en vez de una caja oscura. En Código, si has escrito cambios sin aplicar, las fichas esperan a que pulses Aplicar.
+
+## 0.21.0
 
 Six more included skills, a skills index that stays, and your own changes as memory candidates.
 

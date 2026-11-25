@@ -7,7 +7,7 @@ with an AI teacher ("Maestro") who supports you at every step, even if you know 
 
 **Website: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (overview, screenshots and install steps).
 
-**Latest version: 0.21.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
+**Latest version: 0.22.0** · [download for Mac, Windows or Linux](#a-real-app-on-your-computer) · [what's new](#whats-new-version-by-version) · [all releases](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/studio.png)
 
@@ -347,14 +347,24 @@ from an earlier version; the × on the error box clears it at any time.
 |---|---|
 | ![Blocks view](docs/screenshots/blocks.png) | ![Editing a block](docs/screenshots/blocks-edit.png) |
 
-**Turn each effect on and off**: every effect (`# room`, `# delay`, `# lpf`, `# crush`…) has its own switch, per track,
-in the Blocks view, under each track's code in the Tracks view, and on Maestro's configurator card. Switching one off
-bypasses just that effect and keeps its value, so switching it back on restores it exactly. In the code it becomes a
-Haskell comment, `{- # room 0.4 -}`, which Tidal ignores; it plays right away (with Live on) and Undo brings it back.
+**Effects, the same in every view** (0.22). Every effect (`# room`, `# delay`, `# lpf`, `# crush`…) is the same chip in
+the **Tracks** view (under each track's code), in **Blocks** and in the **Code** tab (the new *Effects per track* strip above
+the code), and Maestro's configurator card has the same controls. Each chip has:
 
-| Blocks: one switch per effect | Tracks: the effects row under the code |
+- a **switch** to turn the effect on or off. Off bypasses just that effect and keeps its value, so switching it back on
+  restores it exactly. In the code it becomes a Haskell comment, `{- # room 0.4 -}`, which Tidal ignores.
+- its **name and value**: click it to open the editor, with what the effect does, the same on/off switch, a slider, the
+  exact value and **Remove setting**.
+- **+ effect** at the end of the row adds a new one (gain, lpf, hpf, room, delay, pan, crush…).
+
+It plays right away (with Live on) and Undo brings anything back. The editor uses the app's light *Partitura* look, in
+every view. In the Code tab, if you have typed changes you haven't applied, the chips wait until you press **Apply**.
+
+| Tracks: click an effect to edit it | Blocks: the same switch and editor (here, room switched off) |
 |---|---|
-| ![Effect switches in Blocks](docs/screenshots/effects-toggle-blocks.png) | ![Effect switches in Tracks](docs/screenshots/effects-toggle-tracks.png) |
+| ![Editing an effect in Tracks](docs/screenshots/effects-tracks.png) | ![Editing an effect in Blocks](docs/screenshots/effects-blocks.png) |
+| **Code: effects per track above the code** | |
+| ![Editing an effect in the Code tab](docs/screenshots/effects-code.png) | |
 
 **See what is sounding**: while the music plays, the part of each track's code that is sounding right now lights up, step
 by step, in the Tracks, Blocks and Code views (like Strudel). SuperDirt tells the app every note it plays.
@@ -693,13 +703,13 @@ a text summary with keys masked. Details in [Setting up the AI](#setting-up-the-
 
 Tidal Studio installs as a **native app** with everything inside (TidalCycles, SuperCollider, the sounds, Python): it
 opens in its own window with no Terminal, starts the sound engine in the background and stops it when you close it.
-Download the installer for your system (version 0.21.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
+Download the installer for your system (version 0.22.0; newer ones appear on the [latest release](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | System | Download | Then |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.21.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.21.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.21.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/tidal-studio_0.21.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.22.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-macOS-AppleSilicon.pkg) | [Mac steps](#easiest-the-all-in-one-mac-installer) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.22.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-Windows-x64-Setup.exe) | [Windows steps](#windows-the-all-in-one-installer) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.22.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/tidal-studio_0.22.0_amd64.deb) | [Linux steps](#linux-ubuntu-2204-debian-12-the-deb-package) |
 
 ### Tidal Studio updates itself
 
@@ -1094,6 +1104,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 
 | Version | What's new |
 |---|---|
+| **0.22.0** | [Effects, the same in every view](#blocks-view-and-live-highlighting): one chip per effect with an on/off switch and the same editor (slider, value, remove) in Tracks, Blocks and Code, **+ effect** everywhere, and the editor in the light Partitura look. |
 | **0.21.0** | [Six more included skills and a persistent skills index](#skills-and-plugins): sections with their parent and exceptions, ES/EN music vocabulary, provenance and quarantine in the panel, rebuild button, Maestro independent of your global Claude Code; and your own sound changes and repeated option picks become memory candidates. |
 | **0.20.0** | [Skills à la carte](#skills-and-plugins): only the sections of each skill that fit your message (local search, no AI), a short catalog, the always-loaded route by parts, extra sections on demand, and the RAG monitor shows the skill characters sent vs whole (about 55% fewer). |
 | **0.19.0** | [Memory synced with GitHub](#maestro-remembers-you-memory-your-styles-and-musical-cases): both ways, so on a new computer your memories, styles and cases come back by themselves; deletions travel both ways; each item shows whether it's on GitHub; **Compare with GitHub**; automatic retries; and bring **someone else's memory** from their repository link (to your inbox). |

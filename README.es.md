@@ -7,7 +7,7 @@ en vivo con un profesor de IA ("Maestro") que te acompaña en cada paso, aunque 
 
 **Web: [vsalesa.github.io/tidal-studio](https://vsalesa.github.io/tidal-studio/)** (presentación, capturas y cómo instalarlo; pulsa ES para verla en español).
 
-**Última versión: 0.21.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
+**Última versión: 0.22.0** · [descárgala para Mac, Windows o Linux](#una-app-de-verdad-en-tu-ordenador) · [novedades](#novedades-versión-a-versión) · [todas las versiones](https://github.com/vsalesa/tidal-studio/releases)
 
 ![Tidal Studio](docs/screenshots/es/estudio.png)
 
@@ -357,15 +357,24 @@ números de una transformación (`every 4 (fast 2)`), añadir ajustes o transfor
 |---|---|
 | ![Vista de bloques](docs/screenshots/es/bloques.png) | ![Editar un bloque](docs/screenshots/es/bloques-editar.png) |
 
-**Enciende y apaga cada efecto**: cada efecto (`# room`, `# delay`, `# lpf`, `# crush`…) tiene su propio interruptor, por
-pista, en la vista de Bloques, debajo del código de cada pista en Pistas y en la tarjeta configuradora de Maestro. Al
-apagarlo deja de sonar solo ese efecto y se guarda su valor, así que al encenderlo vuelve tal cual. En el código queda
-como comentario de Haskell, `{- # room 0.4 -}`, que Tidal ignora; suena al momento (con En vivo activado) y Deshacer lo
-recupera.
+**Efectos, iguales en todas las vistas** (0.22). Cada efecto (`# room`, `# delay`, `# lpf`, `# crush`…) es la misma ficha
+en la vista **Pistas** (debajo del código de cada pista), en **Bloques** y en la pestaña **Código** (la nueva franja
+*Efectos por pista* encima del código), y la tarjeta configuradora de Maestro tiene los mismos controles. Cada ficha tiene:
 
-| Bloques: un interruptor por efecto | Pistas: la fila de efectos bajo el código |
+- un **interruptor** para encender o apagar el efecto. Al apagarlo deja de sonar solo ese efecto y se guarda su valor, así
+  que al encenderlo vuelve tal cual. En el código queda como comentario de Haskell, `{- # room 0.4 -}`, que Tidal ignora.
+- su **nombre y valor**: púlsalo y se abre el editor, con lo que hace el efecto, el mismo interruptor, un deslizador, el
+  valor exacto y **Quitar ajuste**.
+- **+ efecto** al final de la fila añade uno nuevo (gain, lpf, hpf, room, delay, pan, crush…).
+
+Suena al momento (con En vivo activado) y Deshacer lo recupera todo. El editor usa el aspecto claro *Partitura* de la app
+en todas las vistas. En la pestaña Código, si has escrito cambios sin aplicar, las fichas esperan a que pulses **Aplicar**.
+
+| Pistas: pulsa un efecto para editarlo | Bloques: el mismo interruptor y editor (aquí, room apagado) |
 |---|---|
-| ![Interruptores en Bloques](docs/screenshots/es/efectos-bloques.png) | ![Interruptores en Pistas](docs/screenshots/es/efectos-pistas.png) |
+| ![Editar un efecto en Pistas](docs/screenshots/es/efectos-pistas.png) | ![Editar un efecto en Bloques](docs/screenshots/es/efectos-bloques.png) |
+| **Código: efectos por pista encima del código** | |
+| ![Editar un efecto en la pestaña Código](docs/screenshots/es/efectos-codigo.png) | |
 
 **Ver lo que suena**: mientras suena la música se ilumina, paso a paso, el trozo del código de cada pista que está
 sonando, en las vistas Pistas, Bloques y Código (como en Strudel). SuperDirt avisa a la app de cada nota que toca.
@@ -716,13 +725,13 @@ modelo y una prueba real, te dice cómo arreglar lo que falla, y **Probar modelo
 
 Tidal Studio se instala como **app nativa** con todo dentro (TidalCycles, SuperCollider, los sonidos, Python): se abre en
 su propia ventana, sin Terminal, arranca el motor de sonido en segundo plano y lo para al cerrarla. Descarga el
-instalador para tu sistema (versión 0.21.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
+instalador para tu sistema (versión 0.22.0; las nuevas aparecen en la [última versión](https://github.com/vsalesa/tidal-studio/releases/latest)):
 
 | Sistema | Descarga | Después |
 |---|---|---|
-| **Mac** (Apple Silicon) | [TidalStudio-0.21.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
-| **Windows** 10/11 (x64) | [TidalStudio-0.21.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/TidalStudio-0.21.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
-| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.21.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.21.0/tidal-studio_0.21.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
+| **Mac** (Apple Silicon) | [TidalStudio-0.22.0-macOS-AppleSilicon.pkg](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-macOS-AppleSilicon.pkg) | [Pasos en Mac](#lo-más-fácil-el-instalador-para-mac-con-todo-dentro) |
+| **Windows** 10/11 (x64) | [TidalStudio-0.22.0-Windows-x64-Setup.exe](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-Windows-x64-Setup.exe) | [Pasos en Windows](#windows-el-instalador-con-todo-dentro) |
+| **Linux** (Ubuntu 22.04+, Debian 12+) | [tidal-studio_0.22.0_amd64.deb](https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/tidal-studio_0.22.0_amd64.deb) | [Pasos en Linux](#linux-ubuntu-2204-debian-12-el-paquete-deb) |
 
 ### Tidal Studio se actualiza solo
 
@@ -1129,6 +1138,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 
 | Versión | Novedades |
 |---|---|
+| **0.22.0** | [Efectos, iguales en todas las vistas](#vista-de-bloques-y-resaltado-en-directo): una ficha por efecto con interruptor y el mismo editor (deslizador, valor, quitar) en Pistas, Bloques y Código, **+ efecto** en todas, y el editor con el aspecto claro Partitura. |
 | **0.21.0** | [Seis skills más incluidas y un índice de skills persistente](#skills-y-plugins): secciones con su padre y sus excepciones, vocabulario musical ES/EN, procedencia y cuarentena en el panel, botón para reconstruir, Maestro independiente de tu Claude Code global; y tus propios cambios de sonido y elecciones repetidas de opciones se convierten en candidatos a memoria. |
 | **0.20.0** | [Skills a la carta](#skills-y-plugins): solo las secciones de cada skill que encajan con tu mensaje (búsqueda local, sin IA), un catálogo corto, la ruta que se carga siempre por partes, secciones extra bajo demanda, y el monitor RAG enseña los caracteres de skills enviados frente a enteras (un 55 % menos). |
 | **0.19.0** | [Memoria sincronizada con GitHub](#maestro-te-recuerda-memoria-tus-estilos-y-casos-musicales): en los dos sentidos, así que en un ordenador nuevo tus memorias, estilos y casos vuelven solos; los borrados viajan en los dos sentidos; cada cosa dice si está en GitHub; **Comparar con GitHub**; reintentos automáticos; y traer **la memoria de otra persona** desde el enlace de su repositorio (a tu bandeja). |
