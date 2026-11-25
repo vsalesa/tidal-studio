@@ -1,15 +1,549 @@
-# Maestro V24 — Conductor, Specialized Agents, Execution Studio and Learning Repository
+# Maestro V24 — Adaptive Hybrid Musical Intelligence Engine
 
-**Status:** proposed release specification, not implemented. 2026-11-25.
-**Target:** 0.24.0, subject to release approval.
-**Baseline:** application 0.23.0 at [f256b6b](https://github.com/vsalesa/tidal-studio/commit/f256b6ba9e2eca39205ba603e7147f16fcc99c69); documentation HEAD d54a53b2c4f2b62f683b1ccecb5363d1097fc4ec.
-**Companions:** [Specialized Agent Architecture](SPECIALIZED_AGENT_ARCHITECTURE_V23.en.md), [MultiProfile execution](MULTIPROFILE_EXECUTION_V23.en.md), [approved Maestro v2 plan](https://github.com/vsalesa/tidal-studio/blob/feature/maestro-v2-blueprint/docs/maestro-v2/APPROVED_PLAN.en.md).
+**Status:** consolidated target architecture, not deployed. 2026-11-25.
+**Current application baseline:** [main@d2af885](https://github.com/vsalesa/tidal-studio/commit/d2af88591cc5bf9929b32d544530c41b92fdec1a), already version **0.24.0**. The actual release added brief answers/result first and CLI effort support. This specification is the next architectural increment in the V24 family; do not overwrite or silently renumber that release.
+**Historical baseline:** [0.23.0@f256b6b](https://github.com/vsalesa/tidal-studio/commit/f256b6ba9e2eca39205ba603e7147f16fcc99c69). Earlier audits in this document refer to this commit.
+**Companions:** [MultiProfile execution](MULTIPROFILE_EXECUTION_V23.en.md), [Specialized Agent Architecture](SPECIALIZED_AGENT_ARCHITECTURE_V23.en.md), [approved Maestro v2 plan](https://github.com/vsalesa/tidal-studio/blob/feature/maestro-v2-blueprint/docs/maestro-v2/APPROVED_PLAN.es.md).
 
-**Consolidated specification:** Part I defines observability, learning and GitHub persistence; Part II contains the Conductor, 18 complete role prompt candidates, capability modules and call graphs. Part III is the normative proposed contract-first specification with 36 role-specific schema roots, examples, deterministic projections and versioning. Part IV defines explicit model-facing JSON instructions for all 18 specialists and a worked effective prompt.
+**Reading order and precedence:** Part 0 is the governing architecture. Parts I–IV retain the detailed observability, learning, 18 generative profiles, 36 schema roots and prompt instructions. Their terms “agent”, “worker” and “LLM specialist” refer only to optional inference implementations of capabilities, not a mandatory execution layer. Part 0 supersedes earlier routing diagrams, mandatory prompt/example inclusion, release targets and agent-centric terminology wherever they conflict. Part III remains the baseline full-task JSON contract library; Part 0 introduces additional internal contracts for tools, partial completion and normalized subprocess results.
+
+# Part 0 — Governing architecture and implementation decisions
+
+## 0.1 Objective: intelligence proportional to the task
+
+**As intelligent as necessary, as economical as possible.** Optimize useful musical results, not token minimization in isolation. Maestro should use deterministic execution and local knowledge whenever they sufficiently satisfy the request, and employ generative intelligence only for genuine unresolved decisions. Creativity, novelty, fidelity to genre, musical coherence, user preference and safety are hard constraints on choosing a cheaper path.
+
+A **subprocess** is a logical musical capability, not an OS process, an autonomous agent or necessarily an LLM. It may combine deterministic tools, retrieval, optional local classification and generative completion in one execution. Its implementation can evolve without changing its functional interface.
+
+A **Tool** is the smallest reusable, host-controlled deterministic operation: given the same validated input, pinned versions, snapshot and explicit seed if applicable, it produces the same proposal/result. A state-changing tool additionally depends on actual external state and must report the real outcome; retries require idempotency. A tool never calls a generative model. Retrieval can be a Tool if its corpus, ranking and tie-breaking are fixed. Optional local neural inference is a separate execution primitive, even if its interface resembles a tool.
+
+A **Profile** is a scoped generative implementation of an operation or unresolved fragment. The profile does not own the entire subprocess. No peer dialogue, autonomous delegation, mandatory LLM routing or tool-definition catalogue in the model context.
+
+## 0.2 Architecture — before and after
+
+```mermaid
+flowchart LR
+ subgraph OLD["Earlier agent-centric design"]
+ O[Orchestrator] --> A[Rhythm LLM]
+ O --> B[Bass LLM]
+ O --> H[Harmony LLM]
+ A --> V[Tools and validation]
+ B --> V
+ H --> V
+ end
+ subgraph NEW["Capability-centric V24"]
+ C[Conductor] --> R[Rhythm subprocess]
+ C --> S[Bass subprocess]
+ C --> T[Harmony subprocess]
+ R --> E[Adaptive execution]
+ S --> E
+ T --> E
+ E --> D[Deterministic Tools]
+ E --> K[Local knowledge retrieval]
+ E --> G[Optional generative completion]
+ D --> X[Validated artifact]
+ K --> X
+ G --> X
+ end
+ classDef local fill:#e7f5e9,stroke:#26804a,color:#174b2b
+ classDef gen fill:#f1eafa,stroke:#8153bd,color:#412478
+ class D,K local
+ class A,B,H,G gen
+```
+
+The earlier diagram is conceptual, not a claim that V23 always invoked multiple agents. The new design selects a capability, not a model.
+
+## 0.3 Layers and shared primitives
+
+```mermaid
+flowchart TD
+ UI[Tidal Studio UI] --> C
+ subgraph L1["L1 — Host orchestration"]
+ C[Maestro Conductor]
+ R[Intent / scope / task graph / budget]
+ C --- R
+ end
+ subgraph L2["L2 — Adaptive functional subprocesses"]
+ B[Bass / Rhythm / Harmony / Melody]
+ M[Composer / Counterpoint / Arranger]
+ X[Sound / Mix / Tidal / Score]
+ Y[Intent / Planner / Tutor / Style / Critic / General]
+ end
+ R --> B
+ R --> M
+ R --> X
+ R --> Y
+ subgraph L3["L3 — Shared execution primitives"]
+ T[Tool Registry: deterministic]
+ K[Knowledge retrieval and adaptation]
+ I[Optional local decision backend]
+ G[Generative profile registry]
+ end
+ B --> T
+ B --> K
+ B --> G
+ M --> T
+ M --> K
+ M --> G
+ X --> T
+ X --> G
+ Y --> T
+ Y --> I
+ Y --> G
+ C -->|Exact direct task| T
+ subgraph L4["L4 — Infrastructure"]
+ S[Browser-owned song and revision]
+ DB[SQLite / FTS5 / approved memory]
+ E[MusicXML / Tidal / inventory]
+ end
+ T --> S
+ T --> E
+ K --> DB
+ T --> DB
+ C -. events .-> O[Execution Studio]
+ T -. events .-> O
+ K -. events .-> O
+ I -. events .-> O
+ G -. events .-> O
+ O --> L[Learning Lab]
+ L -->|Reviewed promotion| K
+ L -->|Reviewed tool or policy| T
+ L -->|Reviewed profile| G
+ O --> P[Authorized private GitHub export]
+ L --> P
+ classDef local fill:#e7f5e9,stroke:#26804a,color:#174b2b
+ classDef gen fill:#f1eafa,stroke:#8153bd,color:#412478
+ classDef obs fill:#fff2df,stroke:#bb791d,color:#714400
+ class T,K local
+ class G,I gen
+ class O,L,P obs
+```
+
+These are responsibility layers, not an obligatory pipeline. The Conductor can execute an exact Tool directly without creating an artificial musical subprocess. A subprocess can call several tools, reuse existing artifacts, invoke a single narrowly scoped model profile if required, then use tools again. Validation, authorization, recording and cancellation are cross-cutting.
+
+## 0.4 Adaptive policy and sufficiency
+
+```mermaid
+flowchart TD
+ Q[User request and snapshot] --> R[Local intent and scope resolution]
+ R --> A{Intent sufficiently resolved?}
+ A -->|No| B[Clarify or bounded optional local decision]
+ B -->|Still unclear| U[Ask user or fuse into one generative task]
+ B -->|Resolved| P[Select functional subprocess]
+ A -->|Yes| P
+ P --> C{Exact local tool sufficient?}
+ C -->|Yes| V[Validate and assemble]
+ C -->|No| K[Retrieve approved local candidate if useful]
+ K --> D{Compatible and meets requested novelty?}
+ D -->|Yes| V
+ D -->|No| T[Apply supported transformations if useful]
+ T --> S{All requirements satisfied?}
+ S -->|Yes| V
+ S -->|No| G[Focused generative completion]
+ U --> G
+ G --> V
+ V --> E{Valid and permitted?}
+ E -->|Yes| F[Preview or apply under current UI rules]
+ E -->|No, recoverable| H[Bounded targeted recovery]
+ H --> V
+ E -->|No, blocked| J[Report limitation]
+ F --> L[Record outcome and feedback]
+ J --> L
+```
+
+Skip irrelevant stages. If novelty is explicit, do not waste time retrieving an exact reusable song unless it is needed as context. If the task requires creativity, route directly to the appropriate generative profile after necessary deterministic preparation. If multiple decisions are tightly coupled, use one fused call rather than splitting solely to reduce per-call prompt size.
+
+Sufficiency is an explicit host result, not similarity alone. Check intent compatibility, operation, target scope, locks, actual revision, timing/key/meter, playable inventory, provenance and permissions, required genre constraints, novelty/reuse preference, representational fidelity, and coverage of requested requirements. An approved pattern may fit one tempo, key or genre but not another. Where musical quality cannot be established deterministically, use conservative evidence, ask for audition/approval or escalate appropriately. Do not claim symbolic validation proves audible quality.
+
+Decision result records chosen route, rejected alternatives with short codes, evidence, unresolved requirements, expected call count and budget. No mandatory LLM evaluation of sufficiency. Thresholds must be calibrated from validated outcomes; do not invent numeric confidence.
+
+## 0.5 The 18 capabilities and their evolving implementations
+
+| Functional subprocess | Deterministic or retrieval path | Generative path only when needed |
+|---|---|---|
+| Intent Resolver | UI action metadata, rules, local ranking | Ambiguous semantics; preferably fuse into the actual task |
+| Planner | Known graph templates, topological scheduling | Novel bounded musical graph |
+| Composer | Approved arrangement assembly, compatible template | Original coordinated composition |
+| Rhythm | Quantize, rotate, repeat, validated grooves | Novel rhythmic design |
+| Bass | Retrieve, transpose, harmonic adaptation | Original phrases, unresolved anticipations |
+| Harmony | Chord spelling, inversion, progression lookup | Creative harmonization |
+| Melody | Motif reuse and transformations | Original melodic material |
+| Counterpoint | Validated voice-leading rules | Creative secondary lines |
+| Arranger | Section templates, repeats, activation | Creative structure/transitions |
+| Sound Design | Inventory filters, recipes, parameter maps | Novel timbre |
+| Mix | Exact gain, approved presets, measured rules | Qualitative mix decisions with evidence |
+| Tidal Translate | Verified lossless symbolic conversion | Unsupported translation cases, if feasible |
+| Tidal Fix | Known diagnostic repair rules | Unrecognized pattern error |
+| Score Edit | Scoped MusicXML transformations | Creative score changes |
+| Tutor | Exact verified answer / retrieval | Personalized explanation |
+| Style Action | Existing save/reuse handlers | Ambiguous references only |
+| Critic | Structural and musical checks | Opt-in qualitative evaluation |
+| General | Compatible local operations | Bounded fallback |
+
+These are target capabilities, not a claim that each algorithm is already implemented. Begin with existing V24 behavior and extend it incrementally. Profiles and subprocesses are declarative Python configurations/functions where possible, not 18 services, 18 persistent sessions or 18 duplicated engines.
+
+## 0.6 Tool Registry — host-controlled execution
+
+All calls are owned by the Conductor or its Python subprocess executor. Do not expose the registry to Sonnet or ask Sonnet to choose a tool when code can choose it. Tool inputs/outputs are typed and validated, with versions, preconditions, deterministic behavior, provenance and bounded execution.
+
+| Namespace | Candidate operations |
+|---|---|
+| music | transpose, scale, chord_notes, invert_chord |
+| rhythm | quantize, subdivide, rotate, extract_groove |
+| harmony | extract_chords, map_chord_tones, voice_leading |
+| pattern | retrieve, parameterize, transform, repeat |
+| knowledge | search, retrieve, rank, filter |
+| inventory | find, rank, check_playable |
+| tidal | parse, compile, validate, repair_known_error |
+| score | parse_musicxml, transpose, merge, validate |
+| song | get_state, find_track, check_locks, propose_patch, apply_patch |
+| execution | record, measure, validate_contract |
+
+Only register operations backed by actual implemented and tested functions. Never label an LLM-based repair as deterministic. If a parser cannot reliably project arbitrary free-code Tidal, return unsupported and preserve the code. A tool may perform retrieval or pure transformations; a side effect is a separate authorized operation, not an automatic consequence of a proposal.
+
+Proposed registry entry:
+
+```json
+{"id":"music.transpose","version":"1.0.0","input_schema":"TransposeTask","output_schema":"TransposeResult","effect":"pure","determinism":"pinned_input","preconditions":["supported_representation","authorized_scope"],"timeout_ms":1000,"idempotent":true}
+```
+
+Input includes snapshot revision, exact parameters and artifact references resolved by host. Output is one of ok, blocked, unsupported, failed. Tool failure is not automatically permission to call the LLM. Use explicit fallback policy and budget. Tools that modify persistent state must verify revision, permissions, confirmation semantics, idempotency and real commit result. Tool calls have zero inference tokens but measurable CPU/wall time and storage cost.
+
+```mermaid
+flowchart LR
+ C[Conductor] --> T[Tool Registry]
+ C --> S[Capability Registry]
+ S --> T
+ S --> K[Knowledge Registry]
+ S --> G[Inference Profile Registry]
+ T --> V[Deterministic validation]
+ K --> V
+ G --> V
+ V --> O[Execution Registry]
+ O --> L[Learning Lab]
+```
+
+## 0.7 Anatomy of a hybrid subprocess and partial completion
+
+```mermaid
+flowchart TD
+ A[Stable subprocess input contract] --> B[Deterministic preprocessing]
+ B --> C[Local knowledge retrieval if useful]
+ C --> D[Reuse / transform / build draft]
+ D --> E{Sufficient?}
+ E -->|Yes| H[Deterministic validation and assembly]
+ E -->|No, bounded creative gap| F[Minimal generative task]
+ F --> G[Merge authorized fragment into draft]
+ G --> H
+ H --> I[Stable subprocess output contract]
+ H -. evidence .-> J[Execution Studio and Learning Lab]
+ classDef local fill:#e7f5e9,stroke:#26804a,color:#174b2b
+ classDef gen fill:#f1eafa,stroke:#8153bd,color:#412478
+ class B,C,D,G,H local
+ class F gen
+```
+
+Keep the 36 full-task roots in Part III as capability contracts for compatible operations; add operation-specific contracts when a smaller model-facing task is needed. Do not inject a large BassResult schema if the model is only completing two note slots. The host owns the canonical artifact and merges the returned fragment.
+
+Internal PartialResult example (host-local; not automatically sent to a model):
+
+```json
+{"v":1,"status":"partial","subprocess":"bass","revision":"rev-17","draft_ref":"draft-01","resolved":["instrument","rhythmic_grid","harmonic_anchors"],"unresolved":[{"id":"slot-1","kind":"passing_note"},{"id":"slot-2","kind":"phrase_ending"}],"locked_fragments":["anchors","rhythm"],"next":"generative_completion"}
+```
+
+A local draft may be complete, partial or blocked. Partial is not a user-visible applied result. The host validates allowed unresolved slot IDs, immutable draft version and permitted note range. GenerativeTask includes only unresolved slot values, exact musical dependencies, applicable genre excerpts and minimal output contract. Merge verifies that only requested slots changed. If no supported representation/compiler exists, use the full Tidal/MusicXML capability instead; do not introduce a competing canonical song IR.
+
+The normalized subprocess result retains the existing role-specific artifact payload and wraps host metadata outside the model response:
+
+```json
+{"subprocess":"bass","status":"ok","strategy":"hybrid","artifact_ref":"bass-result-01","revision":"rev-17","execution_ref":"run-42","provenance":["pattern-7","tool-bass-adapt-v1","profile-bass-complete-v1"]}
+```
+
+Provider result is not allowed to set strategy, execution ID or claim validation. Host owns these. All stages share one budget, cancellation token and revision. Prefer one generative completion call; targeted recovery consumes the same bounded cap.
+
+## 0.8 Minimal inference overhead — strict prompt policy
+
+System prompt is a transport cost, not the full knowledge repository. The detailed role prompts in Parts II and IV are maintained as versioned reference modules; load only the subset necessary for the actual operation. Long-form composition modules are not mandatory for a narrow fragment. The effective prompt contains:
+
+```mermaid
+flowchart LR
+ A[Small shared base] --> P[Effective system]
+ B[One operation-specific profile] --> P
+ C[Only necessary technical rules] --> P
+ D[Compact output contract] --> P
+ E[Minimal resolved task + evidence] --> U[Task message]
+ P --> M[Single model call]
+ U --> M
+```
+
+Never include the tool catalogue, other subprocesses, full skill catalogue, unrelated UI modes, raw prior reasoning, redundant examples or duplicate schema text. Full authoritative JSON Schema remains local. Send a compact, precise model-facing output contract or provider-native compatible projected schema; do not send both unless a measured reliability need exists. If native structured output is unavailable, use concise field semantics and a compact inline schema for the active fragment, with strict host validation. Include examples only when useful; test omission against first-pass validity. Do not omit necessary musical information merely to meet a numeric budget.
+
+Examples of operation profiles: bass.compose_full, bass.complete_phrase, bass.generate_variation, harmony.complete_voicing, rhythm.fill, melody.complete_motif. Keep one common provider adapter and one prompt builder. Initial narrow-fragment system target 150–400 tokens excluding provider overhead, task-specific contract and knowledge measured separately; this is a test target, not a guarantee. Full musical tasks may need more. Measure actual tokens per accepted result including retries and schema overhead; record missing metrics as N/A.
+
+V24 already added brief responses and CLI effort detection: [llm.py:439–470](https://github.com/vsalesa/tidal-studio/blob/d2af88591cc5bf9929b32d544530c41b92fdec1a/server/llm.py#L439-L470), [llm.py:512–573](https://github.com/vsalesa/tidal-studio/blob/d2af88591cc5bf9929b32d544530c41b92fdec1a/server/llm.py#L512-L573), [assistant.py:318–363](https://github.com/vsalesa/tidal-studio/blob/d2af88591cc5bf9929b32d544530c41b92fdec1a/server/assistant.py#L318-L363). Reuse these; add per-invocation scope and effort policy rather than reimplement. Low is the normal focused setting, not an absolute limit. Escalate to medium/high when musical complexity warrants it. Verify actual CLI/model support and usage; do not claim a hard CLI reasoning cap.
+
+Optional local decision backend is deferred until routing evidence warrants it. Start with rules, exact UI metadata and local retrieval/ranking. A lightweight supervised classifier or small local model can be evaluated with calibrated abstention, latency and quality metrics. No mandatory Ollama, model download, Jev dependency or extra classification call. Local neural inference is counted separately from genuinely deterministic zero-inference operations.
+
+## 0.9 Three end-to-end execution examples
+
+All traces, artifacts, durations and tokens below are **synthetic design fixtures**, not captured executions or performance claims. “100% generative” means all musical decisions are generated; host orchestration, security, parsing, validation and recording remain deterministic by design.
+
+### A. 100% deterministic — exact volume adjustment
+
+Request: “Lower the selected bass by 2 dB.” Initial snapshot: track d4 volume -6 dB, parameter range -60 to +6 dB, revision rev-17, track unlocked. No music generation, skill retrieval, plan or explanation call required.
+
+```mermaid
+sequenceDiagram
+ participant U as UI
+ participant C as Conductor
+ participant T as Tool Registry
+ participant V as Host validator
+ participant E as Execution Studio
+ U->>C: Lower selected bass by 2 dB
+ C->>T: song.resolve_selection
+ T-->>C: d4, rev-17
+ C->>T: mix.adjust_db d4, -2
+ T-->>C: proposal -8 dB
+ C->>V: Check range, lock, revision
+ V-->>C: Valid
+ C->>E: Record local execution
+ C-->>U: Validated patch, existing apply workflow
+```
+
+```json
+{"tool":"mix.adjust_db","input":{"track":"d4","current_db":-6,"delta_db":-2,"revision":"rev-17"},"output":{"status":"ok","patch":[{"track":"d4","parameter":"volume_db","value":-8,"unit":"dB"}]}}
+```
+
+| Stage | Kind | LLM calls |
+|---|---|---:|
+| Resolve selected track | Tool | 0 |
+| Compute new gain | Tool | 0 |
+| Validate range/locks/revision | Tool | 0 |
+| Assemble/record | Host tools | 0 |
+| Total | Deterministic | **0** |
+
+If range or lock prevents execution, report the blocker. If the target is ambiguous, clarify; do not invent a target. The patch is illustrative and must be mapped to the actual V24 mixer contract.
+
+### B. Hybrid — salsa bass with two creative passing-note slots
+
+Request: “Use my approved salsa bass groove, adapt it to the existing D minor harmony and make the ending more interesting.” The host retrieves an approved template with reusable rhythm, exact harmonic anchors and two writable note slots. The user requests creative variation, so exact reuse is insufficient.
+
+```mermaid
+sequenceDiagram
+ participant C as Conductor
+ participant B as Bass subprocess
+ participant T as Tools / knowledge
+ participant M as Focused Bass profile
+ participant V as Validator
+ C->>B: BassTask + revision
+ B->>T: Extract chord grid and groove
+ T-->>B: Exact dependencies
+ B->>T: Retrieve approved compatible pattern
+ T-->>B: Pattern and provenance
+ B->>T: Adapt anchors and rhythm
+ T-->>B: Partial draft, two unresolved slots
+ B->>M: Minimal slot completion task
+ M-->>B: JSON note patch
+ B->>T: Merge and render supported representation
+ B->>V: Validate scope, notes, timing, inventory
+ V-->>C: Validated BassResult
+ C-->>C: Record and prepare preview
+```
+
+A synthetic bounded draft using ticks at PPQ 480, pitch MIDI 0–127, 4/4, 105 BPM, 1920 ticks per cycle. The note grid is a temporary projection; existing score/Tidal formats remain authoritative. The fixture is not asserted to be an authentic salsa tumbao.
+
+```json
+{"draft":"draft-01","revision":"rev-17","time":{"ppq":480,"cycle_ticks":1920,"length_ticks":3840},"fixed_notes":[{"tick":0,"duration_ticks":480,"midi":38},{"tick":1920,"duration_ticks":480,"midi":43}],"slots":[{"id":"a","tick":1440,"duration_ticks":240,"chord":"Dm7","allowed_midi":[36,38,41,43,45]},{"id":"b","tick":3360,"duration_ticks":240,"chord":"Gm7","allowed_midi":[38,41,43,46,50]}]}
+```
+
+Actual model-facing **system** (example of narrow profile, no full Bass role or tool catalogue):
+
+```text
+Complete only the two writable bass-note slots. Choose musically coherent passing or ending notes using the supplied chord, groove and genre constraints. Preserve all fixed notes, timing and instrument. Return one JSON object: {"notes":[{"id":"slot ID","midi":integer}]}. Include exactly one entry per slot; choose only its allowed MIDI pitches. If impossible return {"blocked":"specific reason"}. No prose.
+```
+
+Actual model-facing **task** (synthetic, only necessary subset of the draft plus musical evidence):
+
+```json
+{"ppq":480,"key":"Dm","genre":"salsa","goal":"More interesting phrase ending","anchors":[[0,38],[1920,43]],"slots":[{"id":"a","tick":1440,"duration_ticks":240,"chord":"Dm7","allowed_midi":[36,38,41,43,45]},{"id":"b","tick":3360,"duration_ticks":240,"chord":"Gm7","allowed_midi":[38,41,43,46,50]}],"groove":{"phase_tick":0,"period_ticks":1920,"anchors":[0,960]},"knowledge":[{"id":"fixture-1","text":"Synthetic guidance: use a short approach or chord tone before the next anchor; preserve the existing rhythmic pattern."}]}
+```
+
+Illustrative model response:
+
+```json
+{"notes":[{"id":"a","midi":45},{"id":"b","midi":46}]}
+```
+
+The fragment contract is operation-specific, not the full BassResult. Host schema requires exactly two entries with unique known IDs and integer MIDI; semantic validation checks per-slot pitch allowlists and immutable timing. Blocked alternative is explicitly separate. Merge/render only if the existing supported compiler preserves the draft faithfully; otherwise route to the full representation path. Do not claim this fixture has been heard or compiled.
+
+| Stage | Kind | LLM calls |
+|---|---|---:|
+| Extract groove/chords | Tools | 0 |
+| Retrieve approved template | Local retrieval | 0 |
+| Adapt anchors and rhythm | Tools | 0 |
+| Complete two creative slots | Focused LLM | 1 |
+| Merge, render, validate, record | Tools | 0 |
+| Total | Hybrid | **1** |
+
+The model does not select an instrument, reconstruct the progression, replan the arrangement, write an essay or communicate with another model. In a later version, a validated parametrized rule could generate appropriate notes for a compatible non-novel request, eliminating this call. For explicitly creative requests, preserve novelty and user choice.
+
+### C. 100% generative musical decisions — original composition with no reusable solution
+
+Request: “Compose an original eight-bar piece combining merengue energy with jazz harmony, with a surprising but coherent melodic hook. Do not reuse a saved song or pattern.” No local composition satisfies the novelty requirement. Do not spend calls asking a planner, critic or intent resolver to restate the request. Use one fused Composer profile when the musical scope fits.
+
+```mermaid
+sequenceDiagram
+ participant U as UI
+ participant C as Conductor
+ participant T as Local tools
+ participant M as Composer profile
+ participant V as Host validator
+ U->>C: Original cross-genre composition
+ C->>T: Scope, inventory, relevant genre excerpts
+ T-->>C: Constraints and reference knowledge
+ C->>M: One bounded composition task
+ M-->>C: Coordinated original musical artifacts
+ C->>V: Validate representation, timing, locks
+ V-->>C: Validated proposal
+ C-->>U: Audition and approve
+```
+
+Here the LLM chooses the groove, harmonic progression, bass, melody and their musical interaction within authorized scope. The tools supply constraints and reference knowledge, not precomposed notes. Local exact reuse is intentionally skipped. Reference retrieval is not the same as copying a saved song.
+
+Example condensed task (actual full CompositionTask would use Part III's schema):
+
+```json
+{"goal":"Original merengue-jazz fusion, eight bars, memorable surprising hook","novelty":"original","time":{"ppq":480,"bpm":125,"meter":{"numerator":4,"denominator":4},"cycle_ticks":1920,"length_ticks":15360,"origin_tick":0},"roles":["rhythm","harmony","bass","melody"],"scope":["d1","d2","d3","d4"],"representation":"tidal_pattern","knowledge_refs":["merengue-reference","jazz-harmony-reference"]}
+```
+
+The host materializes actual knowledge excerpts and playable sounds, and maps novelty into the scoped goal/policy; this shortened sketch is not a valid standalone CompositionTask. Use the full Composer output contract (patches, authorized facts, used IDs). One coherent response contains the four assigned parts. Validate code and musical timeline; audition by the user. No unsupported claim that a symbolic check guarantees quality. If the task is too complex for fusion, use the explicitly budgeted DAG below, not automatic multi-agent chatter.
+
+| Stage | Kind | LLM calls |
+|---|---|---:|
+| Establish permissions and retrieve reference facts | Tools | 0 |
+| Make all musical composition decisions | Composer profile | 1 |
+| Validate/assemble/record | Tools | 0 |
+| Total | Generative musical content | **1** |
+
+“100% non-deterministic” applies to the creative content, not security or execution control. Even a purely generative composition must pass deterministic host checks.
+
+### D. Comparison and Execution Studio view
+
+```mermaid
+flowchart LR
+ subgraph A["A: exact local edit"]
+ A1[Resolve] --> A2[Compute] --> A3[Validate]
+ end
+ subgraph B["B: hybrid bass"]
+ B1[Extract] --> B2[Retrieve] --> B3[Adapt] --> B4[LLM complete] --> B5[Merge/validate]
+ end
+ subgraph C["C: original piece"]
+ C1[Scope/reference] --> C2[LLM compose] --> C3[Validate]
+ end
+ classDef local fill:#e7f5e9,stroke:#26804a,color:#174b2b
+ classDef gen fill:#f1eafa,stroke:#8153bd,color:#412478
+ class A1,A2,A3,B1,B2,B3,B5,C1,C3 local
+ class B4,C2 gen
+```
+
+| Metric | Exact local | Hybrid | Original generative |
+|---|---:|---:|---:|
+| Intended LLM calls | 0 | 1 | 1 |
+| Creative decisions generated | None | Unresolved fragment | All musical content |
+| Host validation | Required | Required | Required |
+| Actual tokens/latency | Zero inference / unmeasured wall time | Not measured | Not measured |
+
+The monitor must count **actual** tool calls, local retrievals, optional local inference, provider attempts, retries and skipped nodes. Do not fabricate token numbers. Show expandable subprocess spans with operation, strategy, timing, input/output artifact refs, versions, status, sufficiency decision and reason for escalation. Only actual LLM spans include prompt/schema and provider usage. Exact operations show zero inference; missing provider metrics show N/A. All three traces must be reconstructible after restart, subject to configured capture and privacy.
+
+## 0.10 Coordinated composition when one call is insufficient
+
+```mermaid
+flowchart LR
+ C[Shared key / meter / tempo / form] --> R[Rhythm subprocess]
+ C --> H[Harmony subprocess]
+ R --> B[Bass subprocess]
+ H --> B
+ R --> M[Melody subprocess]
+ H --> M
+ M --> X[Counterpoint if needed]
+ B --> A[Arranger if needed]
+ M --> A
+ X --> A
+ A --> V[Validation and preview]
+```
+
+Each node may be entirely local, hybrid or generative. Edges carry typed artifacts, not reasoning. Use a bounded graph only if dependencies/quality justify it. Parallelize only compatible independent nodes after checking shared facts and provider/quota behavior. The default local CLI concurrency remains one until tested. User-visible plan approvals, immutable revision and atomic preview/application semantics remain authoritative.
+
+## 0.11 Learning: evolve capability implementations
+
+```mermaid
+flowchart TD
+ A[Executed task and feedback] --> B[Validated evidence]
+ B --> C[Detect reusable pattern or recurring operation]
+ C --> D[Candidate knowledge / template / deterministic rule]
+ D --> E[Replay tests and counterexamples]
+ E --> F{Quality and permission accepted?}
+ F -->|No| G[Reject or retain draft]
+ F -->|Yes| H[Review and promote version]
+ H --> I[Knowledge Registry or Tool Registry]
+ I --> J[Future compatible tasks need less inference]
+ J --> A
+```
+
+The Learning Lab must distinguish: approved musical artifact, reusable template, parameterized transformation, verified rule, actual executable Tool, prompt improvement and preference. Never promote arbitrary generated code automatically. Prefer declarative templates or compositions of existing tools; new executable code requires review, tests, scope/security checks and source control. Evaluate counterexamples and applicability conditions. A single approved song is evidence of preference, not universal musical truth.
+
+```mermaid
+flowchart LR
+ M0[Generative first] --> M1[Capture approved examples]
+ M1 --> M2[Retrieve and adapt]
+ M2 --> M3[Hybrid partial completion]
+ M3 --> M4[Validated deterministic capability]
+ M4 -. novelty or exceptions .-> G[Generative fallback]
+```
+
+Maturity is per operation and domain, not a mandatory progression for the whole subprocess. No requirement to reach 100% local resolution for genuinely creative requests. Track local coverage, acceptance, first-pass validity, style fidelity, novelty, repair rate, total tokens per accepted task, P50/P95 latency and regression evidence. Compare on fixed fixtures and actual usage distributions. A lower LLM call count with worse musical utility is not success.
+
+## 0.12 Implementation structure and staged delivery
+
+```text
+server/maestro/
+  conductor/             # routing, policy, graph, budget (reuse router.py)
+  subprocesses/          # capability definitions, operation strategies
+  tools/                 # typed deterministic registry and functions
+  inference/             # optional profiles, prompt builder, existing llm adapter
+  contracts/             # full-task roots + tool/fragment contracts
+  knowledge/             # adapters to existing SQLite/FTS5 and memory
+  execution/             # persistent run/subprocess/tool/inference spans
+  learning/              # evidence, proposed promotion, test/approval
+  persistence/           # approved private export using existing GitHub adapter
+```
+
+This is a suggested layout, not a rewrite requirement. Preserve current browser-owned song, MusicXML, free-code tracks, existing SQLite/FTS5, memory, save style, locks, previews, courses and undo. Do not create a new framework or mandatory model.
+
+| Slice | Deliverable | Evidence gate |
+|---|---|---|
+| A | Audit actual 0.24.0, instrument baseline, reuse brief/effort | Real baseline, no duplicate implementation |
+| B | Tool registry and direct routes | Exact operations use zero inference |
+| C | Stable subprocess contracts, retrieval and local sufficiency | Existing patterns reused only when compatible |
+| D | Minimal partial/full inference profiles | One call for routine unresolved work; strict validation |
+| E | Persistent Execution Studio with expandable spans | All actual stages and versions inspectable |
+| F | Learning candidates, reviewed tool/template promotion | Evidence, counterexamples, regression and rollback |
+| G | Authorized private GitHub export/restore; advanced DAG if justified | Privacy, integrity, quality and efficiency gates |
+| Experimental | Local classifier/model | Demonstrated routing benefit versus rules and overhead |
+
+Instrument execution from slice A, not after implementing all profiles. Optional advanced local models and automatic prompt optimization are deferred until evidence warrants them. Preserve the existing public app repository for generic code/schema/prompts only; runtime captures and private knowledge require separate authorized private GitHub export.
+
+Acceptance: run the three fixtures above, verify zero/one/one normal LLM calls respectively, actual tool spans and no hidden classification/critique, no unauthorized mutations, scope and timing checks, exact model-facing prompt capture, source and schema versions, user audition and feedback, replay, and secure export. Add regression cases for failed local sufficiency, novel request incorrectly reused, partial patch attempting a fixed-note change, stale snapshot and unsupported free-code transformation. Benchmark against actual 0.24.0; historical V23 comparison is supplementary. No benchmark has yet been run and no implementation or release is authorized by this documentation alone.
+
+---
+
+# Part I — Execution Studio, Prompt Observatory and Learning Repository
+
+The detailed sections below are retained and interpreted under Part 0. Their baseline source audit is historical V23; current V24 brief/effort support is documented above. An inference worker is only the generative implementation of a functional subprocess. Tool and local retrieval spans are first-class, not merely preparatory steps.
 
 ## 1. Product objective
 
-V24 should combine the Conductor/specialist execution engine with an integrated Execution Studio. The user must be able to inspect every execution, reconstruct exactly what application-controlled context a worker received, understand musical decisions and outcomes, measure total inference usage, compare prompt versions, derive reusable knowledge, and persist approved artifacts to GitHub.
+V24-family adaptive subprocess execution should combine host-controlled tools, local knowledge and optional generative profiles with an integrated Execution Studio. The user must be able to inspect every execution, reconstruct exactly what application-controlled context a worker received, understand musical decisions and outcomes, measure total inference usage, compare prompt versions, derive reusable knowledge, and persist approved artifacts to GitHub.
 
 The system must learn from evidence, not treat every model statement as a new musical fact. Observability and learning are off the interactive inference critical path. No extra LLM call is required to record, inspect, aggregate or export an execution. No raw execution archive is automatically fed into future prompts.
 
@@ -50,7 +584,7 @@ flowchart TD
  S --> G
 ```
 
-The final S-to-G path is an explicitly authorized, sanitized execution export, not unconditional sync. L1 Conductor orchestrates L2A deterministic and L2B generative peers. L3 infrastructure stores knowledge and artifacts. Recorder is a cross-cutting concern, not an additional agent in the musical graph.
+The final S-to-G path is an explicitly authorized, sanitized execution export, not unconditional sync. L1 Conductor orchestrates L2 adaptive subprocesses or direct tools; L3 shared execution primitives include deterministic tools, retrieval and optional inference; L4 infrastructure stores knowledge and artifacts. Recorder is a cross-cutting concern, not an additional agent in the musical graph.
 
 ## 4. User experience: replace the limited diagram with a full Execution Studio
 
@@ -289,47 +823,14 @@ These are implementation slices, not mandated separate release numbers. Keep fea
 
 ---
 
-# Part II — V24 Conductor implementation specification and complete proposed prompt library
+# Part II — Optional generative profile library and full-task contracts
 
 This part consolidates the specialized-agent proposal into this release specification. The role prompts below are proposed production candidates, not descriptions of currently deployed V23 prompts. The complete effective prompt at runtime is assembled from the shared base, exactly one role prompt, applicable capability modules, one output contract and a bounded task payload. Store and inspect that effective prompt for every invocation. Do not concatenate all roles.
 
 ## 14. Conductor: musical authority and execution control
 
-The Conductor behaves like the director of an orchestra: it establishes the shared musical contract, cues only the required musicians, controls dependencies, and combines the results. It is primarily a deterministic Python orchestrator. The optional Planner is an LLM worker for genuinely ambiguous large musical objectives, not a supervisor that must reason before every call.
+Part 0 defines the governing capability-centric architecture and diagrams. A Conductor selects functional subprocesses or direct tools; each subprocess may combine deterministic operations, local knowledge and optional generative profiles. All model invocations are host-mediated. Shared musical facts and dependency projections are fixed by the host or established by an explicitly authorized operation. Preflight/postflight validation and execution recording are cross-cutting.
 
-- **L1:** Conductor, local intent routing, scope resolution, graph scheduling, budget management.
-- **L2A:** deterministic specialists: direct edit, style save, knowledge lookup, pattern reuse, instrument ranking, score transform, Tidal transform, validation, assembly.
-- **L2B:** 18 specialized inference workers; select only those required.
-- **L3:** shared infrastructure: current browser-owned song snapshot, SQLite/FTS5, memory, MusicXML, Tidal engine, inventory, transient artifact store.
-- **Cross-cutting:** Execution Studio recorder, security, revision checks, user approval, cancellation, learning and GitHub export.
-
-```mermaid
-flowchart TD
- U[User and browser snapshot] --> C[Conductor / local router]
- C --> Q{Deterministic solution sufficient?}
- Q -->|Yes| D[L2A deterministic specialist]
- Q -->|No| P[Select worker or bounded graph]
- P --> K[Retrieve relevant knowledge and dependency projections]
- K --> W[L2B selected specialist]
- W --> V[Host validation and assembly]
- D --> V
- V -->|Valid| A[Existing preview / approval / application]
- V -->|Repairable and budget available| F[One targeted recovery]
- F --> V
- V -->|Blocked| B[Report limitation]
- D -. shared infrastructure .-> S[L3 SQLite / memory / snapshot / engines]
- K --> S
- C -. events .-> E[Execution Studio]
- W -. prompt / result / usage .-> E
- V -. outcomes .-> E
- A -. feedback .-> E
- E --> L[Evidence-based learning]
- L --> G[Approved private GitHub export]
-```
-
-The host fixes shared facts before invoking dependent workers: meter, bar-to-cycle mapping, tempo, key/mode, tuning/pitch convention, harmonic rhythm, clave/groove orientation, form and section lengths, instrument inventory, writable tracks and protected material. Unknown facts are represented as unknown, not invented. Only assign a worker authority to establish a fact when needed and explicitly permitted. If musical choices conflict, prefer a fused Composer task or an explicit dependency rather than parallel speculation.
-
-No worker directly invokes another worker or accesses the filesystem, network, SQLite, Tidal process or GitHub. All such actions are host-mediated. No peer conversation, no consensus loop, no obligatory critic, no mandatory Tutor after a musical edit.
 
 ## 15. Registry and prompt assembly
 
@@ -1123,7 +1624,7 @@ Illustrative pseudocode. Implementation must handle exceptions, cancellation, co
 
 ## 21. Runtime policy and learning integration
 
-- Extend existing CLI flag detection for effort and max-turns; verify actual model and installed CLI. Use low by default for narrow tasks; medium for objectively complex coordination, high only by explicit request. Do not claim CLI max_tokens or max-turns bounds internal reasoning tokens. Retain subscription auth, isolation, streaming and cancellation.
+- Reuse existing 0.24.0 CLI effort flag detection and evaluate max-turns support; verify actual model and installed CLI. Use low by default for narrow tasks; medium for objectively complex coordination, high only by explicit request. Do not claim CLI max_tokens or max-turns bounds internal reasoning tokens. Retain subscription auth, isolation, streaming and cancellation.
 - One routine inference; at most one exceptional knowledge expansion or targeted repair, within shared budget. Never retry solely because thinking is long.
 - Store exact application-controlled effective prompt and resolved communication payload before invocation, with secret redaction, module/schema version IDs and hashes. Store actual response, validation and downstream projections. Preserve distinction between exact local capture and sanitized export.
 - Prompt Observatory must show both role templates and the effective prompt for each attempt, with version comparisons, input-block sizes, model/effort and outcome.
@@ -1162,7 +1663,7 @@ BASE (version/hash)
 + COMMUNICATION CONTRACT (input semantics, resolved output schema)
 ```
 
-The user message is the validated role-specific Task JSON, including the actual dependency projections and selected excerpt texts. The model receives only the applicable schemas, not the entire 36-contract library. Input schema validation is always performed by the host; the effective prompt includes the relevant field semantics and, when necessary, the compact resolved input schema. Output schema must be supplied through the provider's supported structured-output mechanism or directly in the effective prompt. Never assume the CLI supports structured output without capability detection. Where provider schema subsets differ, retain the authoritative host schema and use a compatible projected schema for generation.
+The user message is the validated role-specific Task JSON, including the actual dependency projections and selected excerpt texts. The model receives only the applicable schemas, not the entire 36-contract library. Input schema validation is always performed by the host; the effective prompt includes the relevant field semantics and, when necessary, the compact resolved input schema. An explicit compact output contract must be supplied through the provider's supported structured-output mechanism or directly in the effective prompt; the authoritative full schema remains host-side, as specified in Part 0. Never assume the CLI supports structured output without capability detection. Where provider schema subsets differ, retain the authoritative host schema and use a compatible projected schema for generation.
 
 Common contract injection text:
 
@@ -6079,10 +6580,10 @@ This part closes the gap between the musical role prompts and their machine-read
 | 4 | Common JSON response instructions | System |
 | 5 | Role-specific input/output field semantics (Section 32) | System |
 | 6 | Active output schema with only reachable definitions | Provider structured output if verified; otherwise system |
-| 7 | One minimal response example | System; omit only after benchmark supports omission |
+| 7 | One minimal response example, if useful | System; compare reliability and overhead |
 | 8 | Validated task JSON including resolved dependencies and actual excerpts | User/task message |
 
-Input schema is always validated by the host. Include compact input field semantics in the system and the full resolved input schema only when necessary. Output schema is mandatory at the provider boundary. Do not send the entire contract bundle, other roles or unrelated examples. If a provider supports only a subset of JSON Schema, project a compatible schema and validate against the authoritative schema in the host. Do not assume CLI structured output support.
+Input schema is always validated by the host. Include compact input field semantics in the system and the full resolved input schema only when necessary. An explicit active output contract is mandatory at the provider boundary. Under Part 0, a compact field contract or projected schema is sufficient when the authoritative full schema is enforced locally. Do not send the entire contract bundle, other roles or unrelated examples. If a provider supports only a subset of JSON Schema, project a compatible schema and validate against the authoritative schema in the host. Do not assume CLI structured output support.
 
 ### Common JSON response instructions — exact proposed module
 
@@ -6102,7 +6603,7 @@ Ellipses denote explanatory shapes, not literal JSON. The concrete schema and ex
 
 ## 32. Role-specific response instruction modules
 
-The following blocks are proposed contents of output_instructions.md for every role, appended to the musical prompt. Examples are copied from the synthetic structurally checked fixtures in Part III; they are not verified musical compositions.
+The following blocks are proposed full-task output_instructions.md modules for each generative role, included only when the active operation requires them. Examples are copied from the synthetic structurally checked fixtures in Part III; they are not verified musical compositions.
 
 ### 32.1 intent_resolver
 
