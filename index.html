@@ -413,9 +413,10 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
 <section id="novedades" style="padding-top: 20px">
   <div class="wrap">
     <div class="kicker" data-i="kn">What's new</div>
-    <h2 class="sec-title" data-i="tn">Version 0.22.0 is out.</h2>
+    <h2 class="sec-title" data-i="tn">Version 0.23.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
+      <li><b>0.23.0</b><span data-i="v230">Maestro saves its options as styles for real: ask «save the other three as styles» or press Save as a style on any option card, and the confirmation shows what was really saved.</span></li>
       <li><b>0.22.0</b><span data-i="v220">Effects, the same in every view: one chip per effect with an on/off switch and the same editor (slider, value, remove) in Tracks, Blocks and Code, + effect everywhere, and a light editor.</span></li>
       <li><b>0.21.0</b><span data-i="v210">Six more included skills (evaluate, compose, arrangement, melody, hook, lyrics) and a skills index that stays between sessions: Maestro gets the sections that fit with the context and exceptions they depend on, works without your global Claude Code, and your own sound changes become memory candidates.</span></li>
       <li><b>0.20.0</b><span data-i="v200">Skills à la carte: Maestro sends only the sections of each skill that fit your message (local search, no AI), asks for more only if it needs them, and the RAG monitor shows the skill characters saved (about 55% fewer).</span></li>
@@ -451,8 +452,8 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="step solo reveal" style="margin-bottom:40px">
       <h4 data-i="mach">Mac, Windows and Linux: one installer, everything inside</h4>
       <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. It opens as a real Mac app, in its own window and with no Terminal. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
-      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
-      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/TidalStudio-0.22.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.22.0/tidal-studio_0.22.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/TidalStudio-0.23.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/TidalStudio-0.23.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.23.0/tidal-studio_0.23.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
       <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows and Linux have their own installers too, each opening the studio in its own window. Intel Mac, or prefer the source? Follow the three steps below.</p>
       <p style="margin-top:4px;font-size:.9em"><a href="https://github.com/vsalesa/tidal-studio/releases/latest" data-i="allv">All versions</a></p>
     </div>
@@ -532,6 +533,7 @@ const ES = {
   f20h: "Un plan, paso a paso", f20p: "Pide una canción entera y Maestro primero te enseña un plan, como una lluvia de ideas con un productor. Apruébalo o cámbialo y construye la canción paso a paso, guardando cada uno: si la IA tarda demasiado, no se pierde nada.",
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Archivos de Tidal en pestañas", f18p: "Abre cualquier .tidal o .hs de tu disco o una canción de GitHub, cada uno en su pestaña, y ciérralos al terminar; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
+  v230: "Maestro guarda sus opciones como estilos de verdad: pide «guárdame las otras tres como estilos» o pulsa Guardar como estilo en cualquier tarjeta de opción, y la confirmación enseña lo que se guardó de verdad.",
   v220: "Efectos, iguales en todas las vistas: una ficha por efecto con interruptor y el mismo editor (deslizador, valor, quitar) en Pistas, Bloques y Código, + efecto en todas, y un editor claro.",
   v210: "Seis skills más incluidas (evaluar, componer, arreglo, melodía, gancho, letras) y un índice de skills que se queda entre sesiones: Maestro recibe las secciones que encajan con el contexto y las excepciones de las que dependen, funciona sin tu Claude Code global, y tus propios cambios de sonido pasan a ser candidatos a memoria.",
   v200: "Skills a la carta: Maestro manda solo las secciones de cada skill que encajan con tu mensaje (búsqueda local, sin IA), pide más solo si las necesita, y el monitor RAG enseña los caracteres de skills que se ahorran (un 55 % menos).",
@@ -546,7 +548,7 @@ const ES = {
   v130: "MIDI de ida y vuelta: tus canciones suenan en tu teclado; el audio se recupera al enchufar cosas; una sola librería para todos los sonidos; cambia un sonido seleccionando su nombre.",
   v121: "Arreglo: guardar canciones en un repositorio de GitHub recién creado vacío ya no falla con el error 409.",
   v12: "Toca tu teclado MIDI: tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal, una por mano, a compás con tu canción; Maestro te lo explica.",
-  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.22.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
+  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.23.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
   v11: "Tidal Studio se actualiza solo: te avisa de las versiones nuevas, te enseña las novedades, descarga y comprueba el instalador de tu ordenador y lo instala con un clic.",
   v10: "En las peticiones grandes Maestro te enseña un plan y lo construye paso a paso, así un timeout ya no pierde trabajo, con un botón Cancelar; genera una canción nueva desde tu MIDI en 11 estilos; varias canciones abiertas en pestañas, desde tu disco o GitHub; un baterista real en nueve cursos; mejor importación de audio con MSST; y Maestro ve los sonidos que acabas de descargar.",
   v91: "Maestro carga en cada mensaje mc-tidal-studio, la ruta de skills de tu plugin de composición hecha para esta app.",
