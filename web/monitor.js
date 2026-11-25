@@ -62,7 +62,9 @@ function diagramSVG(req) {
     const answered = req && req.answered_by === ly.id;
     const meta = [fmtMs(info.ms), info.hits != null ? `${info.hits} ${L("aciertos", "hits")}` : "",
       info.tokens_in || info.tokens_out ? `${info.tokens_in || 0}→${info.tokens_out || 0} tok` : "", info.cached ? `${info.cached} ${L("en caché", "cached")}` : "",
-      ly.id === "skills" && info.chars ? `${fmtK(info.chars)} ${L("car.", "chars")}${info.whole_chars ? ` (${L("enteras", "whole")}: ${fmtK(info.whole_chars)})` : ""}` : ""].filter(Boolean).join(" · ");
+      ly.id === "skills" && info.chars ? `${info.tokens_est ? `~${fmtK(info.tokens_est)} tok` : `${fmtK(info.chars)} ${L("car.", "chars")}`}${info.whole_chars && !info.tokens_est ? ` (${L("enteras", "whole")}: ${fmtK(info.whole_chars)})` : ""}` : "",
+      ly.id === "skills" && info.parents ? `+${info.parents} ${L("contexto", "context")}` : "",
+      ly.id === "skills" && info.fallback ? L("búsqueda 0.20", "0.20 search") : ""].filter(Boolean).join(" · ");
     const yPrev = i === 0 ? 42 : y - gap;
     parts.push(`<line class="mn-edge mn-${st}" x1="${W / 2}" y1="${yPrev}" x2="${W / 2}" y2="${y}"/>`);
     parts.push(`<g class="mn-node mn-${st}${answered ? " mn-answer" : ""}${selLayer === ly.id ? " mn-sel" : ""}" data-layer="${ly.id}" tabindex="0">
@@ -96,6 +98,8 @@ function paint() {
       <span><b>${Math.round((sm.share_without_llm || 0) * 100)}%</b> ${L("sin LLM", "without the LLM")}</span>
       <span><b>${sm.tokens || 0}</b> ${L("tokens", "tokens")}</span>
       ${sm.skills_whole ? `<span title="${L("Caracteres de skills enviados frente a los que habría costado mandarlas enteras", "Skill characters sent versus what sending them whole would have cost")}"><b>${fmtK(sm.skills_chars)}</b> ${L("de skills", "of skills")} · <b>−${Math.round(sm.skills_saved * 100)}%</b> ${L("frente a enteras", "vs whole")}</span>` : ""}
+      ${sm.skills_tokens_est ? `<span title="${L("Estimación (caracteres ÷ 3,6), no tokens medidos por el proveedor", "Estimate (characters ÷ 3.6), not tokens measured by the provider")}">~<b>${fmtK(sm.skills_tokens_est)}</b> ${L("tokens de skills", "skill tokens")}${sm.skills_followups ? ` · <b>${sm.skills_followups}</b> ${L("pidió más", "asked for more")}` : ""}</span>` : ""}
+      ${data.knowledge && data.knowledge.available ? `<span><b>${data.knowledge.sections || 0}</b> ${L("secciones de skills indexadas", "skill sections indexed")} (${L("gen.", "gen.")} ${data.knowledge.generation || 0})</span>` : ""}
       ${data.index ? `<span><b>${data.index.songs}</b> ${L("canciones en el índice", "songs in the index")}${data.index.fts ? " (FTS5)" : ""}</span>` : ""}
     </div>
     <div class="mn-main">
@@ -108,6 +112,7 @@ function paint() {
       </div>
       <div class="mn-diagram">${diagramSVG(req)}
         <div class="mn-detail">${selLayer ? `<b>${esc(EN ? (data.layers.find((x) => x.id === selLayer) || {}).en : (data.layers.find((x) => x.id === selLayer) || {}).es)}</b><p>${esc(LAYER_TIP[selLayer] ? LAYER_TIP[selLayer]() : "")}</p>
+          ${det && selLayer === "skills" && (det.trace || []).length ? `<ol class="mn-trace">${det.trace.map((t) => `<li title="${esc(t.file + " · " + (t.heading || "intro"))}"><code>§${esc(t.id)}</code> <b>${esc(String(t.heading || "intro").split(" › ").pop())}</b> <small>${esc(String(t.file).split("/").pop())}${(t.parents || []).length ? ` · +${L("contexto", "context")} §${esc(t.parents.join(" §"))}` : ""}${t.tokens ? ` · ~${t.tokens} tok` : ""}</small></li>`).join("")}</ol>` : ""}
           ${det ? `<pre>${esc(JSON.stringify(det, null, 1))}</pre>` : ""}` : `<p class="hint">${L("Pulsa una capa para ver qué hace y el detalle de esta petición.", "Click a layer to see what it does and this request's detail.")}</p>`}</div>
       </div>
     </div>
@@ -119,7 +124,7 @@ function paint() {
         <label class="check"><input type="checkbox" name="ly_library" ${ly.library ? "checked" : ""}> ${L("Leer tu biblioteca (capa 3)", "Read your library (layer 3)")}</label>
         <label class="check"><input type="checkbox" name="ly_loops" ${ly.loops ? "checked" : ""}> ${L("Pasar tus loops largos", "Pass your long loops")}</label>
         <label class="check"><input type="checkbox" name="ly_skills" ${ly.skills ? "checked" : ""}> ${L("Cargar skills (capa 4)", "Load skills (layer 4)")}</label>
-        <label>${L("Cómo cargar las skills", "How to load skills")} <select name="skills_mode"><option value="smart" ${data.skills_mode !== "whole" ? "selected" : ""}>${L("A la carta: solo las secciones que encajan", "À la carte: only the sections that fit")}</option><option value="whole" ${data.skills_mode === "whole" ? "selected" : ""}>${L("Enteras (como antes de la 0.20)", "Whole (as before 0.20)")}</option></select></label>
+        <label>${L("Cómo cargar las skills", "How to load skills")} <select name="skills_mode"><option value="smart" ${!["whole", "bm25"].includes(data.skills_mode) ? "selected" : ""}>${L("A la carta con índice: secciones + su contexto (0.21)", "À la carte with index: sections + their context (0.21)")}</option><option value="bm25" ${data.skills_mode === "bm25" ? "selected" : ""}>${L("A la carta sin índice (0.20)", "À la carte without index (0.20)")}</option><option value="whole" ${data.skills_mode === "whole" ? "selected" : ""}>${L("Enteras (como antes de la 0.20)", "Whole (as before 0.20)")}</option></select></label>
         <label>${L("Tokens máximos por respuesta (0 = automático)", "Max tokens per answer (0 = automatic)")} <input type="number" name="max_tokens" min="0" max="16000" step="100" value="${rc.max_tokens || 0}"></label>
         <label>${L("Opciones como mucho", "Options at most")} <input type="number" name="max_candidates" min="1" max="4" value="${rc.max_candidates || 4}"></label>
         <label>${L("Pistas de tus canciones como contexto", "Tracks from your songs as context")} <input type="number" name="index_hits" min="0" max="10" value="${rc.index_hits ?? 3}"></label>

@@ -1,0 +1,17 @@
+{
+  "url": "https://github.com/sb-dev/music-production-skills/tree/aa3933bc87f54a48ec018bb868bf6385b340db22/skills/music-evaluate",
+  "license": "MIT",
+  "author": "Music Production Skills contributors",
+  "commit": "aa3933bc87f54a48ec018bb868bf6385b340db22",
+  "copied": [
+    "SKILL.md",
+    "references/arrangement-rubric.md",
+    "references/composition-rubric.md",
+    "references/evaluation-lifecycle.md",
+    "references/failure-routing.md",
+    "references/preservation.md",
+    "references/production-rubric.md",
+    "references/technical-qc.md"
+  ],
+  "note": "Text files only, copied verbatim. Scripts, evals and assets were left out: Tidal Studio never runs them."
+}

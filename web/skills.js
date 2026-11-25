@@ -33,7 +33,11 @@ export function skillsLineHTML(report) {
     const refs = ((l.refs || []).length ? ` + ${l.refs.map((r) => r.split("/").pop()).join(", ")}` : "")
       + (l.sections ? ` · ${l.sections} ${l.sections === 1 ? L("sección", "section") : L("secciones", "sections")}` : "")
       + ((l.asked || []).length ? ` · ${L("pidió", "asked for")} ${l.asked.map((x) => x.split("#").pop()).join(", ")}` : "");
-    return `<button class="sk-chip ${u ? "used" : "loaded"}" data-skill="${esc(l.name)}" title="${esc(u ? L("Cargada y usada en esta respuesta", "Loaded and used in this answer") : L("Cargada, pero Maestro no la ha usado", "Loaded, but Maestro didn't use it"))}">${u ? icon("check", 12) : ""}${esc(l.name)}<small>${esc(refs)}</small><em>${u ? L("usada", "used") : L("cargada", "loaded")}</em></button>`;
+    // 0.21: qué secciones exactas se mandaron (§id) y cuántas llevaron contexto del padre o sus excepciones
+    const tr = (l.trace || []).map((t) => `§${t.id} ${t.file}#${t.heading}${(t.parents || []).length ? ` + ${L("contexto", "context")} §${t.parents.join(" §")}` : ""}`).join("\n");
+    const tip = (u ? L("Cargada y usada en esta respuesta", "Loaded and used in this answer") : L("Cargada, pero Maestro no la ha usado", "Loaded, but Maestro didn't use it")) + (tr ? "\n\n" + tr : "");
+    const par = l.parents ? `<i class="par">+${l.parents} ${L("contexto", "context")}</i>` : "";
+    return `<button class="sk-chip ${u ? "used" : "loaded"}" data-skill="${esc(l.name)}" title="${esc(tip)}">${u ? icon("check", 12) : ""}${esc(l.name)}<small>${esc(refs)}</small>${par}<em>${u ? L("usada", "used") : L("cargada", "loaded")}</em></button>`;
   });
   for (const n of used) if (!loaded.some((l) => l.name === n)) chips.push(`<button class="sk-chip used" data-skill="${esc(n)}">${icon("check", 12)}${esc(n)}<em>${L("usada", "used")}</em></button>`);
   return `<div class="skills-line" data-skills>${icon("skill", 13)} <span>${L("Skills", "Skills")}</span>${chips.join("")}</div>`;
@@ -100,24 +104,47 @@ export function chooseHTML(r, url) {
   </div>`;
 }
 
+// Índice de conocimiento (0.21): base SQLite que se rehace sola desde los Markdown; aquí ves su estado
+export function knowledgeBoxHTML(kn) {
+  if (!kn || (!kn.available && !kn.error)) return "";
+  const fb = kn.fts && kn.fts.fts5 === false;
+  const st = !kn.available ? L("No disponible: Maestro usa la búsqueda de la 0.20", "Unavailable: Maestro uses the 0.20 search")
+    : fb ? L("Tu SQLite no tiene FTS5: Maestro usa la búsqueda de la 0.20", "Your SQLite has no FTS5: Maestro uses the 0.20 search")
+      : L(`${kn.sections || 0} secciones de ${kn.files || 0} archivos · ${((kn.db_bytes || 0) / 1e6).toFixed(1)} MB · generación ${kn.generation || 0}`,
+        `${kn.sections || 0} sections from ${kn.files || 0} files · ${((kn.db_bytes || 0) / 1e6).toFixed(1)} MB · generation ${kn.generation || 0}`);
+  return `<div class="kn-box ${!kn.available || fb ? "warn" : ""}">
+      <div>${icon("skill", 14)} <b>${L("Índice de skills", "Skills index")}</b> <span>${esc(st)}</span></div>
+      <p class="hint">${L("Los Markdown son la fuente: el índice solo guarda dónde está cada sección. Se pone al día solo cuando cambias, añades o quitas una skill.",
+        "The Markdown files are the source: the index only stores where each section is. It updates itself when you change, add or remove a skill.")}</p>
+      <button class="sk-btn" data-a="kn-rebuild">${icon("history", 14)} ${L("Reconstruir índice", "Rebuild index")}</button>
+    </div>`;
+}
+
 export function skillsDialogHTML(list, opts = {}) {
   const counts = useCounts();
   const focus = opts.focus || "";
   const plugins = opts.plugins || [];
+  const kn = opts.knowledge || {};
+  const bySrc = Object.fromEntries((kn.sources || []).map((x) => [x.source_id, x]));
   const card = (s) => {
     const c = counts[s.name] || { loaded: 0, used: 0 };
+    const ix = bySrc[s.source_id];
     const src = s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${icon("link", 12)} ${L("origen", "source")}</a>` : "";
     return `<article class="sk-card ${s.enabled ? "" : "off"} ${focus === s.name ? "focus" : ""}" data-name="${esc(s.name)}">
       <header>
         <b>${esc(s.name)}</b>
         <span class="sk-tag">${s.origin === "plugin" ? `${icon("plugin", 11)} ${esc(s.plugin)}` : s.origin === "user" ? L("Instalada por ti", "Installed by you") : L("Incluida", "Included")}</span>
+        ${s.commit ? `<span class="sk-tag" title="${esc(L("Versión exacta del repositorio de origen", "Exact version of the source repository") + ": " + s.commit)}">${esc(s.commit.slice(0, 7))}</span>` : ""}
         ${s.license ? `<span class="sk-tag lic">${esc(s.license)}</span>` : `<span class="sk-tag warn">${L("sin licencia", "no license")}</span>`}
         ${s.route ? `<span class="sk-tag lic" title="${esc(L("Ruta de este plugin pensada para Tidal Studio: Maestro la carga en cada mensaje", "This plugin's route made for Tidal Studio: Maestro loads it with every message"))}">${L("Ruta Tidal Studio", "Tidal Studio route")}</span>` : ""}
         ${s.language === "strudel" ? `<span class="sk-tag" title="${esc(L("Escrita para Strudel (JavaScript): Maestro traduce sus ideas a Tidal", "Written for Strudel (JavaScript): Maestro translates its ideas to Tidal"))}">Strudel</span>` : ""}
       </header>
+      ${s.quarantine ? `<p class="sk-warn">${icon("lock", 13)} ${esc(L("En cuarentena: ", "Quarantined: ") + s.quarantine)}. ${L("Maestro no la usa hasta que la reinstales.", "Maestro won't use it until you reinstall.")}</p>` : ""}
+      ${s.bundled && s.default_enabled === false ? `<p class="hint">${L("Viene apagada: enciéndela si escribes letras y quieres que Maestro revise sílabas y acentos.", "Comes off: turn it on if you write lyrics and want Maestro to check syllables and stress.")}</p>` : ""}
       <p>${esc(s.description)}</p>
       <div class="sk-meta">
         <span>${(s.chars / 1000).toFixed(1)}k ${L("caracteres", "chars")}</span>
+        ${ix ? `<span title="${esc(L("Trozos del índice: Maestro manda solo los que encajan con tu mensaje", "Index chunks: Maestro sends only the ones that fit your message"))}">${ix.sections} ${L("secciones", "sections")}${ix.skipped ? ` · ${ix.skipped} ${L("sin enviar", "never sent")}` : ""}</span>` : ""}
         ${s.refs.length ? `<span title="${esc(s.refs.join("\n"))}">${s.refs.length} ${L("referencias", "references")}: ${s.refs.slice(0, 4).map((r) => esc(r.split("/").pop())).join(", ")}${s.refs.length > 4 ? "…" : ""}</span>` : ""}
         ${src}
       </div>
@@ -141,9 +168,10 @@ export function skillsDialogHTML(list, opts = {}) {
   }).join("");
   return `<div class="sk-intro">
       <h2>${L("Skills de Maestro", "Maestro's skills")}</h2>
-      <p>${L("Una skill es un SKILL.md con conocimiento experto (el mismo formato que las Agent Skills de Claude). En cada mensaje Maestro ve la lista; las que encajan con lo que pides se cargan enteras, y debajo de cada respuesta ves cuáles se cargaron y cuáles usó de verdad.",
-        "A skill is a SKILL.md with expert knowledge (the same format as Claude's Agent Skills). With every message Maestro sees the list; the ones that match your request are loaded in full, and under each answer you see which were loaded and which it actually used.")}</p>
+      <p>${L("Una skill es un SKILL.md con conocimiento experto (el mismo formato que las Agent Skills de Claude). En cada mensaje Maestro ve la lista; de las que encajan con lo que pides solo manda las secciones que vienen al caso (con el contexto y las excepciones de las que dependen), y debajo de cada respuesta ves cuáles se cargaron y cuáles usó de verdad.",
+        "A skill is a SKILL.md with expert knowledge (the same format as Claude's Agent Skills). With every message Maestro sees the list; from the ones that match your request it sends only the sections that apply (with the context and exceptions they depend on), and under each answer you see which were loaded and which it actually used.")}</p>
     </div>
+    ${knowledgeBoxHTML(kn)}
     <h3 class="sk-h">${icon("skill", 15)} ${L("Skills", "Skills")}</h3>
     <div class="sk-grid">${cards || `<p class="hint">${L("No hay skills instaladas.", "No skills installed.")}</p>`}</div>
     <h3 class="sk-h">${icon("plugin", 15)} ${L("Plugins", "Plugins")}</h3>
