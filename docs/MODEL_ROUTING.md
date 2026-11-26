@@ -30,6 +30,10 @@ Spanish version: [MODEL_ROUTING.es.md](MODEL_ROUTING.es.md).
 4. Start at Sonnet or Opus right away when the task touches 5 or more files.
 5. Never raise effort to compensate for missing facts. Explore first with Graphify.
 
+## Split by difficulty
+
+Even one request can mix easy and hard parts. Split it into subtasks, each with its own model and effort: lookups and docs on Haiku `low`, code on Sonnet `medium`, design or hard debugging on Opus `high`. In Claude Code, run subtasks as subagents with the `model` parameter, in parallel when they are independent.
+
 ## Token savers
 
 - Explore code with Graphify before grep or Read.
