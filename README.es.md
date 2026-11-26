@@ -451,7 +451,12 @@ pistas melódicas, una fila por nota, como un piano roll. Cada bloque es un golp
 - Elige de 1 a 16 ciclos, haz zoom, avanza compás a compás y activa **Seguir lo que suena**: mientras toca, una línea
   avanza y los golpes que suenan se encienden.
 
+- **Tiempo real.** Bajo el número de cada compás la regla muestra el **mm:ss** en que empieza, y el selector de compases
+  muestra el tramo de tiempo visible, ambos calculados con los BPM de la canción (1 ciclo = 4 tiempos).
+
 ![Línea de tiempo](docs/screenshots/es/linea-de-tiempo.png)
+
+![Línea de tiempo con tiempo real bajo cada compás](docs/screenshots/es/linea-de-tiempo-tiempo.png)
 
 ![Línea de tiempo: un golpe y el código que lo produce](docs/screenshots/es/linea-de-tiempo-nota.png)
 
@@ -1026,7 +1031,9 @@ Enchufar un teclado, unos auriculares o una tarjeta de sonido USB podía dejar e
 - **GitHub**: guarda cada versión de tu canción como un commit en un repositorio tuyo (`song.tidal`, `song.json`,
   `README.md`), mira el historial y abre cualquier versión antigua desde Mis proyectos → GitHub.
 - **Exportar**: descarga la canción como archivo `.tidal`, copia un **enlace para compartir** (toda la canción va en la
-  URL; al abrirlo se carga como proyecto nuevo) o **graba** lo que suena a un WAV en `recordings/` con el botón de grabar.
+  URL; al abrirlo se carga como proyecto nuevo) o **Exporta** lo que suena a un WAV en `recordings/` con el botón Exportar: eliges cuántos ciclos, ves cuánto dura un ciclo y una pasada entera de la canción, y la app toca desde el principio, graba justo eso y para sola (sin empezar/parar a mano).
+
+  ![Diálogo Exportar](docs/screenshots/es/exportar.png)
 - **Mis proyectos**: tus canciones se guardan solas y puedes abrirlas o borrarlas desde la carpeta.
 
 ![GitHub: cada guardado es una versión](docs/screenshots/es/github-versiones.png)
@@ -1203,6 +1210,7 @@ Cada versión tiene sus instaladores para Mac, Windows y Linux en la [página de
 |---|---|
 | **0.25.3** | Cada ajuste se aplica al pulsar **Guardar**, sin reiniciar la app: límites, número de pistas (el sonido se reinicia solo), el token de GitHub de las actualizaciones y los plugins, y la copia de la memoria en GitHub en cuanto la activas. |
 | **0.26.0** | **Primero, medir.** Cada petición a Maestro deja una fila en un registro persistente (`data/executions/executions.db`, incluido en las copias automáticas): qué capa respondió, tiempo, llamadas a la IA y tokens reales (entrada, salida, caché). `GET /api/ledger` da la línea base por versión (% sin IA, tokens por respuesta con IA, latencia p50/p95) para comparar cada versión con la anterior. Se guarda 365 días por defecto (Ajustes → Límites). |
+| **0.26.1** | **Tiempo real y Exportar.** La [Línea de tiempo](#línea-de-tiempo-cuándo-suena-cada-sonido) muestra el tiempo real (mm:ss) bajo cada compás. El botón **Grabar** pasa a ser **Exportar**: eliges el número de ciclos, ves cuánto dura un ciclo y una pasada entera de la canción, y el archivo se genera solo (empieza en el ciclo 0 y para sola). |
 | **0.25.2** | Arreglos: con más de 12 pistas en Ajustes → Límites → Pistas, Maestro, el asistente, las recetas de estilo y los enlaces compartidos ya también las usan (se quedaban en d12), y el resaltado en directo de la vista Código sigue alineado con el código al hacer scroll (también en la app de Mac). |
 | **0.25.1** | [Cuántas pistas](#cuántas-pistas-12-de-serie-hasta-32): el número de pistas es un ajuste (Ajustes → Límites → Pistas, 12 de serie, hasta 64); el arranque de TidalCycles y las orbits de SuperDirt se generan a partir de él, con lo que cuesta en CPU cada pista de más. [Todos los límites, configurables](#todos-los-límites-configurables): los otros 30 topes (contexto de Maestro, tamaños de archivo, sonido, canciones, deshacer) en Ajustes → Límites, con su valor de serie y restablecer. |
 | **0.25.0** | [Tus datos, a salvo en cada actualización](#tus-datos-a-salvo-en-cada-actualización): tus canciones, memoria y ajustes viven en su propia carpeta fuera del programa, una copia comprobada antes de cada actualización con **Restaurar** en Ajustes → Almacenamiento, y cada canción también en archivo para recuperar «Mis proyectos» si la ventana los pierde. |
