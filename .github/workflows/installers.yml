@@ -336,14 +336,33 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then TAG="${GITHUB_REF#refs/tags/}"; else TAG="v$(cat packaging/VERSION)"; fi
           ls -lh dist
-          if [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" = "push" ] && gh release view "$TAG" >/dev/null 2>&1; then
-            echo "Release $TAG already exists. Bump packaging/VERSION on main to publish a new one."
-            # keep its notes in step with packaging/RELEASE_NOTES.md (a fix to the notes after release)
-            gh release edit "$TAG" --notes-file packaging/RELEASE_NOTES.md || true
-            exit 0
+          # Notes for a release: packaging/release-notes/<version>.md when it exists (hand-written),
+          # otherwise GitHub's generated notes (merged PR titles since the previous tag). Every release,
+          # patch included, gets notes this way. $2 = commit to read for a tag that does not exist yet.
+          notes_for() {
+            local v="${1#v}" target=()
+            if [ -s "packaging/release-notes/$v.md" ]; then cp "packaging/release-notes/$v.md" "$2"; return; fi
+            [ -n "$3" ] && target=(-f target_commitish="$3")
+            gh api -X POST "repos/$GITHUB_REPOSITORY/releases/generate-notes" -f tag_name="$1" "${target[@]}" --jq .body > "$2"
+          }
+          NOTES="$RUNNER_TEMP/notes.md"
+          if [ "$GITHUB_REF" = "refs/heads/main" ] && [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            # Main never re-publishes; it only fills in notes that are still empty (new or older releases).
+            for T in $(gh release list --limit 100 --json tagName -q '.[].tagName'); do
+              [ -z "$(gh release view "$T" --json body -q .body | tr -d '[:space:]')" ] || continue
+              notes_for "$T" "$NOTES" ""
+              gh release edit "$T" --notes-file "$NOTES" && echo "Notes filled for $T"
+            done
+            if gh release view "$TAG" >/dev/null 2>&1; then
+              echo "Release $TAG already exists. Bump packaging/VERSION on main to publish a new one."
+              exit 0
+            fi
           fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --target "$GITHUB_SHA" --title "Tidal Studio $TAG" \
-              --notes-file packaging/RELEASE_NOTES.md
+            notes_for "$TAG" "$NOTES" "$GITHUB_SHA"
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "Tidal Studio $TAG" --notes-file "$NOTES"
+          elif [ -z "$(gh release view "$TAG" --json body -q .body | tr -d '[:space:]')" ]; then
+            notes_for "$TAG" "$NOTES" ""
+            gh release edit "$TAG" --notes-file "$NOTES"
           fi
           gh release upload "$TAG" dist/* --clobber
