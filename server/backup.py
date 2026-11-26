@@ -26,7 +26,8 @@ import paths
 KEEP = 5
 PENDING = os.path.join(paths.BACKUPS, "restore-pending.json")
 ID_RX = re.compile(r"^[0-9]{8}T[0-9]{6}Z-[a-z0-9.-]{1,40}$")
-DBS = [("memory", paths.MEMORY_DB), ("songs", paths.SONGS_DB), ("sounds", paths.SOUNDS_DB)]
+DBS = [("memory", paths.MEMORY_DB), ("songs", paths.SONGS_DB), ("sounds", paths.SOUNDS_DB),
+       ("executions", paths.EXECUTIONS_DB)]
 TREES = [("my-skills", paths.MY_SKILLS), ("my-plugins", paths.MY_PLUGINS)]
 
 

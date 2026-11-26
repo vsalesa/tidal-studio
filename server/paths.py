@@ -8,6 +8,7 @@ El programa y tus datos van en carpetas distintas, para que una actualización n
     songs/<nombre>/           cada canción en archivo: song.tidal, song.json, song.musicxml (como en GitHub)
     songs/maestro.db          índice de canciones y votos A/B (se rehace desde los archivos)
     memory/memory.db          memorias, estilos y casos
+    executions/executions.db  registro de ejecuciones: tokens y tiempos reales por respuesta (0.26)
     sounds/sounds.db          medidas de sonido, recetas y lo que eliges de oído
     knowledge/                índice de skills (se rehace solo)
     samples/  recordings/  my-skills/  my-plugins/  references/  cache/
@@ -50,6 +51,7 @@ SONGS = os.path.join(DB_ROOT, "songs")
 SONGS_DB = os.path.join(SONGS, "maestro.db")
 MEMORY_DB = os.path.join(DB_ROOT, "memory", "memory.db")
 SOUNDS_DB = os.path.join(DB_ROOT, "sounds", "sounds.db")
+EXECUTIONS_DB = os.path.join(DB_ROOT, "executions", "executions.db")
 KNOWLEDGE = os.path.join(DB_ROOT, "knowledge")
 KNOWLEDGE_DB = os.path.join(KNOWLEDGE, "maestro-knowledge.sqlite")
 MANAGED_SKILLS = os.path.join(KNOWLEDGE, "managed-skills.json")

@@ -76,6 +76,8 @@ DEFS = [
      "Archivos de memoria que se sincronizan con GitHub", "Memory files synced with GitHub"),
     ("gh_shared_kb", "github", "MAX_SHARED", 300, 50, 10000, "KB", 1000, "songs",
      "Tamaño de cada archivo compartido en GitHub", "Size of each file shared on GitHub"),
+    ("ledger_days", "ledger", "DAYS", 365, 7, 3650, "días|days", 1, "maestro",
+     "Días que se guarda el registro de ejecuciones (tokens y tiempos)", "Days the execution ledger is kept (tokens and timings)"),
     ("undo_steps", "", "", 80, 10, 1000, "", 1, "songs",
      "Pasos de deshacer por canción (en el navegador)", "Undo steps per song (in the browser)"),
 ]
