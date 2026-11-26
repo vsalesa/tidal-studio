@@ -57,6 +57,7 @@ import songfiles  # noqa: E402
 import instlib  # noqa: E402
 import references  # noqa: E402
 import inventory  # noqa: E402
+import ledger  # noqa: E402
 import router  # noqa: E402
 import songindex  # noqa: E402
 import score as scoremod  # noqa: E402
@@ -493,7 +494,13 @@ try:
 except Exception as _e:  # noqa: BLE001  sin disco escribible el estudio sigue funcionando
     print(f"[maestro-data] {_e}")
     SONGS = None
-MONITOR = router.Monitor()
+try:
+    LEDGER = ledger.Ledger(paths.EXECUTIONS_DB, APP_VERSION)
+    LEDGER.prune(limits.values(load_config()).get("ledger_days"))
+except Exception as _e:  # noqa: BLE001
+    print(f"[ledger] {_e}")
+    LEDGER = None
+MONITOR = router.Monitor(on_done=LEDGER.record if LEDGER else None)
 # 0.16: medidas de sonido, elecciones y recetas (maestro-data/sounds.db). Los packs comprados se marcan «solo local».
 try:
     SOUNDS = soundlab.Store(paths.SOUNDS_DB)
@@ -1709,6 +1716,16 @@ class Handler(SimpleHTTPRequestHandler):
                 return self._memory_get(path)
             if path == "/api/knowledge":
                 return self._json(knowledge_status())
+            if path == "/api/ledger":
+                q = parse_qs(urlparse(self.path).query)
+                if not LEDGER:
+                    return self._json({"baseline": [], "recent": []})
+                try:
+                    n = int(q.get("limit", ["100"])[0])
+                except ValueError:
+                    n = 100
+                return self._json({"version": APP_VERSION, "baseline": LEDGER.baseline(),
+                                   "recent": LEDGER.recent(n, (q.get("version") or [None])[0])})
             if path == "/api/monitor":
                 q = parse_qs(urlparse(self.path).query)
                 try:

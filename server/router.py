@@ -146,8 +146,9 @@ def index_context(index, text, song_id, n):
 class Monitor:
     """Últimas peticiones con lo que hizo cada capa (para el diagrama en vivo de la app)."""
 
-    def __init__(self, keep=60):
+    def __init__(self, keep=60, on_done=None):
         self.keep = keep
+        self.on_done = on_done   # 0.26: el registro persistente recibe cada petición al terminar
         self.items = []
         self.lock = threading.Lock()
 
@@ -216,6 +217,7 @@ class Request:
             cur = self.layers[layer]
             cur["tokens_in"] = cur.get("tokens_in", 0) + int(tin or 0)
             cur["tokens_out"] = cur.get("tokens_out", 0) + int(tout or 0)
+            cur["calls"] = cur.get("calls", 0) + 1
             if cached:
                 cur["cached"] = cur.get("cached", 0) + int(cached)
 
@@ -228,6 +230,8 @@ class Request:
                     v["status"] = "skip"
             self.total_ms = int((time.time() - self.t0) * 1000)
             self.done = True
+        if self.mon.on_done:
+            self.mon.on_done(self)
 
     def public(self):
         return {"id": self.id, "trace": self.trace, "text": self.text, "t": round(self.t0, 3), "done": self.done,
