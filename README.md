@@ -440,7 +440,12 @@ piano roll. Each block is one hit and its length is how long it lasts.
 - Choose 1 to 16 cycles, zoom, move bar by bar, and **Follow the playhead**: while it plays, a line moves across and
   the hits that are sounding glow.
 
+- **Real time.** Under each bar number the ruler shows the **mm:ss** where that bar starts, and the bar selector shows the
+  time range on screen, both calculated from the song's BPM (1 cycle = 4 beats).
+
 ![Timeline](docs/screenshots/timeline.png)
+
+![Timeline with real time under each bar](docs/screenshots/timeline-time.png)
 
 ![Timeline: a hit and the code that makes it](docs/screenshots/timeline-event.png)
 
@@ -991,7 +996,9 @@ Plugging in a keyboard, headphones or a USB audio device used to leave the studi
 - **GitHub**: save each version of your song as a commit in a repository of yours (`song.tidal`, `song.json`,
   `README.md`), browse the history and open any old version from My projects → GitHub.
 - **Export**: download the song as a `.tidal` file, copy a **share link** (the whole song in the URL; opening it loads it
-  as a new project), or **record** what you hear to a WAV file in `recordings/` with the record button.
+  as a new project), or **Export** what you hear to a WAV file in `recordings/` with the Export button: pick how many cycles, see how long one cycle and one full song pass last, and the app plays from the top, records exactly that and stops by itself (no manual start/stop).
+
+  ![Export dialog](docs/screenshots/export.png)
 - **My projects**: your songs are saved automatically; open or delete them from the folder button.
 
 ![GitHub: every save is a version](docs/screenshots/github-versions.png)
@@ -1164,6 +1171,7 @@ Each version has its installers for Mac, Windows and Linux on the [releases page
 |---|---|
 | **0.25.3** | Every setting applies the moment you press **Save**, without restarting the app: limits, number of tracks (the sound restarts on its own), the GitHub token used for updates and plugins, and the memory backup on GitHub as soon as you turn it on. |
 | **0.26.0** | **Measure first.** Every Maestro request now leaves a row in a persistent ledger (`data/executions/executions.db`, included in the automatic backups): which layer answered, time, number of AI calls and the real tokens (in, out, cached). `GET /api/ledger` returns the per-version baseline (share answered without AI, tokens per AI answer, p50/p95 latency) so each release can be compared with the last one. Kept for 365 days by default (Settings → Limits). |
+| **0.26.1** | **Real time and Export.** The [Timeline](#timeline-when-each-sound-plays) shows real time (mm:ss) under each bar. The **Record** button is now **Export**: choose the number of cycles, see how long one cycle and one full song pass last, and the file is generated automatically (start from cycle 0, stops by itself). |
 | **0.25.2** | Fixes: with more than 12 tracks set in Settings → Limits → Tracks, Maestro, the wizard, style recipes and shared links can now use them too (they were still stopping at d12), and the live highlighting in the Code view stays aligned with the code when you scroll (also in the Mac app). |
 | **0.25.1** | [How many tracks](#how-many-tracks-12-by-default-up-to-32): the number of tracks is a setting (Settings → Limits → Tracks, 12 by default, up to 64); the TidalCycles boot file and the SuperDirt orbits are generated from it, with what each extra track costs in CPU. [Every limit, configurable](#every-limit-configurable): the other 30 caps (Maestro context, file sizes, sound, songs, undo) in Settings → Limits, with their defaults and reset. |
 | **0.25.0** | [Your data, safe across updates](#your-data-safe-across-updates): your songs, memory and settings live in their own folder outside the program, a verified backup before every update with **Restore** in Settings → Storage, and every song also saved as files that bring «My projects» back if the window loses them. |

@@ -131,7 +131,7 @@ export const COURSES = [
         listen: L("Compara con y sin mezcla usando Deshacer (Ctrl/Cmd+Z) y Rehacer.", "Compare with and without the mix using Undo (Ctrl/Cmd+Z) and Redo."),
         mix: { d1: { vol: -5, high: 2 }, d2: { vol: 0 }, d3: { vol: -3, low: 2 }, d4: { vol: 1 }, d5: { vol: -3 }, d6: { vol: -2, mid: 1 }, d7: { vol: -3 } },
         parts: MIX_PARTS(),
-        try: L("Graba la canción con el botón Grabar: ¡tu primer merengue!", "Record the song with the Record button: your first merengue!") },
+        try: L("Graba la canción con el botón Exportar: ¡tu primer merengue!", "Export the song with the Export button: your first merengue!") },
     ],
   },
 
@@ -431,7 +431,7 @@ export const COURSES = [
         listen: L("Compara con y sin mezcla usando Deshacer (Ctrl/Cmd+Z) y Rehacer.", "Compare with and without the mix using Undo (Ctrl/Cmd+Z) and Redo."),
         mix: { d1: { vol: -5 }, d2: { vol: -3 }, d3: { vol: -1 }, d4: { vol: 1, low: 2 }, d5: { vol: -4 }, d6: { vol: -2, mid: 1 } },
         parts: MIX_PARTS(),
-        try: L("Graba tu cumbia con el botón Grabar.", "Record your cumbia with the Record button.") },
+        try: L("Graba tu cumbia con el botón Exportar.", "Record your cumbia with the Export button.") },
     ],
   },
 
