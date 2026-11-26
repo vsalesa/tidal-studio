@@ -47,7 +47,7 @@
       </label>
       <button id="bpm-lock" class="icon-btn bpm-lock" title="Bloquear el BPM: Maestro, las ideas y los cursos no lo cambian" data-tt="Lock the BPM: Maestro, ideas and courses won't change it"><i data-icon="unlock" data-size="16"></i></button>
       <button id="btn-play" class="primary" title="Hacer sonar todo" data-tt="Play everything"><i data-icon="play" data-size="14"></i> <span data-t="Play all">Tocar todo</span></button>
-      <button id="btn-rec" class="rec-btn" title="Grabar la canción a un archivo de audio (WAV)" data-tt="Record the song to an audio file (WAV)"><i data-icon="rec" data-size="14"></i> <span id="rec-label"><span data-t="Record">Grabar</span></span></button>
+      <button id="btn-rec" class="rec-btn" title="Exportar la canción a un archivo de audio (WAV): eliges cuántos ciclos" data-tt="Export the song to an audio file (WAV): you choose how many cycles"><i data-icon="rec" data-size="14"></i> <span id="rec-label"><span data-t="Export">Exportar</span></span></button>
       <button id="btn-hush" class="outline-danger" title="Silenciar todo ya" data-tt="Silence everything now"><i data-icon="stop" data-size="14"></i> <span data-t="Hush">Silencio</span></button>
       <label class="toggle" title="Cuando cambias algo, suena al momento" data-tt="When you change something, it plays right away">
         <input id="autoplay" type="checkbox" checked> <span data-t="Live">En vivo</span>
@@ -191,6 +191,7 @@
 
   <!-- Historial de la canción (rollback) -->
   <dialog id="askdlg" class="ask-dlg"></dialog>
+  <dialog id="exportdlg" class="ask-dlg exp-dlg"></dialog>
   <dialog id="ghimport" class="wide gi-dialog" aria-label="Upload songs to GitHub"></dialog>
   <dialog id="mididock" class="midi-dock" aria-label="MIDI keyboard"></dialog>
   <input type="file" id="file-input" accept=".tidal,.hs,.txt,text/plain" hidden>

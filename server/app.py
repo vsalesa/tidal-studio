@@ -2262,7 +2262,18 @@ class Handler(SimpleHTTPRequestHandler):
                 if not ENGINE.record_start(os.path.join(d, name)):
                     return self._json({"error": "Para grabar hace falta el motor de sonido (SuperCollider) en marcha."
                                        if data.get("lang") != "en" else "Recording needs the sound engine (SuperCollider) running."}, 400)
-                return self._json({"ok": True, "name": name, "folder": d})
+                # Con "seconds" la app para sola (Exportar): nadie tiene que pulsar «parar».
+                secs = 0
+                try:
+                    secs = max(0.0, min(float(data.get("seconds") or 0), 3600.0))
+                except (TypeError, ValueError):
+                    secs = 0
+                if secs:
+                    import threading as _th
+                    tm = _th.Timer(secs, ENGINE.record_stop)
+                    tm.daemon = True
+                    tm.start()
+                return self._json({"ok": True, "name": name, "folder": d, "seconds": secs})
             if path == "/api/record/stop":
                 ENGINE.record_stop()
                 return self._json({"ok": True})

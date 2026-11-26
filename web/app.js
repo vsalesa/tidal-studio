@@ -17,7 +17,8 @@ import { applyEdit, partOf, WRAPS, ADD_PARAMS, paramRange, effectsOf, elementsOf
 import { mixerHTML, mixCodeHTML, mixBadgeHTML, mixSuffix, mixLine, parseMixLine, audible, setMix, mixOf, dbText } from "./mixer.js";
 import { cardCode, cardFromPos } from "./card.js";
 import { initHistory, record, flushPending, undo as histUndo, redo as histRedo, go as histGo, entries as histEntries, canUndo, canRedo, resetHistory, stashHistory, restoreHistory, setUndoSteps } from "./history.js";
-import { arrangeHTML, barsOf, setMask, PRESETS as AR_PRESETS } from "./arrange.js";
+import { arrangeHTML, barsOf, setMask, parseMask, PRESETS as AR_PRESETS } from "./arrange.js";
+import { cycleSecs, fmtTime, songCycles } from "./timefmt.js";
 import { controlsFor, controlsHTML, normalizeControls, setParam, getParam, fmt, fixNegatives, fromPos, gridFrom, gridToCode, PARAMS as CTL_PARAMS, extApply, extState } from "./controls.js";
 import { TYPES as SAMPLE_TYPES, BUILTIN, typeName, typeKind, starterCode, swapSound, PACKS, DIRT_INDEX, guessType, safeName } from "./samples.js";
 import { GROUPS, BLOCKS, LEVELS, blockName, blockDesc, groupName, applyBlock } from "./palette.js";
@@ -3893,24 +3894,62 @@ function importSharedSong() {
     save();
   } catch { /* enlace roto: seguimos con lo que había */ }
 }
-let recTimer = null, recStart = 0;
-async function toggleRecord() {
-  const b = $("#btn-rec");
-  if (!recTimer) {
-    try {
-      const r = await api("/api/record/start", { name: state.name || "cancion" });
-      if (live() && state.tracks.length) playAll();
-      recStart = Date.now(); b.classList.add("on"); b.dataset.file = r.name;
-      recTimer = setInterval(() => { const s = Math.floor((Date.now() - recStart) / 1000); $("#rec-label").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`; }, 500);
-      toast(L("Grabando… pulsa otra vez para parar.", "Recording… press again to stop."));
-    } catch (e) { toast(e.message); }
-    return;
-  }
-  clearInterval(recTimer); recTimer = null; b.classList.remove("on"); $("#rec-label").textContent = L("Grabar", "Record");
-  await api("/api/record/stop", {}).catch(() => {});
-  const name = b.dataset.file;
-  setTimeout(() => say(L(`Grabación lista: ${name} (carpeta recordings/). Es un WAV de lo que sonaba por la salida de SuperCollider.`, `Recording ready: ${name} (recordings/ folder). It's a WAV of whatever came out of SuperCollider.`), state.options,
-    { links: [{ href: `/api/recordings/file?name=${encodeURIComponent(name)}`, label: L("Descargar WAV", "Download WAV") }] }), 600);
+// Exportar a WAV: eliges cuántos ciclos; la app arranca desde el ciclo 0, graba justo ese tiempo y para sola.
+let exporting = false;
+const EXPORT_TAIL = 1.5;  // segundos extra para que no se corte la reverb ni el eco
+const songLen = () => songCycles(state.tracks.map((t) => { const m = parseMask(t.code); return m && !m.complex ? m.length : 0; }));
+function openExport() {
+  if (exporting) return;
+  const dlg = $("#exportdlg"), per = cycleSecs(state.bpm), full = songLen();
+  const secsFor = (n) => n * per;
+  dlg.innerHTML = `<h2>${L("Exportar a WAV", "Export to WAV")}</h2>
+    <p>${L("Elige cuántos ciclos quieres. La app empieza desde el principio, graba y para sola.", "Pick how many cycles you want. The app starts from the top, records and stops by itself.")}</p>
+    <div class="exp-facts">
+      <span>${L("1 ciclo", "1 cycle")} (${L("1 compás", "1 bar")}) = <b>${per.toFixed(2)} s</b> ${L("a", "at")} ${state.bpm} BPM</span>
+      <span>${L("Canción entera", "One full song pass")} = <b>${full}</b> ${full === 1 ? L("ciclo", "cycle") : L("ciclos", "cycles")} = <b>${fmtTime(secsFor(full), 1)}</b>${full === 1 ? ` <small>(${L("sin arreglo: elige tú cuántos", "no arrangement: you choose how many")})</small>` : ""}</span>
+    </div>
+    <div class="exp-row"><label>${L("Ciclos", "Cycles")} <input id="exp-n" type="number" min="1" max="999" value="${full > 1 ? full : 4}"></label>
+      <button data-n="1">1 ${L("ciclo", "cycle")}</button><button data-n="${full}">${L("Canción entera", "Full song")}</button><button data-n="${full * 2}">${L("Entera ×2", "Full ×2")}</button></div>
+    <p id="exp-len"></p>
+    <div id="exp-prog" hidden><div class="exp-bar"><i></i></div><p id="exp-status"></p></div>
+    <div class="ask-btns"><button data-k="cancel">${L("Cancelar", "Cancel")}</button><button data-k="go" class="primary">${icon("rec", 13)} ${L("Exportar", "Export")}</button></div>`;
+  const n$ = dlg.querySelector("#exp-n");
+  const nOf = () => Math.max(1, Math.min(999, Math.round(+n$.value || 1)));
+  const upd = () => { dlg.querySelector("#exp-len").innerHTML = L(`Durará <b>${fmtTime(secsFor(nOf()) + EXPORT_TAIL, 1)}</b> (${nOf()} × ${per.toFixed(2)} s + ${EXPORT_TAIL} s de cola).`, `It will last <b>${fmtTime(secsFor(nOf()) + EXPORT_TAIL, 1)}</b> (${nOf()} × ${per.toFixed(2)} s + ${EXPORT_TAIL} s tail).`); };
+  n$.oninput = upd; upd();
+  dlg.querySelectorAll("button[data-n]").forEach((b) => b.onclick = () => { n$.value = b.dataset.n; upd(); });
+  dlg.querySelector('[data-k="cancel"]').onclick = () => { if (!exporting) dlg.close(); };
+  dlg.querySelector('[data-k="go"]').onclick = () => runExport(dlg, nOf(), secsFor(nOf()) + EXPORT_TAIL);
+  dlg.showModal();
+}
+async function runExport(dlg, n, secs) {
+  if (exporting) return;
+  if (!state.tracks.length) { toast(L("Añade alguna pista antes de exportar.", "Add a track before exporting.")); return; }
+  exporting = true;
+  const go = dlg.querySelector('[data-k="go"]'), prog = dlg.querySelector("#exp-prog"), bar = prog.querySelector("i"), st = dlg.querySelector("#exp-status");
+  go.disabled = true; dlg.querySelectorAll("input, button[data-n]").forEach((x) => { x.disabled = true; });
+  const b = $("#btn-rec"); let name;
+  try {
+    const r = await api("/api/record/start", { name: state.name || "cancion", seconds: secs, lang: LANG });
+    name = r.name;
+    await playAll(true);                       // desde el ciclo 0, sin esperar a nadie
+  } catch (e) { exporting = false; go.disabled = false; dlg.querySelectorAll("input, button[data-n]").forEach((x) => { x.disabled = false; }); toast(e.message); return; }
+  b.classList.add("on"); prog.hidden = false;
+  const t0 = Date.now();
+  await new Promise((done) => {
+    const iv = setInterval(() => {
+      const el = (Date.now() - t0) / 1000;
+      bar.style.width = Math.min(100, (el / secs) * 100) + "%";
+      st.textContent = L(`Grabando… ${fmtTime(el)} de ${fmtTime(secs)}`, `Recording… ${fmtTime(el)} of ${fmtTime(secs)}`);
+      $("#rec-label").textContent = fmtTime(Math.max(0, secs - el));
+      if (el >= secs + 0.5) { clearInterval(iv); done(); }
+    }, 250);
+  });
+  await api("/api/record/stop", {}).catch(() => {});   // por si el temporizador del servidor no llegó
+  exporting = false; b.classList.remove("on"); $("#rec-label").textContent = L("Exportar", "Export");
+  dlg.close();
+  say(L(`Exportación lista: ${name} — ${n} ${n === 1 ? "ciclo" : "ciclos"}, ${fmtTime(secs, 1)} (carpeta recordings/). Es un WAV de lo que sonaba por la salida de SuperCollider.`, `Export ready: ${name} — ${n} ${n === 1 ? "cycle" : "cycles"}, ${fmtTime(secs, 1)} (recordings/ folder). It's a WAV of whatever came out of SuperCollider.`), state.options,
+    { links: [{ href: `/api/recordings/file?name=${encodeURIComponent(name)}`, label: L("Descargar WAV", "Download WAV") }] });
 }
 
 // ------------------------------------------------------------------ pestañas (varias canciones abiertas a la vez)
@@ -4777,7 +4816,7 @@ function renderCourse() {
         ${i < c.steps.length - 1 ? `<button class="${done ? "primary" : ""}" data-cs="next">${L("Siguiente", "Next")} ${icon("arrow", 14)}</button>` : ""}
       </div>
       ${allDone ? `<div class="cs-done">${icon("check", 18)} <div><b>${L("¡Curso completado!", "Course complete!")}</b><span>${L(`Has construido un ${c.name} completo. Grábalo, guárdalo en GitHub o cámbialo a tu gusto.`, `You built a complete ${c.name} track. Record it, save it to GitHub or make it your own.`)}</span>
-        <div class="cs-actions"><button data-cs="record">${icon("rec", 13)} ${L("Grabar", "Record")}</button><button data-cs="list">${L("Otro curso", "Another course")}</button></div></div></div>` : ""}
+        <div class="cs-actions"><button data-cs="record">${icon("rec", 13)} ${L("Exportar", "Export")}</button><button data-cs="list">${L("Otro curso", "Another course")}</button></div></div></div>` : ""}
     </div>
     <details class="cs-sources"><summary>${L("Fuentes y lecturas recomendadas", "Sources and further reading")}</summary>
       <ul>${c.sources.map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.label)}</a></li>`).join("")}</ul></details>`;
@@ -4820,7 +4859,7 @@ function courseAction(a) {
   if (a === "leave") return leaveCourse();
   if (a === "prev") return courseGo(i - 1);
   if (a === "next") return courseGo(i + 1);
-  if (a === "record") return toggleRecord();
+  if (a === "record") return openExport();
   if (a === "ask") return courseAsk();
   if (a === "apply") return courseApply();
   if (a === "other") return courseOther();
@@ -5024,7 +5063,7 @@ function init() {
     $("#code-msg").textContent = L("Enlace copiado. Quien lo abra con Tidal Studio instalado verá tu canción (todo va dentro del enlace).", "Link copied. Anyone opening it with Tidal Studio installed will see your song (everything is inside the link).");
     say(L("Te he copiado un enlace con tu canción dentro (código, BPM y nombres de pista). Pégalo a quien quieras: al abrirlo en su Tidal Studio se carga como proyecto nuevo.", "I copied a link with your song inside (code, BPM and track names). Share it: opening it in Tidal Studio loads it as a new project."), state.options, { links: [{ href: url, label: L("Enlace de la canción", "Song link") }] });
   };
-  $("#btn-rec").onclick = toggleRecord;
+  $("#btn-rec").onclick = openExport;
   $("#btn-copy-code").onclick = () => navigator.clipboard.writeText($("#code").value).then(() => $("#code-msg").textContent = L("Copiado", "Copied"));
   $("#btn-engine-start").onclick = async () => { await api("/api/engine/start", {}); refreshStatus(); };
   $("#btn-engine-stop").onclick = async () => { await api("/api/engine/stop", {}); refreshStatus(); };

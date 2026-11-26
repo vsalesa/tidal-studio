@@ -1,6 +1,7 @@
 import { L } from "./i18n.js";
 import { evalTrack, stringLiterals, noteNum } from "./tpat.js";
 import { SOUNDS } from "./explain.js";
+import { cycleSecs, fmtTime } from "./timefmt.js";
 // Línea de tiempo: DÓNDE suena cada sonido, en vez de «cada cuánto».
 // Una fila por sonido (o por nota, en las pistas melódicas), el tiempo de izquierda a derecha:
 // cada columna grande es un ciclo (un compás de 4 tiempos). Cada bloque es una nota.
@@ -184,19 +185,19 @@ function draw() {
   const box = document.querySelector("#timeline");
   const st = deps.state();
   const tracks = st.tracks.filter((t) => t.code && t.code.trim());
-  const secs = (60 / st.bpm) * 4;
+  const secs = cycleSecs(st.bpm);
   const N = view.n, A = view.from;
   evList = [];
   let html = `<div class="tl-tools">
     <div class="tl-nav"><button class="icon-btn" data-nav="-1" title="${L("Ciclos anteriores", "Previous cycles")}" ${A <= 0 ? "disabled" : ""}>‹</button>
-      <span>${L("Compases", "Bars")} <b>${A + 1}–${A + N}</b></span>
+      <span>${L("Compases", "Bars")} <b>${A + 1}–${A + N}</b> <small class="tl-clock" title="${L("Tiempo real de este tramo", "Real time of this stretch")}">${fmtTime(A * secs)}–${fmtTime((A + N) * secs)}</small></span>
       <button class="icon-btn" data-nav="1" title="${L("Ciclos siguientes", "Next cycles")}">›</button></div>
     <label>${L("Ver", "Show")} <select id="tl-n">${[1, 2, 4, 8, 16].map((x) => `<option value="${x}" ${x === N ? "selected" : ""}>${x} ${x === 1 ? L("ciclo", "cycle") : L("ciclos", "cycles")}</option>`).join("")}</select></label>
     <label>${L("Zoom", "Zoom")} <input id="tl-zoom" type="range" min="1" max="8" step="0.25" value="${view.zoom}"></label>
     <label class="toggle"><input id="tl-follow" type="checkbox" ${view.follow ? "checked" : ""}> ${L("Seguir lo que suena", "Follow the playhead")}</label>
     <span class="tl-legend"><b class="tl-ev demo"></b> ${L("nota", "hit")} <b class="tl-ev demo maybe"></b> ${L("al azar (puede sonar o no)", "chance (may or may not play)")}</span>
   </div>
-  <p class="hint tl-scale">${L(`1 ciclo = 1 compás = 4 tiempos = ${secs.toFixed(2)} s a ${st.bpm} BPM. Líneas finas: semicorcheas (1/16).`, `1 cycle = 1 bar = 4 beats = ${secs.toFixed(2)} s at ${st.bpm} BPM. Thin lines: sixteenth notes (1/16).`)}</p>`;
+  <p class="hint tl-scale">${L(`1 ciclo = 1 compás = 4 tiempos = ${secs.toFixed(2)} s a ${st.bpm} BPM (mm:ss bajo cada compás). Líneas finas: semicorcheas (1/16).`, `1 cycle = 1 bar = 4 beats = ${secs.toFixed(2)} s at ${st.bpm} BPM (mm:ss under each bar). Thin lines: sixteenth notes (1/16).`)}</p>`;
   if (!tracks.length) {
     box.innerHTML = html + `<div class="empty"><p>${L("Añade una pista y aquí verás cuándo suena cada sonido.", "Add a track and you'll see here when each sound plays.")}</p></div>`;
     return;
@@ -206,7 +207,7 @@ function draw() {
   // regla: números de compás y de tiempo
   let ruler = "";
   for (let c = 0; c < N; c++) {
-    ruler += `<span class="tl-bar" style="left:calc(var(--ppc) * ${c})">${A + c + 1}</span>`;
+    ruler += `<span class="tl-bar" style="left:calc(var(--ppc) * ${c})">${A + c + 1}<small class="tl-clock">${fmtTime((A + c) * secs)}</small></span>`;
     for (let b = 1; b < 4; b++) ruler += `<span class="tl-beat" style="left:calc(var(--ppc) * ${c + b / 4})">${b + 1}</span>`;
   }
   html += `<div class="tl-row tl-ruler"><div class="tl-lab"><small>${L("compás · tiempo", "bar · beat")}</small></div><div class="tl-lane">${ruler}</div></div>`;
