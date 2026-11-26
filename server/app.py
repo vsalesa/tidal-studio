@@ -375,6 +375,9 @@ def fetch_samples(cfg, reply, sess, tr):
     return items
 
 
+_REC_TIMER = None
+
+
 class Trace:
     def __init__(self, tid, lang):
         import time as _t
@@ -2265,16 +2268,21 @@ class Handler(SimpleHTTPRequestHandler):
                 # Con "seconds" la app para sola (Exportar): nadie tiene que pulsar «parar».
                 secs = 0
                 try:
-                    secs = max(0.0, min(float(data.get("seconds") or 0), 3600.0))
+                    secs = max(0.0, min(float(data.get("seconds") or 0), 14400.0))
                 except (TypeError, ValueError):
                     secs = 0
                 if secs:
                     import threading as _th
-                    tm = _th.Timer(secs, ENGINE.record_stop)
-                    tm.daemon = True
-                    tm.start()
+                    global _REC_TIMER
+                    if _REC_TIMER:
+                        _REC_TIMER.cancel()
+                    _REC_TIMER = _th.Timer(secs, ENGINE.record_stop)
+                    _REC_TIMER.daemon = True
+                    _REC_TIMER.start()
                 return self._json({"ok": True, "name": name, "folder": d, "seconds": secs})
             if path == "/api/record/stop":
+                if _REC_TIMER:
+                    _REC_TIMER.cancel()
                 ENGINE.record_stop()
                 return self._json({"ok": True})
 

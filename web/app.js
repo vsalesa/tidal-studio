@@ -3933,7 +3933,7 @@ async function runExport(dlg, n, secs) {
     const r = await api("/api/record/start", { name: state.name || "cancion", seconds: secs, lang: LANG });
     name = r.name;
     await playAll(true);                       // desde el ciclo 0, sin esperar a nadie
-  } catch (e) { exporting = false; go.disabled = false; dlg.querySelectorAll("input, button[data-n]").forEach((x) => { x.disabled = false; }); toast(e.message); return; }
+  } catch (e) { api("/api/record/stop", {}).catch(() => {}); exporting = false; go.disabled = false; dlg.querySelectorAll("input, button[data-n]").forEach((x) => { x.disabled = false; }); toast(e.message); return; }
   b.classList.add("on"); prog.hidden = false;
   const t0 = Date.now();
   await new Promise((done) => {

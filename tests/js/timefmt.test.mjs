@@ -13,6 +13,7 @@ test("fmtTime mm:ss", () => {
   assert.equal(fmtTime(59.99), "0:59");
   assert.equal(fmtTime(83.45, 1), "1:23.5");
   assert.equal(fmtTime(5, 1), "0:05.0");
+  assert.equal(fmtTime(59.97, 1), "1:00.0");
 });
 test("songCycles: mcm de máscaras", () => {
   assert.equal(songCycles([]), 1);
