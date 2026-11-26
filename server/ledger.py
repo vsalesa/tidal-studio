@@ -84,7 +84,7 @@ class Ledger:
             n = len(rs)
             no_llm = sum(1 for r in rs if r[2] == 0)
             with_llm = [r for r in rs if r[2] > 0]
-            toks = [(r[3] or 0) + (r[4] or 0) for r in with_llm]
+            toks = [(r[3] or 0) + (r[4] or 0) for r in with_llm if r[3] is not None]   # no medido ≠ 0
             ms = sorted(r[1] for r in rs)
             out.append({"version": v, "requests": n, "without_llm": no_llm, "share_without_llm": round(no_llm / n, 3),
                         "llm_calls": sum(r[2] for r in rs), "calls_per_request": round(sum(r[2] for r in rs) / n, 3),
