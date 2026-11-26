@@ -30,6 +30,10 @@ Versión en inglés: [MODEL_ROUTING.md](MODEL_ROUTING.md).
 4. Empieza directamente con Sonnet u Opus si la tarea toca 5 o más archivos.
 5. Nunca subas el esfuerzo para suplir datos que faltan. Explora primero con Graphify.
 
+## Dividir por dificultad
+
+Incluso una sola petición puede mezclar partes fáciles y difíciles. Divídela en subtareas, cada una con su modelo y esfuerzo: consultas y docs en Haiku `low`, código en Sonnet `medium`, diseño o depuración difícil en Opus `high`. En Claude Code, ejecuta las subtareas como subagentes con el parámetro `model`, en paralelo si son independientes.
+
 ## Ahorro de tokens
 
 - Explora el código con Graphify antes de grep o Read.
