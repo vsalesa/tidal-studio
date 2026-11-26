@@ -413,9 +413,10 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
 <section id="novedades" style="padding-top: 20px">
   <div class="wrap">
     <div class="kicker" data-i="kn">What's new</div>
-    <h2 class="sec-title" data-i="tn">Version 0.25.3 is out.</h2>
+    <h2 class="sec-title" data-i="tn">Version 0.26.0 is out.</h2>
     <p class="sec-lead" data-i="ln">A new version every few days, each with its installers for Mac, Windows and Linux.</p>
     <ul class="vers reveal">
+      <li><b>0.26.0</b><span data-i="v260">Measure first: every Maestro request is logged with its real tokens, AI calls and timings, so each release can be compared with the last.</span></li>
       <li><b>0.25.3</b><span data-i="v253">Every setting applies the moment you press Save, without restarting the app.</span></li>
       <li><b>0.25.2</b><span data-i="v252">Fixes: more than 12 tracks now work everywhere (Maestro, wizard, style recipes, shared links); the number of tracks lives in Settings → Limits (12 to 64), and the live highlighting in the Code view stays aligned when you scroll.</span></li>
       <li><b>0.25.1</b><span data-i="v251">How many tracks is now a setting: 12 by default, up to 32 in Settings → Tracks, with the TidalCycles boot and SuperDirt orbits generated from it and what each extra track costs in CPU. Every other limit (Maestro context, file sizes, sound, undo) is configurable too in Settings → Limits.</span></li>
@@ -457,8 +458,8 @@ n "&lt;c'min7 f'min7&gt;" # s "superpiano"</code></div>
     <div class="step solo reveal" style="margin-bottom:40px">
       <h4 data-i="mach">Mac, Windows and Linux: one installer, everything inside</h4>
       <p data-i="macp">TidalCycles, SuperCollider, the sounds and Python are all in the package, so nothing is downloaded while installing. It opens as a real Mac app, in its own window and with no Terminal. The first time, macOS asks you to allow it in System Settings → Privacy &amp; Security → Open Anyway.</p>
-      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.25.3/TidalStudio-0.25.3-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
-      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.25.3/TidalStudio-0.25.3-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.25.3/tidal-studio_0.25.3_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
+      <a class="btn primary" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.26.0/TidalStudio-0.26.0-macOS-AppleSilicon.pkg"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg><span data-i="macb">Download for Mac (.pkg)</span></a>
+      <p style="margin-top:14px"><a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.26.0/TidalStudio-0.26.0-Windows-x64-Setup.exe"><span data-i="winb">Windows installer (.exe)</span></a> <a class="btn ghost" href="https://github.com/vsalesa/tidal-studio/releases/download/v0.26.0/tidal-studio_0.26.0_amd64.deb"><span data-i="linb">Linux package (.deb)</span></a></p>
       <p style="margin-top:10px;font-size:.9em" data-i="maco">Windows and Linux have their own installers too, each opening the studio in its own window. Intel Mac, or prefer the source? Follow the three steps below.</p>
       <p style="margin-top:4px;font-size:.9em"><a href="https://github.com/vsalesa/tidal-studio/releases/latest" data-i="allv">All versions</a></p>
     </div>
@@ -538,6 +539,7 @@ const ES = {
   f20h: "Un plan, paso a paso", f20p: "Pide una canción entera y Maestro primero te enseña un plan, como una lluvia de ideas con un productor. Apruébalo o cámbialo y construye la canción paso a paso, guardando cada uno: si la IA tarda demasiado, no se pierde nada.",
   f16h: "Maestro consigue los sonidos", f16p: "Si a tu canción le falta un sonido que no tienes, como un cencerro de verdad o crujido de vinilo, Maestro busca uno con licencia libre en internet, lo descarga, apunta los créditos y lo hace sonar. Antes de bajar paquetes grandes te pregunta.",
   f18h: "Archivos de Tidal en pestañas", f18p: "Abre cualquier .tidal o .hs de tu disco o una canción de GitHub, cada uno en su pestaña, y ciérralos al terminar; Guardar escribe un .tidal limpio que suena en cualquier editor de Tidal.",
+  v260: "Primero, medir: cada petición a Maestro queda registrada con sus tokens reales, llamadas a la IA y tiempos, para comparar cada versión con la anterior.",
   v253: "Cada ajuste se aplica al pulsar Guardar, sin reiniciar la app.",
   v252: "Arreglos: más de 12 pistas ya funcionan en todas partes (Maestro, asistente, recetas de estilo, enlaces compartidos); el número de pistas está en Ajustes → Límites (de 12 a 64), y el resaltado en directo de la vista Código sigue alineado al hacer scroll.",
   v251: "Cuántas pistas ahora es un ajuste: 12 de serie, hasta 32 en Ajustes → Pistas, con el arranque de TidalCycles y las orbits de SuperDirt generados a partir de él y lo que cuesta en CPU cada pista de más. Todos los demás límites (contexto de Maestro, tamaños de archivo, sonido, deshacer) también se configuran en Ajustes → Límites.",
@@ -558,7 +560,7 @@ const ES = {
   v130: "MIDI de ida y vuelta: tus canciones suenan en tu teclado; el audio se recupera al enchufar cosas; una sola librería para todos los sonidos; cambia un sonido seleccionando su nombre.",
   v121: "Arreglo: guardar canciones en un repositorio de GitHub recién creado vacío ya no falla con el error 409.",
   v12: "Toca tu teclado MIDI: tu piano USB suena con cualquier instrumento y lo que tocas se convierte en pistas de Tidal, una por mano, a compás con tu canción; Maestro te lo explica.",
-  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.25.3.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
+  nav5: "Novedades", kn: "Novedades", tn: "Ya está aquí la versión 0.26.0.", ln: "Una versión nueva cada pocos días, cada una con sus instaladores para Mac, Windows y Linux.",
   v11: "Tidal Studio se actualiza solo: te avisa de las versiones nuevas, te enseña las novedades, descarga y comprueba el instalador de tu ordenador y lo instala con un clic.",
   v10: "En las peticiones grandes Maestro te enseña un plan y lo construye paso a paso, así un timeout ya no pierde trabajo, con un botón Cancelar; genera una canción nueva desde tu MIDI en 11 estilos; varias canciones abiertas en pestañas, desde tu disco o GitHub; un baterista real en nueve cursos; mejor importación de audio con MSST; y Maestro ve los sonidos que acabas de descargar.",
   v91: "Maestro carga en cada mensaje mc-tidal-studio, la ruta de skills de tu plugin de composición hecha para esta app.",
