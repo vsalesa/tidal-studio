@@ -30,3 +30,4 @@ Rules:
 - `web/` vanilla JS UI. `tests/` unittest suite (`python3 -m unittest discover tests`).
 - `packaging/VERSION` on `main` publishes a release; dev-only changes do not need a version bump.
 - Docs: README.md (English) + README.es.md (Spanish). Diagrams: PlantUML -> SVG -> PNG, never ASCII art.
+- Model choice for coding sessions: `docs/MODEL_ROUTING.md` (Spanish: `docs/MODEL_ROUTING.es.md`).
