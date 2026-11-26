@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo 'Token rules: Graphify MCP first for code, Context7 for lib docs (see CLAUDE.md). Model: lookups/small fixes/docs=Haiku|Sonnet low; features=Sonnet medium; architecture/hard debug=Opus high. Run only tests of changed code. README/screenshots/web and installers only at releases.'"
+          }
+        ]
+      }
+    ]
+  }
+}
