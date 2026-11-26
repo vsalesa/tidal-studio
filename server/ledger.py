@@ -50,7 +50,7 @@ class Ledger:
             with self.lock, self.db:
                 self.db.execute("INSERT OR REPLACE INTO executions VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                                 (pub["id"], pub["t"], self.version, pub["text"], pub["answered_by"] or ("llm" if used else ""),
-                                 pub["total_ms"], int(llm.get("calls") or 0), tin, tout, cached,
+                                 pub["total_ms"], int(llm.get("calls") or (1 if used else 0)), tin, tout, cached,
                                  llm.get("note") or None, json.dumps(lay, ensure_ascii=False)))
         except Exception as e:  # noqa: BLE001
             print(f"[ledger] {e}")
